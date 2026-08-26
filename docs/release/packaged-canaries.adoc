@@ -2,7 +2,7 @@
 
 Status:: Implemented; public-tag receipt and physical-device evidence remain external
 Machine authority:: `tool/canaries/canary_contract.json`
-Gate:: `dart run tool/run_git_canaries.dart --repository=<url> --ref=v1.0.0-rc.1`
+Gate:: `dart run tool/run_git_canaries.dart --repository=<url> --ref=v1.0.0-rc.2`
 
 == Candidate source
 
@@ -13,7 +13,7 @@ Git override with the same URL and ref. A lightweight/missing tag, hosted
 Dartitect package, local `path:` source, mixed commit, version mismatch, or
 workspace root fails the gate.
 
-The normal dependency declarations retain `1.0.0-rc.1`; overrides are generated
+The normal dependency declarations retain `1.0.0-rc.2`; overrides are generated
 from package pubspecs by `tool/git_dependency_overrides.dart`, including the
 complete transitive Dartitect closure. External provider packages may still use
 their ordinary hosted source. No Dartitect package is read from pub.dev.
@@ -49,4 +49,4 @@ V1S-13 external matrix.
 `tool/check_canaries.dart` and the signed-bundle tools remain fail-closed
 preparation for a future authorized formal channel. They do not describe,
 authorize, or materialize this Git candidate, and no GitHub Release or pub.dev
-publication accompanies `v1.0.0-rc.1`.
+publication accompanies `v1.0.0-rc.2`.

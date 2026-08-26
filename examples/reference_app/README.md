@@ -1,7 +1,7 @@
 # Dartitect offline-first reference workload
 
 This application is the consumer-owned integration workload for Dartitect's
-`1.0.0-rc.1` reactive runtime. Native targets use a generated ObjectBox 5.3.2
+`1.0.0-rc.2` reactive runtime. Native targets use a generated ObjectBox 5.3.2
 model; Web uses the same contract with a memory store because ObjectBox has no
 Web runtime. Dio always crosses an HTTP adapter boundary, while UI state is
 read exclusively from the local store.

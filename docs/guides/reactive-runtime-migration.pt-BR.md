@@ -247,6 +247,6 @@ estáveis, controles acessíveis por teclado, text scaling e callbacks de
 retry/refresh/load-more pertencentes à rota. Os workloads de referência
 demonstram esse limite e descartam o paged resource antes da source local.
 
-Os entrypoints avançados são preparados em `1.0.0-rc.1`; mudanças são
+Os entrypoints avançados são preparados em `1.0.0-rc.2`; mudanças são
 adicionadas em incrementos revisados e permanecem opt-in durante toda a linha
 candidata.

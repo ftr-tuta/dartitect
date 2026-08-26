@@ -636,7 +636,7 @@ String _render(_Model model, {required String sourcePath}) {
   final sourceName = _basename(sourcePath);
   final buffer = StringBuffer()
     ..writeln('// GENERATED CODE - DO NOT EDIT BY HAND.')
-    ..writeln('// Dartitect model generator 1.0.0-rc.1, input schema 1.')
+    ..writeln('// Dartitect model generator 1.0.0-rc.2, input schema 1.')
     ..writeln()
     ..writeln("part of '$sourceName';")
     ..writeln()

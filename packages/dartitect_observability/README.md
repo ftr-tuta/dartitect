@@ -30,7 +30,7 @@ and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/doc
 ## Install
 
 This candidate is not published on pub.dev. Declare
-`dartitect_observability: 1.0.0-rc.1` and use the
+`dartitect_observability: 1.0.0-rc.2` and use the
 [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md)
 to generate the complete override closure.
 

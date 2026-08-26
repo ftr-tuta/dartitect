@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "cohortVersion": "1.0.0-rc.1",
+  "cohortVersion": "1.0.0-rc.2",
   "candidateState": "GIT_CANDIDATE_ASSEMBLED",
   "targetChannel": "PROTECTED_GIT_TAG",
   "packageCount": 16,
@@ -36,7 +36,7 @@
   },
   "gitConsumption": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "tag": "v1.0.0-rc.1",
+    "tag": "v1.0.0-rc.2",
     "annotated": true,
     "signed": false,
     "protectedAgainstUpdateAndDeletion": true,

@@ -128,7 +128,7 @@
       "owner": "Dartitect maintainers", "affectedPackages": [],
       "coveredPaths": ["tool/git_dependency_overrides.dart", "tool/git_dependency_overrides_test.dart", "tool/run_git_canaries.dart", "tool/canaries/**", "examples/**", "docs/release/**"],
       "acceptance": ["Validate minimal, offline-first, and native-capability canaries from one annotated Git tag and remote URL with no local-path or hosted Dartitect resolution."],
-      "gateCommands": ["dart run tool/run_git_canaries.dart --repository=<url> --ref=v1.0.0-rc.1"],
+      "gateCommands": ["dart run tool/run_git_canaries.dart --repository=<url> --ref=v1.0.0-rc.2"],
       "evidence": ["tool/git_dependency_overrides.dart", "tool/run_git_canaries.dart", "tool/canaries/canary_contract.json", "docs/release/packaged-canaries.adoc", "examples/reference_app/test/native_objectbox_workload_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
@@ -150,10 +150,10 @@
     {
       "id": "V1S-13", "required": true, "status": "EXTERNAL_REQUIRED", "dependsOn": ["V1S-08", "V1S-09", "V1S-10"],
       "owner": "Dartitect maintainers", "affectedPackages": ["dartitect_privacy", "dartitect_media"],
-      "coveredPaths": ["packages/dartitect_privacy/**", "packages/dartitect_media/**", "examples/**/android/**", "examples/**/ios/**", "examples/**/macos/**", "tool/canaries/native_capabilities/**", "tool/native_evidence_contract.json", "tool/check_native_evidence.dart", "tool/run_native_evidence.dart", "tool/verify.dart", "docs/release/native-device-evidence.adoc", "docs/implementation-status.adoc", "docs/release/1.0-readiness.adoc"],
-      "acceptance": ["Complete Android/iOS floor/current, real-device, permission, lifecycle, main-thread, album, file, and clean-tree hardening."],
+      "coveredPaths": [".github/workflows/ci.yaml", "packages/dartitect_privacy/**", "packages/dartitect_media/**", "examples/**/android/**", "examples/**/ios/**", "examples/**/macos/**", "tool/canaries/native_capabilities/**", "tool/native_evidence_contract.json", "tool/check_native_evidence.dart", "tool/check_native_evidence_test.dart", "tool/run_native_evidence.dart", "tool/run_native_evidence_test.dart", "tool/run_native_ci_evidence.dart", "tool/src/native_evidence_*.dart", "tool/verify.dart", "docs/release/native-device-evidence.adoc", "docs/implementation-status.adoc", "docs/release/1.0-readiness.adoc"],
+      "acceptance": ["Complete the exact five-cell Android build/physical and iOS build/simulator matrix with same-SHA receipts, lifecycle, main-thread, album, file, cleanup, and clean-tree hardening; prohibit Android emulators and physical iPhones."],
       "gateCommands": ["dart run tool/check_native_evidence.dart"],
-      "evidence": ["tool/native_evidence_contract.json", "tool/check_native_evidence.dart", "tool/run_native_evidence.dart", "tool/canaries/native_capabilities/integration_test/android_media_test.dart", "docs/release/native-device-evidence.adoc"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "evidence": ["tool/native_evidence_contract.json", "tool/check_native_evidence.dart", "tool/check_native_evidence_test.dart", "tool/run_native_evidence.dart", "tool/run_native_evidence_test.dart", "tool/run_native_ci_evidence.dart", "tool/canaries/native_capabilities/integration_test/android_media_test.dart", "tool/canaries/native_capabilities/lib/ios_ci_harness.dart", "tool/canaries/native_capabilities/test/native_qa_panel_test.dart", "docs/release/native-device-evidence.adoc"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-14", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-11", "V1S-12", "V1S-13"],

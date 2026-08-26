@@ -1,6 +1,6 @@
 name: dartitect_mcp
 description: Local MCP server for safe Dartitect project inspection and reviewed changes.
-version: 1.0.0-rc.1
+version: 1.0.0-rc.2
 repository: https://github.com/ftr-tuta/dartitect
 issue_tracker: https://github.com/ftr-tuta/dartitect/issues
 topics:
@@ -19,7 +19,7 @@ executables:
 
 dependencies:
   dart_mcp: 0.5.2
-  dartitect_cli: '>=1.0.0-rc.1 <1.0.0'
+  dartitect_cli: '>=1.0.0-rc.2 <1.0.0'
 
 dev_dependencies:
   stream_channel: ^2.1.4

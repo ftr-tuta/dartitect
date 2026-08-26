@@ -101,6 +101,14 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>['test', 'tool/check_goal_gates_test.dart']),
     const _Command('dart', <String>[
       'test',
+      'tool/check_native_evidence_test.dart',
+    ]),
+    const _Command('dart', <String>[
+      'test',
+      'tool/run_native_evidence_test.dart',
+    ]),
+    const _Command('dart', <String>[
+      'test',
       'tool/git_dependency_overrides_test.dart',
     ]),
     const _Command('dart', <String>[
@@ -148,6 +156,10 @@ Future<void> main(List<String> arguments) async {
         environment: _nativeObjectBoxEnvironment(root),
       ),
     const _Command('flutter', <String>['test', 'examples/adapters_app']),
+    const _Command('flutter', <String>[
+      'test',
+      'tool/canaries/native_capabilities/test',
+    ]),
     const _Command('dart', <String>[
       'test',
       'examples/model_generator_fixture',

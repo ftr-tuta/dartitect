@@ -24,6 +24,7 @@ void main() {
 
     final media = MethodChannelGalleryMediaService();
     expect(await media.status(), GalleryPermissionStatus.authorized);
+    expect(await media.requestAccess(), GalleryPermissionStatus.authorized);
     final temporary = await Directory.systemTemp.createTemp(
       'dartitect-native-media-',
     );
@@ -51,6 +52,11 @@ void main() {
     expect(
       (invalid as Err<GalleryFailure>).failure,
       isA<GalleryInvalidFileFailure>(),
+    );
+    expect(
+      await media.status(),
+      GalleryPermissionStatus.authorized,
+      reason: 'The method channel remains live after typed failures.',
     );
     await media.clearOwnedState();
     await media.clearOwnedState();
@@ -84,6 +90,11 @@ void main() {
       observer.states.skip(backgroundIndex + 1),
       contains(AppLifecycleState.resumed),
       reason: '${observer.states}',
+    );
+    expect(
+      await MethodChannelGalleryMediaService().status(),
+      GalleryPermissionStatus.authorized,
+      reason: 'The native callback remains live after rotation/resume.',
     );
   });
 }

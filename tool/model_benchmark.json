@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "recordedAt": "2026-08-25",
-  "generatorVersion": "1.0.0-rc.1",
+  "generatorVersion": "1.0.0-rc.2",
   "host": {
     "os": "linux",
     "dart": "3.13.1",

@@ -28,7 +28,7 @@ base class DartitectMcpServer extends MCPServer
        super.fromStreamChannel(
          implementation: Implementation(
            name: 'dartitect_mcp',
-           version: '1.0.0-rc.1',
+           version: '1.0.0-rc.2',
          ),
          instructions: _instructions,
        ) {

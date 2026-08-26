@@ -102,6 +102,19 @@ jobs:
       - name: Build adapters app APK
         run: flutter build apk --debug
         working-directory: examples/adapters_app
+      - name: Produce Android API 24 build evidence without an emulator
+        if: matrix.flutter == '3.47.1'
+        run: >-
+          dart run tool/run_native_ci_evidence.dart
+          --cell=android-media-floor-build
+      - name: Upload Android floor evidence receipt
+        if: matrix.flutter == '3.47.1'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-evidence-android-floor-${{ github.sha }}
+          path: build/native-evidence/android-media-floor-build-${{ github.sha }}.json
+          if-no-files-found: error
+          retention-days: 30
       - name: Confirm tracked files are unchanged
         if: always()
         run: git diff --exit-code -- .
@@ -168,6 +181,97 @@ jobs:
       - name: Validate benchmark harness and lifecycle matrix
         run: flutter test
         working-directory: tool/benchmark_workspace
+      - name: Remove Flutter-generated Podfiles before native evidence
+        run: >-
+          rm -f
+          examples/reference_app/ios/Podfile
+          examples/reference_app/macos/Podfile
+          examples/adapters_app/ios/Podfile
+          examples/adapters_app/macos/Podfile
+      - name: Select an installed iOS simulator dynamically
+        id: ios-simulator
+        shell: bash
+        run: |
+          ios_sdk="$(xcrun --sdk iphonesimulator --show-sdk-version)"
+          ios_runtime="com.apple.CoreSimulator.SimRuntime.iOS-${ios_sdk//./-}"
+          selected="$(
+            xcrun simctl list devices available --json |
+              jq -r --arg runtime "$ios_runtime" '
+                [
+                  .devices
+                  | to_entries[]
+                  | select(.key == $runtime)
+                  | .value[]
+                  | select(.isAvailable == true and (.name | startswith("iPhone")))
+                  | {name: .name, udid: .udid}
+                ]
+                | sort_by(.name)
+                | last
+                | [.udid, .name]
+                | @tsv
+              '
+          )"
+          if [[ -z "$selected" || "$selected" == "null" ]]; then
+            echo "No installed, available iOS simulator matches the active iOS SDK." >&2
+            exit 1
+          fi
+          IFS=$'\t' read -r simulator_id simulator_model <<<"$selected"
+          xcrun simctl boot "$simulator_id" 2>/dev/null || true
+          xcrun simctl bootstatus "$simulator_id" -b
+          echo "id=$simulator_id" >>"$GITHUB_OUTPUT"
+          echo "model=$simulator_model" >>"$GITHUB_OUTPUT"
+          echo "os=$ios_sdk" >>"$GITHUB_OUTPUT"
+      - name: Install pinned Photos permission utility
+        shell: bash
+        env:
+          APPLESIMUTILS_VERSION: "0.9.12"
+          APPLESIMUTILS_SHA256: "3373d85ea6051e77865b0a22960eb0b5d63f3126c7c99232d0b6b9c83ee2c133"
+        run: |
+          archive="${RUNNER_TEMP:?}/applesimutils-${APPLESIMUTILS_VERSION}.tar.gz"
+          install_root="${RUNNER_TEMP:?}/applesimutils-install"
+          curl --fail --location --silent --show-error \
+            "https://github.com/wix/AppleSimulatorUtils/releases/download/${APPLESIMUTILS_VERSION}/applesimutils-${APPLESIMUTILS_VERSION}.big_sur.bottle.tar.gz" \
+            --output "$archive"
+          actual_sha256="$(shasum -a 256 "$archive" | awk '{print $1}')"
+          if [[ "$actual_sha256" != "$APPLESIMUTILS_SHA256" ]]; then
+            echo "AppleSimulatorUtils checksum mismatch." >&2
+            exit 1
+          fi
+          mkdir -p "$install_root"
+          tar -xzf "$archive" -C "$install_root"
+          tool_path="$install_root/applesimutils/${APPLESIMUTILS_VERSION}/bin/applesimutils"
+          tool_version="$("$tool_path" --version)"
+          if [[ "$tool_version" != "applesimutils version ${APPLESIMUTILS_VERSION}" ]]; then
+            echo "Unexpected AppleSimulatorUtils version." >&2
+            exit 1
+          fi
+          echo "DARTITECT_APPLESIMUTILS=$tool_path" >>"$GITHUB_ENV"
+      - name: Produce iOS media floor build evidence
+        run: >-
+          dart run tool/run_native_ci_evidence.dart
+          --cell=ios-media-floor-build
+      - name: Produce iOS privacy floor build evidence
+        run: >-
+          dart run tool/run_native_ci_evidence.dart
+          --cell=ios-privacy-floor-build
+      - name: Exercise Photos and ATT on the installed simulator
+        env:
+          DARTITECT_IOS_SIMULATOR_ID: ${{ steps.ios-simulator.outputs.id }}
+          DARTITECT_IOS_SIMULATOR_MODEL: ${{ steps.ios-simulator.outputs.model }}
+          DARTITECT_IOS_SIMULATOR_OS: ${{ steps.ios-simulator.outputs.os }}
+        run: >-
+          dart run tool/run_native_ci_evidence.dart
+          --cell=ios-current-simulator
+      - name: Upload iOS native evidence receipts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-evidence-ios-${{ github.sha }}
+          path: |
+            build/native-evidence/ios-media-floor-build-${{ github.sha }}.json
+            build/native-evidence/ios-privacy-floor-build-${{ github.sha }}.json
+            build/native-evidence/ios-current-simulator-${{ github.sha }}.json
+          if-no-files-found: error
+          retention-days: 30
       - name: Install verified ObjectBox native library
         run: dart run tool/setup_objectbox_vm.dart
       - name: Verify workspace with native ObjectBox
@@ -232,7 +336,7 @@ jobs:
         run: git diff --exit-code -- .
 
   git-consumption:
-    name: Git consumption / v1.0.0-rc.1
+    name: Git consumption / v1.0.0-rc.2
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
@@ -255,14 +359,14 @@ jobs:
         run: |
           git config user.name ftr
           git config user.email ftr@tuta.com
-          git tag --delete v1.0.0-rc.1 2>/dev/null || true
-          git tag --annotate v1.0.0-rc.1 --message "Dartitect 1.0.0-rc.1 Git candidate"
+          git tag --delete v1.0.0-rc.2 2>/dev/null || true
+          git tag --annotate v1.0.0-rc.2 --message "Dartitect 1.0.0-rc.2 Git candidate"
           git clone --bare . "${RUNNER_TEMP:?}/dartitect.git"
       - name: Validate all consumers through Git only
         run: >-
           dart run tool/run_git_canaries.dart
           --repository=file://${RUNNER_TEMP:?}/dartitect.git
-          --ref=v1.0.0-rc.1
+          --ref=v1.0.0-rc.2
       - name: Confirm tracked files are unchanged
         if: always()
         run: git diff --exit-code -- .

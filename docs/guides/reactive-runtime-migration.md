@@ -244,5 +244,5 @@ live regions, keyboard-focusable controls, text scaling, and route-owned
 retry/refresh/load-more callbacks. The reference workloads demonstrate this
 consumer boundary while disposing the paged resource before its local source.
 
-The advanced entrypoints are prepared in `1.0.0-rc.1`; changes arrive in
+The advanced entrypoints are prepared in `1.0.0-rc.2`; changes arrive in
 reviewed increments and remain opt-in throughout the candidate line.

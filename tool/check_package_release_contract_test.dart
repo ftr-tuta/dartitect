@@ -15,13 +15,13 @@ void main() {
   });
 
   test('accepts a release-candidate lockstep cohort', () async {
-    final fixture = await _Fixture.create(cohort: '1.0.0-rc.1');
+    final fixture = await _Fixture.create(cohort: '1.0.0-rc.2');
     addTearDown(fixture.dispose);
 
     final result = await fixture.check();
 
     expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
-    expect(result.stdout, contains('2 packages at 1.0.0-rc.1'));
+    expect(result.stdout, contains('2 packages at 1.0.0-rc.2'));
   });
 
   test('rejects a mixed package cohort', () async {

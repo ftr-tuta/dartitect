@@ -1,9 +1,13 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "receiptSchemaVersion": 2,
   "goal": "V1S-13",
   "harness": "tool/canaries/native_capabilities",
   "android": {
     "floorApi": 24,
+    "physicalApi": 34,
+    "requiredAdbServerSocket": "tcp:127.0.0.1:5038",
+    "applicationId": "dev.dartitect.dartitect_native_capabilities_harness",
     "manifest": "packages/dartitect_media/android/src/main/AndroidManifest.xml",
     "plugin": "packages/dartitect_media/android/src/main/java/dev/dartitect/media/DartitectMediaPlugin.java",
     "requiredSourceMarkers": [
@@ -33,112 +37,118 @@
   },
   "requiredCells": [
     {
-      "id": "android-media-floor-emulator",
+      "id": "android-media-floor-build",
       "platform": "android",
-      "capability": "media",
-      "deviceKind": "emulator",
+      "capabilities": ["media"],
+      "evidenceKind": "build",
       "floor": true,
+      "requiredVersionKeys": ["os", "flutter", "dart", "androidSdk", "java"],
       "requiredScenarios": [
-        "initial-versus-denied",
-        "legacy-granted",
-        "legacy-denied",
-        "invalid-file",
-        "cancel-on-detach",
-        "main-thread-callback",
-        "rotation",
-        "background-foreground",
-        "cleanup-after-failure",
-        "tree-clean"
-      ]
-    },
-    {
-      "id": "android-media-current-emulator",
-      "platform": "android",
-      "capability": "media",
-      "deviceKind": "emulator",
-      "floor": false,
-      "requiredScenarios": [
-        "privacy-not-supported",
-        "no-legacy-permission",
-        "save-with-album",
-        "source-preserved",
-        "missing-file",
-        "invalid-file",
-        "main-thread-callback",
-        "background-foreground",
-        "owned-state-cleanup",
+        "min-sdk-24",
+        "manifest-contract",
+        "android-lint",
+        "debug-apk-build",
         "tree-clean"
       ]
     },
     {
       "id": "android-media-current-physical",
       "platform": "android",
-      "capability": "media",
-      "deviceKind": "physical",
+      "capabilities": ["media", "privacy"],
+      "evidenceKind": "physical",
       "floor": false,
+      "requiredVersionKeys": ["os", "flutter", "dart", "adb"],
       "requiredScenarios": [
-        "granted",
-        "denied",
+        "exactly-one-physical-device",
+        "boot-complete",
+        "api-34",
+        "device-space-recorded",
+        "battery-recorded",
+        "status-without-legacy-permission",
+        "privacy-not-supported",
         "save-with-album",
+        "source-preserved",
+        "missing-file",
         "invalid-file",
-        "cancel-on-detach",
         "main-thread-callback",
-        "rotation",
+        "liveness-after-failure",
+        "rotation-restored",
         "background-foreground",
-        "cleanup-after-failure",
+        "owned-state-cleanup",
+        "media-cleanup",
+        "preferences-cleanup",
+        "clean-harness-reinstalled",
         "tree-clean"
       ]
     },
     {
-      "id": "ios-media-floor-simulator",
+      "id": "ios-media-floor-build",
       "platform": "ios",
-      "capability": "media",
-      "deviceKind": "simulator",
+      "capabilities": ["media"],
+      "evidenceKind": "build",
       "floor": true,
-      "requiredScenarios": ["denied", "limited", "invalid-file", "main-thread-callback", "tree-clean"]
+      "requiredVersionKeys": ["os", "flutter", "dart", "xcode", "iosSdk"],
+      "requiredScenarios": [
+        "deployment-target-ios-14",
+        "media-plugin-compile",
+        "simulator-link",
+        "tree-clean"
+      ]
     },
     {
-      "id": "ios-media-current-simulator",
+      "id": "ios-privacy-floor-build",
       "platform": "ios",
-      "capability": "media",
-      "deviceKind": "simulator",
-      "floor": false,
-      "requiredScenarios": ["granted", "denied", "limited", "album", "background-foreground", "invalid-file", "main-thread-callback", "tree-clean"]
-    },
-    {
-      "id": "ios-media-current-physical",
-      "platform": "ios",
-      "capability": "media",
-      "deviceKind": "physical",
-      "floor": false,
-      "requiredScenarios": ["granted", "denied", "limited", "album", "background-foreground", "cancel-on-detach", "invalid-file", "main-thread-callback", "cleanup-after-failure", "tree-clean"]
-    },
-    {
-      "id": "ios-privacy-floor-simulator",
-      "platform": "ios",
-      "capability": "privacy",
-      "deviceKind": "simulator",
+      "capabilities": ["privacy"],
+      "evidenceKind": "build",
       "floor": true,
-      "requiredScenarios": ["construction-inert", "not-supported-before-ios14", "tree-clean"]
+      "requiredVersionKeys": ["os", "flutter", "dart", "xcode", "iosSdk"],
+      "requiredScenarios": [
+        "deployment-target-ios-12",
+        "privacy-plugin-compile",
+        "simulator-link",
+        "tree-clean"
+      ]
     },
     {
-      "id": "ios-privacy-current-simulator",
+      "id": "ios-current-simulator",
       "platform": "ios",
-      "capability": "privacy",
-      "deviceKind": "simulator",
+      "capabilities": ["media", "privacy"],
+      "evidenceKind": "simulator",
       "floor": false,
-      "requiredScenarios": ["construction-inert", "not-determined", "restricted", "denied", "authorized", "explicit-request-only", "main-thread-callback", "tree-clean"]
-    },
-    {
-      "id": "ios-privacy-current-physical",
-      "platform": "ios",
-      "capability": "privacy",
-      "deviceKind": "physical",
-      "floor": false,
-      "requiredScenarios": ["construction-inert", "not-determined", "restricted", "denied", "authorized", "explicit-request-only", "background-foreground", "main-thread-callback", "tree-clean"]
+      "requiredVersionKeys": [
+        "os",
+        "flutter",
+        "dart",
+        "xcode",
+        "iosSdk",
+        "photosPermissionTool"
+      ],
+      "requiredScenarios": [
+        "dynamic-installed-simulator-selection",
+        "photos-status-request-real-channel",
+        "att-real-channel",
+        "deterministic-native-status-contracts",
+        "save-with-album",
+        "source-preserved",
+        "missing-file",
+        "invalid-file",
+        "main-thread-callback",
+        "background-foreground",
+        "simulator-cleanup",
+        "tree-clean"
+      ]
     }
   ],
   "receiptDirectory": "build/native-evidence",
   "receiptDigest": "sha256",
-  "trackedTreeMustRemainClean": true
+  "trackedTreeMustRemainClean": true,
+  "rawDeviceIdentifiersForbidden": true,
+  "ciEvidenceKinds": ["build", "simulator"],
+  "physicalRetention": {
+    "kind": "installed-app",
+    "applicationId": "dev.dartitect.dartitect_native_capabilities_harness",
+    "dataClean": true,
+    "mediaClean": true,
+    "apkDigest": "sha256"
+  }
 }

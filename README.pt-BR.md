@@ -9,9 +9,12 @@ arquitetura, tooling seguro e adapters opcionais de infraestrutura sem container
 global.
 
 Todos os dezesseis pacotes públicos compartilham a linha candidata
-`1.0.0-rc.1`. Este cohort está disponível pela tag Git protegida; a publicação
-no pub.dev não está autorizada. A readiness formal continua bloqueada por
-evidência nativa física e pela decisão separada da autoridade de revisão.
+`1.0.0-rc.2`. Este cohort destina-se à tag Git protegida; a publicação no
+pub.dev não está autorizada. A evidência runtime Android usa aparelho físico
+Android 14/API 34, enquanto a API 24 é compatibilidade de build. iOS usa build e
+simulador no CI, nunca iPhone físico. A readiness formal continua bloqueada pelo
+defeito semântico conhecido em `replaceGraph`, pendente do RC.3 e da repetição
+de toda evidência no mesmo SHA.
 
 ## Por que existe
 
@@ -49,22 +52,22 @@ fornecedor.
 
 | Pacote | Objetivo | Plataformas | Estabilidade |
 | --- | --- | --- | --- |
-| [`dartitect`](packages/dartitect/) | Result, lifecycle, ownership de recursos, eventos de arquitetura | Dart, Flutter, web | `1.0.0-rc.1` |
-| [`dartitect_sync`](packages/dartitect_sync/) | DAG de sync provider-neutral, checkpoints, leases, progresso, protocolo headless | Dart, Flutter, web | `1.0.0-rc.1` |
-| [`dartitect_isolates`](packages/dartitect_isolates/) | Workers de isolate tipados/versionados, ACKs, heartbeat, deadlines e safe-stop | Dart VM, Flutter nativo | `1.0.0-rc.1` |
-| [`dartitect_flutter`](packages/dartitect_flutter/) | Ownership de ViewModel, comandos async, selectors, scope, binding de erros | Flutter | `1.0.0-rc.1` |
-| [`dartitect_observability`](packages/dartitect_observability/) | Logs, redaction, reporting, trace W3C, runtime limitado | Dart, Flutter, web | `1.0.0-rc.1` |
-| [`dartitect_dio`](packages/dartitect_dio/) | Ownership de Dio, falhas tipadas, cancelamento, telemetria mínima | Plataformas Dio | `1.0.0-rc.1` |
-| [`dartitect_objectbox`](packages/dartitect_objectbox/) | Ownership de Store/query/watcher sobre modelos gerados pelo consumidor | Android, iOS, Linux, macOS, Windows | `1.0.0-rc.1` |
-| [`dartitect_sentry`](packages/dartitect_sentry/) | Adapters para Hub Sentry borrowed e inicializado pelo consumidor | Dart, Flutter | `1.0.0-rc.1` |
-| [`dartitect_privacy`](packages/dartitect_privacy/) | Status/request ATT explícito, sem prompt automático | iOS; not-supported tipado nas demais | `1.0.0-rc.1` |
-| [`dartitect_media`](packages/dartitect_media/) | Permissão de galeria e salvamento de imagem tipados | Android, iOS | `1.0.0-rc.1` |
-| [`dartitect_locale_br`](packages/dartitect_locale_br/) | Values imutáveis de CEP brasileiro | Dart, Flutter, web | `1.0.0-rc.1` |
-| [`dartitect_geometry`](packages/dartitect_geometry/) | Geometria determinística de polo de inacessibilidade | Dart, Flutter, web | `1.0.0-rc.1` |
-| [`dartitect_testing`](packages/dartitect_testing/) | Clocks, probes, telemetria gravada e contract harnesses determinísticos | Dart, Flutter, web | `1.0.0-rc.1` |
-| [`dartitect_cli`](packages/dartitect_cli/) | Inspect, scan, doctor, config, baseline, geradores, sync Codex | Dart VM | `1.0.0-rc.1` |
-| [`dartitect_lints`](packages/dartitect_lints/) | Diagnósticos de arquitetura via plugin oficial do analyzer | Dart analyzer | `1.0.0-rc.1` |
-| [`dartitect_mcp`](packages/dartitect_mcp/) | Tools/resources MCP locais para trabalho revisado | Dart VM, STDIO | `1.0.0-rc.1` |
+| [`dartitect`](packages/dartitect/) | Result, lifecycle, ownership de recursos, eventos de arquitetura | Dart, Flutter, web | `1.0.0-rc.2` |
+| [`dartitect_sync`](packages/dartitect_sync/) | DAG de sync provider-neutral, checkpoints, leases, progresso, protocolo headless | Dart, Flutter, web | `1.0.0-rc.2` |
+| [`dartitect_isolates`](packages/dartitect_isolates/) | Workers de isolate tipados/versionados, ACKs, heartbeat, deadlines e safe-stop | Dart VM, Flutter nativo | `1.0.0-rc.2` |
+| [`dartitect_flutter`](packages/dartitect_flutter/) | Ownership de ViewModel, comandos async, selectors, scope, binding de erros | Flutter | `1.0.0-rc.2` |
+| [`dartitect_observability`](packages/dartitect_observability/) | Logs, redaction, reporting, trace W3C, runtime limitado | Dart, Flutter, web | `1.0.0-rc.2` |
+| [`dartitect_dio`](packages/dartitect_dio/) | Ownership de Dio, falhas tipadas, cancelamento, telemetria mínima | Plataformas Dio | `1.0.0-rc.2` |
+| [`dartitect_objectbox`](packages/dartitect_objectbox/) | Ownership de Store/query/watcher sobre modelos gerados pelo consumidor | Android, iOS, Linux, macOS, Windows | `1.0.0-rc.2` |
+| [`dartitect_sentry`](packages/dartitect_sentry/) | Adapters para Hub Sentry borrowed e inicializado pelo consumidor | Dart, Flutter | `1.0.0-rc.2` |
+| [`dartitect_privacy`](packages/dartitect_privacy/) | Status/request ATT explícito, sem prompt automático | iOS; not-supported tipado nas demais | `1.0.0-rc.2` |
+| [`dartitect_media`](packages/dartitect_media/) | Permissão de galeria e salvamento de imagem tipados | Android, iOS | `1.0.0-rc.2` |
+| [`dartitect_locale_br`](packages/dartitect_locale_br/) | Values imutáveis de CEP brasileiro | Dart, Flutter, web | `1.0.0-rc.2` |
+| [`dartitect_geometry`](packages/dartitect_geometry/) | Geometria determinística de polo de inacessibilidade | Dart, Flutter, web | `1.0.0-rc.2` |
+| [`dartitect_testing`](packages/dartitect_testing/) | Clocks, probes, telemetria gravada e contract harnesses determinísticos | Dart, Flutter, web | `1.0.0-rc.2` |
+| [`dartitect_cli`](packages/dartitect_cli/) | Inspect, scan, doctor, config, baseline, geradores, sync Codex | Dart VM | `1.0.0-rc.2` |
+| [`dartitect_lints`](packages/dartitect_lints/) | Diagnósticos de arquitetura via plugin oficial do analyzer | Dart analyzer | `1.0.0-rc.2` |
+| [`dartitect_mcp`](packages/dartitect_mcp/) | Tools/resources MCP locais para trabalho revisado | Dart VM, STDIO | `1.0.0-rc.2` |
 
 ## Seleção do ecossistema
 
@@ -85,18 +88,18 @@ protegida. Para `dartitect_flutter`:
 
 ```yaml
 dependencies:
-  dartitect_flutter: 1.0.0-rc.1
+  dartitect_flutter: 1.0.0-rc.2
 
 dependency_overrides:
   dartitect:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
-      ref: v1.0.0-rc.1
+      ref: v1.0.0-rc.2
       path: packages/dartitect
   dartitect_flutter:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
-      ref: v1.0.0-rc.1
+      ref: v1.0.0-rc.2
       path: packages/dartitect_flutter
 ```
 
@@ -162,7 +165,7 @@ Instale o plugin no pacote consumidor:
 
 ```yaml
 dev_dependencies:
-  dartitect_lints: 1.0.0-rc.1
+  dartitect_lints: 1.0.0-rc.2
 ```
 
 ```yaml
@@ -201,7 +204,7 @@ shell, leitura arbitrária, servidor HTTP, OAuth ou acesso remoto a aplicações
 
 ```yaml
 dev_dependencies:
-  dartitect_mcp: 1.0.0-rc.1
+  dartitect_mcp: 1.0.0-rc.2
 ```
 
 ```console

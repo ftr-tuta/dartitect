@@ -2,7 +2,7 @@
 
 Snapshot:: 2026-08-23
 Toolchain:: Dart 3.13.1 / Flutter 3.47.1 / Linux x64
-Role:: Reviewed `1.0.0-rc.1` reference thresholds; exact-root reproduction is external
+Role:: Reviewed `1.0.0-rc.2` reference thresholds; exact-root reproduction is external
 
 Run the following commands on the same pinned runner for comparisons:
 
@@ -116,7 +116,7 @@ Reviewed artifacts:
 
 * +tool/benchmark_workspace/artifacts/raw.json+ — all samples and counters;
 * +tool/benchmark_workspace/artifacts/environment.json+ — sanitized runner,
-  SDK, commit, lock hash, RSS, and heap;
+  SDK, reference-evidence status, lock hash, RSS, and heap;
 * +tool/benchmark_workspace/artifacts/report.adoc+ — human-readable result.
 
 +dart run tool/check_benchmark_artifacts.dart+ recomputes percentiles and every

@@ -1,3 +1,8 @@
+## 1.0.0-rc.2
+
+- Promote the lockstep candidate cohort without public Dart API changes and
+  bind release validation to the RC.2 source and evidence matrix.
+
 ## 1.0.0-rc.1
 
 - Assemble the reviewed lockstep 1.0 release candidate without public API

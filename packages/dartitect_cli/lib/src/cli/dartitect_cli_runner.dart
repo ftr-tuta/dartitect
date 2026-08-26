@@ -307,7 +307,7 @@ final class DartitectCliRunner {
     }.toList()..sort();
     final localOverridePackages = _localSdkPackageClosure(sdkPackages);
     final dependencyBlock = localSdk == null
-        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.1\n').join()
+        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.2\n').join()
         : sdkPackages
               .map(
                 (package) =>

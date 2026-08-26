@@ -14,17 +14,17 @@ public final class DartitectMediaPlugin: NSObject, FlutterPlugin {
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
-    case "status": result(map(PHPhotoLibrary.authorizationStatus(for: accessLevel)))
+    case "status": result(Self.statusValue(PHPhotoLibrary.authorizationStatus(for: accessLevel)))
     case "request":
       PHPhotoLibrary.requestAuthorization(for: accessLevel) { status in
-        DispatchQueue.main.async { result(self.map(status)) }
+        DispatchQueue.main.async { result(Self.statusValue(status)) }
       }
     case "saveImage": saveImage(call, result: result)
     default: result(FlutterMethodNotImplemented)
     }
   }
 
-  private func map(_ status: PHAuthorizationStatus) -> String {
+  static func statusValue(_ status: PHAuthorizationStatus) -> String {
     switch status {
     case .notDetermined: return "notDetermined"
     case .restricted, .denied: return "denied"

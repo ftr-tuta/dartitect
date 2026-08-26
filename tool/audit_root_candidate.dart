@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 const _expectedIdentity = 'ftr\u0000ftr@tuta.com';
-const _expectedSubject = 'release: establish Dartitect 1.0.0-rc.1 baseline';
+const _expectedSubject = 'release: establish Dartitect 1.0.0-rc.2 baseline';
 
 /// Audits the one-root Git candidate before its public tag is created.
 Future<void> main() async {

@@ -63,7 +63,7 @@ Future<void> main() async {
         'schemaVersion': 1,
         'sourceSha': revision,
         'tree': tree,
-        'cohortVersion': '1.0.0-rc.1',
+        'cohortVersion': '1.0.0-rc.2',
         'commands': <String>['flutter pub get', 'dart run tool/release_audit.dart --docs --publish-dry-run --author-revision=$revision'],
         'trackedTreeClean': true,
         'result': 'PASS',

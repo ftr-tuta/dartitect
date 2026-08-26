@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "goal": "V1S-15",
-  "cohortVersion": "1.0.0-rc.1",
+  "cohortVersion": "1.0.0-rc.2",
   "state": "NOT_READY_FOR_1_0_RC",
   "decisionId": null,
   "sourceSha": null,
@@ -16,7 +16,7 @@
   ],
   "blockers": [
     "V1S-13 native floor/current and physical-device evidence is incomplete.",
-    "V1S-14 cannot close before its V1S-13 dependency.",
-    "The RC candidate is not yet an exact main SHA with same-SHA CI and Security receipts."
+    "The RC candidate is not yet an exact main SHA with same-SHA CI and Security receipts.",
+    "The known OwnedRuntimeSlot.replaceGraph semantic defect is release-blocking and is deferred to RC.3 with a full same-SHA gate repeat."
   ]
 }

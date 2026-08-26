@@ -153,7 +153,7 @@ Future<void> _validateFormal(
     '--source-sha=$sourceSha',
   ], workingDirectory: root.path);
   if (native.exitCode != 0) {
-    errors.add('The same-SHA nine-cell native matrix is incomplete.');
+    errors.add('The same-SHA five-cell native matrix is incomplete.');
   }
   final upgrade = File(
     '${root.path}/build/rc-validation/upgrade-$sourceSha.json',

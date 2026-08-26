@@ -35,7 +35,7 @@ e as [receitas de implementação](https://github.com/ftr-tuta/dartitect/blob/ma
 ## Instalação
 
 Este candidato não está publicado no pub.dev. Declare
-`dartitect_flutter: 1.0.0-rc.1` e use o
+`dartitect_flutter: 1.0.0-rc.2` e use o
 [guia de consumo do candidato Git](../../docs/guides/git-candidate-consumption.pt-BR.md)
 para fixá-lo junto com `dartitect` na tag protegida.
 

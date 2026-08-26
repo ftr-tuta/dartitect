@@ -4,7 +4,7 @@
 
 ## Channel
 
-`v1.0.0-rc.1` is an annotated, unsigned Git-consumption tag over the complete
+`v1.0.0-rc.2` is an annotated, unsigned Git-consumption tag over the complete
 sixteen-package cohort. It is protected against updates and deletion. It is not
 a GitHub Release, a pub.dev publication, or the future signed formal release
 channel.
@@ -17,18 +17,18 @@ repository and tag:
 
 ```yaml
 dependencies:
-  dartitect_flutter: 1.0.0-rc.1
+  dartitect_flutter: 1.0.0-rc.2
 
 dependency_overrides:
   dartitect:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
-      ref: v1.0.0-rc.1
+      ref: v1.0.0-rc.2
       path: packages/dartitect
   dartitect_flutter:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
-      ref: v1.0.0-rc.1
+      ref: v1.0.0-rc.2
       path: packages/dartitect_flutter
 ```
 
@@ -53,7 +53,7 @@ emits one common URL/ref with a package-relative Git path.
 
 Run `flutter pub get`, then inspect `pubspec.lock`: every resolved package whose
 name starts with `dartitect` must have `source: git`, the same URL, the
-`v1.0.0-rc.1` ref, and a `packages/<name>` path. The package configuration must
+`v1.0.0-rc.2` ref, and a `packages/<name>` path. The package configuration must
 point into Pub's Git cache, never into a local Dartitect checkout.
 
 Maintainers validate the minimal, offline-first, and native-capability consumers
@@ -62,7 +62,7 @@ with:
 ```console
 dart run tool/run_git_canaries.dart \
   --repository=https://github.com/ftr-tuta/dartitect.git \
-  --ref=v1.0.0-rc.1
+  --ref=v1.0.0-rc.2
 ```
 
 The gate rejects a missing/lightweight tag, a mixed commit, any hosted
