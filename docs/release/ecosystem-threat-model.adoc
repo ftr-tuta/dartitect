@@ -1,0 +1,142 @@
+= Offline, sync, isolate, and telemetry threat model
+:toc:
+
+Status:: Locally reviewed for `1.0.0-rc.1`; remote Security evidence required
+Review date:: 2026-08-24
+
+== Offline mutation and outbox
+
+[cols="2,3,3",options="header"]
+|===
+| Threat | SDK control | Consumer responsibility
+
+| Duplicate remote effect
+| Every operation preserves a non-empty idempotency key across delivery.
+| Enforce idempotency at the remote boundary and retain keys long enough.
+
+| Crash after possible commit
+| Unexpected delivery crashes mark the operation uncertain and stop only its
+key until explicit audit/resume; there is no automatic retry.
+| Audit durable local and remote state before changing uncertain to pending.
+
+| Local data and outbox diverge
+| The store port exposes one atomic `applyLocalAndEnqueue` boundary.
+| Implement both writes in one provider transaction and test rollback faults.
+|===
+
+== Dataset sync
+
+[cols="2,3,3",options="header"]
+|===
+| Threat | SDK control | Consumer responsibility
+
+| Journal/checkpoint divergence
+| The journal stores only ordered payload-free facts; restart authority remains
+the confirmed checkpoint.
+| Persist facts and checkpoints durably and reject corrupt/unknown records.
+
+| Stale writer confirmation
+| Active lease fencing tokens are passed to checkpoint writes.
+| Compare and commit fencing tokens inside the storage transaction.
+
+| Unbounded or replayed work
+| DAGs reject invalid topology; deadlines, cancellation, bounded progress, and
+explicit incomplete-attempt resume are built in.
+| Bound dataset payload/work and own retry and scheduling policy.
+|===
+
+== Isolate protocol
+
+[cols="2,3,3",options="header"]
+|===
+| Threat | SDK control | Consumer responsibility
+
+| Dead or stale worker hangs the caller
+| Protocol version, generation readiness, ACK correlation, heartbeat, request
+deadline, error/exit ports, and terminal-once completion guard every request.
+| Send transferable bounded values and set a workload-appropriate deadline.
+
+| Resource survives shutdown
+| Safe-stop closes intake, waits for ACK, force-kills only after its deadline,
+then closes supervisor ports, subscriptions, timers, and pending requests.
+| Build a fresh receiver graph and close isolate-local providers in `finally`.
+|===
+
+== Telemetry and providers
+
+[cols="2,3,3",options="header"]
+|===
+| Threat | SDK control | Consumer responsibility
+
+| Identifier or secret disclosure
+| Context is deny-by-default; event names and route templates are validated;
+raw URL/path/query/header/body values are omitted; redaction is destination
+independent.
+| Supply only static allowlisted keys/templates and never put secrets in
+messages, errors, or envelope payloads.
+
+| Telemetry changes business behavior
+| Sampling precedes lazy message construction; sink queues are bounded; sink
+failure is isolated; error/fatal retention remains explicit.
+| Select destinations, retention, sampling, credentials, and consent policy.
+
+| Borrowed provider is closed by an adapter
+| Dio, ObjectBox, and Sentry ownership is explicit and tested.
+| Dispose dependents before borrowed clients/Store/Hub and close the provider at
+its composition root.
+|===
+
+== Generated models and ecosystem policy
+
+[cols="2,3,3",options="header"]
+|===
+| Threat | SDK control | Consumer responsibility
+
+| Consumer bytes are overwritten or deleted
+| Fully-generated outputs require a versioned manifest and matching SHA-256;
+unmanaged, diverged, unsafe, or symlinked paths fail closed. Commit/recovery
+stages and validates output, backups, and the manifest.
+| Commit generated outputs and the manifest; review conflicts instead of
+editing output or attempting force adoption.
+
+| Interrupted multi-file convergence leaves mixed semantics
+| A versioned journal records create/update/delete and restores exact prior
+bytes unless a concurrent change requires manual recovery.
+| Keep the transaction directory on one filesystem and do not modify its paths
+during commit/recovery.
+
+| A dependency exception silently expands
+| The offline ledger rejects empty/global/expired exception scopes and assigns
+transitives to a first direct owner. CLI/scanner and the generated lint snapshot
+share the reviewed decisions.
+| Review publisher, repository, license, advisory, compatibility, reason,
+owner, paths, and expiry; do not use package-wide ignores.
+|===
+
+== Privacy and media channels
+
+[cols="2,3,3",options="header"]
+|===
+| Threat | SDK control | Consumer responsibility
+
+| Consent is requested without intent
+| `dartitect_privacy` separates status from request, never requests on plugin
+registration, and reports typed not-supported outside iOS.
+| Request ATT only after an explicit UX decision and apply the returned status.
+
+| Media access or bytes escape the intended boundary
+| `dartitect_media` exposes one image-file save request, distinguishes limited
+access/cancellation/failure, does not retain bytes or paths in telemetry, and
+can remove its sole Android authorization-history value before package removal.
+| Validate the local file, explain permission use, choose an optional album,
+and own deletion/retention of the source file.
+|===
+
+== Release gate
+
+Local negative tests, fault injection, generated ObjectBox fixtures, two
+independent workloads, zero-residual census, and the checked SBOM/license
+inventory are necessary but not sufficient. A stable release also requires the
+Security workflow and CI to pass on the exact final candidate SHA plus an
+explicit delegated review-authority decision. No exception silently weakens
+this model.

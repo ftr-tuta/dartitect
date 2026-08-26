@@ -1,0 +1,6 @@
+interface:
+  display_name: "Dartitect Tooling"
+  short_description: "Operate CLI, lints, generators, and gates"
+  default_prompt: "Use $dartitect-tooling to operate or extend Dartitect tooling."
+policy:
+  allow_implicit_invocation: true

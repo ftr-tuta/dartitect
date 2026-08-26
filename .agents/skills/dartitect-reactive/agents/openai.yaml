@@ -1,0 +1,6 @@
+interface:
+  display_name: "Dartitect Reactive"
+  short_description: "Build causal reactive Flutter runtimes"
+  default_prompt: "Use $dartitect-reactive to implement a causal reactive feature."
+policy:
+  allow_implicit_invocation: true

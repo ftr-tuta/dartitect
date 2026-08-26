@@ -1,0 +1,3052 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "Dartitect-workspace",
+  "documentNamespace": "https://github.com/ftr-tuta/dartitect/sbom/workspace-1.0.0-rc.1",
+  "creationInfo": {
+    "created": "2026-08-25T00:00:00Z",
+    "creators": [
+      "Tool: dartitect-generate-supply-chain"
+    ]
+  },
+  "packages": [
+    {
+      "name": "_fe_analyzer_shared",
+      "SPDXID": "SPDXRef-Package--fe-analyzer-shared",
+      "versionInfo": "103.0.0",
+      "downloadLocation": "https://pub.dev/packages/_fe_analyzer_shared/versions/103.0.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "analysis_server_plugin",
+      "SPDXID": "SPDXRef-Package-analysis-server-plugin",
+      "versionInfo": "0.3.18",
+      "downloadLocation": "https://pub.dev/packages/analysis_server_plugin/versions/0.3.18",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "analyzer",
+      "SPDXID": "SPDXRef-Package-analyzer",
+      "versionInfo": "13.3.0",
+      "downloadLocation": "https://pub.dev/packages/analyzer/versions/13.3.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "analyzer_plugin",
+      "SPDXID": "SPDXRef-Package-analyzer-plugin",
+      "versionInfo": "0.14.12",
+      "downloadLocation": "https://pub.dev/packages/analyzer_plugin/versions/0.14.12",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "args",
+      "SPDXID": "SPDXRef-Package-args",
+      "versionInfo": "2.7.0",
+      "downloadLocation": "https://pub.dev/packages/args/versions/2.7.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "async",
+      "SPDXID": "SPDXRef-Package-async",
+      "versionInfo": "2.13.1",
+      "downloadLocation": "https://pub.dev/packages/async/versions/2.13.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "boolean_selector",
+      "SPDXID": "SPDXRef-Package-boolean-selector",
+      "versionInfo": "2.1.2",
+      "downloadLocation": "https://pub.dev/packages/boolean_selector/versions/2.1.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "characters",
+      "SPDXID": "SPDXRef-Package-characters",
+      "versionInfo": "1.4.1",
+      "downloadLocation": "https://pub.dev/packages/characters/versions/1.4.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "cli_config",
+      "SPDXID": "SPDXRef-Package-cli-config",
+      "versionInfo": "0.2.0",
+      "downloadLocation": "https://pub.dev/packages/cli_config/versions/0.2.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "clock",
+      "SPDXID": "SPDXRef-Package-clock",
+      "versionInfo": "1.1.2",
+      "downloadLocation": "https://pub.dev/packages/clock/versions/1.1.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "code_assets",
+      "SPDXID": "SPDXRef-Package-code-assets",
+      "versionInfo": "2.0.0",
+      "downloadLocation": "https://pub.dev/packages/code_assets/versions/2.0.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "collection",
+      "SPDXID": "SPDXRef-Package-collection",
+      "versionInfo": "1.19.1",
+      "downloadLocation": "https://pub.dev/packages/collection/versions/1.19.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "convert",
+      "SPDXID": "SPDXRef-Package-convert",
+      "versionInfo": "3.1.2",
+      "downloadLocation": "https://pub.dev/packages/convert/versions/3.1.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "coverage",
+      "SPDXID": "SPDXRef-Package-coverage",
+      "versionInfo": "1.15.1",
+      "downloadLocation": "https://pub.dev/packages/coverage/versions/1.15.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "crypto",
+      "SPDXID": "SPDXRef-Package-crypto",
+      "versionInfo": "3.0.7",
+      "downloadLocation": "https://pub.dev/packages/crypto/versions/3.0.7",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dart_mcp",
+      "SPDXID": "SPDXRef-Package-dart-mcp",
+      "versionInfo": "0.5.2",
+      "downloadLocation": "https://pub.dev/packages/dart_mcp/versions/0.5.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dart_style",
+      "SPDXID": "SPDXRef-Package-dart-style",
+      "versionInfo": "3.1.12",
+      "downloadLocation": "https://pub.dev/packages/dart_style/versions/3.1.12",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect",
+      "SPDXID": "SPDXRef-Package-dartitect",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_adapters_app",
+      "SPDXID": "SPDXRef-Package-dartitect-adapters-app",
+      "versionInfo": "0.1.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_cli",
+      "SPDXID": "SPDXRef-Package-dartitect-cli",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_dio",
+      "SPDXID": "SPDXRef-Package-dartitect-dio",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_flutter",
+      "SPDXID": "SPDXRef-Package-dartitect-flutter",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_geometry",
+      "SPDXID": "SPDXRef-Package-dartitect-geometry",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_isolates",
+      "SPDXID": "SPDXRef-Package-dartitect-isolates",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_lints",
+      "SPDXID": "SPDXRef-Package-dartitect-lints",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_locale_br",
+      "SPDXID": "SPDXRef-Package-dartitect-locale-br",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_mcp",
+      "SPDXID": "SPDXRef-Package-dartitect-mcp",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_media",
+      "SPDXID": "SPDXRef-Package-dartitect-media",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_model_generator_fixture",
+      "SPDXID": "SPDXRef-Package-dartitect-model-generator-fixture",
+      "versionInfo": "0.1.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_objectbox",
+      "SPDXID": "SPDXRef-Package-dartitect-objectbox",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_observability",
+      "SPDXID": "SPDXRef-Package-dartitect-observability",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_privacy",
+      "SPDXID": "SPDXRef-Package-dartitect-privacy",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_reference_app",
+      "SPDXID": "SPDXRef-Package-dartitect-reference-app",
+      "versionInfo": "0.1.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_sentry",
+      "SPDXID": "SPDXRef-Package-dartitect-sentry",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_sync",
+      "SPDXID": "SPDXRef-Package-dartitect-sync",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_testing",
+      "SPDXID": "SPDXRef-Package-dartitect-testing",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_workspace",
+      "SPDXID": "SPDXRef-Package-dartitect-workspace",
+      "versionInfo": "1.0.0-rc.1",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dio",
+      "SPDXID": "SPDXRef-Package-dio",
+      "versionInfo": "5.11.0",
+      "downloadLocation": "https://pub.dev/packages/dio/versions/5.11.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dio_web_adapter",
+      "SPDXID": "SPDXRef-Package-dio-web-adapter",
+      "versionInfo": "2.2.1",
+      "downloadLocation": "https://pub.dev/packages/dio_web_adapter/versions/2.2.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "fake_async",
+      "SPDXID": "SPDXRef-Package-fake-async",
+      "versionInfo": "1.3.3",
+      "downloadLocation": "https://pub.dev/packages/fake_async/versions/1.3.3",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "ffi",
+      "SPDXID": "SPDXRef-Package-ffi",
+      "versionInfo": "2.2.0",
+      "downloadLocation": "https://pub.dev/packages/ffi/versions/2.2.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "file",
+      "SPDXID": "SPDXRef-Package-file",
+      "versionInfo": "7.0.1",
+      "downloadLocation": "https://pub.dev/packages/file/versions/7.0.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "fixnum",
+      "SPDXID": "SPDXRef-Package-fixnum",
+      "versionInfo": "1.1.1",
+      "downloadLocation": "https://pub.dev/packages/fixnum/versions/1.1.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "flat_buffers",
+      "SPDXID": "SPDXRef-Package-flat-buffers",
+      "versionInfo": "25.9.23",
+      "downloadLocation": "https://pub.dev/packages/flat_buffers/versions/25.9.23",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "flutter",
+      "SPDXID": "SPDXRef-Package-flutter",
+      "versionInfo": "0.0.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "flutter_test",
+      "SPDXID": "SPDXRef-Package-flutter-test",
+      "versionInfo": "0.0.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "frontend_server_client",
+      "SPDXID": "SPDXRef-Package-frontend-server-client",
+      "versionInfo": "4.0.0",
+      "downloadLocation": "https://pub.dev/packages/frontend_server_client/versions/4.0.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "glob",
+      "SPDXID": "SPDXRef-Package-glob",
+      "versionInfo": "2.1.3",
+      "downloadLocation": "https://pub.dev/packages/glob/versions/2.1.3",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "hooks",
+      "SPDXID": "SPDXRef-Package-hooks",
+      "versionInfo": "2.2.0",
+      "downloadLocation": "https://pub.dev/packages/hooks/versions/2.2.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "http",
+      "SPDXID": "SPDXRef-Package-http",
+      "versionInfo": "1.6.0",
+      "downloadLocation": "https://pub.dev/packages/http/versions/1.6.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "http_multi_server",
+      "SPDXID": "SPDXRef-Package-http-multi-server",
+      "versionInfo": "3.2.2",
+      "downloadLocation": "https://pub.dev/packages/http_multi_server/versions/3.2.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "http_parser",
+      "SPDXID": "SPDXRef-Package-http-parser",
+      "versionInfo": "4.1.2",
+      "downloadLocation": "https://pub.dev/packages/http_parser/versions/4.1.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "io",
+      "SPDXID": "SPDXRef-Package-io",
+      "versionInfo": "1.0.5",
+      "downloadLocation": "https://pub.dev/packages/io/versions/1.0.5",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "jni",
+      "SPDXID": "SPDXRef-Package-jni",
+      "versionInfo": "1.0.3",
+      "downloadLocation": "https://pub.dev/packages/jni/versions/1.0.3",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "jni_flutter",
+      "SPDXID": "SPDXRef-Package-jni-flutter",
+      "versionInfo": "1.0.2",
+      "downloadLocation": "https://pub.dev/packages/jni_flutter/versions/1.0.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "jni_util",
+      "SPDXID": "SPDXRef-Package-jni-util",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://pub.dev/packages/jni_util/versions/1.0.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "json_rpc_2",
+      "SPDXID": "SPDXRef-Package-json-rpc-2",
+      "versionInfo": "4.1.0",
+      "downloadLocation": "https://pub.dev/packages/json_rpc_2/versions/4.1.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "leak_tracker",
+      "SPDXID": "SPDXRef-Package-leak-tracker",
+      "versionInfo": "11.0.2",
+      "downloadLocation": "https://pub.dev/packages/leak_tracker/versions/11.0.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "leak_tracker_flutter_testing",
+      "SPDXID": "SPDXRef-Package-leak-tracker-flutter-testing",
+      "versionInfo": "3.0.10",
+      "downloadLocation": "https://pub.dev/packages/leak_tracker_flutter_testing/versions/3.0.10",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "leak_tracker_testing",
+      "SPDXID": "SPDXRef-Package-leak-tracker-testing",
+      "versionInfo": "3.0.2",
+      "downloadLocation": "https://pub.dev/packages/leak_tracker_testing/versions/3.0.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "logging",
+      "SPDXID": "SPDXRef-Package-logging",
+      "versionInfo": "1.3.0",
+      "downloadLocation": "https://pub.dev/packages/logging/versions/1.3.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "matcher",
+      "SPDXID": "SPDXRef-Package-matcher",
+      "versionInfo": "0.12.20",
+      "downloadLocation": "https://pub.dev/packages/matcher/versions/0.12.20",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "material_color_utilities",
+      "SPDXID": "SPDXRef-Package-material-color-utilities",
+      "versionInfo": "0.13.0",
+      "downloadLocation": "https://pub.dev/packages/material_color_utilities/versions/0.13.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "meta",
+      "SPDXID": "SPDXRef-Package-meta",
+      "versionInfo": "1.19.0",
+      "downloadLocation": "https://pub.dev/packages/meta/versions/1.19.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "mime",
+      "SPDXID": "SPDXRef-Package-mime",
+      "versionInfo": "2.0.0",
+      "downloadLocation": "https://pub.dev/packages/mime/versions/2.0.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "node_preamble",
+      "SPDXID": "SPDXRef-Package-node-preamble",
+      "versionInfo": "2.0.2",
+      "downloadLocation": "https://pub.dev/packages/node_preamble/versions/2.0.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "objectbox",
+      "SPDXID": "SPDXRef-Package-objectbox",
+      "versionInfo": "5.3.2",
+      "downloadLocation": "https://pub.dev/packages/objectbox/versions/5.3.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "objectbox_flutter_libs",
+      "SPDXID": "SPDXRef-Package-objectbox-flutter-libs",
+      "versionInfo": "5.3.2",
+      "downloadLocation": "https://pub.dev/packages/objectbox_flutter_libs/versions/5.3.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "objective_c",
+      "SPDXID": "SPDXRef-Package-objective-c",
+      "versionInfo": "9.6.0",
+      "downloadLocation": "https://pub.dev/packages/objective_c/versions/9.6.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "package_config",
+      "SPDXID": "SPDXRef-Package-package-config",
+      "versionInfo": "2.2.0",
+      "downloadLocation": "https://pub.dev/packages/package_config/versions/2.2.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "path",
+      "SPDXID": "SPDXRef-Package-path",
+      "versionInfo": "1.9.1",
+      "downloadLocation": "https://pub.dev/packages/path/versions/1.9.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "path_provider",
+      "SPDXID": "SPDXRef-Package-path-provider",
+      "versionInfo": "2.1.6",
+      "downloadLocation": "https://pub.dev/packages/path_provider/versions/2.1.6",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "path_provider_android",
+      "SPDXID": "SPDXRef-Package-path-provider-android",
+      "versionInfo": "2.3.1",
+      "downloadLocation": "https://pub.dev/packages/path_provider_android/versions/2.3.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "path_provider_foundation",
+      "SPDXID": "SPDXRef-Package-path-provider-foundation",
+      "versionInfo": "2.6.0",
+      "downloadLocation": "https://pub.dev/packages/path_provider_foundation/versions/2.6.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "path_provider_linux",
+      "SPDXID": "SPDXRef-Package-path-provider-linux",
+      "versionInfo": "2.2.2",
+      "downloadLocation": "https://pub.dev/packages/path_provider_linux/versions/2.2.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "path_provider_platform_interface",
+      "SPDXID": "SPDXRef-Package-path-provider-platform-interface",
+      "versionInfo": "2.1.3",
+      "downloadLocation": "https://pub.dev/packages/path_provider_platform_interface/versions/2.1.3",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "path_provider_windows",
+      "SPDXID": "SPDXRef-Package-path-provider-windows",
+      "versionInfo": "2.3.0",
+      "downloadLocation": "https://pub.dev/packages/path_provider_windows/versions/2.3.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "platform",
+      "SPDXID": "SPDXRef-Package-platform",
+      "versionInfo": "3.1.6",
+      "downloadLocation": "https://pub.dev/packages/platform/versions/3.1.6",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "plugin_platform_interface",
+      "SPDXID": "SPDXRef-Package-plugin-platform-interface",
+      "versionInfo": "2.1.8",
+      "downloadLocation": "https://pub.dev/packages/plugin_platform_interface/versions/2.1.8",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "pool",
+      "SPDXID": "SPDXRef-Package-pool",
+      "versionInfo": "1.5.2",
+      "downloadLocation": "https://pub.dev/packages/pool/versions/1.5.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "pub_semver",
+      "SPDXID": "SPDXRef-Package-pub-semver",
+      "versionInfo": "2.2.0",
+      "downloadLocation": "https://pub.dev/packages/pub_semver/versions/2.2.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "record_use",
+      "SPDXID": "SPDXRef-Package-record-use",
+      "versionInfo": "1.1.1",
+      "downloadLocation": "https://pub.dev/packages/record_use/versions/1.1.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "sentry",
+      "SPDXID": "SPDXRef-Package-sentry",
+      "versionInfo": "9.27.0",
+      "downloadLocation": "https://pub.dev/packages/sentry/versions/9.27.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "shelf",
+      "SPDXID": "SPDXRef-Package-shelf",
+      "versionInfo": "1.4.2",
+      "downloadLocation": "https://pub.dev/packages/shelf/versions/1.4.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "shelf_packages_handler",
+      "SPDXID": "SPDXRef-Package-shelf-packages-handler",
+      "versionInfo": "3.0.2",
+      "downloadLocation": "https://pub.dev/packages/shelf_packages_handler/versions/3.0.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "shelf_static",
+      "SPDXID": "SPDXRef-Package-shelf-static",
+      "versionInfo": "1.1.3",
+      "downloadLocation": "https://pub.dev/packages/shelf_static/versions/1.1.3",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "shelf_web_socket",
+      "SPDXID": "SPDXRef-Package-shelf-web-socket",
+      "versionInfo": "3.0.0",
+      "downloadLocation": "https://pub.dev/packages/shelf_web_socket/versions/3.0.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "sky_engine",
+      "SPDXID": "SPDXRef-Package-sky-engine",
+      "versionInfo": "0.0.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "source_map_stack_trace",
+      "SPDXID": "SPDXRef-Package-source-map-stack-trace",
+      "versionInfo": "2.1.2",
+      "downloadLocation": "https://pub.dev/packages/source_map_stack_trace/versions/2.1.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "source_maps",
+      "SPDXID": "SPDXRef-Package-source-maps",
+      "versionInfo": "0.10.14",
+      "downloadLocation": "https://pub.dev/packages/source_maps/versions/0.10.14",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "source_span",
+      "SPDXID": "SPDXRef-Package-source-span",
+      "versionInfo": "1.10.2",
+      "downloadLocation": "https://pub.dev/packages/source_span/versions/1.10.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "stack_trace",
+      "SPDXID": "SPDXRef-Package-stack-trace",
+      "versionInfo": "1.12.1",
+      "downloadLocation": "https://pub.dev/packages/stack_trace/versions/1.12.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "stream_channel",
+      "SPDXID": "SPDXRef-Package-stream-channel",
+      "versionInfo": "2.1.4",
+      "downloadLocation": "https://pub.dev/packages/stream_channel/versions/2.1.4",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "stream_transform",
+      "SPDXID": "SPDXRef-Package-stream-transform",
+      "versionInfo": "2.1.1",
+      "downloadLocation": "https://pub.dev/packages/stream_transform/versions/2.1.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "string_scanner",
+      "SPDXID": "SPDXRef-Package-string-scanner",
+      "versionInfo": "1.4.1",
+      "downloadLocation": "https://pub.dev/packages/string_scanner/versions/1.4.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "term_glyph",
+      "SPDXID": "SPDXRef-Package-term-glyph",
+      "versionInfo": "1.2.2",
+      "downloadLocation": "https://pub.dev/packages/term_glyph/versions/1.2.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "test",
+      "SPDXID": "SPDXRef-Package-test",
+      "versionInfo": "1.31.1",
+      "downloadLocation": "https://pub.dev/packages/test/versions/1.31.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "test_api",
+      "SPDXID": "SPDXRef-Package-test-api",
+      "versionInfo": "0.7.12",
+      "downloadLocation": "https://pub.dev/packages/test_api/versions/0.7.12",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "test_core",
+      "SPDXID": "SPDXRef-Package-test-core",
+      "versionInfo": "0.6.18",
+      "downloadLocation": "https://pub.dev/packages/test_core/versions/0.6.18",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "typed_data",
+      "SPDXID": "SPDXRef-Package-typed-data",
+      "versionInfo": "1.4.0",
+      "downloadLocation": "https://pub.dev/packages/typed_data/versions/1.4.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "uuid",
+      "SPDXID": "SPDXRef-Package-uuid",
+      "versionInfo": "4.6.0",
+      "downloadLocation": "https://pub.dev/packages/uuid/versions/4.6.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "vector_math",
+      "SPDXID": "SPDXRef-Package-vector-math",
+      "versionInfo": "2.4.2",
+      "downloadLocation": "https://pub.dev/packages/vector_math/versions/2.4.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "vm_service",
+      "SPDXID": "SPDXRef-Package-vm-service",
+      "versionInfo": "15.3.0",
+      "downloadLocation": "https://pub.dev/packages/vm_service/versions/15.3.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "watcher",
+      "SPDXID": "SPDXRef-Package-watcher",
+      "versionInfo": "1.2.1",
+      "downloadLocation": "https://pub.dev/packages/watcher/versions/1.2.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "web",
+      "SPDXID": "SPDXRef-Package-web",
+      "versionInfo": "1.1.1",
+      "downloadLocation": "https://pub.dev/packages/web/versions/1.1.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "web_socket",
+      "SPDXID": "SPDXRef-Package-web-socket",
+      "versionInfo": "1.0.1",
+      "downloadLocation": "https://pub.dev/packages/web_socket/versions/1.0.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "web_socket_channel",
+      "SPDXID": "SPDXRef-Package-web-socket-channel",
+      "versionInfo": "3.0.3",
+      "downloadLocation": "https://pub.dev/packages/web_socket_channel/versions/3.0.3",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "webkit_inspection_protocol",
+      "SPDXID": "SPDXRef-Package-webkit-inspection-protocol",
+      "versionInfo": "1.2.1",
+      "downloadLocation": "https://pub.dev/packages/webkit_inspection_protocol/versions/1.2.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "xdg_directories",
+      "SPDXID": "SPDXRef-Package-xdg-directories",
+      "versionInfo": "1.1.0",
+      "downloadLocation": "https://pub.dev/packages/xdg_directories/versions/1.1.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "yaml",
+      "SPDXID": "SPDXRef-Package-yaml",
+      "versionInfo": "3.1.3",
+      "downloadLocation": "https://pub.dev/packages/yaml/versions/3.1.3",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "yaml_edit",
+      "SPDXID": "SPDXRef-Package-yaml-edit",
+      "versionInfo": "2.2.4",
+      "downloadLocation": "https://pub.dev/packages/yaml_edit/versions/2.2.4",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-Package--fe-analyzer-shared",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analysis-server-plugin",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analyzer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analysis-server-plugin",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analyzer-plugin"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analysis-server-plugin",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analysis-server-plugin",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analysis-server-plugin",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analysis-server-plugin",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml-edit"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package--fe-analyzer-shared"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-convert"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-crypto"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-glob"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-package-config"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pub-semver"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-watcher"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer-plugin",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analyzer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer-plugin",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer-plugin",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dart-style"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer-plugin",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer-plugin",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pub-semver"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-analyzer-plugin",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-async",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-async",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boolean-selector",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boolean-selector",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-string-scanner"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-cli-config",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-args"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-cli-config",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-code-assets",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-code-assets",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-hooks"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-code-assets",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-logging"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-convert",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-typed-data"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-coverage",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-args"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-coverage",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-cli-config"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-coverage",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-glob"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-coverage",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-logging"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-coverage",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-coverage",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-package-config"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-coverage",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-coverage",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-maps"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-coverage",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stack-trace"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-coverage",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-vm-service"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-coverage",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-crypto",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-typed-data"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-mcp",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-mcp",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-mcp",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-json-rpc-2"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-mcp",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-mcp",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-mcp",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-transform"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-style",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analyzer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-style",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-args"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-style",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-style",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-package-config"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-style",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-style",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pub-semver"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-style",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dart-style",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-adapters-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-adapters-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-dio"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-adapters-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-adapters-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-media"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-adapters-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-objectbox"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-adapters-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-observability"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-adapters-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-privacy"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-adapters-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-sentry"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-adapters-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dio"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-adapters-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-adapters-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-adapters-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-sentry"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-cli",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analyzer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-cli",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-crypto"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-cli",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dart-style"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-cli",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-dio",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-dio",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-observability"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-dio",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dio"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-dio",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-flutter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-flutter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-flutter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-geometry",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-isolates",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-isolates",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-lints",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analysis-server-plugin"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-lints",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analyzer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-lints",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-locale-br",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-mcp",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dart-mcp"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-mcp",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-cli"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-mcp",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-mcp",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-media",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-media",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-media",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-model-generator-fixture",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-model-generator-fixture",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-objectbox",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-objectbox",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-objectbox",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-observability"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-objectbox",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-sync"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-objectbox",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-objectbox",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-objectbox",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-objectbox"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-objectbox",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-objectbox-flutter-libs"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-observability",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-observability",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-privacy",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-privacy",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-dio"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-isolates"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-objectbox"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-observability"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-sync"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dio"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-objectbox"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-objectbox-flutter-libs"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-sentry",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-observability"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-sentry",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-sentry"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-sentry",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-sync",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-sync",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-testing",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-testing",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-isolates"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-testing",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-observability"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-testing",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-sync"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-testing",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-workspace",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analyzer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-workspace",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-crypto"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-workspace",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dio",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dio",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dio",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dio-web-adapter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dio",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-http-parser"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dio",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dio",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-mime"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dio",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dio-web-adapter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dio"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dio-web-adapter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-http-parser"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dio-web-adapter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dio-web-adapter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-web"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-fake-async",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-clock"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-fake-async",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-file",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-file",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-characters"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-material-color-utilities"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-sky-engine"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-vector-math"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-clock"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-fake-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-leak-tracker-flutter-testing"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-matcher"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stack-trace"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test-api"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-vector-math"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-frontend-server-client",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-frontend-server-client",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-glob",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-glob",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-glob",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-glob",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-glob",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-string-scanner"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-hooks",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-hooks",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-crypto"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-hooks",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-logging"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-hooks",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pub-semver"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-hooks",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-record-use"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-hooks",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-http",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-http",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-http-parser"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-http",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-http",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-web"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-http-multi-server",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-http-parser",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-http-parser",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-http-parser",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-string-scanner"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-http-parser",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-typed-data"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-io",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-io",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-io",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-string-scanner"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-jni",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-args"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-jni",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-jni",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-ffi"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-jni",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-jni-util"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-jni",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-jni",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-package-config"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-jni",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-jni",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-plugin-platform-interface"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-jni-flutter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-jni-flutter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-jni"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-jni-util",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-json-rpc-2",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stack-trace"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-json-rpc-2",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-leak-tracker",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-clock"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-leak-tracker",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-leak-tracker",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-leak-tracker",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-leak-tracker",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-vm-service"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-leak-tracker-flutter-testing",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-leak-tracker-flutter-testing",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-leak-tracker"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-leak-tracker-flutter-testing",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-leak-tracker-testing"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-leak-tracker-flutter-testing",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-matcher"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-leak-tracker-flutter-testing",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-leak-tracker-testing",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-leak-tracker"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-leak-tracker-testing",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-matcher"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-leak-tracker-testing",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-matcher",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-matcher",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-matcher",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stack-trace"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-matcher",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-term-glyph"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-matcher",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test-api"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-material-color-utilities",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objectbox",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objectbox",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-ffi"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objectbox",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flat-buffers"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objectbox",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objectbox",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objectbox-flutter-libs",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objectbox-flutter-libs",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-objectbox"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objectbox-flutter-libs",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path-provider"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objective-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-code-assets"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objective-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objective-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-ffi"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objective-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-hooks"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objective-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-logging"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objective-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-objective-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pub-semver"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-package-config",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path-provider-android"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path-provider-foundation"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path-provider-linux"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path-provider-platform-interface"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path-provider-windows"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-android",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-android",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-jni"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-android",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-jni-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-android",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path-provider-platform-interface"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-foundation",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-ffi"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-foundation",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-foundation",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-objective-c"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-foundation",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path-provider-platform-interface"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-linux",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-ffi"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-linux",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-linux",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-linux",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path-provider-platform-interface"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-linux",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-xdg-directories"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-platform-interface",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-platform-interface",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-platform"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-platform-interface",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-plugin-platform-interface"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-windows",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-ffi"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-windows",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-windows",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-path-provider-windows",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path-provider-platform-interface"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-plugin-platform-interface",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-pool",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-pool",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stack-trace"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-pub-semver",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-record-use",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-record-use",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-record-use",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pub-semver"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sentry",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-http"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sentry",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sentry",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stack-trace"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sentry",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-uuid"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sentry",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-web"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-http-parser"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stack-trace"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf-packages-handler",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf-packages-handler",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-shelf"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf-packages-handler",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-shelf-static"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf-static",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-convert"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf-static",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-http-parser"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf-static",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-mime"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf-static",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf-static",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-shelf"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf-web-socket",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-shelf"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf-web-socket",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-shelf-web-socket",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-web-socket-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-map-stack-trace",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-map-stack-trace",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-maps"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-map-stack-trace",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stack-trace"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-maps",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-span",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-span",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-span",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-term-glyph"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-stack-trace",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-stream-channel",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-string-scanner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analyzer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-boolean-selector"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-coverage"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-http-multi-server"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-io"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-matcher"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-node-preamble"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-package-config"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pool"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-shelf"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-shelf-packages-handler"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-shelf-static"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-shelf-web-socket"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stack-trace"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test-api"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test-core"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-typed-data"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-web-socket-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-webkit-inspection-protocol"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-api",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-api",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-boolean-selector"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-api",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-api",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-api",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-api",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stack-trace"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-api",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-api",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-string-scanner"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-api",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-term-glyph"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analyzer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-args"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-boolean-selector"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-coverage"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-frontend-server-client"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-glob"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-io"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-package-config"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pool"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-map-stack-trace"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-maps"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stack-trace"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test-api"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-vm-service"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-test-core",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-typed-data",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-uuid",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-crypto"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-uuid",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-fixnum"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-watcher",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-watcher",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-web-socket",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-web"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-web-socket-channel",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-web-socket-channel",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-crypto"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-web-socket-channel",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-web-socket-channel",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-web"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-web-socket-channel",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-web-socket"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-webkit-inspection-protocol",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-logging"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-xdg-directories",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-xdg-directories",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-yaml",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-yaml",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-yaml",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-string-scanner"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-yaml-edit",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-yaml-edit",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-yaml-edit",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-yaml-edit",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    }
+  ]
+}

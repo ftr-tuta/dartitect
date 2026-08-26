@@ -1,0 +1,27 @@
+= ADR-0018: Typed concurrency for offline-first operations
+
+Status:: ACCEPTED
+
+Context:: Save, refresh, pagination, and search require different concurrency
+semantics. Treating cancellation, dropping, queue pressure, domain failure, and
+unexpected crashes as one error channel makes recovery ambiguous.
+
+Decision:: Command lanes declare `reject`, `join`, `drop`, bounded `sequential`,
+bounded `concurrent`, `restartLatest`, or keyed concurrency. Reject is the
+default; sequential queues at most 64 entries; concurrent and keyed execution
+default to four. Argument-bearing joins exist only inside the same typed keyed
+lane. Cancellation is a pure-Dart cooperative signal with explicit adapter
+bindings. Cancellation, drop, and rejection are typed control outcomes, not
+domain failures. Stale generations never publish. Unexpected exceptions stop
+the affected lane, are reported once, preserve their stack trace, and are
+re-thrown; retry after a crash is never automatic.
+
+Offline mutations use an application-owned atomic local-write/outbox callback,
+idempotency keys, at-least-once delivery, typed disposition and sync state.
+Queued and uncertain outcomes do not roll back automatically. A definitive
+rejection may use an explicit compensating local transaction.
+
+Consequences:: Call sites choose concurrency and recovery deliberately. The
+runtime can enforce bounds without depending on Flutter, Dio, ObjectBox, BLoC,
+Riverpod, Provider, or GetIt. Consumer repositories remain responsible for
+their schema, transactions, conflict policy, and transport semantics.

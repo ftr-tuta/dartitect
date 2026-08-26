@@ -1,0 +1,108 @@
+= Optional capability contracts
+
+The four capability packages are independent opt-in leaves. Foundation,
+runtime, observability, and tooling do not depend on them.
+
+== Frozen 1.0 boundary matrix
+
+[cols="2,2,3,2,3,3,3",options="header"]
+|===
+| Package | Platforms | Ownership and persistence | Logging | Supports | Excludes | Removal
+
+| +dartitect_privacy+
+| Flutter iOS; iOS 12 deployment, ATT at runtime on iOS 14+. Typed
+  +notSupported+ without channel calls elsewhere.
+| Owns request coordination; borrows Flutter registration and consumer UX;
+  persists nothing.
+| No logs. Status and user choice are never telemetry.
+| ATT status and explicit request.
+| Legal consent/compliance, analytics policy, SDK initialization, or usage
+  description generation.
+| Replace the injected service and remove registration/dependency. Remove the
+  usage description only when no other consumer needs it. No state migration.
+
+| +dartitect_media+
+| Android API 24+ and iOS 14+. Typed not-supported outcomes without channel
+  calls on desktop, Fuchsia, and web.
+| Owns channel/request coordination and one Android request-history bit;
+  borrows source path/file; a saved asset becomes platform/user-owned.
+| No logs. Paths, names, bytes, albums, native messages, and receipts are never
+  telemetry.
+| Status, explicit request, one image save, optional album, and owned metadata
+  cleanup.
+| Picker, video, editing, temporary-file management, desktop/web media, or
+  automatic permission request.
+| Await +clearOwnedState()+ while the Android plugin is present, replace the
+  service, then remove registration/dependency. Never revokes permission or
+  deletes source/gallery assets.
+
+| +dartitect_locale_br+
+| Dart VM, Flutter, and web.
+| Owns one immutable copied ASCII string; borrows/persists nothing.
+| No logs; CEP values are never telemetry.
+| Structural parse/format for the three documented CEP forms.
+| Existence/delivery/assignment, lookup, Correios integration, other documents,
+  or widgets.
+| Replace the value boundary and remove the dependency; no migration.
+
+| +dartitect_geometry+
+| Dart VM, Flutter, and web.
+| Owns immutable coordinate copies; borrows/persists nothing.
+| No logs; coordinates/results are never telemetry.
+| Finite Cartesian 2D geometry, validated polygon/holes, deterministic
+  polylabel, public tolerance and precision.
+| GIS, CRS, projection, geodesy, latitude/longitude semantics, antimeridian,
+  unit conversion, mutable geometry, or topology repair.
+| Replace the geometry adapter and remove the dependency; no migration.
+|===
+
+== Permission and native contracts
+
+Construction, composition, and status reads are prompt-free. Only an explicit
+consumer interaction calls +request()+ or +requestAccess()+. Unknown native
+status is rejected with stable +invalid_status+ and no retained native payload.
+
+[cols="2,3,4",options="header"]
+|===
+| Media host | Authorization | Save
+
+| Android API 24--28
+| Legacy write permission is declared/requested; the plugin-owned history bit
+  distinguishes initial +notDetermined+ from +denied+.
+| Copies one readable image into MediaStore, removes partial insertion on
+  failure, and completes on the main thread.
+
+| Android API 29+
+| Legacy write permission is neither declared nor requested; MediaStore
+  insertion status is +authorized+.
+| Uses scoped MediaStore pending publication and leaves the source untouched.
+
+| iOS 14+
+| Photos +.readWrite+ is frozen because optional album lookup/creation requires
+  library access; +.limited+ is preserved.
+| Requires +.authorized+; limited is a typed failure; the Photos transaction
+  creates one asset/optional album association and completes on the main thread.
+
+| Other/web
+| +notSupported+ without channel calls.
+| +GalleryNativeFailure('not_supported')+ without channel calls.
+|===
+
++saveImage+ reads status but never requests permission. Native failures are
+mapped to payload-free stable types. +clearOwnedState()+ removes only the
+Android +legacy_write_requested+ preference and is used for package removal,
+not routine disposal. +cleanup_failed+ blocks removal and must be retried; zero
+residue cannot be claimed after that error.
+
+== Pure-Dart contracts
+
++BrazilianPostalCode+ accepts eight ASCII digits or the two documented masks,
+trims outer whitespace, and makes no existence, assignment, or delivery claim.
+
+Geometry uses finite planar input units. Polygon construction copies and
+freezes rings and rejects invalid topology. +defaultGeometryTolerance+ is the
+public absolute +1e-12+ bound. Precision is finite, positive, expressed in input
+units, and bounds remaining improvement. Equal inputs are deterministic.
+
+Native floor/current builds and real-device lifecycle/permission validation
+remain the separate V1S-13 hardening gate.

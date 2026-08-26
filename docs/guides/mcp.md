@@ -1,0 +1,113 @@
+# Local MCP server
+
+[Português (Brasil)](mcp.pt-BR.md)
+
+## Scope
+
+`dartitect_mcp 1.0.0-rc.1` is local and STDIO-only. It uses
+`dart_mcp 0.5.2`. Streamable HTTP, OAuth/authorization, remote ChatGPT plugins,
+MCP UI, arbitrary shell/files, scaffolding `create`, and access to running
+applications are out of scope.
+
+## Read-only setup
+
+The candidate is not on pub.dev. Declare
+`dartitect_mcp: 1.0.0-rc.1` under `dev_dependencies`, apply the complete Git
+override closure from the [candidate consumption guide](git-candidate-consumption.md),
+then run `dart run dartitect_mcp:dartitect_mcp --root .`.
+
+Stdout is reserved for newline-delimited JSON-RPC. Internal diagnostics use
+stderr. The process accepts repeated `--root` arguments; all must already exist.
+
+## Codex
+
+```console
+codex mcp add dartitect -- dart run dartitect_mcp:dartitect_mcp --root .
+codex mcp list
+```
+
+Or save project-scoped `.codex/config.toml` in a trusted project:
+
+```toml
+[mcp_servers.dartitect]
+command = "dart"
+args = ["run", "dartitect_mcp:dartitect_mcp", "--root", "."]
+default_tools_approval_mode = "writes"
+startup_timeout_sec = 20
+tool_timeout_sec = 120
+```
+
+`writes` prompts for a tool not marked read-only. Inspection and preview tools
+are annotated read-only; `dartitect_apply_change` is mutable/destructive. Server
+instructions summarize the workflow and restrictions for the client.
+
+## Generic clients
+
+Configure a local MCP client supporting STDIO and protocol 2025-06-18 or later:
+
+- command: `dart`;
+- arguments: `run`, `dartitect_mcp:dartitect_mcp`, `--root`, `.`;
+- environment: no token, DSN, password, or credential;
+- approval: require user approval for `dartitect_apply_change`.
+
+The server returns `structuredContent` and a compatible textual JSON content
+block for every tool result.
+
+## Read tools and resources
+
+Inspect, scan, doctor, finding explanation, adoption planning, and all previews
+are read-only. Scan accepts baseline selection plus bounded `offset`/`limit`.
+Deep doctor is opt-in and time-bounded.
+
+Resources are generated from maintained project sources:
+
+- `dartitect://packages` and `dartitect://packages/{name}`;
+- `dartitect://diagnostics/{code}`;
+- `dartitect://guides/{slug}`;
+- `dartitect://config/v1`.
+
+There is no free-form file resource.
+The guide catalog includes the ecosystem selection matrix and implementation
+recipes. Use the managed `$dartitect-mcp` skill for MCP configuration and
+protocol work; use `$dartitect-tooling` and the CLI directly for scripts or CI.
+
+## Opt-in writes
+
+Add `--allow-writes` to the server arguments only when reviewed local writes
+are required. This flag alone is insufficient. Apply requires all of:
+
+1. server write opt-in;
+2. a prior read-only preview;
+3. an opaque plan ID that is unexpired and unused;
+4. `confirmed: true` after the user reviews operations and preview;
+5. client MCP approval;
+6. complete state/operation revalidation;
+7. in-process serialization and an exclusive filesystem lock.
+
+Plans expire after ten minutes by default and are single-use even after a failed
+attempt. Expiry, replay, concurrency, stale state, lock, permission, and I/O
+failures return structured errors without disclosing absolute paths.
+
+## Root and data security
+
+Tool paths are relative. Absolute paths, traversal, empty segments, unauthorized
+root names, missing projects, and symlinks escaping a configured canonical root
+are rejected. The filesystem root itself cannot be authorized. The server
+never returns absolute paths, credentials, bodies,
+headers, DSNs, environment values, or unsanitized internal errors.
+
+## Troubleshooting
+
+- `writes_disabled`: restart with `--allow-writes` only if mutation is intended.
+- `plan_expired`, `plan_replayed`, or `stale_plan`: create and review a new preview.
+- `filesystem_locked`: wait for the other local change to finish.
+- `root_*` or path errors: use a configured root name and relative project path.
+- startup timeout: run the command directly and inspect stderr; do not add
+  secrets to debug configuration.
+
+## References
+
+Transport and protocol capabilities follow
+[`dart_mcp 0.5.2`](https://pub.dev/packages/dart_mcp/versions/0.5.2). Codex
+registration, TOML fields, instructions, and approval behavior follow the
+[official OpenAI MCP documentation](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).

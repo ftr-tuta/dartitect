@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "goal": "V1S-11",
+  "deterministicSuites": [
+    {
+      "name": "value-equality-properties",
+      "file": "packages/dartitect/test/value_equality_property_test.dart",
+      "seed": 11001,
+      "minimumCases": 1000,
+      "requiredMarkers": ["reflexivity", "symmetry", "transitivity", "equal hash"]
+    },
+    {
+      "name": "geometry-polygon-fuzz",
+      "file": "packages/dartitect_geometry/test/polylabel_fuzz_test.dart",
+      "seed": 11002,
+      "minimumCases": 256,
+      "requiredMarkers": ["hole", "translat", "self-intersection", "outside hole"]
+    },
+    {
+      "name": "brazilian-postal-code-fuzz",
+      "file": "packages/dartitect_locale_br/test/brazilian_postal_code_fuzz_test.dart",
+      "seed": 11003,
+      "minimumCases": 10000,
+      "requiredMarkers": ["round-trips", "Unicode", "fails closed"]
+    }
+  ],
+  "generator": {
+    "evidenceFiles": [
+      "packages/dartitect_cli/test/model_generator_test.dart",
+      "packages/dartitect_cli/test/generation_engine_test.dart"
+    ],
+    "requiredMarkers": [
+      "typed copyWith",
+      "annotation identity",
+      "homonymous annotation",
+      "unrelated parts",
+      "malformed libraries",
+      "missing and corrupt manifests",
+      "symlink traversal",
+      "CRLF",
+      "consumer edit",
+      "fault matrix",
+      "unsupported manifest schema",
+      "journal v2",
+      "unsupported journal schema"
+    ]
+  },
+  "ecosystem": {
+    "evidenceFile": "packages/dartitect_cli/test/ecosystem_policy_test.dart",
+    "requiredMarkers": [
+      "every direct owner",
+      "every owner",
+      "expired",
+      "absolute",
+      "traversal",
+      "global overlay"
+    ]
+  },
+  "compatibility": {
+    "manifestAcceptedSchemas": [1],
+    "manifestRejectedSchemas": [0, 2],
+    "journalAcceptedSchemas": [2],
+    "journalRejectedSchemas": [1, 3]
+  },
+  "performance": {
+    "artifact": "tool/model_benchmark.json",
+    "budget": "tool/model_benchmark_budget.json",
+    "checker": "tool/check_model_benchmark.dart",
+    "modelCounts": [100, 500],
+    "commands": ["sync", "check"],
+    "minimumRuns": 5
+  },
+  "requiredWebPackages": [
+    "dartitect",
+    "dartitect_geometry",
+    "dartitect_locale_br"
+  ]
+}

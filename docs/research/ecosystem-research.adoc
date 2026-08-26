@@ -1,0 +1,36 @@
+= Ecosystem research decisions
+
+The public source ledger and dependency policy retain the reviewed comparative
+evidence. Implementation applied the following classifications:
+
+[cols="2,2,3",options="header"]
+|===
+| Area | Classification | Applied lesson
+
+| Provider/Riverpod/GetIt/Modular/Stacked/Elementary
+| REFERENCE / REJECT DEPENDENCY
+| Distinguish owned create from borrowed value; keep graph visible.
+
+| command_it / Flutter Command guide
+| REFERENCE / IMPLEMENT NATIVELY
+| Explicit rejection, stack preservation, stale completion guard.
+
+| Mason and CLI frameworks
+| REFERENCE / IMPLEMENT NATIVELY
+| In-memory operation plan, conflicts, dry-run, staging, rollback.
+
+| Melos
+| REJECT
+| Pub Workspace plus `tool/verify.dart` is sufficient.
+
+| custom_lint and third-party architecture linters
+| REJECT
+| Official analysis-server plugin plus scanner fallback.
+
+| Dio and ObjectBox
+| APPROVED ADAPTER EXCEPTIONS
+| Expose real types and isolate dependencies from core/templates.
+|===
+
+No implementation source was copied. Licenses and current versions are tracked
+in the source ledger and dependency policy.

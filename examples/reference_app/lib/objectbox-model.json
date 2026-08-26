@@ -1,0 +1,71 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model.",
+  "entities": [
+    {
+      "id": "1:731904221560000001",
+      "lastPropertyId": "5:731904221560000105",
+      "name": "TaskRecord",
+      "properties": [
+        {"id": "1:731904221560000101", "name": "id", "type": 6, "flags": 129},
+        {"id": "2:731904221560000102", "name": "title", "type": 9},
+        {"id": "3:731904221560000103", "name": "completed", "type": 1},
+        {"id": "4:731904221560000104", "name": "version", "type": 6},
+        {"id": "5:731904221560000105", "name": "syncState", "type": 9}
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:731904221560000002",
+      "lastPropertyId": "6:731904221560000206",
+      "name": "OutboxRecord",
+      "properties": [
+        {"id": "1:731904221560000201", "name": "id", "type": 6, "flags": 1},
+        {"id": "2:731904221560000202", "name": "idempotencyKey", "type": 9},
+        {"id": "3:731904221560000203", "name": "taskId", "type": 6},
+        {"id": "4:731904221560000204", "name": "completed", "type": 1},
+        {"id": "5:731904221560000205", "name": "attempt", "type": 6},
+        {"id": "6:731904221560000206", "name": "syncState", "type": 9}
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:731904221560000003",
+      "lastPropertyId": "7:731904221560000307",
+      "name": "SyncJournalRecord",
+      "properties": [
+        {"id": "1:731904221560000301", "name": "id", "type": 6, "flags": 1},
+        {"id": "2:731904221560000302", "name": "attemptId", "type": 9},
+        {"id": "3:731904221560000303", "name": "sequence", "type": 6},
+        {"id": "4:731904221560000304", "name": "timestampMicros", "type": 6},
+        {"id": "5:731904221560000305", "name": "fact", "type": 9},
+        {"id": "6:731904221560000306", "name": "datasetKey", "type": 9},
+        {"id": "7:731904221560000307", "name": "hasDatasetKey", "type": 1}
+      ],
+      "relations": []
+    },
+    {
+      "id": "4:731904221560000004",
+      "lastPropertyId": "4:731904221560000404",
+      "name": "SyncCheckpointRecord",
+      "properties": [
+        {"id": "1:731904221560000401", "name": "id", "type": 6, "flags": 1},
+        {"id": "2:731904221560000402", "name": "datasetKey", "type": 9},
+        {"id": "3:731904221560000403", "name": "checkpoint", "type": 6},
+        {"id": "4:731904221560000404", "name": "fencingToken", "type": 6}
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "4:731904221560000004",
+  "lastIndexId": "0:0",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

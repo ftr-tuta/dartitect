@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "skills": {
+    "dartitect-design": [
+      "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart",
+      "packages/dartitect_isolates/lib/dartitect_isolates.dart",
+      "packages/dartitect_observability/lib/dartitect_observability.dart",
+      "packages/dartitect_dio/lib/dartitect_dio.dart",
+      "packages/dartitect_objectbox/lib/dartitect_objectbox.dart",
+      "packages/dartitect_sentry/lib/dartitect_sentry.dart",
+      "packages/dartitect_testing/lib/dartitect_testing.dart",
+      "packages/dartitect_cli/lib/dartitect_cli.dart",
+      "packages/dartitect_lints/lib/main.dart",
+      "packages/dartitect_locale_br/lib/dartitect_locale_br.dart",
+      "packages/dartitect_geometry/lib/dartitect_geometry.dart",
+      "packages/dartitect_privacy/lib/dartitect_privacy.dart",
+      "packages/dartitect_media/lib/dartitect_media.dart",
+      "packages/dartitect_mcp/lib/dartitect_mcp.dart",
+      "tool/setup_objectbox_vm.dart"
+    ],
+    "dartitect-adopt": [
+      "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart",
+      "packages/dartitect_isolates/lib/dartitect_isolates.dart",
+      "packages/dartitect_observability/lib/dartitect_observability.dart",
+      "packages/dartitect_dio/lib/dartitect_dio.dart",
+      "packages/dartitect_objectbox/lib/dartitect_objectbox.dart",
+      "packages/dartitect_sentry/lib/dartitect_sentry.dart",
+      "packages/dartitect_testing/lib/dartitect_testing.dart",
+      "packages/dartitect_cli/lib/dartitect_cli.dart",
+      "packages/dartitect_lints/lib/main.dart",
+      "packages/dartitect_mcp/lib/dartitect_mcp.dart"
+    ],
+    "dartitect-runtime": [
+      "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter.dart"
+    ],
+    "dartitect-reactive": [
+      "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart"
+    ],
+    "dartitect-offline-first": [
+      "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart",
+      "packages/dartitect_isolates/lib/dartitect_isolates.dart",
+      "packages/dartitect_dio/lib/dartitect_dio.dart",
+      "packages/dartitect_objectbox/lib/dartitect_objectbox.dart"
+    ],
+    "dartitect-observability": [
+      "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect_observability/lib/dartitect_observability.dart",
+      "packages/dartitect_sentry/lib/dartitect_sentry.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter.dart"
+    ],
+    "dartitect-adapters": [
+      "packages/dartitect_dio/lib/dartitect_dio.dart",
+      "packages/dartitect_media/lib/dartitect_media.dart",
+      "packages/dartitect_objectbox/lib/dartitect_objectbox.dart",
+      "packages/dartitect_privacy/lib/dartitect_privacy.dart",
+      "packages/dartitect_sentry/lib/dartitect_sentry.dart"
+    ],
+    "dartitect-modeling": [
+      "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect_cli/lib/dartitect_cli.dart"
+    ],
+    "dartitect-testing": [
+      "packages/dartitect_testing/lib/dartitect_testing.dart",
+      "packages/dartitect_isolates/lib/dartitect_isolates.dart",
+      "packages/dartitect_sync/lib/dartitect_sync.dart"
+    ],
+    "dartitect-tooling": [
+      "packages/dartitect_cli/lib/dartitect_cli.dart",
+      "packages/dartitect_lints/lib/main.dart",
+      "tool/setup_objectbox_vm.dart"
+    ],
+    "dartitect-mcp": [
+      "packages/dartitect_mcp/lib/dartitect_mcp.dart"
+    ]
+  },
+  "routingScenarios": {
+    "greenfield": ["dartitect-design"],
+    "brownfield": ["dartitect-adopt"],
+    "simpleFlutterRuntime": ["dartitect-runtime"],
+    "reactiveRuntime": ["dartitect-reactive"],
+    "offlineOutbox": ["dartitect-offline-first"],
+    "providerAdapters": ["dartitect-adapters"],
+    "telemetry": ["dartitect-observability"],
+    "testing": ["dartitect-testing"],
+    "cliAndLints": ["dartitect-tooling"],
+    "localMcp": ["dartitect-mcp"],
+    "immutableModels": ["dartitect-modeling"]
+  }
+}

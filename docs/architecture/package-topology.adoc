@@ -1,0 +1,74 @@
+= Stable v1 package topology
+
+[source,text]
+----
+dartitect
+├── dartitect_sync
+├── dartitect_isolates
+├── dartitect_flutter
+├── dartitect_observability
+│   ├── dartitect_dio
+│   └── dartitect_sentry
+├── dartitect_objectbox (+ flutter, observability, sync)
+├── dartitect_media
+└── dartitect_testing (+ observability, sync)
+
+dartitect_privacy
+dartitect_locale_br
+dartitect_geometry
+
+dartitect_cli
+└── dartitect_mcp
+
+dartitect_lints
+----
+
+The arrows represent internal runtime dependencies from the child to the
+ancestor/additions. +tool/check_package_topology.dart+ checks the exact
+allowlist, rejects cycles, and proves that core has no package imports while
+sync imports only core.
+
+Public runtime entrypoints:
+
+* +package:dartitect/dartitect.dart+
+* +package:dartitect_sync/dartitect_sync.dart+
+* +package:dartitect_isolates/dartitect_isolates.dart+
+* +package:dartitect_flutter/dartitect_flutter.dart+
+* +package:dartitect_flutter/dartitect_flutter_reactive.dart+
+* one same-named entrypoint for observability, Dio, ObjectBox, Sentry, testing,
+  privacy, media, locale BR, geometry, CLI, lints, and MCP.
+
+There is no umbrella or Material entrypoint. Applications render headless
+reactive state with their own Material, Cupertino, or design-system widgets.
+MCP is retained only for local host tooling and never becomes an application
+dependency.
+
+== Dependency direction
+
+View -> ViewModel -> application/domain contract -> infrastructure
+implementation. Only explicit composition roots see the complete graph.
+Generated entities/DTOs, provider clients, Stores, credentials, telemetry
+destinations, conflict policy, schema, and UI effects remain consumer-owned.
+Every isolate constructs a new graph and transfers values/envelopes only.
+
+== Platform boundaries
+
+Core, sync, isolates, observability, locale BR, and geometry are pure Dart.
+Flutter APIs stay in +dartitect_flutter+; privacy is iOS-only and media supports
+Android/iOS through narrow platform channels. ObjectBox is native-only and
+keeps its Store local to one isolate. CLI, lints, and MCP are host tools. Dio
+and Sentry are opt-in adapters.
+
+The machine inventory in +tool/sdk_inventory.json+ records each reviewed
+package, version, internal dependency, entrypoint, public-symbol count, and
+keep/add/remove decision.
+
+== Publication layers
+
+The dependency DAG is also the release order. Independent roots (+dartitect+,
++dartitect_cli+, geometry, lints, locale BR, and privacy) publish first. Direct
+dependents plus MCP publish second. Dio, ObjectBox, Sentry, and testing publish
+last after every internal dependency is available. The exact deterministic
+order and lockstep constraint are checked from
++tool/package_release_contract.json+; directory/alphabetical order is not a
+publication contract.

@@ -1,0 +1,39 @@
+= Reference application requirements
+
+Evidence source:: generalized Dartitect lifecycle and ownership contract.
+
+[cols="2,3,3",options="header"]
+|===
+| Boundary | Generalized requirement | Dartitect evidence
+
+| Application
+| One explicit foreground graph with idempotent shutdown.
+| `ResourceOwner`, composition guide, reference app.
+
+| Session/tenant
+| Stop new work, drain observations, close HTTP/database, then publish swap.
+| LIFO owner and session recipe.
+
+| Route
+| Create/start/dispose a ViewModel without rebuilding the entire route.
+| `ViewModelHost.create`; borrowed counterpart is `.value`.
+
+| Async actions
+| Reject double execution and ignore publication after teardown.
+| `Command0` state/outcome tests.
+
+| Background
+| New graph per isolate; serializable input; dispose in `finally`.
+| Composition guide recipe.
+
+| ObjectBox
+| Observations and timers close before Store; temporary paths are owned.
+| `ObjectBoxObservationOwner` and `ObjectBoxStoreOwner`.
+
+| Dio
+| Owned/borrowed client, deterministic interceptors, cooperative cancellation.
+| `DioOwner`, header/telemetry interceptors, owned CancelToken.
+|===
+
+The fixture uses synthetic entities, endpoints, state transitions, and labels;
+it is not a copy of a consumer application.

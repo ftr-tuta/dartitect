@@ -1,0 +1,3 @@
+plugins:
+  dartitect_lints:
+    path: ../../packages/dartitect_lints

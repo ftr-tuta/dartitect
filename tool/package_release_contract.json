@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "series": "1.0.x",
+  "cohortVersion": "1.0.0-rc.1",
+  "internalConstraint": ">=1.0.0-rc.1 <1.0.0",
+  "publicationLayers": [
+    [
+      "dartitect",
+      "dartitect_cli",
+      "dartitect_geometry",
+      "dartitect_lints",
+      "dartitect_locale_br",
+      "dartitect_privacy"
+    ],
+    [
+      "dartitect_flutter",
+      "dartitect_isolates",
+      "dartitect_mcp",
+      "dartitect_media",
+      "dartitect_observability",
+      "dartitect_sync"
+    ],
+    [
+      "dartitect_dio",
+      "dartitect_objectbox",
+      "dartitect_sentry",
+      "dartitect_testing"
+    ]
+  ],
+  "publicationOrder": [
+    "dartitect",
+    "dartitect_cli",
+    "dartitect_geometry",
+    "dartitect_lints",
+    "dartitect_locale_br",
+    "dartitect_privacy",
+    "dartitect_flutter",
+    "dartitect_isolates",
+    "dartitect_mcp",
+    "dartitect_media",
+    "dartitect_observability",
+    "dartitect_sync",
+    "dartitect_dio",
+    "dartitect_objectbox",
+    "dartitect_sentry",
+    "dartitect_testing"
+  ],
+  "artifactContract": {
+    "cleanClone": true,
+    "exactSourceSha": true,
+    "trackedTreeClean": true,
+    "pathDependencies": false,
+    "dependencyOverrides": false,
+    "digestAlgorithm": "sha256"
+  },
+  "gitCandidate": {
+    "repository": "https://github.com/ftr-tuta/dartitect.git",
+    "tag": "v1.0.0-rc.1",
+    "annotated": true,
+    "signed": false,
+    "protected": true,
+    "transitiveOverrides": true,
+    "localPathDependencies": false,
+    "pubDevPublication": false
+  },
+  "partialFailurePolicy": {
+    "automaticRetry": false,
+    "overwritePublishedVersion": false,
+    "resumeOnlyWithSameSourceAndDigests": true,
+    "changedArtifactRequiresNextCohort": true
+  }
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Dartitect Design"
+  short_description: "Choose the smallest Dartitect package set"
+  default_prompt: "Use $dartitect-design to select a minimal Dartitect architecture."
+policy:
+  allow_implicit_invocation: true

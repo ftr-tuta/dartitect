@@ -1,0 +1,14 @@
+= ADR-0001: Native-first and complexity budget
+
+Status:: ACCEPTED
+Date:: 2026-08-22
+
+Context:: Architecture frameworks would own dependency injection, state, and
+lifecycle across every consumer.
+
+Decision:: Prefer Dart/Flutter SDK primitives. Add a public abstraction only
+for a repeated consumer need or a proven transversal safety risk, and only
+when the abstraction remains smaller than the boilerplate removed.
+
+Consequences:: Core and CLI have no external runtime dependencies. Features
+that exceed the budget are reduced or deferred instead of adding a framework.

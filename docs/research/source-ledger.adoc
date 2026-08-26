@@ -1,0 +1,59 @@
+= Dartitect source ledger
+:toc:
+
+Snapshot date:: 2026-08-25 UTC
+Evidence scope:: Dartitect workspace dependencies, SDK contracts, and public upstream sources
+Toolchain observed:: Dart 3.13.1, Flutter 3.47.1
+
+[cols="2,2,3,2,2",options="header"]
+|===
+| Subject | Version | Primary source | Verified | Status
+
+| Dart | 3.13.1 | https://dart.dev/guides/language/evolution[Language evolution] | 2026-08-22 | VERIFIED
+| Flutter | 3.47.1 | https://docs.flutter.dev/release/release-notes[Release notes] | 2026-08-22 | VERIFIED
+| Pub Workspaces | Dart 3.13 | https://dart.dev/tools/pub/workspaces[Pub workspaces] | 2026-08-22 | VERIFIED
+| Flutter lifecycle | 3.47 line | https://api.flutter.dev/flutter/widgets/State-class.html[State] | 2026-08-22 | VERIFIED
+| Flutter ChangeNotifier | 3.47 line | https://api.flutter.dev/flutter/foundation/ChangeNotifier-class.html[API] | 2026-08-23 | VERIFIED; add O(1), remove/dispatch O(N)
+| flutter_riverpod comparator | 3.4.2 | https://pub.dev/packages/flutter_riverpod/versions[pub.dev] | 2026-08-23 | VERIFIED; benchmark tooling only
+| flutter_bloc comparator | 9.1.1 | https://pub.dev/packages/flutter_bloc/versions[pub.dev] | 2026-08-23 | VERIFIED; benchmark tooling only
+| bloc_concurrency comparator | 0.3.0 | https://pub.dev/packages/bloc_concurrency/versions[pub.dev] | 2026-08-23 | VERIFIED; benchmark tooling only
+| analysis_server_plugin | 0.3.18 compatibility pin | https://pub.dev/packages/analysis_server_plugin[pub.dev] | 2026-08-22 | VERIFIED
+| analysis_server_plugin candidate | 0.3.20 | https://pub.dev/packages/analysis_server_plugin/versions/0.3.20[pub.dev] | 2026-08-22 | DEFER: Analyzer 14.1 conflicts with Flutter test pins
+| Dio | 5.11.0 | https://pub.dev/packages/dio/versions/5.11.0[pub.dev] | 2026-08-22 | VERIFIED
+| Dio CancelToken | 5.11.0 | https://pub.dev/documentation/dio/latest/dio/CancelToken-class.html[API] | 2026-08-23 | VERIFIED; shared token cancels every bound request
+| ObjectBox | 5.3.2 | https://pub.dev/packages/objectbox/versions/5.3.2[pub.dev] | 2026-08-22 | VERIFIED; no web claim
+| ObjectBox Query | 5.3.2 | https://pub.dev/documentation/objectbox/latest/objectbox/Query-class.html[API] | 2026-08-23 | VERIFIED; findAsync worker isolate and explicit close
+| ObjectBox Store isolate APIs | 5.3.2 | https://pub.dev/documentation/objectbox/latest/objectbox/Store-class.html[API] | 2026-08-23 | VERIFIED; runAsync/reference/fromReference remain available
+| ObjectBox Flutter libs | 5.3.2 | https://pub.dev/packages/objectbox_flutter_libs/versions/5.3.2[pub.dev] | 2026-08-22 | VERIFIED
+| ObjectBox C native library | 5.3.2 | https://github.com/objectbox/objectbox-c/releases/tag/v5.3.2[GitHub release] | 2026-08-22 | VERIFIED; pinned fixture download
+| crypto | 3.0.7 | https://pub.dev/packages/crypto/versions/3.0.7[pub.dev] | 2026-08-22 | VERIFIED; direct dev-only SHA-256 implementation
+| Sentry Dart | 9.27.0 | https://pub.dev/packages/sentry/versions/9.27.0[pub.dev] | 2026-08-22 | VERIFIED; consumer-owned Hub
+| GitHub Actions checkout | 7.0.1 | https://github.com/actions/checkout/releases/tag/v7.0.1[GitHub release] | 2026-08-22 | VERIFIED; full commit SHA pinned
+| Flutter Action | 2.23.0 | https://github.com/subosito/flutter-action/releases/tag/v2.23.0[GitHub release] | 2026-08-22 | VERIFIED; full commit SHA pinned
+| OSV Scanner Action | 2.5.1 | https://github.com/google/osv-scanner-action/releases/tag/v2.5.1[GitHub release] | 2026-08-22 | VERIFIED; reusable workflow pinned by full commit SHA
+| Codex skills format | 2026-08-22 docs | https://learn.chatgpt.com/docs/build-skills[OpenAI Build skills] | 2026-08-22 | VERIFIED
+| dart_mcp | 0.5.2 | https://pub.dev/packages/dart_mcp/versions/0.5.2[pub.dev] | 2026-08-22 | VERIFIED; experimental STDIO/tools/resources surface
+| Codex MCP | 2026-08-22 docs | https://learn.chatgpt.com/docs/extend/mcp?surface=cli[OpenAI MCP for Codex] | 2026-08-22 | VERIFIED; STDIO configuration and write approvals
+|===
+
+The native fixture accepts only these ObjectBox C 5.3.2 release artifacts and
+verifies the complete archive before extraction:
+
+* `objectbox-linux-x64.tar.gz` — `6dbb5450c36dd11ee9074f16ecc61e79b45ff43c2082934601f3166b39c8a613`;
+* `objectbox-linux-aarch64.tar.gz` — `bdfbfbf4971057e11018ca6645697d8a40ebc7df56ccde63397cbb0e0609c0e8`;
+* `objectbox-windows-x64.zip` — `57d7db013bbb46efe415307c9f3baf7564bdc40818ee1f1c42046f4241403d63`;
+* `objectbox-macos-universal.zip` — `680c598573ede04b9762565d48d4e161ad286f786f159abb8da89353bfa1d0bc`.
+
+The Pub solver reproduced one divergence from the initial plan: plugin 0.3.20
+requires Analyzer 14.1, while Flutter 3.47.1's `flutter_test` pins a test graph
+whose Analyzer constraint is `<14`. The implementation pins 0.3.18/Analyzer
+13.3 instead of applying an unsafe dependency override.
+
+The Android adapters build also reports an upstream future-compatibility
+warning for `objectbox_flutter_libs` applying the Kotlin Gradle Plugin. It is a
+tracked maintenance risk, not hidden by the adapter. Its Linux CMake currently
+also uses the deprecated `FetchContent_Populate` API; the native build passes,
+but both warnings must be revalidated when raising Flutter/CMake constraints.
+
+Every entry must be revalidated when older than 90 days. An unavailable source
+is marked `UNVERIFIED`; its dependent adoption does not advance.

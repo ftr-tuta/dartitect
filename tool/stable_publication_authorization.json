@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "goal": "V1-18",
+  "state": "NOT_AUTHORIZED",
+  "authorizationId": null,
+  "candidateId": null,
+  "sourceSha": null,
+  "tag": null,
+  "channel": null,
+  "authorizedActions": [],
+  "recordedAt": null,
+  "reviewedBy": [],
+  "separateFromStableReadiness": true,
+  "separateFromCandidateValidation": true
+}

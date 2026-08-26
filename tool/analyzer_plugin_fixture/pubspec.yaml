@@ -1,0 +1,8 @@
+name: dartitect_analyzer_plugin_fixture
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  sentry: ^9.27.0

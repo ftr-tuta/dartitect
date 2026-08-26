@@ -1,0 +1,78 @@
+= Dartitect 1.0 Git candidate implementation status
+:toc:
+
+Snapshot:: 2026-08-26
+Release status:: *GIT RC CANDIDATE ASSEMBLED; FORMAL RELEASE NOT AUTHORIZED*
+Feature policy:: *FEATURE FREEZE*
+Toolchain target:: Dart 3.13.1 / Flutter 3.47.1 stable
+Target topology:: 16 packages / 17 public entrypoints
+
++tool/goal_gates.json+ is the machine-readable roadmap authority. The public
+tree contains one active roadmap and no discarded-history baseline. Exact root
+SHA, CI, Security, Git-consumption, and native receipts are external facts that
+cannot be embedded in their own root commit.
+
+[cols="1,2,5",options="header"]
+|===
+| Goals | State | Evidence
+
+| V1S-00–V1S-03
+| IMPLEMENTED_LOCAL
+| The fail-closed roadmap, privacy/consumer-neutrality policy, ecosystem ledger,
+generator recovery, media semantics, geometry tolerance, and public API guards
+are implemented for the sixteen-package topology.
+
+| V1S-04
+| EXTERNAL_REQUIRED
+| The recreated one-commit root must receive all required CI and Security
+checks. No pull-request history is manufactured for that root.
+
+| V1S-05–V1S-12
+| IMPLEMENTED_LOCAL
+| Lifecycle, command/reactive, model, capability, release, runtime, persistence,
+restart, race, and zero-residual contracts are implemented. Git override
+generation and three remote-tag canaries replace local-path or pub.dev
+resolution for this candidate.
+
+| V1S-13
+| EXTERNAL_REQUIRED
+| The fail-closed nine-cell Android/iOS matrix and portable device harness are
+implemented. One current Android emulator cell is locally runnable; the other
+eight platform/device cells remain explicitly pending and all receipts must be
+bound externally to the root candidate.
+
+| V1S-14
+| IN_PROGRESS
+| Code and the complete `1.0.0-rc.1` cohort are assembled. Changelogs expose a
+single RC section; API snapshot, SBOM, license/advisory inventories, Dartdoc,
+clean-clone audit, sixteen publish dry-runs, and generated builds are gates, not
+publication authorization.
+
+| V1S-15
+| IN_PROGRESS
+| Formal readiness and formal distribution authorization remain separate and
+fail closed. The protected, annotated, unsigned Git-consumption tag is outside
+those future signed/pub.dev channels and grants neither authorization.
+
+| V1S-16–V1S-17
+| IN_PROGRESS
+| Signed-bundle materialization, installed-byte validation, upgrade evidence,
+complete native evidence, and the stable-readiness decision remain future
+formal-channel work. No GitHub Release exists for the Git candidate.
+
+| V1-18
+| IN_PROGRESS
+| Stable promotion tooling remains fail closed. No stable SHA, signed stable
+tag, GitHub Release, or pub.dev publication is authorized.
+|===
+
+== Permanent invariants
+
+* constructor injection and explicit owned/borrowed lifetime;
+* local persistence remains presentation authority;
+* retry, auth, schema, transactions, compensation, and conflict policy remain
+  consumer-owned;
+* core stays dependency-free and optional capabilities stay isolated;
+* every isolate builds and tears down a fresh graph;
+* Git consumption, formal readiness, signed distribution, stable readiness,
+  and publication remain distinct decisions.

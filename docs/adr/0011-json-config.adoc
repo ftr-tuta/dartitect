@@ -1,0 +1,10 @@
+= ADR-0011: Versioned JSON configuration
+
+Status:: ACCEPTED
+
+Decision:: Store only configVersion, architecture profile, feature layout,
+domain policy, enabled adapters, and lint policy in `dartitect.json`. Validate
+types/enums with JSON Pointers and preserve unknown keys.
+
+Consequences:: Configuration is deterministic and requires no YAML parser. It
+cannot become a dependency-graph or expression DSL.

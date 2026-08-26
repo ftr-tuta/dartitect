@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "cohortVersion": "1.0.0-rc.1",
+  "artifactSource": "git-archive-exact-head",
+  "digestAlgorithm": "sha256",
+  "installation": {
+    "source": "ephemeral-hosted-repository",
+    "isolatedConsumerDirectories": true,
+    "sharedCacheRequiresDigestProof": true,
+    "monorepoPathResolution": false,
+    "dependencyOverrides": false
+  },
+  "gitInstallation": {
+    "repository": "https://github.com/ftr-tuta/dartitect.git",
+    "ref": "v1.0.0-rc.1",
+    "annotatedTagRequired": true,
+    "dependencyOverrides": true,
+    "transitiveClosureRequired": true,
+    "localPathResolution": false,
+    "hostedDartitectResolution": false
+  },
+  "canaries": [
+    {
+      "id": "minimal",
+      "source": "tool/canaries/minimal",
+      "pubspec": "tool/canaries/minimal/pubspec.yaml",
+      "requiredPackages": [
+        "dartitect",
+        "dartitect_cli",
+        "dartitect_flutter"
+      ],
+      "forbiddenPackages": [
+        "dartitect_geometry",
+        "dartitect_lints",
+        "dartitect_locale_br",
+        "dartitect_mcp",
+        "dartitect_media",
+        "dartitect_objectbox",
+        "dartitect_privacy",
+        "dartitect_sentry"
+      ],
+      "commands": [
+        "flutter pub get",
+        "dart run dartitect_cli:dartitect model sync --apply",
+        "dart run dartitect_cli:dartitect model check",
+        "flutter analyze",
+        "flutter test"
+      ],
+      "residualResourceCensus": 0
+    },
+    {
+      "id": "offline_first",
+      "source": "examples/reference_app",
+      "pubspec": "tool/canaries/offline_first/pubspec.yaml",
+      "requiredPackages": [
+        "dartitect",
+        "dartitect_dio",
+        "dartitect_flutter",
+        "dartitect_isolates",
+        "dartitect_objectbox",
+        "dartitect_observability",
+        "dartitect_sync"
+      ],
+      "forbiddenPackages": [],
+      "commands": [
+        "flutter pub get",
+        "flutter analyze",
+        "flutter test test/offline_first_session_test.dart test/widget_test.dart",
+        "DARTITECT_NATIVE_OBJECTBOX=1 flutter test test/native_objectbox_workload_test.dart"
+      ],
+      "residualResourceCensus": 0
+    },
+    {
+      "id": "native_capabilities",
+      "source": "tool/canaries/native_capabilities",
+      "pubspec": "tool/canaries/native_capabilities/pubspec.yaml",
+      "requiredPackages": [
+        "dartitect",
+        "dartitect_geometry",
+        "dartitect_locale_br",
+        "dartitect_media",
+        "dartitect_privacy"
+      ],
+      "forbiddenPackages": [
+        "dartitect_objectbox",
+        "dartitect_sentry"
+      ],
+      "commands": [
+        "flutter pub get",
+        "flutter analyze",
+        "flutter test"
+      ],
+      "residualResourceCensus": 0
+    }
+  ],
+  "deferredToV1S13": [
+    "physical Android floor/current device execution",
+    "physical iOS floor/current device execution",
+    "background/foreground and permission transitions on real devices",
+    "main-thread callback and native tree-cleanliness receipts"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "goal": "V1S-17",
+  "supportedChannel": "signed-bundle",
+  "toolingState": "PRE_VALIDATION_READY",
+  "requiresMaterializedArtifacts": true,
+  "remoteInstall": {
+    "provider": "github-release-download",
+    "monorepoPathResolution": false,
+    "dependencyOverrides": false,
+    "archiveDigestVerification": true
+  },
+  "requiredCanaries": ["minimal", "offline_first", "native_capabilities"],
+  "requiredNativeCells": 9,
+  "upgrade": {
+    "realRcToRc": true,
+    "twoCandidateBundlesWhenNoSecondRc": true,
+    "persistedStores": ["objectbox", "outbox", "journal", "checkpoint", "generator-manifest"]
+  },
+  "requiredResidualCensus": 0,
+  "stableDecision": {
+    "record": "tool/stable_readiness_decision.json",
+    "state": "READY_FOR_1_0",
+    "separateFromRcReadiness": true
+  }
+}

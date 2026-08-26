@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "goal": "V1S-13",
+  "harness": "tool/canaries/native_capabilities",
+  "android": {
+    "floorApi": 24,
+    "manifest": "packages/dartitect_media/android/src/main/AndroidManifest.xml",
+    "plugin": "packages/dartitect_media/android/src/main/java/dev/dartitect/media/DartitectMediaPlugin.java",
+    "requiredSourceMarkers": [
+      "android:maxSdkVersion=\"28\"",
+      "Build.VERSION_CODES.Q",
+      "legacy_write_requested",
+      "removeRequestPermissionsResultListener",
+      "mainHandler.post",
+      "MediaStore.Images.Media.IS_PENDING",
+      "getContentResolver().delete(inserted"
+    ]
+  },
+  "ios": {
+    "mediaFloor": "14.0",
+    "privacyFloor": "12.0",
+    "mediaPodspec": "packages/dartitect_media/ios/dartitect_media.podspec",
+    "privacyPodspec": "packages/dartitect_privacy/ios/dartitect_privacy.podspec",
+    "mediaPlugin": "packages/dartitect_media/ios/Classes/DartitectMediaPlugin.swift",
+    "privacyPlugin": "packages/dartitect_privacy/ios/Classes/DartitectPrivacyPlugin.swift",
+    "requiredSourceMarkers": [
+      "PHAccessLevel = .readWrite",
+      "case .limited",
+      "performChanges",
+      "DispatchQueue.main.async",
+      "ATTrackingManager.requestTrackingAuthorization"
+    ]
+  },
+  "requiredCells": [
+    {
+      "id": "android-media-floor-emulator",
+      "platform": "android",
+      "capability": "media",
+      "deviceKind": "emulator",
+      "floor": true,
+      "requiredScenarios": [
+        "initial-versus-denied",
+        "legacy-granted",
+        "legacy-denied",
+        "invalid-file",
+        "cancel-on-detach",
+        "main-thread-callback",
+        "rotation",
+        "background-foreground",
+        "cleanup-after-failure",
+        "tree-clean"
+      ]
+    },
+    {
+      "id": "android-media-current-emulator",
+      "platform": "android",
+      "capability": "media",
+      "deviceKind": "emulator",
+      "floor": false,
+      "requiredScenarios": [
+        "privacy-not-supported",
+        "no-legacy-permission",
+        "save-with-album",
+        "source-preserved",
+        "missing-file",
+        "invalid-file",
+        "main-thread-callback",
+        "background-foreground",
+        "owned-state-cleanup",
+        "tree-clean"
+      ]
+    },
+    {
+      "id": "android-media-current-physical",
+      "platform": "android",
+      "capability": "media",
+      "deviceKind": "physical",
+      "floor": false,
+      "requiredScenarios": [
+        "granted",
+        "denied",
+        "save-with-album",
+        "invalid-file",
+        "cancel-on-detach",
+        "main-thread-callback",
+        "rotation",
+        "background-foreground",
+        "cleanup-after-failure",
+        "tree-clean"
+      ]
+    },
+    {
+      "id": "ios-media-floor-simulator",
+      "platform": "ios",
+      "capability": "media",
+      "deviceKind": "simulator",
+      "floor": true,
+      "requiredScenarios": ["denied", "limited", "invalid-file", "main-thread-callback", "tree-clean"]
+    },
+    {
+      "id": "ios-media-current-simulator",
+      "platform": "ios",
+      "capability": "media",
+      "deviceKind": "simulator",
+      "floor": false,
+      "requiredScenarios": ["granted", "denied", "limited", "album", "background-foreground", "invalid-file", "main-thread-callback", "tree-clean"]
+    },
+    {
+      "id": "ios-media-current-physical",
+      "platform": "ios",
+      "capability": "media",
+      "deviceKind": "physical",
+      "floor": false,
+      "requiredScenarios": ["granted", "denied", "limited", "album", "background-foreground", "cancel-on-detach", "invalid-file", "main-thread-callback", "cleanup-after-failure", "tree-clean"]
+    },
+    {
+      "id": "ios-privacy-floor-simulator",
+      "platform": "ios",
+      "capability": "privacy",
+      "deviceKind": "simulator",
+      "floor": true,
+      "requiredScenarios": ["construction-inert", "not-supported-before-ios14", "tree-clean"]
+    },
+    {
+      "id": "ios-privacy-current-simulator",
+      "platform": "ios",
+      "capability": "privacy",
+      "deviceKind": "simulator",
+      "floor": false,
+      "requiredScenarios": ["construction-inert", "not-determined", "restricted", "denied", "authorized", "explicit-request-only", "main-thread-callback", "tree-clean"]
+    },
+    {
+      "id": "ios-privacy-current-physical",
+      "platform": "ios",
+      "capability": "privacy",
+      "deviceKind": "physical",
+      "floor": false,
+      "requiredScenarios": ["construction-inert", "not-determined", "restricted", "denied", "authorized", "explicit-request-only", "background-foreground", "main-thread-callback", "tree-clean"]
+    }
+  ],
+  "receiptDirectory": "build/native-evidence",
+  "receiptDigest": "sha256",
+  "trackedTreeMustRemainClean": true
+}

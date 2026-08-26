@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "codes": {
+    "domainFlutter": "DT1001",
+    "domainInfrastructure": "DT1002",
+    "dataPresentation": "DT1003",
+    "buildContextBoundary": "DT1004",
+    "presentationInfrastructure": "DT1005",
+    "forbiddenArchitecture": "DT1006",
+    "privateSrc": "DT1007",
+    "implementationBoundary": "DT1008",
+    "providerTypeBoundary": "DT1009",
+    "flutterTypeBoundary": "DT1010",
+    "architectureCodegen": "DT1011",
+    "providerCodegenBoundary": "DT1012",
+    "serviceLocator": "DT1013",
+    "packageDependencyCycle": "DT1014",
+    "packageReexport": "DT1015",
+    "scopeBoundary": "DT1016"
+  },
+  "defaultLayers": {
+    "domain": ["**/domain/**"],
+    "application": ["**/application/**"],
+    "data": ["**/data/**"],
+    "infrastructure": ["**/infrastructure/**"],
+    "presentation": [
+      "**/presentation/**",
+      "**/*_page.dart",
+      "**/*_view.dart",
+      "**/*_view_model.dart"
+    ]
+  },
+  "defaultCompositionRoots": [
+    "lib/main.dart",
+    "test/**",
+    "**/composition/**",
+    "**/*_composition_root.dart"
+  ],
+  "defaultGeneratedInfrastructure": [
+    "**/infrastructure/**/*.g.dart"
+  ],
+  "forbiddenPackages": [
+    "flutter_riverpod",
+    "hooks_riverpod",
+    "riverpod",
+    "riverpod_annotation",
+    "riverpod_generator",
+    "provider",
+    "get_it",
+    "get_it_mixin",
+    "watch_it",
+    "injectable",
+    "flutter_modular",
+    "stacked",
+    "elementary",
+    "bloc",
+    "flutter_bloc",
+    "hydrated_bloc",
+    "get",
+    "mobx",
+    "flutter_mobx",
+    "signals",
+    "signals_flutter"
+  ],
+  "infrastructurePackages": [
+    "dio",
+    "objectbox",
+    "dartitect_dio",
+    "dartitect_objectbox",
+    "retrofit",
+    "json_annotation"
+  ],
+  "providerTypes": [
+    "Dio",
+    "RequestOptions",
+    "Response",
+    "CancelToken",
+    "Store",
+    "Box",
+    "Query",
+    "QueryBuilder"
+  ],
+  "flutterBoundaryTypes": [
+    "Widget",
+    "BuildContext",
+    "State",
+    "GoRouter"
+  ],
+  "architectureCodegenAnnotations": [
+    "injectable",
+    "riverpod",
+    "ProviderFor"
+  ],
+  "providerCodegenAnnotations": [
+    "JsonSerializable",
+    "Entity",
+    "RestApi"
+  ]
+}

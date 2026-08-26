@@ -1,0 +1,40 @@
+name: dartitect_objectbox_native_fixture
+description: Isolated generated-model consumer fixture for dartitect_objectbox.
+publish_to: none
+version: 0.0.0
+
+environment:
+  sdk: ^3.13.0
+  flutter: '>=3.47.1'
+
+dependencies:
+  dartitect:
+    path: ../../packages/dartitect
+  dartitect_flutter:
+    path: ../../packages/dartitect_flutter
+  dartitect_objectbox:
+    path: ../../packages/dartitect_objectbox
+  dartitect_observability:
+    path: ../../packages/dartitect_observability
+  dartitect_sync:
+    path: ../../packages/dartitect_sync
+  flutter:
+    sdk: flutter
+  objectbox: ^5.3.2
+  objectbox_flutter_libs: ^5.3.2
+
+dev_dependencies:
+  build_runner: ^2.10.4
+  flutter_test:
+    sdk: flutter
+  objectbox_generator: ^5.3.2
+
+dependency_overrides:
+  dartitect:
+    path: ../../packages/dartitect
+  dartitect_flutter:
+    path: ../../packages/dartitect_flutter
+  dartitect_observability:
+    path: ../../packages/dartitect_observability
+  dartitect_sync:
+    path: ../../packages/dartitect_sync

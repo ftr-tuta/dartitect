@@ -1,0 +1,166 @@
+= Commands, results, and UI effects
+
+Use +Result<T, F extends Object>+ only when a typed failure is ordinary control
+flow. Match it exhaustively and preserve the original stack in +Err+. APIs that
+naturally throw may continue to throw.
+
+== 1.0 command scheduling matrix
+
++Command0+, +Command1+, and +KeyedCommand1+ share the pure-Dart lane contracts.
+Every retained FIFO, configured concurrency lane, and active-key set has an
+explicit positive bound.
+
+[cols="2,3,4,4",options="header"]
+|===
+| Policy | Bound and admission | Busy call | Ordering and publication
+
+| +reject+ (default)
+| One running execution
+| +rejected(busy)+
+| The accepted execution publishes its terminal
+
+| +join+
+| One running execution
+| Returns the identical future; argument commands join only the same argument
+  in the same key, otherwise +rejected(busy)+
+| One execution and one terminal identity
+
+| +drop+
+| One running execution
+| +dropped+ without starting, queueing, or replacing retained state
+| Only the running execution may publish
+
+| +sequential(maxQueue)+
+| One running plus a positive bounded FIFO; default queue 64
+| Queues FIFO or +rejected(queueFull)+
+| Accepted executions run in admission order
+
+| +restartLatest+
+| One publishable generation; superseded work may drain cooperatively
+| Cancels/supersedes prior generations and starts a new one
+| Only the latest accepted generation may publish
+
+| +concurrent(maxConcurrent)+
+| Positive running bound; default 4
+| Starts within the bound or +rejected(concurrentLimit)+
+| A terminal publishes only if its ID is not older than the retained terminal
+
+| +keyed(perKey, maxConcurrent)+
+| Positive active-key bound, default 4; one bounded non-keyed policy per key
+| Per-key result or +rejected(keyLimit)+ for a new key
+| Keys schedule independently; a crash stops only its key
+|===
+
+Every distinct accepted call gets a monotonic execution ID. Observable state is
+exhaustive: idle, running, success, expected failure, cancelled, or crashed.
+Success and +Err<F>+ are domain terminals. Rejection, drop, and cancellation are
+control flow and never become +F+. Cancellation completes the caller promptly
+but remains cooperative; owner disposal drains underlying actions.
+
+Unexpected exceptions are reported at most once, retained as crash state, and
+rethrown with the original stack. The affected lane remains stopped until
+explicit +resume()+ after running work settles. Late completion from a
+cancelled, superseded, older concurrent, or disposed generation cannot publish
+or notify. Disposal closes admission, rejects queued work, requests
+cancellation, drains actions, clears Flutter future mappings, and shares one
+idempotent completion.
+
+== 1.0 reactive resource matrix
+
+Resource data (waiting, ready, expected failed, or unexpected crashed) is
+independent from upstream temperature. Failed/crashed states may explicitly
+retain nullable last-known data through +hasData+.
+
+[cols="3,4,4,4",options="header"]
+|===
+| Axis/value | Source activity | Retention/backpressure | Terminal/recovery rule
+
+| Temperature +hot+
+| One activation-local source session is active
+| Snapshot retained; reads admitted
+| Only current-generation publication is accepted
+
+| Temperature +warm+
+| No source session or read is active
+| Last-known snapshot may remain
+| Reactivation opens a fresh session
+
+| Temperature +cold+
+| No source session or read is active
+| Snapshot and stale marker are discarded
+| Activation starts a fresh generation
+
+| +alwaysHot+
+| +start()+ activates without observers
+| Hot until owner disposal
+| Disposal alone makes it cold
+
+| +whileObserved+
+| Hot with a ticker-enabled listening observation or +ResourceLease+
+| No warm retention
+| Last activity release makes it cold
+
+| +keepWarm(duration)+
+| Same activity rule as +whileObserved+
+| Positive TTL retains warm snapshot; reacquisition cancels the timer
+| TTL expiry makes it cold
+
+| +manual+
+| Explicit +activate()+ only
+| +deactivate(true)+ is warm; +deactivate(false)+ is cold
+| Leases/observers do not override manual control
+
+| +everyEmission+
+| One read at a time
+| Serial backlog preserves every signal; source must be externally bounded
+| Closing clears pending signals and cancels/drains the active read
+
+| +coalesceMicrotask+
+| One read at a time
+| At most one scheduled microtask and one dirty rerun
+| Signals inside the boundary coalesce
+
+| +coalesceFrame+
+| One read at a time
+| At most one scheduled frame and one dirty rerun
+| Signals inside the frame boundary coalesce
+
+| +latestWhileBusy+ (default)
+| One read at a time
+| At most one dirty rerun while busy
+| A burst becomes the active read plus one latest rerun
+|===
+
+Each +ReactiveSource.open()+ creates a fresh session that owns its watcher,
+subscription, query, or cursor and borrows injected providers. An expected read
++Err<F>+ publishes failed state without reporting or stopping the hot session.
+An expected open failure suspends. Unexpected open/read/stream errors publish
+crashed state, report once per generation, close the session, and suspend warm
+or cold according to retention. Only explicit +retry()+ opens a new generation.
+
+A +ReactiveObservation+ is caller-owned and contributes activity only with a
+listener and enabled ticker. Passive listeners do not activate upstream. A
++ResourceLease+ is idempotent, owner-invalidated, and keeps automatic policies
+hot until its awaited release reconciles temperature. Listener/reporter failure
+cannot alter state. Family idle retention uses a positive TTL and non-negative
+count/weight budgets; leased, observed, or hot entries are not evicted.
+
+Resource disposal closes admission, invalidates leases/observations, requests
+cooperative cancellation, drains reads, cancels the signal subscription,
+closes the activation-local session, discards snapshots, clears listeners,
+bindings, and timers, and aggregates independent cleanup failures. Concurrent
+disposal shares one completion and all late publication is rejected.
+
+== Effects
+
+SnackBars, dialogs, navigation, clipboard, and toasts stay in widgets. A
+ViewModel may emit immutable values through a positive-capacity, bounded,
+single-consumer, owner-generation +EffectChannel+. Overflow/disposal are
+explicit; accepted effects are FIFO exactly once. Consumer failure is reported
+without reinserting an effect. Disposal discards pending effects and drains an
+active callback.
+
++EffectListener+ borrows the channel and uses only its current mounted context.
+Authentication truth instead uses replayable +SessionState+ so the shell removes
+routes before draining the old session graph. A new owner generation gets a new
+channel; Dartitect provides no global event bus or general async-state envelope.

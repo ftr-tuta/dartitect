@@ -1,0 +1,46 @@
+= Native capability report
+
+[cols="2,3,2",options="header"]
+|===
+| Capability | Compiled proof | Decision
+
+| Sealed results and exhaustive patterns
+| `packages/dartitect/test/result_test.dart`
+| IMPLEMENT NATIVELY
+
+| Sync/async LIFO cleanup and aggregate failure
+| `packages/dartitect/test/resource_owner_test.dart`
+| SMALL ABSTRACTION
+
+| Flutter State lifecycle and owned/borrowed ViewModels
+| `packages/dartitect_flutter/test/view_model_host_test.dart`
+| SMALL ABSTRACTION
+
+| Listenables and selected rebuilds
+| `packages/dartitect_flutter/test/listenable_selector_test.dart`
+| IMPLEMENT WITH FLUTTER
+
+| Non-reentrant async actions
+| `packages/dartitect_flutter/test/async_command_test.dart`
+| SMALL ABSTRACTION
+
+| Stable inherited composition value
+| `packages/dartitect_flutter/test/dartitect_scope_test.dart`
+| IMPLEMENT WITH FLUTTER
+
+| JSON/config/filesystem tooling
+| `packages/dartitect_cli/test/`
+| IMPLEMENT NATIVELY
+
+| Semantic IDE diagnostics
+| `packages/dartitect_lints/`
+| OFFICIAL PLUGIN EXCEPTION
+
+| HTTP/database stacks
+| Adapter contract tests
+| DO NOT REIMPLEMENT
+|===
+
+No spike introduced a runtime dependency into core, Flutter integration, or
+the CLI. Isolate recipes pass only serializable messages and create a fresh
+composition root in the receiving isolate.

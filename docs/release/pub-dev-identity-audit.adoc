@@ -1,0 +1,32 @@
+= pub.dev package identity audit
+
+Status:: PACKAGE NAMES AVAILABLE; PUBLISHER VERIFICATION FAIL-CLOSED
+Observed at:: 2026-08-25 UTC
+Registry:: `https://pub.dev`
+Machine contract:: `tool/rc_candidate_contract.json`
+
+== Package names
+
+An unauthenticated `GET /api/packages/{name}` request to the official pub.dev
+API returned HTTP 404 for each of the 16 names in the lockstep publication
+order. No existing package currently collides with the intended cohort:
+
+`dartitect`, `dartitect_cli`, `dartitect_geometry`, `dartitect_lints`,
+`dartitect_locale_br`, `dartitect_privacy`, `dartitect_flutter`,
+`dartitect_isolates`, `dartitect_mcp`, `dartitect_media`,
+`dartitect_observability`, `dartitect_sync`, `dartitect_dio`,
+`dartitect_objectbox`, `dartitect_sentry`, and `dartitect_testing`.
+
+This is a point-in-time observation, not a reservation. The materialization
+runbook must query each name again immediately before its authorized upload.
+
+== Publisher identity
+
+Because none of these packages exists on pub.dev, there is no package record
+from which to verify a publisher. The release remains fail-closed: if V1S-15
+selects the pub.dev prerelease channel, authenticated publisher membership and
+the exact publisher assignment must be verified before the first upload and
+again before every package upload. Selecting the signed-bundle channel does not
+convert this missing pub.dev identity into a successful publisher check.
+
+No upload, reservation, tag, or external mutation was performed by this audit.

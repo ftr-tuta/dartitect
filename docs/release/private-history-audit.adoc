@@ -1,0 +1,25 @@
+= Public tree privacy audit
+
+Audit date:: 2026-08-26
+Scope:: the one-commit Git candidate tree
+
+Gate:: `dart run tool/audit_root_candidate.dart`
+Decision:: Local tree policy ready; final remote attestation pending
+
+`.gitignore` excludes `.private/`, planning directories, credentials, private
+keys, caches, generated API HTML, and build products. Candidate assembly starts
+from tracked files only and creates a new root commit, so private paths and
+discarded repository-history receipts cannot enter through ancestry.
+
+The final audit requires a clean tracked tree and rejects:
+
+* `.private`, credentials, keys, build products, or absolute local paths;
+* references to discarded commits, pull requests, or obsolete release
+  baselines;
+* any project license other than BSD-3-Clause;
+* more than one public branch, more than one commit, or any unexpected tag;
+* non-canonical author or committer identity.
+
+The complete previous repository, remote metadata, available artifacts, and
+incorporation manifest remain only in the private timestamped recovery backup.
+They are intentionally not linked or embedded in the candidate tree.

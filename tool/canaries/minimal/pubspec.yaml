@@ -1,0 +1,19 @@
+name: dartitect_minimal_packaged_canary
+description: Isolated minimal consumer of the packaged Dartitect cohort.
+version: 0.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: '>=3.47.1'
+
+dependencies:
+  dartitect: 1.0.0-rc.1
+  dartitect_flutter: 1.0.0-rc.1
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  dartitect_cli: 1.0.0-rc.1
+  flutter_test:
+    sdk: flutter

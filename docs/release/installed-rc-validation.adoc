@@ -1,0 +1,32 @@
+= Installed RC validation
+
+Status:: Tooling ready; materialized channel absent
+Goal:: V1S-17
+Machine contract:: `tool/rc_validation_contract.json`
+
+V1S-17 validates installed bytes, not the monorepo and not a locally rebuilt
+approximation. `tool/run_rc_channel_canaries.dart` first requires the complete
+formal V1S-16 artifact gate. It then downloads the GitHub prerelease assets,
+compares the manifest, signature, and all 16 package SHA-256 values with the
+materialization receipt, and exposes only those downloaded archives through a
+disposable hosted package endpoint.
+
+The existing minimal, offline-first, and native-capability consumers resolve
+the signed-bundle archives with no `path:` dependency or dependency override.
+Their lockfile hashes must equal the manifest archive hashes, all resolved
+Dartitect packages must use the exact RC cohort, forbidden optional packages
+must remain absent from the minimal graph, and every declared test plus the
+zero-residual census must pass. The resulting receipt is identified as V1S-17
+and `materialized-signed-bundle`.
+
+The full `dart run tool/check_rc_validation.dart` gate additionally requires
+all nine same-SHA native device receipts, the candidate-upgrade receipt for
+ObjectBox, outbox, journal, checkpoint, and generator manifest state, and a
+separate delegated `READY_FOR_1_0` decision. When no RC2 exists, the upgrade
+receipt must use two separately versioned candidate bundles; a same-version
+reinstall is not accepted as upgrade evidence.
+
+`--contract-only` validates the fail-closed tooling in ordinary CI. The tracked
+stable decision remains `NOT_READY_FOR_1_0` with explicit blockers until the
+materialized channel, native matrix, upgrade cycle, and zero-residual evidence
+all exist for the authorized RC SHA.

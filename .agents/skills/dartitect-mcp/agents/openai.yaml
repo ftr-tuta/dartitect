@@ -1,0 +1,6 @@
+interface:
+  display_name: "Dartitect MCP"
+  short_description: "Use the bounded local Dartitect MCP"
+  default_prompt: "Use $dartitect-mcp to inspect this project through local MCP."
+policy:
+  allow_implicit_invocation: true

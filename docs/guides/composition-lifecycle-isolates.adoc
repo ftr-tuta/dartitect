@@ -1,0 +1,153 @@
+= Composition, lifecycle, and isolates
+
+Build explicit application, session, feature, route, operation, and receiver-
+isolate graphs with constructor injection. Create only the scopes an application
+needs, but never let a child outlive its parent. Do not introduce global
+runtimes, Stores, clients, service locators, or cross-isolate live objects.
+
+== 1.0 lifecycle contract matrix
+
+The following matrix is normative for 1.0. +E+, +T+, and +P+ mean ephemeral,
+temporary, and persisted durability.
+
+[cols="1,3,3,3,3,4",options="header"]
+|===
+| Lifetime | Root and terminal event | Owned boundary | Borrowed boundary
+| Transfer and durability | Required teardown
+
+| Application
+| Process/application composition; app shutdown
+| Process-wide clients, Stores, executors, and owned observability
+| Host/platform services with an external owner
+| Transaction commit; +E/T/P+
+| All child scopes, then application dependents before dependencies;
+  observability flush/dispose last
+
+| Session
+| Authentication, account, or tenant generation; logout, switch, or parent
+  shutdown
+| Session credentials, clients, repositories, and caches
+| Application services
+| Transaction commit; +E/T/P+
+| Operations, routes, and features; then session dependents before dependencies
+
+| Feature
+| State shared deliberately by routes; feature deactivation or parent shutdown
+| Feature commands, resources, watchers, and caches
+| Session/application services
+| Transaction commit; +E/T/P+
+| Operations and routes; then feature dependents before dependencies
+
+| Route
+| One route or ViewModel composition; unmount/removal or parent shutdown
+| ViewModels, bindings, observations, and route-local resources
+| Feature/session services
+| Transaction commit; +E/T+; persisted writes use a longer-lived Store
+| Operations first; then bindings/observations before their sources
+
+| Operation
+| One admitted command/read/resource attempt; terminal result, cooperative
+  cancellation, deadline, or parent shutdown
+| Attempt-local cancellation, timers, subscriptions, queries, and temporary
+  artifacts
+| The route/feature/service used by the attempt
+| Transaction commit; +E/T+; persisted results use a longer-lived Store
+| Close admission, drain the admitted attempt, then release attempt resources
+
+| Isolate
+| One receiver entrypoint and local graph; graceful stop, crash cleanup, or
+  process end
+| Receiver-local ports, workers, attached Store wrappers, queries, and graph
+| No live borrowed object crosses the boundary
+| Serializable messages only; +E/T/P+ remain receiver-local
+| Stop admission, drain or reach the deadline fallback, run receiver-local
+  +finally+, then close ports and graph
+|===
+
+== Ownership, transfer, and durability
+
+* *Owned:* the acquiring scope registers a value only after acquisition
+  succeeds, releases it exactly once, and prevents use after teardown starts.
+* *Borrowed:* the borrower never registers or closes the value. Its provider
+  must outlive every borrower.
+* *Transferred:* +ResourceTransaction.commit()+ atomically moves the complete
+  owned set to one +OwnedGraph+ and makes the transaction terminal.
+  +OwnedRuntimeSlot.replaceGraph()+ may then assume ownership of that complete
+  graph. Borrowed values do not move. Dartitect exposes no individual live-
+  resource transfer between owners, generations, or isolates.
+
++OwnedRuntimeSlot.replace()+ builds before publication. A successful replacement
+closes old admission, publishes the new committed graph, drains old work, and
+then tears down the old graph. Failed construction preserves the previous
+generation.
+
+Ephemeral data (+E+) exists only in the graph and is discarded at teardown.
+Temporary data (+T+) is replaceable; its creator registers handle closure and
+removal, while startup recovery removes crash leftovers. Persisted data (+P+)
+survives graph teardown and restart; the graph closes live handles, and only an
+explicit domain retention or deletion operation removes the data. Durability
+describes data, not handles: a persisted Store wrapper is still ephemeral to
+its graph.
+
+== Teardown and failure
+
+Acquire providers before dependents and register each owned value immediately,
+so +ResourceOwner+ releases dependents before dependencies in reverse order.
+Every scope rejects new work, signals cooperative cancellation, drains admitted
+work, releases child scopes and resources in reverse order, skips borrowed
+values, and becomes terminal. Cleanup continues after individual failures and
+reports them together as +ResourceCleanupException+. Concurrent or repeated
+disposal calls share one completion.
+
+Construction failure rolls back only completed acquisitions. A rollback failure
+is preserved independently from the original construction error.
+
+[source,dart]
+----
+Future<OwnedGraph<SessionRuntime>> openSession(SessionId id) {
+  return ResourceTransaction.create<SessionRuntime>((transaction) async {
+    final database = transaction.own(
+      await openDatabase(id),
+      (value) => value.close(),
+      label: 'database',
+    );
+    final http = transaction.own(
+      createHttp(id),
+      (value) => value.close(),
+      label: 'http',
+    );
+    return SessionRuntime(database, http);
+  }, label: 'SessionRuntime');
+}
+----
+
+== Isolates
+
+Each isolate creates a distinct graph. Only serializable values cross the
+boundary; a Store, client, controller, owner, or mutable repository never does.
+
+[source,dart]
+----
+@pragma('vm:entry-point')
+Future<void> backgroundMain(Map<String, Object?> message) async {
+  final runtime = await BackgroundRuntime.create(message);
+  try {
+    await runtime.execute();
+  } finally {
+    await runtime.disposeAsync();
+  }
+}
+----
+
+Projection remains +ProjectionExecution.inline+ unless composition explicitly
+injects a +ProjectionExecutor+. +IsolateProjectionExecutor+ owns one worker per
+task and accepts only transferable callback/request/result values. Cancellation
+or a newer main-graph generation suppresses publication without killing the
+worker, so isolate-local +finally+ cleanup can finish. Dispose the executor to
+drain every worker exit.
+
++ObjectBoxProjectionExecutor+ borrows the original Store and delegates to
++Store.runAsync+; the callback receives its own attached Store wrapper. Create
+and close every query and background graph inside that callback. Teardown order
+is collection, executor, then original Store. Never transfer a live Store,
+query, owner, client, or a closure capturing one.

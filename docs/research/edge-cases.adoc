@@ -1,0 +1,17 @@
+= Prioritized edge cases
+
+. Cleanup callback fails while later callbacks still need execution.
+. Shutdown begins while a new acquisition is attempted.
+. An async command completes after its widget/session is gone.
+. A borrowed value is replaced under the same `ViewModelHost` State.
+. A selector source changes while the selected value remains equal.
+. A generator meets one conflict after several no-op candidates.
+. A symlink cycle or unreadable directory appears during a brownfield scan.
+. An adapter's auth/tenant callback throws before transport.
+. Store watchers/timers survive unless drained before Store close.
+. A temporary database open fails before an owner can be returned.
+. Plugin/analyzer versions resolve separately but conflict in one workspace.
+. Web is requested together with ObjectBox.
+
+Executable tests cover items 1–10. Items 11–12 are represented by the pinned
+dependency graph and doctor diagnostics.

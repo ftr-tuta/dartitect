@@ -1,0 +1,46 @@
+= Getting started
+
+Add `dartitect` to a Dart project and `dartitect_flutter` to a Flutter project.
+Keep domain contracts free of both when ordinary Dart types suffice.
+
+[source,dart]
+----
+final class AppRuntime implements AsyncDisposable {
+  AppRuntime(this.repository, this._owner);
+
+  final OrdersRepository repository;
+  final ResourceOwner _owner;
+
+  static AppRuntime create() {
+    final owner = ResourceOwner(label: 'AppRuntime');
+    try {
+      final client = owner.own(createClient(), (value) => value.close());
+      return AppRuntime(HttpOrdersRepository(client), owner);
+    } catch (_) {
+      unawaited(owner.disposeAsync());
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> disposeAsync() => _owner.disposeAsync();
+}
+----
+
+At a route boundary, use `ViewModelHost.create` for an owned ViewModel and
+`.value` for a borrowed one. The host does not listen to the ViewModel; place a
+`ListenableBuilder`, `ValueListenableBuilder`, or `ListenableSelector` at the
+smallest rebuilding fragment.
+
+Install the CLI executable and inspect a project:
+
+[source,shell]
+----
+dart run dartitect_cli:dartitect init --dry-run
+dart run dartitect_cli:dartitect scan --json
+dart run dartitect_cli:dartitect doctor
+dart run dartitect_cli:dartitect create feature orders --domain --dry-run
+----
+
+Generated-once files belong to the consumer immediately. A conflicting file is
+never overwritten and there is no `--force` flag.

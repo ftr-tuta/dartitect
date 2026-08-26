@@ -1,0 +1,29 @@
+= Approved publish validation exceptions
+
+Snapshot:: 2026-08-24
+Scope:: `packages/dartitect_lints` and `packages/dartitect_mcp` only
+
+== Analyzer plugin entrypoint
+
+The official `analysis_server_plugin` host discovers plugin entrypoints at
+`lib/main.dart`. Pub validation recommends naming that library after the
+package, but renaming or removing the host entrypoint would make the official
+plugin consumer unusable.
+
+The release audit therefore accepts exactly one warning for
+`dartitect_lints`: the `lib/main.dart` library-name warning. It rejects every
+other warning, a changed warning count, or the same warning in another package.
+
+== Experimental MCP protocol pin
+
+`dartitect_mcp 1.0.0-rc.1` intentionally pins `dart_mcp` exactly to `0.5.2`. The
+protocol package is experimental, and the reviewed server behavior, schemas,
+annotations and real-client tests cover that exact release. Pub validation
+recommends allowing multiple versions, which would silently admit an unreviewed
+protocol surface.
+
+The release audit accepts exactly one warning for `dartitect_mcp`: the
+`dart_mcp` tight-constraint warning at version `0.5.2`. It rejects a warning for
+any other dependency, a changed warning count, or the same warning in another
+package. `dartitect_mcp` and its `dartitect_cli` dependency are both on the
+lockstep prerelease line.

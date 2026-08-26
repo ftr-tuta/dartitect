@@ -1,0 +1,10 @@
+= ADR-0006: Package topology
+
+Status:: ACCEPTED
+
+Decision:: Keep pure core, Flutter bridge, testing helpers, CLI, analyzer
+plugin, Dio adapter, and ObjectBox adapter in separate workspace packages.
+
+Consequences:: Optional/transitive graphs cannot contaminate core. A new
+package requires evidence that it prevents a dependency leak or unlocks a
+platform otherwise blocked.

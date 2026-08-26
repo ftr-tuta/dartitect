@@ -1,0 +1,5 @@
+# Vulnerability exceptions are empty by default. If an exception becomes
+# necessary, use only an [[IgnoredVulns]] block with an exact `id`, an
+# `ignoreUntil` date no more than 30 days away, and a `reason` containing both
+# the justification and an HTTPS link to the repository's analysis.
+# PackageOverrides and package-wide ignore switches are prohibited.

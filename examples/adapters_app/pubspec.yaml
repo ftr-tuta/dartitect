@@ -1,0 +1,30 @@
+name: dartitect_adapters_app
+description: Dartitect optional adapters integration example; ObjectBox excludes web.
+version: 0.1.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+  flutter: '>=3.47.1'
+
+dependencies:
+  dartitect: ^1.0.0-rc.1
+  dartitect_dio: ^1.0.0-rc.1
+  dartitect_flutter: ^1.0.0-rc.1
+  dartitect_media: ^1.0.0-rc.1
+  dartitect_objectbox: ^1.0.0-rc.1
+  dartitect_observability: ^1.0.0-rc.1
+  dartitect_privacy: ^1.0.0-rc.1
+  dartitect_sentry: ^1.0.0-rc.1
+  dio: ^5.11.0
+  flutter:
+    sdk: flutter
+  sentry: ^9.27.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

@@ -1,0 +1,63 @@
+= Signed RC bundle channel
+
+Status:: Tooling ready; materialization not authorized
+Goals:: V1S-16 and V1S-17
+Machine contract:: `tool/rc_bundle_contract.json`
+
+The signed-bundle channel is the non-pub.dev RC distribution mode. It preserves
+the exact 16-package topological cohort as immutable `tar.gz` assets on one
+GitHub prerelease, binds those assets to an OpenPGP-signed manifest and signed
+Git tag, and verifies every uploaded byte by downloading it again. It does not
+claim pub.dev ownership or publisher identity.
+
+== Candidate preparation
+
+`dart run tool/prepare_rc_bundle.dart --source-sha=<candidate>` requires a clean
+tracked tree and reads package metadata and supply-chain documents from the
+specified commit. It emits archives below
+`build/rc-bundles/<cohort>/<source-sha>/` in the frozen publication order. Each
+manifest entry records the layer, order index, byte length, archive SHA-256, and
+a canonical source SHA-256 over sorted paths and bytes. It also embeds the exact
+hosted pubspec metadata needed to serve the downloaded archive without reading
+package metadata from the monorepo.
+
+The archive MTIME is fixed to the immutable commit timestamp. The preparer
+creates every archive twice and refuses differing hashes. Preparing a bundle is
+not materialization: the manifest records no authorization, signature, tag, or
+upload, and an existing staging directory is never overwritten.
+
+== Authorized materialization
+
+After the formal `dart run tool/check_rc_readiness.dart` gate passes for the
+same source SHA, the delegated release authority may run:
+
+[source,console]
+----
+dart run tool/materialize_rc_bundle.dart \
+  --signing-key=<openpgp-key> \
+  --repository=<owner/name>
+----
+
+The command stops before its first external write when V1S-15 is not ready or
+does not authorize `signed-bundle`. Once authorized, it verifies or creates the
+detached manifest signature and signed `v<cohort>` tag, pushes only that tag,
+creates a GitHub prerelease, and uploads package assets sequentially in the
+machine order. An existing tag or asset is accepted only when its identity and
+downloaded SHA-256 match; the tool never forces a tag or replaces an asset.
+
+Every observation is appended to `materialization-ledger.jsonl`. Failure stops
+the cohort. A retry re-verifies existing signature, tag, release, and assets
+before advancing. Only after all remote downloads match does the tool write
+`materialization-receipt.json` and append `remote-cohort-verified`.
+
+== Verification boundary
+
+`dart run tool/check_rc_artifacts.dart --contract-only` validates the tooling
+without asserting a release exists. The formal command first re-runs V1S-15,
+then checks all 16 local and remote receipt digests, manifest identity,
+OpenPGP signature, signed exact-SHA tag, prerelease URL, topological receipts,
+and append-only terminal observation. Missing authorization, signing material,
+hardware evidence, tag, remote asset, or digest remains a failure.
+
+V1S-17 must consume these downloaded immutable archives as its hosted channel;
+the staging bundle and monorepo paths are not valid installed-RC evidence.

@@ -1,0 +1,20 @@
+= ADR-0019: Transactional owned graphs
+
+Status:: ACCEPTED
+
+Context:: Application, session, route, and isolate graphs acquire several
+resources before a usable root exists. A partial acquisition must not leak,
+while a live graph replacement must not dispose values still serving admitted
+operations.
+
+Decision:: `ResourceTransaction` records owned resources during construction,
+rolls them back in reverse order after any failure, and transfers them to an
+`OwnedGraph` only on commit. Borrowed resources are explicit and never closed.
+`OwnedGraph` stops admission before draining active uses and then disposes in
+reverse order. `OwnedRuntimeSlot` serializes replacements, installs a complete
+new graph atomically, and drains the old graph afterward. Failed construction
+leaves the current graph authoritative.
+
+Consequences:: Lifecycle ownership is deterministic without a service locator,
+global container, hidden provider graph, or framework dependency. Each
+background isolate builds a fresh graph; no live resource crosses an isolate.

@@ -1,0 +1,67 @@
+= Observability composition
+
+Create one `ObservabilityRuntime` per app, session, or headless isolate. The
+runtime is never global. Local `DeveloperLogSink` is the default; remote
+reporting and tracing are disabled until the composition root injects them.
+
+[source,dart]
+----
+final runtime = ObservabilityRuntime(
+  samplingPolicy: FixedSamplingPolicy(spanRate: 1),
+);
+runtime.logger.info('Session started.');
+final span = runtime.tracing.startSpan('Load catalog');
+try {
+  // operation
+  await span.end(status: SpanStatus.ok);
+} catch (error, stackTrace) {
+  await span.end(
+    status: SpanStatus.error,
+    error: error,
+    stackTrace: stackTrace,
+  );
+  rethrow;
+} finally {
+  await runtime.disposeAsync();
+}
+----
+
+Sanitization runs before every sink/reporter/tracer and bounds depth, strings,
+and cardinality. Do not add request bodies, headers, queries, identifying
+paths, credentials, DSNs, or user identity to event context.
+
+== Payload-free reactive events
+
++ReactiveOwner+ and +MutationCommand+ may emit +ReactiveChangeEvent+ values to
+an injected +ReactiveObserver+. Events contain only fixed source/kind values,
+an exact +ChangeCause+ identity registered at composition, monotonic revisions,
+monotonic duration, and listener count. Domain values, entity/idempotency keys,
+error text, stack traces, and identity are never included.
+
++ReactiveJournal+ is an opt-in, memory-only ring with default capacity 200.
+Old entries are overwritten and disposal clears it terminally. Observer
+ownership is explicit. A failing observer is reported once and disabled without
+changing runtime state or caller-visible exceptions.
+
+[source,dart]
+----
+final journal = ReactiveJournal();
+final owner = ReactiveOwner(
+  observer: ReactiveObserverRegistration.owned(
+    journal,
+    dispose: journal.dispose,
+  ),
+);
+----
+
++ReactiveObserverLoggerAdapter+ maps the event to the fixed
++reactive.change+ message and allowlisted attributes. +ObservabilityRuntime+
+redacts again before each destination; Sentry uses the same chain ending in a
+borrowed-Hub +SentryLogSink+. No persistence or network destination is enabled
+by default.
+
+Foreground Flutter composition may install one `FlutterErrorBinding`. Dispose
+it first so prior global handlers are restored, then dispose ViewModels and
+clients, flush the observability runtime, and finally let the consumer close
+its provider SDKs. Background isolates create a new runtime and do not install
+Flutter handlers.

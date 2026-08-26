@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "outbox": [
+    {
+      "idempotencyKey": "mutation-0001",
+      "key": "account:42",
+      "argument": {"displayName": "Ada"},
+      "attempt": 2,
+      "syncState": "pending"
+    },
+    {
+      "idempotencyKey": "mutation-0002",
+      "key": "account:84",
+      "argument": {"displayName": null},
+      "attempt": 1,
+      "syncState": "uncertain"
+    }
+  ],
+  "checkpoints": [
+    {
+      "datasetKey": "profile",
+      "hasCheckpoint": true,
+      "checkpoint": "cursor-v7"
+    },
+    {
+      "datasetKey": "settings",
+      "hasCheckpoint": true,
+      "checkpoint": null
+    }
+  ],
+  "journal": [
+    {
+      "attemptId": "attempt-0001",
+      "sequence": 1,
+      "timestamp": "2026-08-25T12:00:00.000Z",
+      "fact": "attemptStarted",
+      "datasetKey": null,
+      "hasDatasetKey": false
+    },
+    {
+      "attemptId": "attempt-0001",
+      "sequence": 2,
+      "timestamp": "2026-08-25T12:00:01.000Z",
+      "fact": "datasetStarted",
+      "datasetKey": "profile",
+      "hasDatasetKey": true
+    },
+    {
+      "attemptId": "attempt-0001",
+      "sequence": 3,
+      "timestamp": "2026-08-25T12:00:02.000Z",
+      "fact": "datasetSucceeded",
+      "datasetKey": "profile",
+      "hasDatasetKey": true
+    },
+    {
+      "attemptId": "attempt-0001",
+      "sequence": 4,
+      "timestamp": "2026-08-25T12:00:03.000Z",
+      "fact": "attemptCrashed",
+      "datasetKey": null,
+      "hasDatasetKey": false
+    }
+  ],
+  "incompleteAttempts": [
+    {
+      "attemptId": "attempt-0001",
+      "startedAt": "2026-08-25T12:00:00.000Z",
+      "completedDatasetKeys": ["profile"]
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+= Performance baseline
+
+Snapshot:: 2026-08-23
+Toolchain:: Dart 3.13.1 / Flutter 3.47.1 / Linux x64
+Role:: Reviewed `1.0.0-rc.1` reference thresholds; exact-root reproduction is external
+
+Run the following commands on the same pinned runner for comparisons:
+
+* `dart run benchmark/resource_owner_benchmark.dart`;
+* `dart run benchmark/runtime_benchmark.dart`;
+* `dart run benchmark/owned_graph_sync_benchmark.dart`;
+* `flutter test benchmark/flutter_primitives_benchmark_test.dart` from
+  `packages/dartitect_flutter`;
+* `flutter test benchmark/native_objectbox_benchmark_test.dart` from
+  `tool/objectbox_native_fixture`.
+* `dart run bin/orchestrate_benchmarks.dart` from
+  `tool/benchmark_workspace` for the full same-runner matrix.
+
+[cols="2,1",options="header"]
+|===
+| Operation | Local µs / operation or cycle
+
+| ResourceOwner disposal, 1 / 10 / 100 / 1000 resources
+| 36.040 / 25.500 / 111.170 / 228.940
+
+| Strict redaction
+| 14.942
+
+| Sampled-out logging
+| 5.417
+
+| Bounded queued logging plus flush
+| 14.712
+
+| No-op span start/end
+| 20.768
+
+| Instrumented Dio request using an in-memory adapter
+| 251.804
+
+| ObjectBox traced open/close boundary
+| 31.748
+
+| Isolate worker ACK/result round trip
+| Re-measure on the final candidate runner; zero residual supervisor resources
+is already asserted by the benchmark.
+
+| Command0 success/reset cycle
+| 24.569
+
+| ViewModelHost plus selector mount/unmount
+| 2687.150
+
+| Real generated ObjectBox put/query/close cycle
+| 118.676
+
+| Provider-free sync run, 1 / 10 / 100 datasets
+| 337.580 / 399.830 / 1578.750
+
+| Construct 10,000 immutable resource snapshots (total)
+| 8996.000
+|===
+
+The development line has no earlier comparable baseline, so this snapshot
+establishes the reference instead of claiming a regression percentage.
+Subsequent runs must use the same SDK, host class, warm-up, and iteration
+counts. Any median regression above 10% against this baseline and the
+corresponding native primitive must be investigated; the threshold must not be
+raised merely to make a gate pass.
+
+The benchmark assertions also require zero retained Dio requests, zero isolate
+supervisor requests/ports/timers after safe-stop, every
+ViewModelHost disposal, every ObjectBox query close, and temporary-directory
+cleanup. Lifecycle tests remain authoritative for leak correctness.
+
+== Ecosystem-evolution budgets
+
+The following budgets were declared before recording the new measurements:
+
+* 100 no-I/O datasets complete in at most 25 ms on the pinned Linux runner;
+* the median no-I/O orchestration cost stays below 250 µs per dataset;
+* constructing 10,000 immutable `ResourceSnapshot` values completes in 50 ms;
+* graph replacement and headless shutdown have an exact zero admitted-operation,
+  subscription, timer, lease, and owned-resource census after drain.
+
+`benchmark/owned_graph_sync_benchmark.dart` records 1, 10, and 100 dataset runs
+plus the 10,000-snapshot construction. The budgets are diagnosis thresholds,
+not portability claims; lifecycle tests remain the correctness authority. The
+2026-08-24 pinned Linux run completed 100 datasets in 1.579 ms (15.788 µs per
+dataset) and 10,000 snapshots in 8.996 ms, within every declared budget.
+
+== Competitive reactive matrix
+
+The isolated workspace pins +flutter_riverpod 3.4.2+,
++flutter_bloc 9.1.1+, and +bloc_concurrency 0.3.0+ without adding comparator
+dependencies to any runtime package. It randomizes the 36 fan-out cells, warms
+each cell three times, records 15 repetitions, and checks equivalent selector
+evaluations and callbacks before comparing time.
+
+For each listener/change cell, Dartitect median must be no greater than
++max(best comparator * 1.10, best comparator + 5 us)+ and p95 no greater than
++max(best comparator * 1.15, best comparator + 10 us)+. The 2026-08-23 run
+passed all cells. The 10k collection projected exactly 1, 100, and 0 entities
+for one-change, hundred-change, and reorder scenarios, reducing projection work
+by at least 99% against replace-all.
+
+The same run covered 1,000 graph writes, a 100-signal burst over a 10k local
+query, 1,000 family keys, every Dartitect command policy, all four
++bloc_concurrency+ transformers, the causal page timeline, and 1,000 seeded
+race steps. RSS and VM heap are recorded as observations; the terminal gate is
+an exact zero census for listeners, nodes, timers, isolates, sessions,
+commands, family entries, and stream subscriptions. No gate failed, so no
+flame trace was required for diagnosis.
+
+Reviewed artifacts:
+
+* +tool/benchmark_workspace/artifacts/raw.json+ — all samples and counters;
+* +tool/benchmark_workspace/artifacts/environment.json+ — sanitized runner,
+  SDK, commit, lock hash, RSS, and heap;
+* +tool/benchmark_workspace/artifacts/report.adoc+ — human-readable result.
+
++dart run tool/check_benchmark_artifacts.dart+ recomputes percentiles and every
+statistical, exact-work, isolation, incremental, race, memory, and leak gate.

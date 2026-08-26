@@ -1,0 +1,10 @@
+= ADR-0003: Composition roots and isolates
+
+Status:: ACCEPTED
+
+Decision:: Application bootstrap, session/tenant factories, route factories,
+and background entrypoints are explicit composition roots. Each isolate builds
+and disposes a new graph from serializable input.
+
+Consequences:: No mutable client, Store, controller, or repository instance is
+shared between foreground and background isolates.

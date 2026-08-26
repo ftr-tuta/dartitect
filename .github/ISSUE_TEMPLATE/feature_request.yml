@@ -1,0 +1,30 @@
+name: Feature request
+description: Propose a focused capability or public API change.
+title: "[proposal] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and use case
+    validations:
+      required: true
+  - type: textarea
+    id: native
+    attributes:
+      label: Native-first analysis
+      description: Explain why Dart/Flutter primitives or consumer code are insufficient.
+    validations:
+      required: true
+  - type: textarea
+    id: boundary
+    attributes:
+      label: Ownership, composition, and compatibility impact
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: true

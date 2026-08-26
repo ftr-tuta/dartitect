@@ -1,0 +1,11 @@
+= ADR-0008: Flutter Commands
+
+Status:: ACCEPTED
+
+Decision:: +Command0+ and +Command1+ are Flutter Listenables with sealed
+operation states. Execution is non-reentrant and returns an explicit success,
+failure, rejection, or cancellation outcome. Completion after disposal is not
+published; unexpected crashes are reported once and rethrown.
+
+Consequences:: Retry and reset are deliberate. The command neither promises
+Future cancellation nor replaces durable state.

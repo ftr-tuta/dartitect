@@ -1,0 +1,31 @@
+= Owned-state platform workloads
+
+Status:: IN PROGRESS
+Release status:: NOT READY FOR 1.0 RC
+
+The two reference workloads are independent consumers of the same public
+owned-state contracts.
+
+== Remote-read application
+
+`examples/adapters_app` owns a Dio-backed catalog repository and a route-owned
+ViewModel. Its acceptance matrix covers initial load, typed remote failure,
+unexpected crash reporting, restart-latest search, causal pagination, session
+replacement during admitted work, and route effects. Presentation receives the
+ViewModel and does not import the transport.
+
+== Offline-first application
+
+`examples/reference_app` owns local ObjectBox and in-memory store choices,
+mutation/outbox delivery, sync orchestration, and isolate composition. Its
+acceptance matrix covers offline startup, atomic local write plus enqueue,
+reconnect, idempotent delivery, rejection, conflict, uncertainty, restart,
+exact local revision observation, forced logout, and safe isolate stop.
+
+== Cross-workload gates
+
+Both applications must analyze and test without Provider, Riverpod, BLoC,
+GetIt/Injectable, MobX, Signals, or another DI/state runtime. Each lifecycle
+scenario drains commands, effects, observations, timers, subscriptions, graph
+generations, and isolate work to a zero residual census. Findings are returned
+to the owning DSP instead of being waived in the workload.

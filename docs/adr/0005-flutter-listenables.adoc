@@ -1,0 +1,10 @@
+= ADR-0005: Flutter listenables
+
+Status:: ACCEPTED
+
+Decision:: Flutter's State lifecycle, ChangeNotifier, ValueNotifier,
+Listenable, streams, and builders remain the reactive foundation.
+`ViewModelHost` binds ownership but never listens to the ViewModel.
+
+Consequences:: Rebuilds stay local and visible. There is no mandatory
+BaseViewModel or state-management dependency.

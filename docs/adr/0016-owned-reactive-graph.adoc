@@ -1,0 +1,23 @@
+= ADR-0016: Owned reactive graph
+
+Status:: ACCEPTED
+
+Context:: Large Flutter screens need incremental recomputation and stable
+publication without introducing a process-wide dependency container. Flutter's
+`ChangeNotifier` has O(N) removal and dispatch, and closure identity is not a
+safe cache key for shared derived state.
+
+Decision:: `ReactiveOwner` is the sole owner of a local directed graph. Values,
+typed-key computeds, timers, observations, and later resource leases belong to
+one owner. An outer `update` stages writes, validates and recomputes affected
+nodes in stable topological order, and publishes only after the graph has
+stabilized. Nested updates join the outer transaction. A compute crash discards
+the complete pending cycle, preserves the last stable snapshots and original
+stack trace, reports at most once, and is rethrown. Registration and flush both
+reject cycles. No global graph, type lookup, provider graph, closure-keyed
+sharing, or implicit dependency is introduced.
+
+Consequences:: Consumers construct an owner at an explicit composition root and
+dispose it after its dependents. Reads and writes are incremental and locally
+testable. Atomic staging costs additional temporary memory during an update,
+and shared computeds require deliberate `ReactiveKey<T>` values.

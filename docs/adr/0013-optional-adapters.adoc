@@ -1,0 +1,10 @@
+= ADR-0013: Optional adapters and platforms
+
+Status:: ACCEPTED
+
+Decision:: Dio and ObjectBox integrations expose real upstream types in
+separate opt-in packages. Dio supports all six targets subject to browser
+constraints. ObjectBox explicitly excludes web.
+
+Consequences:: Domain contracts and ViewModels never depend on an adapter.
+Removing an adapter changes composition/infrastructure only.

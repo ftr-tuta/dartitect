@@ -1,0 +1,39 @@
+name: Adapter proposal
+description: Propose an optional integration with an external SDK.
+title: "[adapter] "
+labels: [adapter, enhancement]
+body:
+  - type: input
+    id: sdk
+    attributes:
+      label: Provider SDK and version range
+    validations:
+      required: true
+  - type: textarea
+    id: boundary
+    attributes:
+      label: Consumer-owned boundary
+      description: Cover entities/schemas, credentials, configuration, initialization, and shutdown.
+    validations:
+      required: true
+  - type: textarea
+    id: value
+    attributes:
+      label: Reusable value over a custom integration
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Readiness
+      options:
+        - label: Isolated optional package
+          required: true
+        - label: Real SDK boundary test and deterministic no-network tests
+          required: true
+        - label: Minimal/redacted telemetry and explicit ownership
+          required: true
+        - label: English/pt-BR docs, example, dependency rationale, and license review
+          required: true
+        - label: API snapshot, package catalog, and skills updates
+          required: true

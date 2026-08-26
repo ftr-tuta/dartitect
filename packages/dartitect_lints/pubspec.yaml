@@ -1,0 +1,20 @@
+name: dartitect_lints
+description: Official analyzer-plugin integration for Dartitect architecture rules.
+version: 1.0.0-rc.1
+repository: https://github.com/ftr-tuta/dartitect
+issue_tracker: https://github.com/ftr-tuta/dartitect/issues
+topics: [lints, analyzer, architecture, dart]
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  # 0.3.20 requires analyzer 14.1.0, which conflicts with the analyzer range
+  # selected by Flutter 3.47.1's pinned flutter_test graph. Revalidate before
+  # upgrading; do not use a dependency override to hide the incompatibility.
+  analysis_server_plugin: ^0.3.18
+  analyzer: ^13.3.0
+
+dev_dependencies:
+  test: ^1.26.3

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Dartitect Modeling"
+  short_description: "Generate immutable Dartitect value models"
+  default_prompt: "Use $dartitect-modeling to define and synchronize Dartitect value models."
+policy:
+  allow_implicit_invocation: true

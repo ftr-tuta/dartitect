@@ -1,0 +1,60 @@
+= Sync and headless threat model
+:toc:
+
+Status:: Reviewed for `1.0.0-rc.1`
+Review date:: 2026-08-24
+
+== Assets and trust boundaries
+
+The consumer owns credentials, provider clients, local schema, checkpoints,
+payloads, conflict policy, authentication, scheduling, and platform entrypoints.
+Dartitect owns only the provider-neutral execution protocol and lifecycle glue.
+Headless envelopes cross an isolate/platform boundary and therefore contain
+validated transferable values, a protocol version, an opaque request ID, and a
+deadline; they never carry clients, Stores, closures, tokens, or graph objects.
+
+== Threats and controls
+
+[cols="2,3,3",options="header"]
+|===
+| Threat | Control | Consumer responsibility
+
+| Duplicate or replayed delivery
+| Bounded request-ID deduplication and explicit accepted/terminal ACKs.
+| Persist idempotency beyond one process when delivery can outlive it.
+
+| Stale worker overwrites a checkpoint
+| Lease fencing tokens flow into every checkpoint write.
+| Atomically reject stale tokens in the storage transaction.
+
+| Lease loss during work
+| Renewal failure cancels the run and produces a typed report.
+| Choose TTL, availability, and retry policy for the deployment.
+
+| Resource leak or use-after-close
+| A fresh `OwnedGraph` is built per accepted request, drained, and disposed in
+`finally`; endpoint shutdown cancels and drains all admitted work.
+| Classify every SDK object as owned or borrowed and implement close callbacks.
+
+| Payload, identifier, or credential disclosure
+| The observability adapter emits static facts only and never logs dataset keys,
+request IDs, checkpoints, payloads, headers, DSNs, or credentials.
+| Sanitize provider failures and keep secrets out of envelope payloads.
+
+| Unbounded input or memory pressure
+| Dependency graphs reject duplicates/cycles, progress history and remembered
+requests are bounded, and deadlines/cancellation are explicit.
+| Bound payload size and dataset work before invoking the engine.
+
+| Crash misclassified as expected failure
+| Only typed `Err` values are expected failures. Unexpected exceptions retain
+their stack and are rethrown; retry is never automatic.
+| Report crashes and decide recovery after inspecting durable state.
+|===
+
+== Out of scope
+
+Dartitect does not provide authentication, authorization, encryption, durable
+queues, cross-process deduplication, distributed lock consensus, retry/backoff,
+conflict resolution, schema migration, or remote scheduling. Adding any of
+these as hidden SDK policy requires a new security and architecture review.

@@ -1,0 +1,96 @@
+= Public API review for the 1.0 release candidate
+
+Review date:: 2026-08-25
+Reviewed version:: lockstep `1.0.0-rc.1` cohort
+Snapshot gate:: `dart run tool/check_api_snapshot.dart`
+
+== Result
+
+The checked API snapshot covers all 17 public entrypoints and matches their
+source declarations. New ecosystem entrypoints are deliberately narrow;
+existing entrypoints remain source-compatible with the reviewed development
+cohort.
+
+[cols="2,3",options="header"]
+|===
+| Entrypoint | Review result
+
+| `package:dartitect/dartitect.dart`
+| Stable core ownership, Result, command lanes, equality, and projection
+contracts; no Flutter or provider dependency.
+
+| `package:dartitect_cli/dartitect_cli.dart`
+| Stable bounded CLI surface; no implicit application container.
+
+| `package:dartitect_dio/dartitect_dio.dart`
+| Opt-in adapter exporting explicit Dio ownership, cancellation, safe failure
+mapping, and instrumentation.
+
+| `package:dartitect_flutter/dartitect_flutter.dart`
+| Stable thin ViewModel, Command0/Command1, selector, scope, and error binding.
+
+| `package:dartitect_flutter/dartitect_flutter_reactive.dart`
+| Opt-in headless reactive entrypoint; public lifecycle and concurrency
+contracts are versioned by the prerelease line.
+
+| `package:dartitect_isolates/dartitect_isolates.dart`
+| Pure-Dart versioned worker protocol with ACK, readiness, heartbeat, deadline,
+crash/exit completion, safe-stop, and terminal supervisor cleanup.
+
+| `package:dartitect_lints/main.dart`
+| Analyzer plugin entrypoint required by the analyzer host.
+
+| `package:dartitect_locale_br/dartitect_locale_br.dart`
+| Pure-Dart immutable CEP normalization and formatting only.
+
+| `package:dartitect_geometry/dartitect_geometry.dart`
+| Pure-Dart polygon/polylabel values with deterministic validation and
+attributed algorithm lineage.
+
+| `package:dartitect_privacy/dartitect_privacy.dart`
+| Explicit ATT status/request boundary; never requests automatically and
+returns typed not-supported outside iOS.
+
+| `package:dartitect_media/dartitect_media.dart`
+| Narrow Android/iOS image-save boundary with explicit permission, limited
+access, cancellation, failure outcomes, and cleanup for its sole owned metadata.
+
+| `package:dartitect_mcp/dartitect_mcp.dart`
+| Local STDIO tooling on the lockstep release-candidate line; no HTTP/OAuth, app
+runtime, arbitrary filesystem, or private-plan access.
+
+| `package:dartitect_objectbox/dartitect_objectbox.dart`
+| Opt-in adapter; consumer entities, generated model, Store, transaction, and
+conflict policy remain consumer-owned.
+
+| `package:dartitect_observability/dartitect_observability.dart`
+| Provider-neutral logging, tracing, and reporting contracts with explicit
+runtime ownership.
+
+| `package:dartitect_sentry/dartitect_sentry.dart`
+| Opt-in bridge borrowing a consumer-initialized Hub; no SDK initialization or
+global ownership.
+
+| `package:dartitect_sync/dartitect_sync.dart`
+| Pure-Dart mutation/outbox and DAG execution, journal, checkpoint/lease/
+progress, and headless contracts; no Flutter or provider SDK.
+
+| `package:dartitect_testing/dartitect_testing.dart`
+| Test helpers only; no test runner or production dependency is re-exported.
+|===
+
+== Editorial and compatibility checks
+
+All publishable packages retain English and Portuguese READMEs, changelogs,
+licenses, examples, repository metadata, and lockstep versions checked by
+`tool/check_public_docs.dart`. API declarations, generated MCP catalog, and
+documentation examples are checked in the release audit. The compatibility
+entrypoint remains thin; advanced reactive APIs require a deliberate import and
+Material remains consumer-owned. No experimental API is presented as stable.
+
+== Decision
+
+The API surface is suitable for the current release-candidate line and a
+controlled pre-release use. Final RC approval remains governed by the separate
+readiness record and requires CI and Security evidence for the final candidate
+SHA.

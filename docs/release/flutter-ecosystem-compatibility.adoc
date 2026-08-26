@@ -1,0 +1,47 @@
+= Flutter ecosystem compatibility
+:toc:
+
+Snapshot:: 2026-08-25
+Candidate cohort:: `1.0.0-rc.1`
+
+== Supported boundaries
+
+`dartitect` and `dartitect_sync` are pure Dart and import no Flutter or provider
+SDK. `dartitect_flutter` is the only UI runtime boundary. Dio, ObjectBox, Sentry,
+and telemetry bridges are opt-in infrastructure packages and borrow
+consumer-selected SDK instances. The consumer composes every dependency with
+constructors and owns generated provider models and platform configuration.
+
+[cols="2,3,3",options="header"]
+|===
+| Surface | Local evidence | Cross-host evidence
+
+| Dart VM and Flutter Linux
+| Analyzer, unit/widget tests, generated applications, in-memory sync workload,
+and real generated ObjectBox workload.
+| Repeated on the final candidate SHA by CI.
+
+| Flutter web
+| Pure-Dart/core/sync boundaries and generated web applications; ObjectBox is
+excluded through conditional composition.
+| Chrome and web build on the final candidate SHA.
+
+| Android and iOS
+| No platform object crosses core/sync or isolate messages; adapter APIs use the
+provider-supported surfaces.
+| Required Android/iOS build and iOS test on maintained CI hosts.
+
+| Windows and macOS
+| ObjectBox ownership, transaction, query, checkpoint, and fencing contracts use
+the same generated-model fixture as Linux.
+| Required native fixture execution on both hosts.
+|===
+
+== Compatibility rules
+
+Flutter, Dart, analyzer, Dio, ObjectBox, Sentry, and MCP floors remain pinned in
+package pubspecs and CI. A provider upgrade requires its real fixture plus
+license and advisory review. A new adapter cannot leak provider types into
+domain, application, presentation, core, or sync. A new headless transport must
+preserve protocol versioning, deadlines, duplicate ACK semantics, transferable
+messages, and a fresh graph per accepted request.

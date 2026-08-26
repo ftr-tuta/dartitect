@@ -1,0 +1,50 @@
+= Dartitect 1.0 readiness decision
+
+Status:: GIT CONSUMPTION CANDIDATE ASSEMBLED; NOT READY FOR FORMAL RELEASE
+Implementation status:: Code and the sixteen-package `1.0.0-rc.1` cohort are assembled; external root checks and native evidence remain pending
+Decision date:: 2026-08-26 UTC
+Current candidate cohort:: `1.0.0-rc.1`
+Decision authority:: maintainer-delegated automation recorded in `tool/goal_gates.json`
+
+== Decision
+
+The public tree is the complete Git candidate for 16 packages and 17 public
+entrypoints. Its consumption tag is annotated, unsigned, protected, and carries
+no GitHub Release. Dependency overrides pin every selected and transitive
+Dartitect package to the same repository/tag/commit. No package is authorized
+for pub.dev publication.
+
+This record does not claim formal `READY_FOR_1_0_RC` or `READY_FOR_1_0` status.
+Those decisions remain fail closed until physical/external evidence, the future
+formal channel, upgrade evidence, and delegated review receipts exist.
+
+== Root evidence boundary
+
+The root SHA and tree cannot be written into their own tree. The private
+checkpoint records them after the canonical commit is created. That exact SHA
+must receive:
+
+* Linux / Flutter 3.47.1 (floor);
+* Linux / Flutter stable;
+* Windows / Flutter 3.47.1;
+* macOS and iOS / Flutter 3.47.1;
+* OSV / merge candidate on push;
+* trusted Security/OSV scanning;
+* clean-clone release audit;
+* Git consumption through an annotated tag and remote URL.
+
+The candidate is not tagged until the pre-tag local audits and disposable bare-
+remote canaries pass. After the public protected tag exists, the three canaries
+must be repeated against `https://github.com/ftr-tuta/dartitect.git`.
+
+== Remaining evidence
+
+The native harness defines nine candidate-bound cells. The current Android
+emulator cell can be rerun locally against the root; eight additional Android/
+iOS platform and device cells remain explicitly pending. Missing Apple hosts or
+physical devices stay missing evidence and are never converted into a pass.
+
+The formal signed-bundle/pub.dev path remains `NOT_AUTHORIZED`. Stable promotion
+remains `NOT_ASSEMBLED` and its publication decision remains `NOT_AUTHORIZED`.
+
+Signed-off-by: ftr <ftr@tuta.com>

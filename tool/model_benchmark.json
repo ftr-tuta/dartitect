@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-08-25",
+  "generatorVersion": "1.0.0-rc.1",
+  "host": {
+    "os": "linux",
+    "dart": "3.13.1",
+    "processors": 4
+  },
+  "results": [
+    {
+      "models": 100,
+      "command": "sync",
+      "runs": 5,
+      "medianMicros": 6350454,
+      "peakRssBytes": 738570240,
+      "samples": [
+        {
+          "elapsedMicros": 6350454,
+          "peakRssBytes": 735219712
+        },
+        {
+          "elapsedMicros": 6140230,
+          "peakRssBytes": 732151808
+        },
+        {
+          "elapsedMicros": 6373288,
+          "peakRssBytes": 738570240
+        },
+        {
+          "elapsedMicros": 6024162,
+          "peakRssBytes": 725073920
+        },
+        {
+          "elapsedMicros": 6554626,
+          "peakRssBytes": 707063808
+        }
+      ]
+    },
+    {
+      "models": 100,
+      "command": "check",
+      "runs": 5,
+      "medianMicros": 4529342,
+      "peakRssBytes": 747474944,
+      "samples": [
+        {
+          "elapsedMicros": 3565487,
+          "peakRssBytes": 720838656
+        },
+        {
+          "elapsedMicros": 4529342,
+          "peakRssBytes": 736518144
+        },
+        {
+          "elapsedMicros": 4254025,
+          "peakRssBytes": 747474944
+        },
+        {
+          "elapsedMicros": 4598861,
+          "peakRssBytes": 715694080
+        },
+        {
+          "elapsedMicros": 4587166,
+          "peakRssBytes": 736641024
+        }
+      ]
+    },
+    {
+      "models": 500,
+      "command": "sync",
+      "runs": 5,
+      "medianMicros": 14197058,
+      "peakRssBytes": 740724736,
+      "samples": [
+        {
+          "elapsedMicros": 15538662,
+          "peakRssBytes": 722681856
+        },
+        {
+          "elapsedMicros": 14957853,
+          "peakRssBytes": 740724736
+        },
+        {
+          "elapsedMicros": 14037973,
+          "peakRssBytes": 732545024
+        },
+        {
+          "elapsedMicros": 14197058,
+          "peakRssBytes": 729972736
+        },
+        {
+          "elapsedMicros": 13951453,
+          "peakRssBytes": 712273920
+        }
+      ]
+    },
+    {
+      "models": 500,
+      "command": "check",
+      "runs": 5,
+      "medianMicros": 11519951,
+      "peakRssBytes": 786874368,
+      "samples": [
+        {
+          "elapsedMicros": 10902183,
+          "peakRssBytes": 742940672
+        },
+        {
+          "elapsedMicros": 11519951,
+          "peakRssBytes": 760647680
+        },
+        {
+          "elapsedMicros": 10206975,
+          "peakRssBytes": 743636992
+        },
+        {
+          "elapsedMicros": 13863802,
+          "peakRssBytes": 756178944
+        },
+        {
+          "elapsedMicros": 13246372,
+          "peakRssBytes": 786874368
+        }
+      ]
+    }
+  ]
+}

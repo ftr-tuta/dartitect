@@ -1,0 +1,783 @@
+{
+  "schemaVersion": 1,
+  "generatedFor": "lockstep candidate cohort 1.0.0-rc.1",
+  "packages": [
+    {
+      "name": "_fe_analyzer_shared",
+      "version": "103.0.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "analysis_server_plugin",
+      "version": "0.3.18",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "analyzer",
+      "version": "13.3.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "analyzer_plugin",
+      "version": "0.14.12",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "args",
+      "version": "2.7.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "async",
+      "version": "2.13.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "boolean_selector",
+      "version": "2.1.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "characters",
+      "version": "1.4.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "cli_config",
+      "version": "0.2.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "clock",
+      "version": "1.1.2",
+      "source": "hosted",
+      "license": "Apache-2.0",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "code_assets",
+      "version": "2.0.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "collection",
+      "version": "1.19.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "convert",
+      "version": "3.1.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "coverage",
+      "version": "1.15.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "crypto",
+      "version": "3.0.7",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dart_mcp",
+      "version": "0.5.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dart_style",
+      "version": "3.1.12",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_adapters_app",
+      "version": "0.1.0",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_cli",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_dio",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_flutter",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_geometry",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_isolates",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_lints",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_locale_br",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_mcp",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_media",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_model_generator_fixture",
+      "version": "0.1.0",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_objectbox",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_observability",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_privacy",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_reference_app",
+      "version": "0.1.0",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_sentry",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_sync",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_testing",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dartitect_workspace",
+      "version": "1.0.0-rc.1",
+      "source": "root",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dio",
+      "version": "5.11.0",
+      "source": "hosted",
+      "license": "MIT",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "dio_web_adapter",
+      "version": "2.2.1",
+      "source": "hosted",
+      "license": "MIT",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "fake_async",
+      "version": "1.3.3",
+      "source": "hosted",
+      "license": "Apache-2.0",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "ffi",
+      "version": "2.2.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "file",
+      "version": "7.0.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "fixnum",
+      "version": "1.1.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "flat_buffers",
+      "version": "25.9.23",
+      "source": "hosted",
+      "license": "Apache-2.0",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "flutter",
+      "version": "0.0.0",
+      "source": "sdk",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "flutter_test",
+      "version": "0.0.0",
+      "source": "sdk",
+      "license": "BSD-3-Clause",
+      "licenseFile": "SDK license"
+    },
+    {
+      "name": "frontend_server_client",
+      "version": "4.0.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "glob",
+      "version": "2.1.3",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "hooks",
+      "version": "2.2.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "http",
+      "version": "1.6.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "http_multi_server",
+      "version": "3.2.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "http_parser",
+      "version": "4.1.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "io",
+      "version": "1.0.5",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "jni",
+      "version": "1.0.3",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "jni_flutter",
+      "version": "1.0.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "jni_util",
+      "version": "1.0.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "json_rpc_2",
+      "version": "4.1.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "leak_tracker",
+      "version": "11.0.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "leak_tracker_flutter_testing",
+      "version": "3.0.10",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "leak_tracker_testing",
+      "version": "3.0.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "logging",
+      "version": "1.3.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "matcher",
+      "version": "0.12.20",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "material_color_utilities",
+      "version": "0.13.0",
+      "source": "hosted",
+      "license": "Apache-2.0",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "meta",
+      "version": "1.19.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "mime",
+      "version": "2.0.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "node_preamble",
+      "version": "2.0.2",
+      "source": "hosted",
+      "license": "MIT",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "objectbox",
+      "version": "5.3.2",
+      "source": "hosted",
+      "license": "Apache-2.0",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "objectbox_flutter_libs",
+      "version": "5.3.2",
+      "source": "hosted",
+      "license": "Apache-2.0",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "objective_c",
+      "version": "9.6.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "package_config",
+      "version": "2.2.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "path",
+      "version": "1.9.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "path_provider",
+      "version": "2.1.6",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "path_provider_android",
+      "version": "2.3.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "path_provider_foundation",
+      "version": "2.6.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "path_provider_linux",
+      "version": "2.2.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "path_provider_platform_interface",
+      "version": "2.1.3",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "path_provider_windows",
+      "version": "2.3.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "platform",
+      "version": "3.1.6",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "plugin_platform_interface",
+      "version": "2.1.8",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "pool",
+      "version": "1.5.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "pub_semver",
+      "version": "2.2.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "record_use",
+      "version": "1.1.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "sentry",
+      "version": "9.27.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "shelf",
+      "version": "1.4.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "shelf_packages_handler",
+      "version": "3.0.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "shelf_static",
+      "version": "1.1.3",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "shelf_web_socket",
+      "version": "3.0.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "sky_engine",
+      "version": "0.0.0",
+      "source": "sdk",
+      "license": "Apache-2.0",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "source_map_stack_trace",
+      "version": "2.1.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "source_maps",
+      "version": "0.10.14",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "source_span",
+      "version": "1.10.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "stack_trace",
+      "version": "1.12.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "stream_channel",
+      "version": "2.1.4",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "stream_transform",
+      "version": "2.1.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "string_scanner",
+      "version": "1.4.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "term_glyph",
+      "version": "1.2.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "test",
+      "version": "1.31.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "test_api",
+      "version": "0.7.12",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "test_core",
+      "version": "0.6.18",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "typed_data",
+      "version": "1.4.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "uuid",
+      "version": "4.6.0",
+      "source": "hosted",
+      "license": "MIT",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "vector_math",
+      "version": "2.4.2",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "vm_service",
+      "version": "15.3.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "watcher",
+      "version": "1.2.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "web",
+      "version": "1.1.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "web_socket",
+      "version": "1.0.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "web_socket_channel",
+      "version": "3.0.3",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "webkit_inspection_protocol",
+      "version": "1.2.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "xdg_directories",
+      "version": "1.1.0",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "yaml",
+      "version": "3.1.3",
+      "source": "hosted",
+      "license": "MIT",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "yaml_edit",
+      "version": "2.2.4",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    }
+  ]
+}

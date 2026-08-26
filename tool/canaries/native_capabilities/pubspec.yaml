@@ -1,0 +1,23 @@
+name: dartitect_native_capabilities_packaged_canary
+description: Isolated native-capability consumer of the packaged Dartitect cohort.
+version: 0.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+  flutter: '>=3.47.1'
+
+dependencies:
+  dartitect: 1.0.0-rc.1
+  dartitect_geometry: 1.0.0-rc.1
+  dartitect_locale_br: 1.0.0-rc.1
+  dartitect_media: 1.0.0-rc.1
+  dartitect_privacy: 1.0.0-rc.1
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter

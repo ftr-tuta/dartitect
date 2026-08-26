@@ -1,0 +1,11 @@
+= ADR-0015: Versioning and generated ownership
+
+Status:: ACCEPTED
+
+Decision:: Public symbols follow SemVer; JSON/config schemas version
+independently. Generated-once files immediately belong to the consumer.
+Fully-generated files require a versioned header. Managed sections are avoided.
+
+Consequences:: Upgrade migrates only known config and generator-owned files,
+never arbitrary consumer source. Publication, tags, and remotes require a
+separate human decision.

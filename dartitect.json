@@ -1,0 +1,44 @@
+{
+  "configVersion": 1,
+  "profile": "native_strict",
+  "layers": {
+    "domain": ["**/domain/**"],
+    "application": ["**/application/**"],
+    "data": ["**/data/**"],
+    "infrastructure": [
+      "**/infrastructure/**",
+      "packages/dartitect_dio/**",
+      "packages/dartitect_objectbox/**",
+      "packages/dartitect_sentry/**"
+    ],
+    "presentation": [
+      "**/presentation/**",
+      "packages/dartitect_flutter/**",
+      "**/*_page.dart",
+      "**/*_view.dart",
+      "**/*_view_model.dart"
+    ]
+  },
+  "compositionRoots": [
+    "lib/main.dart",
+    "test/**",
+    "**/test/**",
+    "**/integration_test/**",
+    "**/composition/**",
+    "**/*_composition_root.dart"
+  ],
+  "generatedInfrastructure": [
+    "**/infrastructure/**/*.g.dart"
+  ],
+  "suppressions": [],
+  "scaffolds": {
+    "layout": "feature_first",
+    "blueprints": [
+      "simple",
+      "remote-read",
+      "local-first",
+      "offline-mutation",
+      "sync-dataset"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+= ADR-0002: Constructor injection
+
+Status:: ACCEPTED
+
+Decision:: Dependencies enter ordinary classes through constructors or typed
+factory functions. Service locators, type registries, reflection, annotations,
+and automatic graph resolution are forbidden.
+
+Consequences:: Composition is visible and compiler checked. Constructors can
+be verbose at application boundaries, which is intentional evidence of graph
+ownership.

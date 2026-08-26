@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "runs": 5,
+  "budgets": [
+    {"models": 100, "command": "sync", "maxMedianMicros": 15000000, "maxPeakRssBytes": 1073741824},
+    {"models": 100, "command": "check", "maxMedianMicros": 15000000, "maxPeakRssBytes": 1073741824},
+    {"models": 500, "command": "sync", "maxMedianMicros": 60000000, "maxPeakRssBytes": 1073741824},
+    {"models": 500, "command": "check", "maxMedianMicros": 60000000, "maxPeakRssBytes": 1073741824}
+  ]
+}

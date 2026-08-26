@@ -1,0 +1,52 @@
+= V1S-12 runtime and offline-first hardening
+
+Status:: IMPLEMENTED_LOCAL
+Authority:: `tool/runtime_hardening_contract.json`
+Gate:: `dart run tool/verify.dart --skip-get --native-objectbox`
+
+V1S-12 closes the local runtime hardening matrix without treating a remote
+Linux floor as its evidence source. The exact native gate still runs every
+workspace test and the real ObjectBox restart workload before this goal can be
+promoted beyond local implementation evidence.
+
+== Deterministic concurrency
+
+The Command lane race suite uses seed `12001` for 240 execute, cancel, settle,
+and concurrent-dispose schedules. It covers reject, join, drop, bounded FIFO,
+restart-latest, and bounded concurrent lanes. Every schedule must drain running
+and queued work, preserve terminal publication rules, respect its concurrency
+bound, reject post-disposal intake, and tolerate repeated disposal.
+
+The existing runtime suites remain part of the machine contract: keyed lane
+bounds and fairness, observer crash isolation, reactive invalidation, warm
+eviction, reacquisition during teardown, and stale-publication prevention.
+
+== Durable compatibility
+
+`packages/dartitect_sync/test/fixtures/persisted_v1.json` is the frozen
+consumer-owned v1 durability fixture. Its SHA-256 digest is
+`998d1bee0f51d8157e0143d534ad5d64655a4e4879f86ce24df27b8a71faa600`.
+
+The compatibility test reconstructs public outbox operations, checkpoint
+presence including a present-null value, journal facts, and incomplete attempt
+summaries, then emits the same decoded document. Durable enums are encoded by
+semantic `name`, never ordinal. Schemas 0 and 2, unknown enum names, unexpected
+fields, invalid timestamps, and invalid dataset-key presence fail closed.
+Dartitect still does not own a consumer's database schema, migration engine,
+retention, encryption, or codec.
+
+== Crash, restart, and residual census
+
+The offline-first tests prove atomic local apply plus outbox enqueue, stable
+idempotency across bounded expected retries, no automatic retry after a crash,
+explicit audit before uncertain recovery, checkpoint fencing, payload-free
+journaling, and interrupted-attempt resume.
+
+The isolate worker now has a real abrupt-exit test in addition to ACK, typed
+failure, crash, request deadline, and stale-protocol tests. The native ObjectBox
+workload closes and reopens the same directory, recovers its pending outbox,
+advances a checkpoint, runs background isolate work, and verifies teardown.
+
+The zero-residual census covers listeners, timers, subscriptions, queries,
+Command lanes, isolate workers, and owned Stores. Borrowed Stores remain open by
+contract; their Dartitect-owned observations are still drained.

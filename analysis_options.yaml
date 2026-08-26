@@ -1,0 +1,43 @@
+analyzer:
+  exclude:
+    - "**/.dart_tool/**"
+    - "**/build/**"
+    - "tool/analyzer_plugin_fixture/**"
+    - "tool/canaries/**"
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    missing_required_param: error
+    missing_return: error
+
+plugins:
+  dartitect_lints:
+    path: packages/dartitect_lints
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_dynamic_calls
+    - avoid_print
+    - cancel_subscriptions
+    - close_sinks
+    - directives_ordering
+    - discarded_futures
+    - no_adjacent_strings_in_list
+    - omit_local_variable_types
+    - prefer_final_fields
+    - prefer_final_locals
+    - prefer_single_quotes
+    - public_member_api_docs
+    - sort_constructors_first
+    - unawaited_futures
+    - use_super_parameters

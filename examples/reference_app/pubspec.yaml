@@ -1,0 +1,30 @@
+name: dartitect_reference_app
+description: Executable native-first Dartitect reference application.
+version: 0.1.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+  flutter: '>=3.47.1'
+
+dependencies:
+  dartitect: ^1.0.0-rc.1
+  dartitect_dio: ^1.0.0-rc.1
+  dartitect_flutter: ^1.0.0-rc.1
+  dartitect_isolates: ^1.0.0-rc.1
+  dartitect_objectbox: ^1.0.0-rc.1
+  dartitect_observability: ^1.0.0-rc.1
+  dartitect_sync: ^1.0.0-rc.1
+  dio: 5.11.0
+  flutter:
+    sdk: flutter
+  objectbox: 5.3.2
+  objectbox_flutter_libs: 5.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

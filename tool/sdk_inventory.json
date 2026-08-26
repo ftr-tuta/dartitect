@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "status": "NOT_READY_FOR_1_0_RC",
+  "packages": [
+    {
+      "name": "dartitect",
+      "version": "1.0.0-rc.1",
+      "decision": "keep-minimal-core",
+      "runtimeDependencies": [],
+      "entrypoints": [
+        "dartitect.dart"
+      ],
+      "publicSymbolCount": 65
+    },
+    {
+      "name": "dartitect_cli",
+      "version": "1.0.0-rc.1",
+      "decision": "keep-host-tooling",
+      "runtimeDependencies": [
+        "analyzer",
+        "crypto",
+        "dart_style"
+      ],
+      "entrypoints": [
+        "dartitect_cli.dart"
+      ],
+      "publicSymbolCount": 53
+    },
+    {
+      "name": "dartitect_dio",
+      "version": "1.0.0-rc.1",
+      "decision": "keep-optional-adapter",
+      "runtimeDependencies": [
+        "dartitect",
+        "dartitect_observability",
+        "dio"
+      ],
+      "entrypoints": [
+        "dartitect_dio.dart"
+      ],
+      "publicSymbolCount": 26
+    },
+    {
+      "name": "dartitect_flutter",
+      "version": "1.0.0-rc.1",
+      "decision": "keep-headless-and-widgets-no-material-entrypoint",
+      "runtimeDependencies": [
+        "dartitect",
+        "flutter"
+      ],
+      "entrypoints": [
+        "dartitect_flutter.dart",
+        "dartitect_flutter_reactive.dart"
+      ],
+      "publicSymbolCount": 153
+    },
+    {
+      "name": "dartitect_geometry",
+      "version": "1.0.0-rc.1",
+      "decision": "add-attributed-pure-dart-geometry",
+      "runtimeDependencies": [],
+      "entrypoints": [
+        "dartitect_geometry.dart"
+      ],
+      "publicSymbolCount": 5
+    },
+    {
+      "name": "dartitect_isolates",
+      "version": "1.0.0-rc.1",
+      "decision": "add-pure-dart-worker-lifecycle",
+      "runtimeDependencies": [
+        "dartitect"
+      ],
+      "entrypoints": [
+        "dartitect_isolates.dart"
+      ],
+      "publicSymbolCount": 10
+    },
+    {
+      "name": "dartitect_lints",
+      "version": "1.0.0-rc.1",
+      "decision": "keep-analyzer-host",
+      "runtimeDependencies": [
+        "analysis_server_plugin",
+        "analyzer"
+      ],
+      "entrypoints": [
+        "main.dart"
+      ],
+      "publicSymbolCount": 2
+    },
+    {
+      "name": "dartitect_locale_br",
+      "version": "1.0.0-rc.1",
+      "decision": "add-pure-dart-brazilian-values",
+      "runtimeDependencies": [],
+      "entrypoints": [
+        "dartitect_locale_br.dart"
+      ],
+      "publicSymbolCount": 1
+    },
+    {
+      "name": "dartitect_mcp",
+      "version": "1.0.0-rc.1",
+      "decision": "keep-local-reviewed-tooling",
+      "runtimeDependencies": [
+        "dart_mcp",
+        "dartitect_cli"
+      ],
+      "entrypoints": [
+        "dartitect_mcp.dart"
+      ],
+      "publicSymbolCount": 3
+    },
+    {
+      "name": "dartitect_media",
+      "version": "1.0.0-rc.1",
+      "decision": "add-explicit-gallery-boundary",
+      "runtimeDependencies": [
+        "dartitect",
+        "flutter"
+      ],
+      "entrypoints": [
+        "dartitect_media.dart"
+      ],
+      "publicSymbolCount": 12
+    },
+    {
+      "name": "dartitect_objectbox",
+      "version": "1.0.0-rc.1",
+      "decision": "keep-optional-native-adapter",
+      "runtimeDependencies": [
+        "dartitect",
+        "dartitect_flutter",
+        "dartitect_observability",
+        "dartitect_sync",
+        "flutter",
+        "objectbox",
+        "objectbox_flutter_libs"
+      ],
+      "entrypoints": [
+        "dartitect_objectbox.dart"
+      ],
+      "publicSymbolCount": 19
+    },
+    {
+      "name": "dartitect_observability",
+      "version": "1.0.0-rc.1",
+      "decision": "keep-provider-neutral-core",
+      "runtimeDependencies": [
+        "dartitect"
+      ],
+      "entrypoints": [
+        "dartitect_observability.dart"
+      ],
+      "publicSymbolCount": 38
+    },
+    {
+      "name": "dartitect_privacy",
+      "version": "1.0.0-rc.1",
+      "decision": "add-explicit-tracking-authorization-boundary",
+      "runtimeDependencies": [
+        "flutter"
+      ],
+      "entrypoints": [
+        "dartitect_privacy.dart"
+      ],
+      "publicSymbolCount": 3
+    },
+    {
+      "name": "dartitect_sentry",
+      "version": "1.0.0-rc.1",
+      "decision": "keep-optional-borrowed-hub-adapter",
+      "runtimeDependencies": [
+        "dartitect_observability",
+        "sentry"
+      ],
+      "entrypoints": [
+        "dartitect_sentry.dart"
+      ],
+      "publicSymbolCount": 3
+    },
+    {
+      "name": "dartitect_sync",
+      "version": "1.0.0-rc.1",
+      "decision": "keep-offline-and-sync-owner",
+      "runtimeDependencies": [
+        "dartitect"
+      ],
+      "entrypoints": [
+        "dartitect_sync.dart"
+      ],
+      "publicSymbolCount": 50
+    },
+    {
+      "name": "dartitect_testing",
+      "version": "1.0.0-rc.1",
+      "decision": "keep-dev-only-contract-sdk",
+      "runtimeDependencies": [
+        "dartitect",
+        "dartitect_isolates",
+        "dartitect_observability",
+        "dartitect_sync"
+      ],
+      "entrypoints": [
+        "dartitect_testing.dart"
+      ],
+      "publicSymbolCount": 42
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+= ADR-0014: Feature-first with optional domain
+
+Status:: ACCEPTED
+
+Decision:: Generators default to vertical feature directories. A domain
+directory is opt-in; use cases are not mandatory. Cross-feature consumers use
+deliberate public APIs, never another package's src directory.
+
+Consequences:: Small apps stay small while larger apps can introduce pure-Dart
+contracts without changing the SDK.

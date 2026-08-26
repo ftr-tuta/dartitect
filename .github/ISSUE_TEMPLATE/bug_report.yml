@@ -1,0 +1,39 @@
+name: Bug report
+description: Report a reproducible Dartitect defect (not a security issue).
+title: "[bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not report vulnerabilities here; use GitHub Security Advisories.
+  - type: input
+    id: package
+    attributes:
+      label: Package and version
+      placeholder: dartitect_flutter 1.0.0-rc.1
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected and actual outcome
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Remove credentials, DSNs, tokens, bodies, headers, and private data.
+    validations:
+      required: true
+  - type: input
+    id: toolchain
+    attributes:
+      label: Dart/Flutter and platform
+    validations:
+      required: true
+  - type: textarea
+    id: ownership
+    attributes:
+      label: Ownership and disposal context
+      description: State which values are owned/borrowed and the disposal order.

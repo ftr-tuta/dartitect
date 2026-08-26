@@ -1,0 +1,13 @@
+= ADR-0021: Experimental semantic configuration
+
+Status:: SUPERSEDED by ADR-0024
+
+Context:: The development line previously explored multiple configuration
+schemas and incremental migrations.
+
+Decision:: The experiment is not part of the stable contract. ADR-0024 replaces
+it with one strict +configVersion: 1+, the +native_strict+ profile, shared CLI/
+analyzer diagnostics, and no compatibility migration from experimental files.
+
+Consequences:: Consumers recreate and review configuration rather than carrying
+forward ambiguous experimental keys or semantics.

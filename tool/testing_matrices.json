@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "ownership": {
+    "columns": ["creator", "owner", "sharing", "cleanup", "lifetime", "singleton"],
+    "rows": [
+      {"name": "OwnedGraph<T>", "cells": ["transaction", "composition root", "generation-scoped", "drain then reverse close", "declared graph", "no"]},
+      {"name": "OwnedRuntimeSlot<T>", "cells": ["composition root", "publishing root", "typed generation", "serialized swap and drain", "root", "no"]},
+      {"name": "Command0<T,F> / Command1<A,T,F> / KeyedCommand1<K,A,T,F>", "cells": ["ViewModel", "ViewModel", "read-only state", "cancel and drain before ViewModel", "ViewModel", "no"]},
+      {"name": "EffectChannel<E>", "cells": ["application/session/route factory", "declared graph owner", "write-only sink and one consumer", "detach then async drain", "owner generation", "no"]},
+      {"name": "ViewModelHost<T> / ViewModel", "cells": ["route factory", "host or caller", "widget subtree", "owned only", "route", "no"]},
+      {"name": "SessionStateController<S>", "cells": ["application root", "application shell", "read-only replayable state", "after session graph drain", "application", "no"]},
+      {"name": "DartitectScope<T>", "cells": ["widget root", "external graph", "borrowed typed value", "never closes value", "subtree", "no"]},
+      {"name": "ReactiveOwner / ReactiveNode<T>", "cells": ["composition root", "reactive owner", "ValueListenable nodes", "reverse graph disposal", "declared graph", "no"]},
+      {"name": "LiveResource<T,F>", "cells": ["reactive owner", "reactive owner", "snapshots and leases", "cancel and close source", "policy-scoped", "no"]},
+      {"name": "ResourceFamily<K,T,F>", "cells": ["reactive owner", "reactive owner", "bounded keyed leases", "drain and evict", "session or route", "no"]},
+      {"name": "PagedLiveResource<C,K,T,F>", "cells": ["ViewModel", "ViewModel", "read-only pages", "cancel pages and source", "active query", "no"]},
+      {"name": "PullReactiveSource<T,F>", "cells": ["adapter factory", "LiveResource", "pull and invalidation", "cancel and release", "source session", "no"]},
+      {"name": "Future/Stream/ListenableReactiveSource<T,F>", "cells": ["adapter factory", "LiveResource", "typed snapshots only", "cancel subscription and detach", "activation session", "no"]},
+      {"name": "MutationLane<K,A,T,F> / outbox", "cells": ["repository root", "session graph", "keyed calls", "drain before store", "session or run", "no"]},
+      {"name": "SyncEngine<K,C,F> / SyncRun<K,C,F>", "cells": ["sync root", "graph and engine", "read-only progress", "cancel drain release", "session and attempt", "no"]},
+      {"name": "SyncRunJournal<K>", "cells": ["storage adapter", "adapter graph", "borrowed summaries", "after runs before provider", "sync graph", "no"]},
+      {"name": "IsolateWorker<P,R,F>", "cells": ["caller root", "supervisor", "typed envelopes", "safe-stop then force", "generation", "no"]},
+      {"name": "ObjectBox Store", "cells": ["adapter factory", "local graph", "same isolate", "queries before Store", "local graph", "no"]},
+      {"name": "ObjectBoxStoreWatchSource<T,F>", "cells": ["repository", "reactive owner", "domain snapshots", "watches before Store", "active query", "no"]},
+      {"name": "DioOwner", "cells": ["HTTP root", "graph or caller", "local repositories", "cancel then close owned", "session or run", "no"]},
+      {"name": "ObservabilityRuntime", "cells": ["composition root", "observed graph", "scoped ports", "drain and flush", "observed graph", "no"]},
+      {"name": "Sentry adapters", "cells": ["consumer root", "observability runtime", "sanitized ports", "never closes Hub", "runtime", "no"]}
+    ]
+  },
+  "composition": {
+    "columns": ["root", "background", "transfer", "testSeam", "validation"],
+    "rows": [
+      {"name": "OwnedGraph<T>", "cells": ["explicit factory", "new receiver graph", "values only", "fault injection", "rollback and census"]},
+      {"name": "OwnedRuntimeSlot<T>", "cells": ["publishing root", "new local slot", "generation ID", "manual completers", "swap races"]},
+      {"name": "Command0<T,F> / Command1<A,T,F> / KeyedCommand1<K,A,T,F>", "cells": ["ViewModel factory", "not shared", "values only", "injected action", "policy and terminal matrix"]},
+      {"name": "EffectChannel<E>", "cells": ["declared graph factory", "new receiver channel", "effect DTO only", "bounded fake channel", "FIFO/overflow/detach"]},
+      {"name": "ViewModelHost<T> / ViewModel", "cells": ["route builder", "forbidden", "arguments only", "widget harness", "ownership matrix"]},
+      {"name": "SessionStateController<S>", "cells": ["application shell", "new receiver controller", "opaque generation and immutable state", "manual transitions", "forced logout and swap"]},
+      {"name": "DartitectScope<T>", "cells": ["widget boundary", "forbidden", "config only", "widget fake", "typed lookup"]},
+      {"name": "ReactiveOwner / ReactiveNode<T>", "cells": ["reactive root", "new receiver owner", "values only", "manual batches", "equality/cycle/rollback"]},
+      {"name": "LiveResource<T,F>", "cells": ["reactive root", "new local resource", "consumer snapshot", "fake source", "policy races"]},
+      {"name": "ResourceFamily<K,T,F>", "cells": ["reactive root", "new local family", "keys only", "manual clock", "bounds and eviction"]},
+      {"name": "PagedLiveResource<C,K,T,F>", "cells": ["query ViewModel", "new local resource", "cursor only", "fake page source", "search races"]},
+      {"name": "PullReactiveSource<T,F>", "cells": ["adapter root", "new local source", "invalidation token", "trigger controller", "coalescing and close"]},
+      {"name": "Future/Stream/ListenableReactiveSource<T,F>", "cells": ["adapter root", "new receiver source", "typed result only", "completer/controller/notifier", "stale/cancel/detach"]},
+      {"name": "MutationLane<K,A,T,F> / outbox", "cells": ["repository root", "new local lane", "validated command", "fault points", "uncertain recovery"]},
+      {"name": "SyncEngine<K,C,F> / SyncRun<K,C,F>", "cells": ["sync root", "new receiver graph", "plan metadata", "fake ports", "DAG and fencing"]},
+      {"name": "SyncRunJournal<K>", "cells": ["sync adapter", "local storage handle", "payload-free summary", "crash journal", "restart atomicity"]},
+      {"name": "IsolateWorker<P,R,F>", "cells": ["spawn caller", "protocol boundary", "versioned envelope", "real isolate", "ACK and safe-stop"]},
+      {"name": "ObjectBox Store", "cells": ["storage root", "new local Store", "path after review", "generated fixture", "restart and close"]},
+      {"name": "ObjectBoxStoreWatchSource<T,F>", "cells": ["repository root", "new local source", "query descriptor", "watch fake and real Store", "multi-watch close"]},
+      {"name": "DioOwner", "cells": ["HTTP root", "new local Dio", "sanitized config", "fake adapter", "cancel and telemetry"]},
+      {"name": "ObservabilityRuntime", "cells": ["observed root", "new local runtime", "allowlisted context", "recording sinks", "filter and disposal"]},
+      {"name": "Sentry adapters", "cells": ["consumer root", "new local Hub bridge", "trace context only", "fake Hub", "mapping and borrowing"]}
+    ]
+  }
+}

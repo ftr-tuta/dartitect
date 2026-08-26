@@ -1,0 +1,11 @@
+= ADR-0004: Ownership and disposal
+
+Status:: ACCEPTED
+
+Decision:: `create` means owned and `value` means borrowed. ResourceOwner
+registers only completed acquisitions, closes registration at shutdown, and
+releases all resources once in LIFO order. Cleanup errors retain stack traces
+and are aggregated without hiding the first failure.
+
+Consequences:: Partial bootstrap rolls back deterministically. Consumers must
+label and register every resource whose lifetime they own.

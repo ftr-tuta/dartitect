@@ -1,0 +1,25 @@
+name: dartitect_privacy
+description: Explicit consumer-owned iOS tracking authorization status and request boundary for Flutter applications.
+version: 1.0.0-rc.1
+repository: https://github.com/ftr-tuta/dartitect
+issue_tracker: https://github.com/ftr-tuta/dartitect/issues
+topics: [privacy, tracking, ios, flutter]
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+  flutter: ">=3.47.1"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      ios:
+        pluginClass: DartitectPrivacyPlugin

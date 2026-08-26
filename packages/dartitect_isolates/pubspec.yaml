@@ -1,0 +1,16 @@
+name: dartitect_isolates
+description: Typed isolate readiness, request, heartbeat, and safe-stop lifecycle for Dartitect.
+version: 1.0.0-rc.1
+repository: https://github.com/ftr-tuta/dartitect
+issue_tracker: https://github.com/ftr-tuta/dartitect/issues
+topics: [isolates, concurrency, lifecycle, architecture]
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  dartitect: '>=1.0.0-rc.1 <1.0.0'
+
+dev_dependencies:
+  test: ^1.26.3

@@ -1,0 +1,4 @@
+.dart_tool/
+build/
+lib/libobjectbox.so
+lib/.objectbox-version

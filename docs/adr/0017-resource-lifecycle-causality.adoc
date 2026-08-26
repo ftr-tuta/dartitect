@@ -1,0 +1,24 @@
+= ADR-0017: Resource lifecycle and causal observation
+
+Status:: ACCEPTED
+
+Context:: An offline-first UI reads its authoritative state from local storage.
+Keeping a snapshot and keeping its upstream query alive are different concerns,
+and completion of a write does not prove that the UI observed the resulting
+local revision.
+
+Decision:: Resource data state is orthogonal to `hot`, `warm`, and `cold`
+temperature. Leases retain lifetime; active observations determine whether
+upstream work stays hot. Warm resources close upstream work and retain a
+snapshot for a bounded policy; cold resources retain neither. An
+`AsyncLifecycleBarrier` closes admission first, cancels and drains work, and
+blocks all later publication. Queries and subscriptions close before a Store,
+while borrowed resources are never closed by Dartitect. Causal refresh uses a
+typed local commit receipt and completes only after the owner flush that
+published the matching observed revision. Observation waits always have a
+bounded, typed timeout.
+
+Consequences:: Screen state cannot be patched independently of local storage,
+and spinner completion has an explicit causal point. Callers must distinguish
+ownership, choose an activation policy, and map observation timeout to their
+failure type.

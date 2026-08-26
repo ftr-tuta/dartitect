@@ -1,0 +1,20 @@
+= ADR-0022: Provider-neutral sync and headless protocols
+
+Status:: ACCEPTED
+
+Context:: Multiple datasets need ordered synchronization, checkpoint resume,
+progress, cancellation, deadlines, and background delivery without embedding
+transport, storage, conflict, or scheduling policy in the SDK.
+
+Decision:: `dartitect_sync` is a pure-Dart package containing a validated DAG,
+deterministic engine, typed reports, bounded progress history, checkpoint and
+lease ports, and a versioned headless command/ACK protocol. Dependencies block
+only their downstream datasets; independent branches continue. Unexpected
+exceptions preserve their stack and are rethrown. Each accepted headless
+request builds and drains a fresh `OwnedGraph`; messages contain transferable
+values only. Schedulers, payload schemas, retries, conflict resolution, and
+storage transactions remain consumer policy.
+
+Consequences:: Foreground and headless execution share one testable contract
+without Flutter, Dio, ObjectBox, platform channels, service locators, or
+mandatory global state.

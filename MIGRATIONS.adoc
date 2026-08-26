@@ -1,0 +1,11 @@
+= Configuration compatibility
+
+The stable contract starts at +configVersion: 1+ with
++profile: native_strict+. Experimental development configurations are not
+public predecessors and have no upgrade path.
+
+Run +dartitect init --dry-run+, review the complete v1 document, and recreate an
+older local file explicitly. The parser rejects every other version without
+modifying the project and preserves uninterpreted v1 extension fields.
+Generated-once consumer source is never a
+configuration migration target.

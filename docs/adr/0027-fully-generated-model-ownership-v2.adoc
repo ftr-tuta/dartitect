@@ -1,0 +1,54 @@
+= ADR 0027: fully-generated model ownership v2
+:status: accepted
+:date: 2026-08-24
+
+== Context
+
+ADR 0010 made generators create-only and ADR 0015 treated a generated header
+as sufficient evidence for fully-generated ownership. A convergent model
+generator must update and remove its own outputs, but a header alone cannot
+authorize overwriting consumer bytes or recovering an interrupted transaction.
+
+== Decision
+
+This ADR supersedes the fully-generated portion of ADR 0015 and updates the
+create-only consequence of ADR 0010. +generatedOnce+ remains create-only and
+consumer-owned after creation. +fullyGenerated+ uses generation protocol v2:
+
+* the desired output set is planned as create, update, delete, no-op, or
+  ownership conflict;
+* +.dartitect/model-outputs.json+ records normalized output/source paths,
+  generator and input-schema versions, a SHA-256 semantic-input digest, and a
+  SHA-256 digest of the canonical output bytes;
+* UTF-8, LF line endings, and one final newline are canonical; formatting and
+  comments outside the semantic model signature do not change ownership;
+* update or deletion is allowed only while the current bytes match the strong
+  digest recorded by the prior manifest; unmanaged, edited, absolute,
+  traversing, or symlinked paths fail closed;
+* the complete transaction is staged first. Existing outputs move to
+  same-filesystem backups, each atomic file replacement is validated, the
+  manifest commits last, and a versioned journal can restore the exact previous
+  bytes after interruption;
+* a pending or unsafe recovery never overwrites a concurrent consumer edit and
+  reports the relative paths requiring manual action.
+
+The 1.0 source contract is one non-generic +final+ class per library, annotated
+with +@DartitectValue()+, extending +ValueEquality+ with its calculated mixin,
+and paired with a basename +*.dartitect.g.dart+ part. Public final scalar/value
+fields correspond exactly to one unnamed generative constructor's named
+parameters. Mutable collection interfaces are rejected. The generated mixin
+contains abstract getters, +equalityFields+, and typed +copyWith+ only.
+
++dartitect model sync+ previews by default; +--dry-run+ is an explicit preview
+and only +--apply+ mutates. +dartitect model check+ is always read-only and is
+the CI freshness/ownership gate. Outputs and the manifest are versioned and
+must compile from a clean checkout without the CLI. Dartitect runtime packages
+do not depend on Analyzer, +build_runner+, +build+, or +source_gen+.
+
+== Consequences
+
+The native CLI deliberately does not provide watch, incremental builders, a
+general +generate+ command, or implicit +build_runner+ execution in 1.0.
+Consumers may still use approved external generators for JSON and ObjectBox in
+separate files. Strong ownership prevents convenient force-overwrite behavior;
+a consumer edit to a managed output requires explicit manual reconciliation.

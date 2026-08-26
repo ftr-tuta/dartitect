@@ -1,0 +1,6 @@
+interface:
+  display_name: "Dartitect Testing"
+  short_description: "Test failures, lifecycles, and providers"
+  default_prompt: "Use $dartitect-testing to design a Dartitect verification matrix."
+policy:
+  allow_implicit_invocation: true

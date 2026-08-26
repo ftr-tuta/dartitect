@@ -1,0 +1,146 @@
+= Dependency policy
+
+Runtime dependencies are rejected by default. An exception must be isolated,
+maintained, removable, and cheaper than the code and supply chain it replaces.
+
+[cols="2,2,2,3,3",options="header"]
+|===
+| Package | Dependency | Class | Rationale | Removal
+
+| dartitect
+| none
+| IMPLEMENT NATIVELY
+| Core uses only `dart:*`.
+| Not applicable.
+
+| dartitect_flutter
+| Flutter SDK, dartitect
+| SDK
+| Widget lifecycle and listenables are native platform primitives.
+| Core remains usable without Flutter.
+
+| dartitect_sync
+| dartitect
+| SDK
+| Reuses pure-Dart lifecycle, cancellation, and typed-result contracts for a
+provider-neutral DAG engine and headless protocol.
+| Consumer can implement the small ports around its own orchestration.
+
+| dartitect_testing
+| dartitect, dartitect_isolates, dartitect_observability, dartitect_sync
+| SDK
+| Reuses lifecycle contracts without exporting a test runner.
+| Consumer can use local fakes.
+
+| dartitect_cli
+| analyzer 13.3.0, crypto 3.0.7, dart_style 3.1.3
+| APPROVED TOOLING EXCEPTION
+| Semantic AST scanning avoids false findings from comments/strings and shares
+stable boundary definitions with the analyzer plugin. SHA-256 protects
+generated-output ownership and `dart_style` makes committed output identical to
+the canonical Dart formatter.
+| Generated apps and runtime packages do not depend on the CLI.
+
+| dartitect_lints
+| analysis_server_plugin 0.3.18, analyzer 13.3.0
+| APPROVED EXCEPTION
+| Official semantic analyzer/IDE integration. Version 0.3.20 is intentionally
+deferred because its Analyzer 14.1 graph conflicts with Flutter 3.47.1's
+official test pins.
+| Critical rules remain available in `dartitect scan`.
+
+| dartitect_dio
+| dio 5.11.0, dartitect, dartitect_observability
+| APPROVED EXCEPTION
+| An adapter must expose the actual client types and lifecycle.
+| Compose `Dio` directly at the application root.
+
+| dartitect_objectbox
+| objectbox 5.3.2, objectbox_flutter_libs 5.3.2, dartitect,
+dartitect_flutter, dartitect_observability, dartitect_sync
+| APPROVED EXCEPTION
+| An adapter must use the actual Store/native libraries and the opt-in
+Flutter reactive source lifecycle it implements.
+| Replace only infrastructure composition/repositories.
+
+| dartitect_observability
+| dartitect
+| SDK
+| Reuses lifecycle ownership and observes sync through payload-free static facts.
+| Consumer can implement the small interfaces directly.
+
+| dartitect_sentry
+| sentry 9.27.0, dartitect_observability
+| APPROVED EXCEPTION
+| Maps sanitized SDK events to a consumer-owned Hub without initialization.
+| Remove the adapter and inject another sink/reporter/tracer.
+
+| dartitect_mcp
+| dart_mcp 0.5.2, dartitect_cli
+| APPROVED TOOLING EXCEPTION
+| Uses the protocol package's typed tools, resources and STDIO transport while
+sharing project operations directly with the CLI. The exact pin contains the
+protocol surface reviewed for local tooling on the lockstep development line.
+| Remove the local MCP server; CLI and SDK behavior remain available. HTTP,
+OAuth and remote authorization are intentionally not implemented.
+
+| dartitect_isolates
+| dartitect
+| SDK
+| Reuses pure-Dart cancellation, disposal, and typed-result contracts for one
+versioned worker protocol with explicit supervisor ownership.
+| Compose `dart:isolate` directly for a workload-specific protocol.
+
+| dartitect_privacy
+| Flutter SDK
+| SDK
+| Isolates the platform channel required for explicit iOS tracking authorization
+status and requests; unsupported platforms return a typed result.
+| Remove the plugin and implement the same consumer-owned boundary natively.
+
+| dartitect_media
+| Flutter SDK, dartitect
+| SDK
+| Isolates Android/iOS gallery access behind typed permission, cancellation,
+save receipt, and failure contracts while reusing core value equality.
+| Remove the plugin and provide a platform-specific gallery port.
+
+| dartitect_locale_br
+| none
+| IMPLEMENT NATIVELY
+| Strict CEP parsing, normalization, formatting, and equality require no runtime
+dependency.
+| Not applicable.
+
+| dartitect_geometry
+| none
+| IMPLEMENT NATIVELY
+| Immutable geometry values and deterministic polylabel behavior are implemented
+in pure Dart without a GIS runtime.
+| Not applicable.
+
+| workspace tooling
+| crypto 3.0.7, test 1.31.1
+| DEV ONLY
+| `crypto` verifies pinned native artifact hashes; `test` runs the offline
+installer contract suite. Neither dependency is exported by a package.
+| Replace only the internal native-fixture installer or its development runner.
+
+| isolated benchmark workspace
+| flutter_riverpod 3.4.2, flutter_bloc 9.1.1, bloc_concurrency 0.3.0,
+vm_service 15.3.0
+| DEV ONLY
+| Exact comparator pins share one Flutter runner; VM service records heap on
+that same run. The workspace has its own lockfile and is never exported.
+| Delete +tool/benchmark_workspace+; no runtime package or lockfile changes.
+
+| all packages
+| test, flutter_test
+| DEV ONLY
+| Official test runners; never re-exported.
+| Replace the development runner.
+|===
+
+Review dependencies before every release and at least every 90 days. A stale
+or unverified dependency blocks adoption or upgrade; it never silently widens
+version constraints.

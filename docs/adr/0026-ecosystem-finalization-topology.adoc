@@ -1,0 +1,49 @@
+= ADR 0026: ecosystem finalization topology
+:status: accepted
+:date: 2026-08-24
+
+== Context
+
+ADR 0024 established a twelve-package stable-v1 candidate. Package-boundary
+review then identified four small capabilities that would otherwise remain coupled to
+independently published packages: tracking authorization, gallery image saves,
+Brazilian postal codes, and polygon label placement. The same review identified
+bounded replacements in existing packages for model boilerplate, Retrofit,
+UUID v4 generation, and first-frame splash ownership.
+
+== Decision
+
+This ADR supersedes ADR 0024's package count while preserving its dependency
+direction. The 1.0 target contains sixteen packages and seventeen public
+entrypoints. It adds:
+
+* +dartitect_privacy+, an isolated Flutter plugin for explicit iOS ATT status
+  and requests;
+* +dartitect_media+, an isolated Flutter plugin for Android/iOS gallery access
+  and image saves;
+* +dartitect_locale_br+, a dependency-free pure-Dart package whose 1.0 surface
+  is limited to CEP values;
+* +dartitect_geometry+, a dependency-free pure-Dart polygon/polylabel package.
+
+The plugins depend only on Flutter and their platform SDKs. The locale and
+geometry packages depend only on +dart:*+. They are never reexported by core
+or selected automatically by generated applications. Existing package
+responsibilities expand only at their established boundaries: core owns value
+annotations and injectable IDs, +dartitect_cli+ owns model generation and
+ecosystem auditing, +dartitect_dio+ owns typed JSON execution, and
++dartitect_flutter+ owns first-frame deferral.
+
++tool/ecosystem_policy.json+ is the offline dependency decision ledger.
++tool/check_package_topology.dart+, +tool/sdk_inventory.json+, and the public
+API snapshot are the machine-checked topology authorities.
+
+== Consequences
+
+Consumers can replace the nine reviewed capabilities without adding a global
+runtime, service locator, build-runner requirement, or umbrella package.
+Provider configuration, native usage descriptions, branding, albums, DTOs,
+endpoints, and application composition remain consumer-owned.
+
+The new plugins add native build obligations on their supported hosts. A local
+Linux run cannot close iOS/macOS evidence. Tagging, publishing, and consumer
+migration remain separately authorized actions.

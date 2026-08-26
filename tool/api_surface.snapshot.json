@@ -1,0 +1,1980 @@
+{
+  "schemaVersion": 1,
+  "sdkVersion": "1.0.0-rc.1",
+  "entrypoints": {
+    "packages/dartitect/lib/dartitect.dart": [
+      {
+        "name": "ArchitectureEvent",
+        "declaration": "final class ArchitectureEvent"
+      },
+      {
+        "name": "ArchitectureEventKind",
+        "declaration": "enum ArchitectureEventKind"
+      },
+      {
+        "name": "ArchitectureObserver",
+        "declaration": "abstract interface class ArchitectureObserver"
+      },
+      {
+        "name": "AsyncDisposable",
+        "declaration": "abstract interface class AsyncDisposable"
+      },
+      {
+        "name": "CancellationException",
+        "declaration": "final class CancellationException implements Exception"
+      },
+      {
+        "name": "CancellationRegistration",
+        "declaration": "final class CancellationRegistration implements Disposable"
+      },
+      {
+        "name": "CancellationSignal",
+        "declaration": "final class CancellationSignal"
+      },
+      {
+        "name": "CancellationSource",
+        "declaration": "final class CancellationSource implements Disposable"
+      },
+      {
+        "name": "ChangeCause",
+        "declaration": "final class ChangeCause"
+      },
+      {
+        "name": "ChangeCauseRegistry",
+        "declaration": "final class ChangeCauseRegistry"
+      },
+      {
+        "name": "ChangeCauses",
+        "declaration": "abstract final class ChangeCauses"
+      },
+      {
+        "name": "CommandCancelled",
+        "declaration": "final class CommandCancelled<T, F extends Object> extends CommandOutcome<T, F>"
+      },
+      {
+        "name": "CommandConcurrency",
+        "declaration": "final class CommandConcurrency"
+      },
+      {
+        "name": "CommandConcurrencyKind",
+        "declaration": "enum CommandConcurrencyKind"
+      },
+      {
+        "name": "CommandCrashReporter",
+        "declaration": "abstract interface class CommandCrashReporter"
+      },
+      {
+        "name": "CommandDropped",
+        "declaration": "final class CommandDropped<T, F extends Object> extends CommandOutcome<T, F>"
+      },
+      {
+        "name": "CommandFailed",
+        "declaration": "final class CommandFailed<T, F extends Object> extends CommandOutcome<T, F>"
+      },
+      {
+        "name": "CommandLane",
+        "declaration": "final class CommandLane<T, F extends Object>"
+      },
+      {
+        "name": "CommandLaneCrash",
+        "declaration": "final class CommandLaneCrash"
+      },
+      {
+        "name": "CommandLaneRejectionReason",
+        "declaration": "enum CommandLaneRejectionReason"
+      },
+      {
+        "name": "CommandOutcome",
+        "declaration": "sealed class CommandOutcome<T, F extends Object>"
+      },
+      {
+        "name": "CommandRejected",
+        "declaration": "final class CommandRejected<T, F extends Object> extends CommandOutcome<T, F>"
+      },
+      {
+        "name": "CommandSucceeded",
+        "declaration": "final class CommandSucceeded<T, F extends Object> extends CommandOutcome<T, F>"
+      },
+      {
+        "name": "CyclicValueException",
+        "declaration": "final class CyclicValueException implements Exception"
+      },
+      {
+        "name": "DartitectValue",
+        "declaration": "final class DartitectValue"
+      },
+      {
+        "name": "Disposable",
+        "declaration": "abstract interface class Disposable"
+      },
+      {
+        "name": "Err",
+        "declaration": "final class Err<F extends Object> extends Result<Never, F>"
+      },
+      {
+        "name": "IdGenerator",
+        "declaration": "abstract interface class IdGenerator"
+      },
+      {
+        "name": "IsolateProjectionCallback",
+        "declaration": "typedef IsolateProjectionCallback<in P, out R> = FutureOr<R> Function(P)"
+      },
+      {
+        "name": "IsolateProjectionExecutor",
+        "declaration": "final class IsolateProjectionExecutor<P, R> implements ProjectionExecutor<P, R>"
+      },
+      {
+        "name": "KeyedCommandLane",
+        "declaration": "final class KeyedCommandLane<K, A, T, F extends Object>"
+      },
+      {
+        "name": "NoOpArchitectureObserver",
+        "declaration": "final class NoOpArchitectureObserver implements ArchitectureObserver"
+      },
+      {
+        "name": "NoOpCommandCrashReporter",
+        "declaration": "final class NoOpCommandCrashReporter implements CommandCrashReporter"
+      },
+      {
+        "name": "NoOpReactiveObserver",
+        "declaration": "final class NoOpReactiveObserver implements ReactiveObserver"
+      },
+      {
+        "name": "Ok",
+        "declaration": "final class Ok<T> extends Result<T, Never>"
+      },
+      {
+        "name": "OwnedGraph",
+        "declaration": "final class OwnedGraph<T> implements AsyncDisposable"
+      },
+      {
+        "name": "OwnedRuntimeSlot",
+        "declaration": "final class OwnedRuntimeSlot<T> implements AsyncDisposable"
+      },
+      {
+        "name": "ProjectionExecution",
+        "declaration": "enum ProjectionExecution"
+      },
+      {
+        "name": "ProjectionExecutor",
+        "declaration": "abstract interface class ProjectionExecutor<P, R> implements AsyncDisposable"
+      },
+      {
+        "name": "ProjectionIsolateExitException",
+        "declaration": "final class ProjectionIsolateExitException implements Exception"
+      },
+      {
+        "name": "ProjectionRemoteException",
+        "declaration": "final class ProjectionRemoteException implements Exception"
+      },
+      {
+        "name": "ProjectionTransferException",
+        "declaration": "final class ProjectionTransferException implements Exception"
+      },
+      {
+        "name": "ReactiveChangeEvent",
+        "declaration": "final class ReactiveChangeEvent"
+      },
+      {
+        "name": "ReactiveEventKind",
+        "declaration": "enum ReactiveEventKind"
+      },
+      {
+        "name": "ReactiveEventSource",
+        "declaration": "enum ReactiveEventSource"
+      },
+      {
+        "name": "ReactiveJournal",
+        "declaration": "final class ReactiveJournal implements ReactiveObserver, Disposable"
+      },
+      {
+        "name": "ReactiveObserver",
+        "declaration": "abstract interface class ReactiveObserver"
+      },
+      {
+        "name": "ReactiveObserverRegistration",
+        "declaration": "final class ReactiveObserverRegistration"
+      },
+      {
+        "name": "ResourceCleanupException",
+        "declaration": "final class ResourceCleanupException implements Exception"
+      },
+      {
+        "name": "ResourceCleanupFailure",
+        "declaration": "final class ResourceCleanupFailure"
+      },
+      {
+        "name": "ResourceOwner",
+        "declaration": "final class ResourceOwner implements AsyncDisposable"
+      },
+      {
+        "name": "ResourceSnapshot",
+        "declaration": "final class ResourceSnapshot<T, M>"
+      },
+      {
+        "name": "ResourceTransaction",
+        "declaration": "final class ResourceTransaction implements AsyncDisposable"
+      },
+      {
+        "name": "ResourceTransactionException",
+        "declaration": "final class ResourceTransactionException implements Exception"
+      },
+      {
+        "name": "Result",
+        "declaration": "sealed class Result<T, F extends Object> extends ValueEquality"
+      },
+      {
+        "name": "ResultOperations",
+        "declaration": "extension ResultOperations<T, F extends Object> on Result<T, F>"
+      },
+      {
+        "name": "SafeReactiveObserver",
+        "declaration": "final class SafeReactiveObserver implements ReactiveObserver"
+      },
+      {
+        "name": "SecureUuidV4Generator",
+        "declaration": "final class SecureUuidV4Generator implements IdGenerator"
+      },
+      {
+        "name": "TransferableProjectionRequest",
+        "declaration": "final class TransferableProjectionRequest<P>"
+      },
+      {
+        "name": "TransferableProjectionResult",
+        "declaration": "final class TransferableProjectionResult<R>"
+      },
+      {
+        "name": "ValueEquality",
+        "declaration": "abstract class ValueEquality"
+      },
+      {
+        "name": "formatUuidV4RandomBytes",
+        "declaration": "String formatUuidV4RandomBytes(List<int> randomBytes)"
+      },
+      {
+        "name": "immutableListCopy",
+        "declaration": "List<T> immutableListCopy<T>(Iterable<T> values)"
+      },
+      {
+        "name": "immutableMapCopy",
+        "declaration": "Map<K, V> immutableMapCopy<K, V>(Map<K, V> values)"
+      },
+      {
+        "name": "immutableSetCopy",
+        "declaration": "Set<T> immutableSetCopy<T>(Iterable<T> values)"
+      }
+    ],
+    "packages/dartitect_cli/lib/dartitect_cli.dart": [
+      {
+        "name": "CodexSkillSynchronizer",
+        "declaration": "final class CodexSkillSynchronizer"
+      },
+      {
+        "name": "CodexSyncResult",
+        "declaration": "final class CodexSyncResult"
+      },
+      {
+        "name": "CommandEnvelope",
+        "declaration": "final class CommandEnvelope"
+      },
+      {
+        "name": "DartitectArchitectureRules",
+        "declaration": "abstract final class DartitectArchitectureRules"
+      },
+      {
+        "name": "DartitectBaseline",
+        "declaration": "final class DartitectBaseline"
+      },
+      {
+        "name": "DartitectBoundaryClassifier",
+        "declaration": "final class DartitectBoundaryClassifier"
+      },
+      {
+        "name": "DartitectChangeException",
+        "declaration": "final class DartitectChangeException implements Exception"
+      },
+      {
+        "name": "DartitectChangeKind",
+        "declaration": "enum DartitectChangeKind"
+      },
+      {
+        "name": "DartitectChangePlan",
+        "declaration": "final class DartitectChangePlan"
+      },
+      {
+        "name": "DartitectChangeReceipt",
+        "declaration": "final class DartitectChangeReceipt"
+      },
+      {
+        "name": "DartitectCliRunner",
+        "declaration": "final class DartitectCliRunner"
+      },
+      {
+        "name": "DartitectConfig",
+        "declaration": "final class DartitectConfig"
+      },
+      {
+        "name": "DartitectConfigException",
+        "declaration": "final class DartitectConfigException implements FormatException"
+      },
+      {
+        "name": "DartitectExitCode",
+        "declaration": "enum DartitectExitCode"
+      },
+      {
+        "name": "DartitectFinding",
+        "declaration": "final class DartitectFinding"
+      },
+      {
+        "name": "DartitectModelGenerator",
+        "declaration": "final class DartitectModelGenerator"
+      },
+      {
+        "name": "DartitectProjectService",
+        "declaration": "final class DartitectProjectService"
+      },
+      {
+        "name": "DartitectRuleCodes",
+        "declaration": "abstract final class DartitectRuleCodes"
+      },
+      {
+        "name": "DartitectSourceClassification",
+        "declaration": "final class DartitectSourceClassification"
+      },
+      {
+        "name": "DartitectSuppression",
+        "declaration": "final class DartitectSuppression"
+      },
+      {
+        "name": "EcosystemAuditFinding",
+        "declaration": "final class EcosystemAuditFinding"
+      },
+      {
+        "name": "EcosystemAuditReport",
+        "declaration": "final class EcosystemAuditReport"
+      },
+      {
+        "name": "EcosystemDecision",
+        "declaration": "enum EcosystemDecision"
+      },
+      {
+        "name": "EcosystemDependencyAuditor",
+        "declaration": "final class EcosystemDependencyAuditor"
+      },
+      {
+        "name": "EcosystemPolicy",
+        "declaration": "final class EcosystemPolicy"
+      },
+      {
+        "name": "EcosystemPolicyException",
+        "declaration": "final class EcosystemPolicyException"
+      },
+      {
+        "name": "EcosystemPolicyRecord",
+        "declaration": "final class EcosystemPolicyRecord"
+      },
+      {
+        "name": "FileGenerationOperation",
+        "declaration": "final class FileGenerationOperation"
+      },
+      {
+        "name": "FindingSeverity",
+        "declaration": "enum FindingSeverity"
+      },
+      {
+        "name": "GeneratedOwnership",
+        "declaration": "enum GeneratedOwnership"
+      },
+      {
+        "name": "GenerationDisposition",
+        "declaration": "enum GenerationDisposition"
+      },
+      {
+        "name": "GenerationEngine",
+        "declaration": "final class GenerationEngine"
+      },
+      {
+        "name": "GenerationException",
+        "declaration": "final class GenerationException implements Exception"
+      },
+      {
+        "name": "GenerationFailureKind",
+        "declaration": "enum GenerationFailureKind"
+      },
+      {
+        "name": "GenerationFaultEvent",
+        "declaration": "final class GenerationFaultEvent"
+      },
+      {
+        "name": "GenerationFaultInjector",
+        "declaration": "typedef GenerationFaultInjector = FutureOr<void> Function(GenerationFaultEvent)"
+      },
+      {
+        "name": "GenerationFaultPoint",
+        "declaration": "enum GenerationFaultPoint"
+      },
+      {
+        "name": "GenerationPlan",
+        "declaration": "final class GenerationPlan"
+      },
+      {
+        "name": "GenerationResult",
+        "declaration": "final class GenerationResult"
+      },
+      {
+        "name": "ModelDiagnostic",
+        "declaration": "final class ModelDiagnostic"
+      },
+      {
+        "name": "ModelGenerationException",
+        "declaration": "final class ModelGenerationException implements Exception"
+      },
+      {
+        "name": "ModelGenerationReport",
+        "declaration": "final class ModelGenerationReport"
+      },
+      {
+        "name": "PlannedFileOperation",
+        "declaration": "final class PlannedFileOperation"
+      },
+      {
+        "name": "ProjectScan",
+        "declaration": "final class ProjectScan"
+      },
+      {
+        "name": "ProjectScanner",
+        "declaration": "final class ProjectScanner"
+      },
+      {
+        "name": "RemoveWhereFrom",
+        "declaration": "extension RemoveWhereFrom<T> on List<T>"
+      },
+      {
+        "name": "ScaffoldBlueprint",
+        "declaration": "enum ScaffoldBlueprint"
+      },
+      {
+        "name": "ScaffoldFactory",
+        "declaration": "final class ScaffoldFactory"
+      },
+      {
+        "name": "ScaffoldName",
+        "declaration": "final class ScaffoldName"
+      },
+      {
+        "name": "currentConfigVersion",
+        "declaration": "int get currentConfigVersion"
+      },
+      {
+        "name": "dartitectGlobMatches",
+        "declaration": "bool dartitectGlobMatches(String glob, String path)"
+      },
+      {
+        "name": "fingerprintFinding",
+        "declaration": "String fingerprintFinding(DartitectFinding finding)"
+      },
+      {
+        "name": "nativeStrictProfile",
+        "declaration": "String get nativeStrictProfile"
+      }
+    ],
+    "packages/dartitect_dio/lib/dartitect_dio.dart": [
+      {
+        "name": "CancellationToken",
+        "declaration": "typedef CancellationToken = CancellationSignal"
+      },
+      {
+        "name": "DartitectHeadersInterceptor",
+        "declaration": "final class DartitectHeadersInterceptor extends Interceptor"
+      },
+      {
+        "name": "DefaultDioJsonClient",
+        "declaration": "final class DefaultDioJsonClient implements DioJsonClient"
+      },
+      {
+        "name": "DioCancellationBinding",
+        "declaration": "final class DioCancellationBinding implements Disposable"
+      },
+      {
+        "name": "DioCancelledFailure",
+        "declaration": "final class DioCancelledFailure extends DioFailure"
+      },
+      {
+        "name": "DioConfigurationFailure",
+        "declaration": "final class DioConfigurationFailure extends DioFailure"
+      },
+      {
+        "name": "DioDecodingFailure",
+        "declaration": "final class DioDecodingFailure extends DioFailure"
+      },
+      {
+        "name": "DioEndpoint",
+        "declaration": "final class DioEndpoint<T>"
+      },
+      {
+        "name": "DioFailure",
+        "declaration": "sealed class DioFailure implements Exception"
+      },
+      {
+        "name": "DioHttpFailure",
+        "declaration": "final class DioHttpFailure extends DioFailure"
+      },
+      {
+        "name": "DioInstrumentation",
+        "declaration": "final class DioInstrumentation extends Interceptor implements Disposable"
+      },
+      {
+        "name": "DioInstrumentationConflictException",
+        "declaration": "final class DioInstrumentationConflictException implements Exception"
+      },
+      {
+        "name": "DioJsonClient",
+        "declaration": "abstract interface class DioJsonClient"
+      },
+      {
+        "name": "DioOwner",
+        "declaration": "final class DioOwner implements Disposable"
+      },
+      {
+        "name": "DioResponse",
+        "declaration": "final class DioResponse<T>"
+      },
+      {
+        "name": "DioRouteFailure",
+        "declaration": "final class DioRouteFailure extends DioFailure"
+      },
+      {
+        "name": "DioTelemetryEvent",
+        "declaration": "final class DioTelemetryEvent"
+      },
+      {
+        "name": "DioTelemetryInterceptor",
+        "declaration": "final class DioTelemetryInterceptor extends Interceptor"
+      },
+      {
+        "name": "DioTelemetryObserver",
+        "declaration": "abstract interface class DioTelemetryObserver"
+      },
+      {
+        "name": "DioTransportFailure",
+        "declaration": "final class DioTransportFailure extends DioFailure"
+      },
+      {
+        "name": "InvalidRouteTemplateException",
+        "declaration": "final class InvalidRouteTemplateException implements Exception"
+      },
+      {
+        "name": "RouteTemplate",
+        "declaration": "final class RouteTemplate extends ValueEquality"
+      },
+      {
+        "name": "RouteTemplateResolver",
+        "declaration": "typedef RouteTemplateResolver = RouteTemplate? Function(RequestOptions)"
+      },
+      {
+        "name": "bindCancelToken",
+        "declaration": "CancelToken bindCancelToken(CancellationSignal signal, {Object? reason})"
+      },
+      {
+        "name": "captureDioException",
+        "declaration": "Future<Result<T, DioFailure>> captureDioException<T>(Future<T> Function() request)"
+      },
+      {
+        "name": "ownCancelToken",
+        "declaration": "CancelToken ownCancelToken(ResourceOwner owner, {Object reason = 'Owner disposed'})"
+      }
+    ],
+    "packages/dartitect_flutter/lib/dartitect_flutter.dart": [
+      {
+        "name": "CallbackFlutterCrashReporter",
+        "declaration": "final class CallbackFlutterCrashReporter implements FlutterCrashReporter"
+      },
+      {
+        "name": "Command0",
+        "declaration": "final class Command0<T, F extends Object> extends ChangeNotifier with _CommandBinding<T, F>"
+      },
+      {
+        "name": "Command1",
+        "declaration": "final class Command1<A, T, F extends Object> extends ChangeNotifier with _CommandBinding<T, F>"
+      },
+      {
+        "name": "CommandAdmissionStatus",
+        "declaration": "enum CommandAdmissionStatus"
+      },
+      {
+        "name": "CommandCancelledState",
+        "declaration": "final class CommandCancelledState<T, F extends Object> extends CommandState<T, F>"
+      },
+      {
+        "name": "CommandCrashState",
+        "declaration": "final class CommandCrashState<T, F extends Object> extends CommandState<T, F>"
+      },
+      {
+        "name": "CommandExecution",
+        "declaration": "sealed class CommandExecution<T, F extends Object>"
+      },
+      {
+        "name": "CommandExecutionCancelled",
+        "declaration": "final class CommandExecutionCancelled<T, F extends Object> extends CommandExecution<T, F>"
+      },
+      {
+        "name": "CommandExecutionDropped",
+        "declaration": "final class CommandExecutionDropped<T, F extends Object> extends CommandExecution<T, F>"
+      },
+      {
+        "name": "CommandExecutionFailed",
+        "declaration": "final class CommandExecutionFailed<T, F extends Object> extends CommandExecution<T, F>"
+      },
+      {
+        "name": "CommandExecutionRejected",
+        "declaration": "final class CommandExecutionRejected<T, F extends Object> extends CommandExecution<T, F>"
+      },
+      {
+        "name": "CommandExecutionSucceeded",
+        "declaration": "final class CommandExecutionSucceeded<T, F extends Object> extends CommandExecution<T, F>"
+      },
+      {
+        "name": "CommandFailureState",
+        "declaration": "final class CommandFailureState<T, F extends Object> extends CommandState<T, F>"
+      },
+      {
+        "name": "CommandIdleState",
+        "declaration": "final class CommandIdleState<T, F extends Object> extends CommandState<T, F>"
+      },
+      {
+        "name": "CommandRejectionReason",
+        "declaration": "enum CommandRejectionReason"
+      },
+      {
+        "name": "CommandRunningState",
+        "declaration": "final class CommandRunningState<T, F extends Object> extends CommandState<T, F>"
+      },
+      {
+        "name": "CommandState",
+        "declaration": "sealed class CommandState<T, F extends Object> extends ValueEquality"
+      },
+      {
+        "name": "CommandSuccessState",
+        "declaration": "final class CommandSuccessState<T, F extends Object> extends CommandState<T, F>"
+      },
+      {
+        "name": "DartitectScope",
+        "declaration": "final class DartitectScope<T extends DartitectScopeValue> extends InheritedWidget"
+      },
+      {
+        "name": "DartitectScopeValue",
+        "declaration": "abstract interface class DartitectScopeValue"
+      },
+      {
+        "name": "EffectChannel",
+        "declaration": "final class EffectChannel<E extends Object> implements AsyncDisposable"
+      },
+      {
+        "name": "EffectErrorReporter",
+        "declaration": "abstract interface class EffectErrorReporter"
+      },
+      {
+        "name": "EffectListener",
+        "declaration": "final class EffectListener<E extends Object> extends StatefulWidget"
+      },
+      {
+        "name": "EffectOwnerIdentity",
+        "declaration": "final class EffectOwnerIdentity"
+      },
+      {
+        "name": "EffectOwnerKind",
+        "declaration": "enum EffectOwnerKind"
+      },
+      {
+        "name": "EffectPublishResult",
+        "declaration": "enum EffectPublishResult"
+      },
+      {
+        "name": "EffectSink",
+        "declaration": "abstract interface class EffectSink<E extends Object>"
+      },
+      {
+        "name": "EffectSubscription",
+        "declaration": "final class EffectSubscription implements Disposable"
+      },
+      {
+        "name": "FirstFrameGate",
+        "declaration": "abstract final class FirstFrameGate"
+      },
+      {
+        "name": "FirstFrameGateOwner",
+        "declaration": "final class FirstFrameGateOwner implements Disposable"
+      },
+      {
+        "name": "FlutterBindingBuildEvent",
+        "declaration": "final class FlutterBindingBuildEvent"
+      },
+      {
+        "name": "FlutterBindingBuildObserver",
+        "declaration": "typedef FlutterBindingBuildObserver = void Function(FlutterBindingBuildEvent)"
+      },
+      {
+        "name": "FlutterBindingKind",
+        "declaration": "enum FlutterBindingKind"
+      },
+      {
+        "name": "FlutterCrashMechanism",
+        "declaration": "enum FlutterCrashMechanism"
+      },
+      {
+        "name": "FlutterCrashReporter",
+        "declaration": "abstract interface class FlutterCrashReporter"
+      },
+      {
+        "name": "FlutterErrorBinding",
+        "declaration": "final class FlutterErrorBinding implements Disposable"
+      },
+      {
+        "name": "KeyedCommand1",
+        "declaration": "final class KeyedCommand1<K, A, T, F extends Object> extends ChangeNotifier with _CommandBinding<T, F>"
+      },
+      {
+        "name": "ListenableSelection",
+        "declaration": "typedef ListenableSelection<in S extends Listenable, out R> = R Function(S)"
+      },
+      {
+        "name": "ListenableSelectionEquals",
+        "declaration": "typedef ListenableSelectionEquals<in R> = bool Function(R, R)"
+      },
+      {
+        "name": "ListenableSelector",
+        "declaration": "final class ListenableSelector<S extends Listenable, R> extends StatefulWidget"
+      },
+      {
+        "name": "ListenableSelectorBuilder",
+        "declaration": "typedef ListenableSelectorBuilder<in R> = Widget Function(BuildContext, R, Widget?)"
+      },
+      {
+        "name": "NoOpEffectErrorReporter",
+        "declaration": "final class NoOpEffectErrorReporter implements EffectErrorReporter"
+      },
+      {
+        "name": "NoOpFlutterCrashReporter",
+        "declaration": "final class NoOpFlutterCrashReporter implements FlutterCrashReporter"
+      },
+      {
+        "name": "SessionActive",
+        "declaration": "final class SessionActive<S extends Object> extends SessionState<S>"
+      },
+      {
+        "name": "SessionAnonymous",
+        "declaration": "final class SessionAnonymous<S extends Object> extends SessionState<S>"
+      },
+      {
+        "name": "SessionForcedLogout",
+        "declaration": "final class SessionForcedLogout<S extends Object> extends SessionState<S>"
+      },
+      {
+        "name": "SessionSignedOut",
+        "declaration": "final class SessionSignedOut<S extends Object> extends SessionState<S>"
+      },
+      {
+        "name": "SessionState",
+        "declaration": "sealed class SessionState<S extends Object> extends ValueEquality"
+      },
+      {
+        "name": "SessionStateController",
+        "declaration": "final class SessionStateController<S extends Object> extends ValueNotifier<SessionState<S>> implements Disposable"
+      },
+      {
+        "name": "SessionTransitionCause",
+        "declaration": "enum SessionTransitionCause"
+      },
+      {
+        "name": "SessionTransitioning",
+        "declaration": "final class SessionTransitioning<S extends Object> extends SessionState<S>"
+      },
+      {
+        "name": "ViewModelDisposer",
+        "declaration": "typedef ViewModelDisposer<in T extends Object> = FutureOr<void> Function(T)"
+      },
+      {
+        "name": "ViewModelHost",
+        "declaration": "final class ViewModelHost<T extends Object> extends StatefulWidget"
+      },
+      {
+        "name": "ViewModelStarter",
+        "declaration": "typedef ViewModelStarter<in T extends Object> = FutureOr<void> Function(T)"
+      },
+      {
+        "name": "ViewModelWidgetBuilder",
+        "declaration": "typedef ViewModelWidgetBuilder<in T extends Object> = Widget Function(BuildContext, T)"
+      }
+    ],
+    "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart": [
+      {
+        "name": "ActivationMode",
+        "declaration": "enum ActivationMode"
+      },
+      {
+        "name": "ActivationPolicy",
+        "declaration": "final class ActivationPolicy"
+      },
+      {
+        "name": "AsyncLifecycleBarrier",
+        "declaration": "final class AsyncLifecycleBarrier"
+      },
+      {
+        "name": "AsyncLifecycleCleanupException",
+        "declaration": "final class AsyncLifecycleCleanupException implements Exception"
+      },
+      {
+        "name": "AsyncLifecycleCleanupFailure",
+        "declaration": "final class AsyncLifecycleCleanupFailure"
+      },
+      {
+        "name": "CollectionChange",
+        "declaration": "final class CollectionChange<K>"
+      },
+      {
+        "name": "CollectionChangeKind",
+        "declaration": "enum CollectionChangeKind"
+      },
+      {
+        "name": "CollectionProjectionInput",
+        "declaration": "final class CollectionProjectionInput<K, S>"
+      },
+      {
+        "name": "CollectionProjectionOutput",
+        "declaration": "final class CollectionProjectionOutput<K, T>"
+      },
+      {
+        "name": "CollectionProjectionStatus",
+        "declaration": "enum CollectionProjectionStatus"
+      },
+      {
+        "name": "CollectionUpdatePolicy",
+        "declaration": "enum CollectionUpdatePolicy"
+      },
+      {
+        "name": "DebouncedReactiveValue",
+        "declaration": "final class DebouncedReactiveValue<T> implements ValueListenable<T>, Disposable"
+      },
+      {
+        "name": "DuplicateCollectionKeyException",
+        "declaration": "final class DuplicateCollectionKeyException<K> implements Exception"
+      },
+      {
+        "name": "Equality",
+        "declaration": "typedef Equality<in T> = bool Function(T, T)"
+      },
+      {
+        "name": "FamilyCachePolicy",
+        "declaration": "final class FamilyCachePolicy<K, T>"
+      },
+      {
+        "name": "FamilyLease",
+        "declaration": "final class FamilyLease<K, T, F extends Object>"
+      },
+      {
+        "name": "FlutterBindingBuildEvent",
+        "declaration": "final class FlutterBindingBuildEvent"
+      },
+      {
+        "name": "FlutterBindingBuildObserver",
+        "declaration": "typedef FlutterBindingBuildObserver = void Function(FlutterBindingBuildEvent)"
+      },
+      {
+        "name": "FlutterBindingKind",
+        "declaration": "enum FlutterBindingKind"
+      },
+      {
+        "name": "FlutterSourceFrameScheduler",
+        "declaration": "final class FlutterSourceFrameScheduler implements SourceFrameScheduler"
+      },
+      {
+        "name": "FutureReactiveSource",
+        "declaration": "final class FutureReactiveSource<T, F extends Object> implements ReactiveSource<T, F>"
+      },
+      {
+        "name": "InvalidationBinding",
+        "declaration": "final class InvalidationBinding<K> implements Disposable"
+      },
+      {
+        "name": "InvalidationGroup",
+        "declaration": "final class InvalidationGroup<K> implements Disposable"
+      },
+      {
+        "name": "ListenableReactiveSource",
+        "declaration": "final class ListenableReactiveSource<T, F extends Object> implements ReactiveSource<T, F>"
+      },
+      {
+        "name": "LiveCollection",
+        "declaration": "final class LiveCollection<K, T> implements AsyncDisposable"
+      },
+      {
+        "name": "LiveCollectionBuilder",
+        "declaration": "final class LiveCollectionBuilder<K, T> extends StatefulWidget"
+      },
+      {
+        "name": "LiveCollectionWidgetBuilder",
+        "declaration": "typedef LiveCollectionWidgetBuilder<in K, in T> = Widget Function(BuildContext, LiveCollection<K, T>, List<K>, Widget?)"
+      },
+      {
+        "name": "LiveItem",
+        "declaration": "final class LiveItem<K, T> implements ValueListenable<T?>"
+      },
+      {
+        "name": "LiveResource",
+        "declaration": "final class LiveResource<T, F extends Object> implements Listenable"
+      },
+      {
+        "name": "LiveResourceBuilder",
+        "declaration": "final class LiveResourceBuilder<T, F extends Object> extends StatefulWidget"
+      },
+      {
+        "name": "LiveResourceCrashReporter",
+        "declaration": "abstract interface class LiveResourceCrashReporter"
+      },
+      {
+        "name": "LiveResourceWidgetBuilder",
+        "declaration": "typedef LiveResourceWidgetBuilder<in T, in F extends Object> = Widget Function(BuildContext, ResourceDataState<T, F>, ResourceTemperature, bool, Widget?)"
+      },
+      {
+        "name": "LocalCommitReceipt",
+        "declaration": "final class LocalCommitReceipt<R>"
+      },
+      {
+        "name": "LocalCommitRefresh",
+        "declaration": "final class LocalCommitRefresh<R, F extends Object>"
+      },
+      {
+        "name": "NoOpLiveResourceCrashReporter",
+        "declaration": "final class NoOpLiveResourceCrashReporter implements LiveResourceCrashReporter"
+      },
+      {
+        "name": "NoOpPagedResourceCrashReporter",
+        "declaration": "final class NoOpPagedResourceCrashReporter implements PagedResourceCrashReporter"
+      },
+      {
+        "name": "NoOpReactiveComputeReporter",
+        "declaration": "final class NoOpReactiveComputeReporter implements ReactiveComputeReporter"
+      },
+      {
+        "name": "ObservedLocalRefresh",
+        "declaration": "final class ObservedLocalRefresh<T, R, F extends Object>"
+      },
+      {
+        "name": "ObservedValue",
+        "declaration": "final class ObservedValue<T, R>"
+      },
+      {
+        "name": "PageBatch",
+        "declaration": "final class PageBatch<C, T>"
+      },
+      {
+        "name": "PageOperation",
+        "declaration": "enum PageOperation"
+      },
+      {
+        "name": "PageRequest",
+        "declaration": "final class PageRequest<C>"
+      },
+      {
+        "name": "PageTimelineEvent",
+        "declaration": "final class PageTimelineEvent<C>"
+      },
+      {
+        "name": "PageTimelinePhase",
+        "declaration": "enum PageTimelinePhase"
+      },
+      {
+        "name": "PageWrite",
+        "declaration": "final class PageWrite<C, T>"
+      },
+      {
+        "name": "PageWriteReceipt",
+        "declaration": "final class PageWriteReceipt<C>"
+      },
+      {
+        "name": "PagedDisposePhase",
+        "declaration": "enum PagedDisposePhase"
+      },
+      {
+        "name": "PagedLiveBuilder",
+        "declaration": "final class PagedLiveBuilder<C, K, T, F extends Object> extends StatefulWidget"
+      },
+      {
+        "name": "PagedLiveResource",
+        "declaration": "final class PagedLiveResource<C, K, T, F extends Object> implements Listenable, AsyncDisposable"
+      },
+      {
+        "name": "PagedLiveWidgetBuilder",
+        "declaration": "typedef PagedLiveWidgetBuilder<in C, in K, in T, in F extends Object> = Widget Function(BuildContext, PagedLiveResource<C, K, T, F>, List<K>, Widget?)"
+      },
+      {
+        "name": "PagedLocalSnapshot",
+        "declaration": "final class PagedLocalSnapshot<K, T>"
+      },
+      {
+        "name": "PagedResourceCrashReporter",
+        "declaration": "abstract interface class PagedResourceCrashReporter"
+      },
+      {
+        "name": "PullInvalidationTrigger",
+        "declaration": "typedef PullInvalidationTrigger = Stream<void> Function()"
+      },
+      {
+        "name": "PullReactiveSource",
+        "declaration": "final class PullReactiveSource<T, F extends Object> implements ReactiveSource<T, F>"
+      },
+      {
+        "name": "PullSourceRelease",
+        "declaration": "typedef PullSourceRelease = FutureOr<void> Function()"
+      },
+      {
+        "name": "ReactiveComputeReporter",
+        "declaration": "abstract interface class ReactiveComputeReporter"
+      },
+      {
+        "name": "ReactiveComputed",
+        "declaration": "final class ReactiveComputed<T> extends ReactiveNode<T>"
+      },
+      {
+        "name": "ReactiveCycleException",
+        "declaration": "final class ReactiveCycleException implements Exception"
+      },
+      {
+        "name": "ReactiveKey",
+        "declaration": "final class ReactiveKey<T>"
+      },
+      {
+        "name": "ReactiveKeyConflictException",
+        "declaration": "final class ReactiveKeyConflictException implements Exception"
+      },
+      {
+        "name": "ReactiveNode",
+        "declaration": "sealed base class ReactiveNode<T> extends _ReactiveNodeBase implements ValueListenable<T>"
+      },
+      {
+        "name": "ReactiveObservation",
+        "declaration": "final class ReactiveObservation<T, F extends Object> implements Listenable"
+      },
+      {
+        "name": "ReactiveOwner",
+        "declaration": "final class ReactiveOwner"
+      },
+      {
+        "name": "ReactiveOwnerDiagnostics",
+        "declaration": "final class ReactiveOwnerDiagnostics"
+      },
+      {
+        "name": "ReactiveRead",
+        "declaration": "final class ReactiveRead"
+      },
+      {
+        "name": "ReactiveSelector",
+        "declaration": "final class ReactiveSelector<S extends Listenable, T> implements ValueListenable<T>, Disposable"
+      },
+      {
+        "name": "ReactiveSource",
+        "declaration": "abstract interface class ReactiveSource<T, F extends Object>"
+      },
+      {
+        "name": "ReactiveSourceLifecyclePhase",
+        "declaration": "enum ReactiveSourceLifecyclePhase"
+      },
+      {
+        "name": "ReactiveSourceSession",
+        "declaration": "abstract interface class ReactiveSourceSession<T, F extends Object>"
+      },
+      {
+        "name": "ReactiveTimerFactory",
+        "declaration": "abstract interface class ReactiveTimerFactory"
+      },
+      {
+        "name": "ReactiveTimerHandle",
+        "declaration": "abstract interface class ReactiveTimerHandle"
+      },
+      {
+        "name": "ReactiveValue",
+        "declaration": "final class ReactiveValue<T> extends ReactiveNode<T>"
+      },
+      {
+        "name": "ReactiveValueBuilder",
+        "declaration": "final class ReactiveValueBuilder<T> extends StatefulWidget"
+      },
+      {
+        "name": "ReactiveWriter",
+        "declaration": "final class ReactiveWriter"
+      },
+      {
+        "name": "RemoteRefresh",
+        "declaration": "final class RemoteRefresh<T, F extends Object>"
+      },
+      {
+        "name": "ResourceCrashed",
+        "declaration": "final class ResourceCrashed<T, F extends Object> extends ResourceDataState<T, F>"
+      },
+      {
+        "name": "ResourceDataState",
+        "declaration": "sealed class ResourceDataState<T, F extends Object>"
+      },
+      {
+        "name": "ResourceFailed",
+        "declaration": "final class ResourceFailed<T, F extends Object> extends ResourceDataState<T, F>"
+      },
+      {
+        "name": "ResourceFamily",
+        "declaration": "final class ResourceFamily<K, T, F extends Object> implements AsyncDisposable"
+      },
+      {
+        "name": "ResourceLease",
+        "declaration": "final class ResourceLease"
+      },
+      {
+        "name": "ResourceLifecycle",
+        "declaration": "final class ResourceLifecycle<T, F extends Object>"
+      },
+      {
+        "name": "ResourcePresentationContent",
+        "declaration": "final class ResourcePresentationContent<T, F extends Object, M> extends ResourcePresentationState<T, F, M>"
+      },
+      {
+        "name": "ResourcePresentationCrash",
+        "declaration": "final class ResourcePresentationCrash<F extends Object> extends ResourcePresentationFailureCause<F>"
+      },
+      {
+        "name": "ResourcePresentationEmpty",
+        "declaration": "final class ResourcePresentationEmpty<T, F extends Object, M> extends ResourcePresentationState<T, F, M>"
+      },
+      {
+        "name": "ResourcePresentationExpectedFailure",
+        "declaration": "final class ResourcePresentationExpectedFailure<F extends Object> extends ResourcePresentationFailureCause<F>"
+      },
+      {
+        "name": "ResourcePresentationFailure",
+        "declaration": "final class ResourcePresentationFailure<T, F extends Object, M> extends ResourcePresentationState<T, F, M>"
+      },
+      {
+        "name": "ResourcePresentationFailureCause",
+        "declaration": "sealed class ResourcePresentationFailureCause<F extends Object>"
+      },
+      {
+        "name": "ResourcePresentationState",
+        "declaration": "sealed class ResourcePresentationState<T, F extends Object, M>"
+      },
+      {
+        "name": "ResourcePresentationWaiting",
+        "declaration": "final class ResourcePresentationWaiting<T, F extends Object, M> extends ResourcePresentationState<T, F, M>"
+      },
+      {
+        "name": "ResourceReady",
+        "declaration": "final class ResourceReady<T, F extends Object> extends ResourceDataState<T, F>"
+      },
+      {
+        "name": "ResourceSnapshotPresentation",
+        "declaration": "extension ResourceSnapshotPresentation<T, F extends Object, M> on ResourceDataState<ResourceSnapshot<T, M>, F>"
+      },
+      {
+        "name": "ResourceTemperature",
+        "declaration": "enum ResourceTemperature"
+      },
+      {
+        "name": "ResourceWaiting",
+        "declaration": "final class ResourceWaiting<T, F extends Object> extends ResourceDataState<T, F>"
+      },
+      {
+        "name": "SourceBackpressure",
+        "declaration": "enum SourceBackpressure"
+      },
+      {
+        "name": "SourceFrameScheduler",
+        "declaration": "abstract interface class SourceFrameScheduler"
+      },
+      {
+        "name": "StreamReactiveSource",
+        "declaration": "final class StreamReactiveSource<T, F extends Object> implements ReactiveSource<T, F>"
+      },
+      {
+        "name": "SystemReactiveTimerFactory",
+        "declaration": "final class SystemReactiveTimerFactory implements ReactiveTimerFactory"
+      },
+      {
+        "name": "ValueListenableReactiveSource",
+        "declaration": "final class ValueListenableReactiveSource<T, F extends Object> implements ReactiveSource<T, F>"
+      }
+    ],
+    "packages/dartitect_geometry/lib/dartitect_geometry.dart": [
+      {
+        "name": "Point2",
+        "declaration": "final class Point2<T extends num>"
+      },
+      {
+        "name": "PoleOfInaccessibility",
+        "declaration": "final class PoleOfInaccessibility"
+      },
+      {
+        "name": "Polygon2",
+        "declaration": "final class Polygon2"
+      },
+      {
+        "name": "defaultGeometryTolerance",
+        "declaration": "double get defaultGeometryTolerance"
+      },
+      {
+        "name": "poleOfInaccessibility",
+        "declaration": "PoleOfInaccessibility poleOfInaccessibility(Polygon2 polygon, {double precision = 1})"
+      }
+    ],
+    "packages/dartitect_isolates/lib/dartitect_isolates.dart": [
+      {
+        "name": "IsolateHeartbeatException",
+        "declaration": "final class IsolateHeartbeatException extends IsolateWorkerException"
+      },
+      {
+        "name": "IsolateReadinessException",
+        "declaration": "final class IsolateReadinessException extends IsolateWorkerException"
+      },
+      {
+        "name": "IsolateRequestDeadlineException",
+        "declaration": "final class IsolateRequestDeadlineException extends IsolateWorkerException"
+      },
+      {
+        "name": "IsolateRequestHandler",
+        "declaration": "typedef IsolateRequestHandler<in P, out R, out F extends Object> = Future<Result<R, F>> Function(P, CancellationSignal)"
+      },
+      {
+        "name": "IsolateRequestReceipt",
+        "declaration": "final class IsolateRequestReceipt<R, F extends Object>"
+      },
+      {
+        "name": "IsolateUnexpectedExitException",
+        "declaration": "final class IsolateUnexpectedExitException extends IsolateWorkerException"
+      },
+      {
+        "name": "IsolateWorker",
+        "declaration": "final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable"
+      },
+      {
+        "name": "IsolateWorkerException",
+        "declaration": "sealed class IsolateWorkerException implements Exception"
+      },
+      {
+        "name": "RemoteIsolateCrash",
+        "declaration": "final class RemoteIsolateCrash extends IsolateWorkerException"
+      },
+      {
+        "name": "currentIsolateWorkerProtocolVersion",
+        "declaration": "int get currentIsolateWorkerProtocolVersion"
+      }
+    ],
+    "packages/dartitect_lints/lib/main.dart": [
+      {
+        "name": "DartitectPlugin",
+        "declaration": "final class DartitectPlugin extends Plugin"
+      },
+      {
+        "name": "plugin",
+        "declaration": "DartitectPlugin get plugin"
+      }
+    ],
+    "packages/dartitect_locale_br/lib/dartitect_locale_br.dart": [
+      {
+        "name": "BrazilianPostalCode",
+        "declaration": "final class BrazilianPostalCode"
+      }
+    ],
+    "packages/dartitect_mcp/lib/dartitect_mcp.dart": [
+      {
+        "name": "DartitectMcpException",
+        "declaration": "final class DartitectMcpException implements Exception"
+      },
+      {
+        "name": "DartitectMcpPolicy",
+        "declaration": "final class DartitectMcpPolicy"
+      },
+      {
+        "name": "DartitectMcpServer",
+        "declaration": "base class DartitectMcpServer extends MCPServer with ToolsSupport, ResourcesSupport"
+      }
+    ],
+    "packages/dartitect_media/lib/dartitect_media.dart": [
+      {
+        "name": "GalleryCancelledFailure",
+        "declaration": "final class GalleryCancelledFailure extends GalleryFailure"
+      },
+      {
+        "name": "GalleryFailure",
+        "declaration": "sealed class GalleryFailure implements Exception"
+      },
+      {
+        "name": "GalleryFileNotFoundFailure",
+        "declaration": "final class GalleryFileNotFoundFailure extends GalleryFailure"
+      },
+      {
+        "name": "GalleryInvalidFileFailure",
+        "declaration": "final class GalleryInvalidFileFailure extends GalleryFailure"
+      },
+      {
+        "name": "GalleryLimitedAccessFailure",
+        "declaration": "final class GalleryLimitedAccessFailure extends GalleryFailure"
+      },
+      {
+        "name": "GalleryMediaService",
+        "declaration": "abstract interface class GalleryMediaService"
+      },
+      {
+        "name": "GalleryNativeFailure",
+        "declaration": "final class GalleryNativeFailure extends GalleryFailure"
+      },
+      {
+        "name": "GalleryPermissionFailure",
+        "declaration": "final class GalleryPermissionFailure extends GalleryFailure"
+      },
+      {
+        "name": "GalleryPermissionStatus",
+        "declaration": "enum GalleryPermissionStatus"
+      },
+      {
+        "name": "GallerySaveReceipt",
+        "declaration": "final class GallerySaveReceipt"
+      },
+      {
+        "name": "GallerySaveRequest",
+        "declaration": "final class GallerySaveRequest"
+      },
+      {
+        "name": "MethodChannelGalleryMediaService",
+        "declaration": "final class MethodChannelGalleryMediaService implements GalleryMediaService"
+      }
+    ],
+    "packages/dartitect_objectbox/lib/dartitect_objectbox.dart": [
+      {
+        "name": "ObjectBoxCheckpointReader",
+        "declaration": "typedef ObjectBoxCheckpointReader<in K, out C> = C? Function(Store, K)"
+      },
+      {
+        "name": "ObjectBoxCheckpointRemover",
+        "declaration": "typedef ObjectBoxCheckpointRemover<in K> = void Function(Store, K)"
+      },
+      {
+        "name": "ObjectBoxCheckpointWriter",
+        "declaration": "typedef ObjectBoxCheckpointWriter<in K, in C> = void Function(Store, K, C, int?)"
+      },
+      {
+        "name": "ObjectBoxInstrumentation",
+        "declaration": "final class ObjectBoxInstrumentation"
+      },
+      {
+        "name": "ObjectBoxMutationTransaction",
+        "declaration": "final class ObjectBoxMutationTransaction"
+      },
+      {
+        "name": "ObjectBoxObservationOwner",
+        "declaration": "final class ObjectBoxObservationOwner implements AsyncDisposable"
+      },
+      {
+        "name": "ObjectBoxProjectionCallback",
+        "declaration": "typedef ObjectBoxProjectionCallback<in P, out R> = FutureOr<R> Function(Store, P)"
+      },
+      {
+        "name": "ObjectBoxProjectionExecutor",
+        "declaration": "final class ObjectBoxProjectionExecutor<P, R> implements ProjectionExecutor<P, R>"
+      },
+      {
+        "name": "ObjectBoxQueryLifecycleEvent",
+        "declaration": "enum ObjectBoxQueryLifecycleEvent"
+      },
+      {
+        "name": "ObjectBoxQuerySource",
+        "declaration": "final class ObjectBoxQuerySource<T, F extends Object> implements ReactiveSource<List<T>, F>"
+      },
+      {
+        "name": "ObjectBoxStoreOwner",
+        "declaration": "final class ObjectBoxStoreOwner implements AsyncDisposable"
+      },
+      {
+        "name": "ObjectBoxStoreWatch",
+        "declaration": "typedef ObjectBoxStoreWatch = Stream<void> Function(Store)"
+      },
+      {
+        "name": "ObjectBoxStoreWatchSource",
+        "declaration": "final class ObjectBoxStoreWatchSource<T, F extends Object> implements ReactiveSource<T, F>"
+      },
+      {
+        "name": "ObjectBoxSyncCheckpointStore",
+        "declaration": "final class ObjectBoxSyncCheckpointStore<K, C> implements SyncCheckpointStore<K, C>"
+      },
+      {
+        "name": "ObjectBoxSyncRunJournal",
+        "declaration": "final class ObjectBoxSyncRunJournal<K> implements SyncRunJournal<K>"
+      },
+      {
+        "name": "ObjectBoxVersionedProjection",
+        "declaration": "final class ObjectBoxVersionedProjection<E, K, T, V>"
+      },
+      {
+        "name": "OpenObjectBoxStore",
+        "declaration": "typedef OpenObjectBoxStore = FutureOr<Store> Function(String?)"
+      },
+      {
+        "name": "objectBoxStoreReference",
+        "declaration": "ByteData objectBoxStoreReference(Store store)"
+      },
+      {
+        "name": "watchObjectBoxEntity",
+        "declaration": "Stream<void> Function(Store) watchObjectBoxEntity<E>()"
+      }
+    ],
+    "packages/dartitect_observability/lib/dartitect_observability.dart": [
+      {
+        "name": "ArchitectureObserverBridge",
+        "declaration": "final class ArchitectureObserverBridge implements ArchitectureObserver, AsyncDisposable"
+      },
+      {
+        "name": "CallbackErrorReporter",
+        "declaration": "final class CallbackErrorReporter extends ErrorReporter"
+      },
+      {
+        "name": "CallbackLogSink",
+        "declaration": "final class CallbackLogSink extends LogSink"
+      },
+      {
+        "name": "CallbackLogSinkFilter",
+        "declaration": "final class CallbackLogSinkFilter implements LogSinkFilter"
+      },
+      {
+        "name": "DartitectLogger",
+        "declaration": "abstract class DartitectLogger"
+      },
+      {
+        "name": "DeveloperLogSink",
+        "declaration": "final class DeveloperLogSink extends LogSink"
+      },
+      {
+        "name": "ErrorEvent",
+        "declaration": "final class ErrorEvent"
+      },
+      {
+        "name": "ErrorMechanism",
+        "declaration": "enum ErrorMechanism"
+      },
+      {
+        "name": "ErrorReporter",
+        "declaration": "abstract class ErrorReporter"
+      },
+      {
+        "name": "ErrorSeverity",
+        "declaration": "enum ErrorSeverity"
+      },
+      {
+        "name": "FixedSamplingPolicy",
+        "declaration": "final class FixedSamplingPolicy implements SamplingPolicy"
+      },
+      {
+        "name": "LazyLogMessage",
+        "declaration": "typedef LazyLogMessage = String Function()"
+      },
+      {
+        "name": "LogEvent",
+        "declaration": "final class LogEvent"
+      },
+      {
+        "name": "LogLevel",
+        "declaration": "enum LogLevel"
+      },
+      {
+        "name": "LogSink",
+        "declaration": "abstract class LogSink"
+      },
+      {
+        "name": "LogSinkFilter",
+        "declaration": "abstract interface class LogSinkFilter"
+      },
+      {
+        "name": "LogSinkRegistration",
+        "declaration": "final class LogSinkRegistration"
+      },
+      {
+        "name": "NoOpErrorReporter",
+        "declaration": "final class NoOpErrorReporter extends ErrorReporter"
+      },
+      {
+        "name": "NoOpTracer",
+        "declaration": "final class NoOpTracer extends Tracer"
+      },
+      {
+        "name": "ObservabilityContext",
+        "declaration": "final class ObservabilityContext"
+      },
+      {
+        "name": "ObservabilityDiagnostics",
+        "declaration": "final class ObservabilityDiagnostics"
+      },
+      {
+        "name": "ObservabilityEventName",
+        "declaration": "final class ObservabilityEventName extends ValueEquality"
+      },
+      {
+        "name": "ObservabilityLogEvent",
+        "declaration": "final class ObservabilityLogEvent"
+      },
+      {
+        "name": "ObservabilityRuntime",
+        "declaration": "final class ObservabilityRuntime implements AsyncDisposable"
+      },
+      {
+        "name": "ReactiveObserverLoggerAdapter",
+        "declaration": "final class ReactiveObserverLoggerAdapter implements ReactiveObserver"
+      },
+      {
+        "name": "RedactedError",
+        "declaration": "final class RedactedError implements Exception"
+      },
+      {
+        "name": "RedactionLimits",
+        "declaration": "final class RedactionLimits"
+      },
+      {
+        "name": "Redactor",
+        "declaration": "final class Redactor"
+      },
+      {
+        "name": "SamplingPolicy",
+        "declaration": "abstract interface class SamplingPolicy"
+      },
+      {
+        "name": "SecureTraceIdGenerator",
+        "declaration": "final class SecureTraceIdGenerator implements TraceIdGenerator"
+      },
+      {
+        "name": "Span",
+        "declaration": "abstract class Span"
+      },
+      {
+        "name": "SpanKind",
+        "declaration": "enum SpanKind"
+      },
+      {
+        "name": "SpanStatus",
+        "declaration": "enum SpanStatus"
+      },
+      {
+        "name": "TraceContext",
+        "declaration": "final class TraceContext"
+      },
+      {
+        "name": "TraceIdGenerator",
+        "declaration": "abstract interface class TraceIdGenerator"
+      },
+      {
+        "name": "TracePropagator",
+        "declaration": "abstract interface class TracePropagator"
+      },
+      {
+        "name": "Tracer",
+        "declaration": "abstract class Tracer"
+      },
+      {
+        "name": "W3CTracePropagator",
+        "declaration": "final class W3CTracePropagator implements TracePropagator"
+      }
+    ],
+    "packages/dartitect_privacy/lib/dartitect_privacy.dart": [
+      {
+        "name": "MethodChannelTrackingAuthorizationService",
+        "declaration": "final class MethodChannelTrackingAuthorizationService implements TrackingAuthorizationService"
+      },
+      {
+        "name": "TrackingAuthorizationService",
+        "declaration": "abstract interface class TrackingAuthorizationService"
+      },
+      {
+        "name": "TrackingAuthorizationStatus",
+        "declaration": "enum TrackingAuthorizationStatus"
+      }
+    ],
+    "packages/dartitect_sentry/lib/dartitect_sentry.dart": [
+      {
+        "name": "SentryErrorReporter",
+        "declaration": "final class SentryErrorReporter extends ErrorReporter"
+      },
+      {
+        "name": "SentryLogSink",
+        "declaration": "final class SentryLogSink extends LogSink"
+      },
+      {
+        "name": "SentryTracer",
+        "declaration": "final class SentryTracer extends Tracer"
+      }
+    ],
+    "packages/dartitect_sync/lib/dartitect_sync.dart": [
+      {
+        "name": "CommitDisposition",
+        "declaration": "enum CommitDisposition"
+      },
+      {
+        "name": "EntitySyncState",
+        "declaration": "enum EntitySyncState"
+      },
+      {
+        "name": "HeadlessSyncEndpoint",
+        "declaration": "final class HeadlessSyncEndpoint<P, R, F extends Object> implements AsyncDisposable"
+      },
+      {
+        "name": "HeadlessSyncHandler",
+        "declaration": "abstract interface class HeadlessSyncHandler<P, R, F extends Object>"
+      },
+      {
+        "name": "IncompleteSyncAttempt",
+        "declaration": "final class IncompleteSyncAttempt<K> extends ValueEquality"
+      },
+      {
+        "name": "MonotonicSyncIdGenerator",
+        "declaration": "final class MonotonicSyncIdGenerator implements IdGenerator"
+      },
+      {
+        "name": "MutationCommand",
+        "declaration": "final class MutationCommand<A, K, T, F extends Object> implements AsyncDisposable"
+      },
+      {
+        "name": "MutationExecution",
+        "declaration": "final class MutationExecution<A, K, T, F extends Object>"
+      },
+      {
+        "name": "MutationFailurePolicy",
+        "declaration": "final class MutationFailurePolicy"
+      },
+      {
+        "name": "MutationLane",
+        "declaration": "typedef MutationLane<out K, out A, out T, out F extends Object> = MutationCommand<A, K, T, F>"
+      },
+      {
+        "name": "MutationOutboxStore",
+        "declaration": "abstract interface class MutationOutboxStore<K, A, F extends Object>"
+      },
+      {
+        "name": "NoOpSyncObserver",
+        "declaration": "final class NoOpSyncObserver<K> implements SyncObserver<K>"
+      },
+      {
+        "name": "OutboxOperation",
+        "declaration": "final class OutboxOperation<K, A>"
+      },
+      {
+        "name": "RetryClassification",
+        "declaration": "final class RetryClassification"
+      },
+      {
+        "name": "RetryKind",
+        "declaration": "enum RetryKind"
+      },
+      {
+        "name": "SyncCheckpointStore",
+        "declaration": "abstract interface class SyncCheckpointStore<K, C>"
+      },
+      {
+        "name": "SyncClock",
+        "declaration": "abstract interface class SyncClock"
+      },
+      {
+        "name": "SyncCommandAccepted",
+        "declaration": "final class SyncCommandAccepted<R, F extends Object> extends SyncCommandAck<R, F>"
+      },
+      {
+        "name": "SyncCommandAck",
+        "declaration": "sealed class SyncCommandAck<R, F extends Object>"
+      },
+      {
+        "name": "SyncCommandCompleted",
+        "declaration": "final class SyncCommandCompleted<R, F extends Object> extends SyncCommandAck<R, F>"
+      },
+      {
+        "name": "SyncCommandEnvelope",
+        "declaration": "final class SyncCommandEnvelope<P>"
+      },
+      {
+        "name": "SyncCommandFailed",
+        "declaration": "final class SyncCommandFailed<R, F extends Object> extends SyncCommandAck<R, F>"
+      },
+      {
+        "name": "SyncCommandReceipt",
+        "declaration": "final class SyncCommandReceipt<R, F extends Object>"
+      },
+      {
+        "name": "SyncCommandRejected",
+        "declaration": "final class SyncCommandRejected<R, F extends Object> extends SyncCommandAck<R, F>"
+      },
+      {
+        "name": "SyncCommandRejection",
+        "declaration": "enum SyncCommandRejection"
+      },
+      {
+        "name": "SyncDataset",
+        "declaration": "final class SyncDataset<K, C, F extends Object>"
+      },
+      {
+        "name": "SyncDatasetContext",
+        "declaration": "final class SyncDatasetContext<K, C>"
+      },
+      {
+        "name": "SyncDatasetOutcome",
+        "declaration": "final class SyncDatasetOutcome<C>"
+      },
+      {
+        "name": "SyncDatasetReport",
+        "declaration": "final class SyncDatasetReport<K, C, F extends Object>"
+      },
+      {
+        "name": "SyncDatasetStatus",
+        "declaration": "enum SyncDatasetStatus"
+      },
+      {
+        "name": "SyncDatasetStopReason",
+        "declaration": "enum SyncDatasetStopReason"
+      },
+      {
+        "name": "SyncDependencyGraph",
+        "declaration": "final class SyncDependencyGraph<K>"
+      },
+      {
+        "name": "SyncDependencyGraphException",
+        "declaration": "final class SyncDependencyGraphException<K> implements Exception"
+      },
+      {
+        "name": "SyncEngine",
+        "declaration": "final class SyncEngine<K, C, F extends Object> implements AsyncDisposable"
+      },
+      {
+        "name": "SyncIdGenerator",
+        "declaration": "typedef SyncIdGenerator = IdGenerator"
+      },
+      {
+        "name": "SyncJournalEntry",
+        "declaration": "final class SyncJournalEntry<K> extends ValueEquality"
+      },
+      {
+        "name": "SyncJournalFact",
+        "declaration": "enum SyncJournalFact"
+      },
+      {
+        "name": "SyncLease",
+        "declaration": "abstract interface class SyncLease"
+      },
+      {
+        "name": "SyncLeaseStore",
+        "declaration": "abstract interface class SyncLeaseStore"
+      },
+      {
+        "name": "SyncObserver",
+        "declaration": "abstract interface class SyncObserver<K>"
+      },
+      {
+        "name": "SyncPlan",
+        "declaration": "final class SyncPlan<K>"
+      },
+      {
+        "name": "SyncProgressController",
+        "declaration": "final class SyncProgressController<K>"
+      },
+      {
+        "name": "SyncProgressEvent",
+        "declaration": "final class SyncProgressEvent<K>"
+      },
+      {
+        "name": "SyncProgressPhase",
+        "declaration": "enum SyncProgressPhase"
+      },
+      {
+        "name": "SyncProgressStream",
+        "declaration": "final class SyncProgressStream<K>"
+      },
+      {
+        "name": "SyncReport",
+        "declaration": "final class SyncReport<K, C, F extends Object>"
+      },
+      {
+        "name": "SyncRun",
+        "declaration": "final class SyncRun<K, C, F extends Object> implements AsyncDisposable"
+      },
+      {
+        "name": "SyncRunJournal",
+        "declaration": "abstract interface class SyncRunJournal<K>"
+      },
+      {
+        "name": "SystemSyncClock",
+        "declaration": "final class SystemSyncClock implements SyncClock"
+      },
+      {
+        "name": "currentSyncCommandProtocolVersion",
+        "declaration": "int get currentSyncCommandProtocolVersion"
+      }
+    ],
+    "packages/dartitect_testing/lib/dartitect_testing.dart": [
+      {
+        "name": "CensusLease",
+        "declaration": "final class CensusLease implements Disposable"
+      },
+      {
+        "name": "CheckpointCrashHarness",
+        "declaration": "final class CheckpointCrashHarness<K, C> implements SyncCheckpointStore<K, C>"
+      },
+      {
+        "name": "CheckpointFaultPoint",
+        "declaration": "enum CheckpointFaultPoint"
+      },
+      {
+        "name": "CommandContractHarness",
+        "declaration": "final class CommandContractHarness<O>"
+      },
+      {
+        "name": "CommandHarnessResult",
+        "declaration": "final class CommandHarnessResult<O>"
+      },
+      {
+        "name": "DeterministicIdGenerator",
+        "declaration": "final class DeterministicIdGenerator implements IdGenerator"
+      },
+      {
+        "name": "DeterministicTraceIdGenerator",
+        "declaration": "final class DeterministicTraceIdGenerator implements TraceIdGenerator"
+      },
+      {
+        "name": "DisposalProbe",
+        "declaration": "final class DisposalProbe implements Disposable, AsyncDisposable"
+      },
+      {
+        "name": "EffectContractHarness",
+        "declaration": "final class EffectContractHarness<E extends Object, P>"
+      },
+      {
+        "name": "EffectHarnessResult",
+        "declaration": "final class EffectHarnessResult<E extends Object, P>"
+      },
+      {
+        "name": "FakeArchitectureObserver",
+        "declaration": "final class FakeArchitectureObserver implements ArchitectureObserver"
+      },
+      {
+        "name": "InMemorySyncCheckpointStore",
+        "declaration": "final class InMemorySyncCheckpointStore<K, C> implements SyncCheckpointStore<K, C>"
+      },
+      {
+        "name": "InMemorySyncRunJournal",
+        "declaration": "final class InMemorySyncRunJournal<K> implements SyncRunJournal<K>"
+      },
+      {
+        "name": "IsolateWorkerContractHarness",
+        "declaration": "final class IsolateWorkerContractHarness<P, R, F extends Object>"
+      },
+      {
+        "name": "IsolateWorkerHarnessResult",
+        "declaration": "final class IsolateWorkerHarnessResult<R, F extends Object>"
+      },
+      {
+        "name": "LifecycleHarness",
+        "declaration": "final class LifecycleHarness<R extends Object>"
+      },
+      {
+        "name": "LifecyclePhaseFailure",
+        "declaration": "final class LifecyclePhaseFailure"
+      },
+      {
+        "name": "LifecycleRun",
+        "declaration": "final class LifecycleRun<T>"
+      },
+      {
+        "name": "ManualClock",
+        "declaration": "final class ManualClock implements SyncClock"
+      },
+      {
+        "name": "ManualScheduler",
+        "declaration": "final class ManualScheduler"
+      },
+      {
+        "name": "ManualSyncLeaseStore",
+        "declaration": "final class ManualSyncLeaseStore implements SyncLeaseStore"
+      },
+      {
+        "name": "OwnedGraphHarness",
+        "declaration": "final class OwnedGraphHarness"
+      },
+      {
+        "name": "OwnedGraphHarnessResult",
+        "declaration": "final class OwnedGraphHarnessResult"
+      },
+      {
+        "name": "OwnedScopeHarness",
+        "declaration": "final class OwnedScopeHarness<R extends Object>"
+      },
+      {
+        "name": "OwnedScopeHarnessResult",
+        "declaration": "final class OwnedScopeHarnessResult<T>"
+      },
+      {
+        "name": "OwnedScopeKind",
+        "declaration": "enum OwnedScopeKind"
+      },
+      {
+        "name": "RecordingErrorReporter",
+        "declaration": "final class RecordingErrorReporter extends ErrorReporter"
+      },
+      {
+        "name": "RecordingLogSink",
+        "declaration": "final class RecordingLogSink extends LogSink"
+      },
+      {
+        "name": "RecordingSpan",
+        "declaration": "final class RecordingSpan extends Span"
+      },
+      {
+        "name": "RecordingTracer",
+        "declaration": "final class RecordingTracer extends Tracer"
+      },
+      {
+        "name": "RepositoryContractCase",
+        "declaration": "final class RepositoryContractCase<R extends Object>"
+      },
+      {
+        "name": "RepositoryContractCaseResult",
+        "declaration": "final class RepositoryContractCaseResult"
+      },
+      {
+        "name": "RepositoryContractHarness",
+        "declaration": "final class RepositoryContractHarness<R extends Object>"
+      },
+      {
+        "name": "ResourceCensus",
+        "declaration": "final class ResourceCensus"
+      },
+      {
+        "name": "SequenceSyncIdGenerator",
+        "declaration": "final class SequenceSyncIdGenerator implements IdGenerator"
+      },
+      {
+        "name": "SyncContractHarness",
+        "declaration": "final class SyncContractHarness<K, C, F extends Object>"
+      },
+      {
+        "name": "SyncContractHarnessResult",
+        "declaration": "final class SyncContractHarnessResult<K, C, F extends Object>"
+      },
+      {
+        "name": "TestingMatrix",
+        "declaration": "final class TestingMatrix"
+      },
+      {
+        "name": "TestingMatrixAuditor",
+        "declaration": "final class TestingMatrixAuditor"
+      },
+      {
+        "name": "TestingMatrixRow",
+        "declaration": "final class TestingMatrixRow"
+      },
+      {
+        "name": "collectStreamEvents",
+        "declaration": "Future<List<T>> collectStreamEvents<T>(Stream<T> stream, {required int count, required Duration timeout})"
+      },
+      {
+        "name": "waitForStreamEvent",
+        "declaration": "Future<T> waitForStreamEvent<T>(Stream<T> stream, {required bool Function(T) where, required Duration timeout})"
+      }
+    ]
+  }
+}

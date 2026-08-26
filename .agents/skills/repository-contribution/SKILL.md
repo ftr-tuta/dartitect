@@ -1,0 +1,54 @@
+---
+name: repository-contribution
+description: Safely deliver versioned Dartitect changes through short-lived branches, canonical commits, proportional validation, pull requests, required checks, and squash merges. Use for any task that edits tracked content or operates Git branches, commits, PRs, checks, repository settings, or merges in this repository.
+---
+
+# Repository Contribution
+
+Read the applicable `AGENTS.md`, `CONTRIBUTING.md`, and
+[`docs/guides/repository-contribution.md`](../../../docs/guides/repository-contribution.md)
+before changing tracked content or remote GitHub state. Preserve unrelated work
+and keep authorization boundaries explicit.
+
+## Start safely
+
+Inspect the working tree, current branch, remote, and local Git identity. Keep
+`ftr <ftr@tuta.com>` and `user.useConfigOnly=true` in repository-local config.
+Fetch `origin`, then create a short-lived `feat/`, `fix/`, `ci/`, `docs/`,
+`chore/`, or `release/` branch from `origin/main`. Never perform normal work on
+`main`.
+
+## Implement and validate
+
+Keep the diff focused and use Conventional Commits. Run checks proportional to
+risk plus every explicitly requested gate. When a Flutter plugin changes,
+regenerate and commit affected native project/workspace integration on the
+relevant hosts; iOS/macOS builds must leave the tracked tree unchanged.
+
+Before committing, review the complete diff, authorship, generated artifacts,
+and working tree. Do not publish packages or create tags unless separately
+authorized.
+
+## Deliver through a pull request
+
+Push only the topic branch and complete the PR template with outcome, ownership,
+compatibility, platform impact, evidence, and remaining validation. Keep builds
+on GitHub's merge candidate; for authorship, audit the PR head rather than the
+synthetic merge commit. Fix failures on the same branch. Never bypass or weaken
+the `main` ruleset.
+
+Before enabling auto-merge, confirm GitHub web operations use `ftr@tuta.com` and
+email privacy will not substitute a `noreply` address. Require all configured CI
+and Security checks, resolved conversations, and an up-to-date branch. Squash
+using the PR title, then verify `main`, automatic branch deletion, canonical
+authorship, and the clean-clone/bundle evidence required by the guide.
+
+## Break glass
+
+Direct `main` updates are allowed only for an explicitly authorized recovery.
+Immediately before remote mutation, re-confirm the exact target and expected
+remote SHA. Preserve a verified bundle and repository/ruleset snapshots, use an
+exact lease and only the single `main` ref, prepare rollback to the captured SHA,
+and restore protections immediately even on failure. Never use `git push
+--mirror`. This exception never authorizes bypass for ordinary contribution
+work.

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "cohortVersion": "1.0.0-rc.1",
+  "candidateState": "GIT_CANDIDATE_ASSEMBLED",
+  "targetChannel": "PROTECTED_GIT_TAG",
+  "packageCount": 16,
+  "publicEntrypointCount": 17,
+  "nameRegistryObservation": {
+    "registry": "https://pub.dev",
+    "observedAt": "2026-08-25T21:45:52Z",
+    "requestPattern": "GET /api/packages/{name}",
+    "expectedStatus": 404,
+    "packages": [
+      "dartitect",
+      "dartitect_cli",
+      "dartitect_geometry",
+      "dartitect_lints",
+      "dartitect_locale_br",
+      "dartitect_privacy",
+      "dartitect_flutter",
+      "dartitect_isolates",
+      "dartitect_mcp",
+      "dartitect_media",
+      "dartitect_observability",
+      "dartitect_sync",
+      "dartitect_dio",
+      "dartitect_objectbox",
+      "dartitect_sentry",
+      "dartitect_testing"
+    ]
+  },
+  "publisherIdentity": {
+    "status": "NOT_AUTHORIZED",
+    "requiredBeforePubDevMaterialization": true,
+    "reason": "The Git candidate does not authorize package publication; publisher verification remains mandatory before any future pub.dev materialization."
+  },
+  "gitConsumption": {
+    "repository": "https://github.com/ftr-tuta/dartitect.git",
+    "tag": "v1.0.0-rc.1",
+    "annotated": true,
+    "signed": false,
+    "protectedAgainstUpdateAndDeletion": true,
+    "githubRelease": false,
+    "pubDevPublication": false,
+    "overrideGenerator": "tool/git_dependency_overrides.dart",
+    "canaryGate": "tool/run_git_canaries.dart"
+  },
+  "requiredArtifacts": [
+    "tool/audit_root_candidate.dart",
+    "tool/git_dependency_overrides.dart",
+    "tool/run_git_canaries.dart",
+    "docs/guides/git-candidate-consumption.md",
+    "docs/guides/git-candidate-consumption.pt-BR.md",
+    "tool/api_surface.snapshot.json",
+    "tool/sdk_inventory.json",
+    "packages/dartitect_mcp/lib/src/catalog/generated_catalog.dart",
+    "docs/release/sbom.spdx.json",
+    "docs/release/dependency-licenses.json",
+    "docs/release/advisory-audit.adoc",
+    "docs/release/pub-dev-identity-audit.adoc",
+    "docs/release/public-api-review.adoc",
+    "docs/release/publication-runbook.adoc",
+    "tool/rc_readiness_decision.json",
+    "tool/rc_distribution_authorization.json",
+    "tool/rc_bundle_contract.json",
+    "tool/rc_validation_contract.json",
+    "tool/stable_readiness_decision.json"
+  ]
+}

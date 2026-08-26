@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "goal": "V1S-12",
+  "commandRace": {
+    "file": "packages/dartitect/test/command_lane_race_test.dart",
+    "seed": 12001,
+    "iterations": 240,
+    "policies": [
+      "reject",
+      "join",
+      "drop",
+      "sequential",
+      "restartLatest",
+      "concurrent"
+    ]
+  },
+  "persistedCompatibility": {
+    "fixture": "packages/dartitect_sync/test/fixtures/persisted_v1.json",
+    "fixtureSha256": "998d1bee0f51d8157e0143d534ad5d64655a4e4879f86ce24df27b8a71faa600",
+    "evidenceFile": "packages/dartitect_sync/test/persisted_compatibility_test.dart",
+    "acceptedSchemas": [1],
+    "rejectedSchemas": [0, 2],
+    "enumEncoding": "name",
+    "entitySyncStates": [
+      "synced",
+      "pending",
+      "syncing",
+      "rejected",
+      "conflicted",
+      "uncertain"
+    ],
+    "journalFacts": [
+      "attemptStarted",
+      "datasetStarted",
+      "datasetSucceeded",
+      "datasetFailed",
+      "datasetSkipped",
+      "attemptCompleted",
+      "attemptCrashed"
+    ]
+  },
+  "runtimeEvidence": [
+    {
+      "name": "command-lanes",
+      "files": [
+        "packages/dartitect/test/command_lane_test.dart",
+        "packages/dartitect/test/command_lane_race_test.dart"
+      ],
+      "requiredMarkers": [
+        "reject is default",
+        "join returns",
+        "drop does not",
+        "sequential is FIFO",
+        "restartLatest cancels",
+        "concurrent never exceeds",
+        "keyed lanes bound",
+        "dispose cancels, drains",
+        "reporter"
+      ]
+    },
+    {
+      "name": "reactive-runtime",
+      "files": [
+        "packages/dartitect_flutter/test/live_resource_test.dart",
+        "packages/dartitect_flutter/test/resource_family_test.dart",
+        "packages/dartitect_flutter/test/resource_lifecycle_test.dart",
+        "packages/dartitect_flutter/test/reactive_selector_debounce_test.dart"
+      ],
+      "requiredMarkers": [
+        "keepWarm closes the source",
+        "family invalidation",
+        "reacquire during disposal",
+        "dispose blocks stale publication",
+        "cancels timer on dispose"
+      ]
+    },
+    {
+      "name": "offline-first",
+      "files": [
+        "packages/dartitect_sync/test/mutation_command_test.dart",
+        "packages/dartitect_sync/test/sync_engine_test.dart"
+      ],
+      "requiredMarkers": [
+        "atomic local enqueue",
+        "bounded exponential",
+        "keeps idempotency key",
+        "crash marks uncertain",
+        "needs audit resume",
+        "restart deduplicates",
+        "lease token fences checkpoints",
+        "journal records payload-free facts"
+      ]
+    },
+    {
+      "name": "objectbox-restart",
+      "files": [
+        "packages/dartitect_objectbox/test/objectbox_owner_test.dart",
+        "examples/reference_app/test/native_objectbox_workload_test.dart"
+      ],
+      "requiredMarkers": [
+        "owned closes Store",
+        "borrowed drains observations",
+        "ObjectBox survives offline process restart",
+        "recovers the outbox",
+        "activeQueries, 0",
+        "activeWatchers, 0"
+      ]
+    },
+    {
+      "name": "isolate-supervision",
+      "files": [
+        "packages/dartitect_isolates/test/isolate_worker_test.dart"
+      ],
+      "requiredMarkers": [
+        "correlates ACK",
+        "remote crash",
+        "request deadline",
+        "unexpected isolate exit",
+        "activeRequestCount, 0",
+        "stale protocol"
+      ]
+    }
+  ],
+  "zeroResidual": {
+    "resourceKinds": [
+      "listeners",
+      "timers",
+      "subscriptions",
+      "queries",
+      "lanes",
+      "isolates",
+      "stores"
+    ],
+    "evidenceFiles": [
+      "packages/dartitect/test/command_lane_race_test.dart",
+      "packages/dartitect_flutter/test/reactive_selector_debounce_test.dart",
+      "packages/dartitect_objectbox/test/objectbox_owner_test.dart",
+      "examples/reference_app/test/native_objectbox_workload_test.dart",
+      "packages/dartitect_isolates/test/isolate_worker_test.dart"
+    ],
+    "requiredMarkers": [
+      "runningCount, 0",
+      "listenerCount, 0",
+      "activeCount, 0",
+      "ownSubscription",
+      "activeQueries, 0",
+      "activeIsolateWorkers, 0",
+      "store.closeCalls"
+    ]
+  },
+  "isolateProtocolVersion": 1,
+  "nativeGate": "dart run tool/verify.dart --skip-get --native-objectbox"
+}

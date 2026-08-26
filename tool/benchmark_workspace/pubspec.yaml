@@ -1,0 +1,32 @@
+name: dartitect_benchmark_workspace
+description: Isolated same-runner competitive and lifecycle benchmark harness.
+version: 0.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  bloc_concurrency: 0.3.0
+  dartitect:
+    path: ../../packages/dartitect
+  dartitect_flutter:
+    path: ../../packages/dartitect_flutter
+  flutter:
+    sdk: flutter
+  flutter_bloc: 9.1.1
+  flutter_riverpod: 3.4.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  test: 1.31.1
+  vm_service: 15.3.0
+
+dependency_overrides:
+  dartitect:
+    path: ../../packages/dartitect
+  dartitect_observability:
+    path: ../../packages/dartitect_observability
+  dartitect_sync:
+    path: ../../packages/dartitect_sync

@@ -1,0 +1,35 @@
+= Dependency advisory audit
+
+Status:: LOCAL POLICY GREEN; REMOTE PR AND MAIN RESULTS REQUIRED
+Snapshot:: 2026-08-26
+
+The independent `Security` workflow pins the official OSV-Scanner 2.5.1
+reusable workflow and direct scanner action at reviewed commit
+`ffa0a5f39214d80778c9b494822d94d0d9668458`. The direct merge-candidate job now
+runs for pull requests, merge queues, and `main` pushes, so a one-commit root
+can receive that check without manufacturing historical pull requests. The
+trusted job runs for `main` pushes, manual dispatches, and every Monday at 12:12
+UTC. Both paths scan the repository recursively, fail when a
+vulnerability is found, and pass the root `osv-scanner.toml` explicitly, so all
+three Pub lockfiles are covered.
+
+Pull-request, merge-queue, and root/main scans use the direct official action
+with read-only permissions and do not generate or upload SARIF. This is
+necessary because the upstream reusable workflow unconditionally requests
+`security-events: write` even when its `upload-sarif` input is false, and GitHub
+correctly rejects an attempted permission elevation from a read-only caller.
+Trusted `main`, manual, and scheduled scans use the reusable workflow and
+receive only the additional `security-events: write` permission needed to
+upload SARIF to Code Scanning. The workflow does not use
+`pull_request_target` or a differential PR scan.
+
+The release audit rejects external Actions that are not pinned to full reviewed
+commit SHAs. It also rejects OSV `PackageOverrides`, package-wide ignore
+switches, and vulnerability exceptions without an exact ID, a substantive
+justification, an HTTPS analysis link, and a non-expired `ignoreUntil` date no
+more than 30 days away. There are currently no exceptions.
+
+The local configuration and policy validator pass. Record the PR scan URL, the
+post-merge `main` scan URL, and confirmation that SARIF is visible under
+Security -> Code scanning after the first complete remote runs. Until those
+facts exist, this audit does not claim a green remote OSV result.

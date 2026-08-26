@@ -1,0 +1,19 @@
+= ADR-0023: Sync adapters preserve fencing and telemetry boundaries
+
+Status:: ACCEPTED
+
+Context:: A provider-neutral engine still needs explicit bridges to chosen HTTP,
+storage, and telemetry SDKs. Lease expiry can allow a stale worker to overwrite
+a newer checkpoint, and identifiers or payloads can leak through telemetry.
+
+Decision:: Dio and ObjectBox sync adapters accept consumer callbacks and borrow
+consumer-owned clients and Stores. Checkpoint writes receive the active fencing
+token so persistence can reject stale workers. Cancellation bindings have
+explicit cleanup. The observability adapter emits only static dataset/run
+facts, never keys, request IDs, checkpoints, payloads, credentials, or provider
+objects, and ends every span exactly once.
+
+Consequences:: Provider APIs remain in infrastructure/composition only. The
+consumer owns transaction schema, fencing enforcement, authentication,
+idempotency, retry, and redaction policy, while reusable lifecycle glue stays
+small and replaceable.

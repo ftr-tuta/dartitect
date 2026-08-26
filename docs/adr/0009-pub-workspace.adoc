@@ -1,0 +1,9 @@
+= ADR-0009: Dart Pub Workspace
+
+Status:: ACCEPTED
+
+Decision:: Use a root Pub Workspace, one lockfile, and `resolution: workspace`
+for every member. Orchestration is a small Dart script.
+
+Consequences:: There is no Melos configuration or second package-resolution
+model. Analyzer/plugin constraints must resolve in the same graph.

@@ -1,0 +1,52 @@
+= Git-tag canary contract
+
+Status:: Implemented; public-tag receipt and physical-device evidence remain external
+Machine authority:: `tool/canaries/canary_contract.json`
+Gate:: `dart run tool/run_git_canaries.dart --repository=<url> --ref=v1.0.0-rc.1`
+
+== Candidate source
+
+The Git candidate uses one annotated, unsigned, protected tag for all sixteen
+packages. The gate resolves that tag from the supplied remote, requires both the
+tag object and peeled commit, and installs every Dartitect dependency through a
+Git override with the same URL and ref. A lightweight/missing tag, hosted
+Dartitect package, local `path:` source, mixed commit, version mismatch, or
+workspace root fails the gate.
+
+The normal dependency declarations retain `1.0.0-rc.1`; overrides are generated
+from package pubspecs by `tool/git_dependency_overrides.dart`, including the
+complete transitive Dartitect closure. External provider packages may still use
+their ordinary hosted source. No Dartitect package is read from pub.dev.
+
+The gate copies each consumer outside the checkout, removes lock/config/build
+state, runs `flutter pub get`, and verifies both `pubspec.lock` and
+`package_config.json`. Receipts under ignored `build/git-canary-receipts/`
+record the tag object, peeled commit, remote URL, commands, resolved package
+paths, and results.
+
+== Minimal
+
+The minimal consumer resolves only core, Flutter, and CLI packages needed for
+its generated model and ViewModel command. It runs model sync/check, analysis,
+tests, and teardown assertions while forbidden optional packages remain absent.
+
+== Offline-first
+
+The offline-first consumer runs paging, mutation/outbox, reconnect, sync,
+isolate projection, and real ObjectBox close/reopen tests. The ObjectBox native
+library comes from the separately verified provider fixture; every Dartitect
+library comes from the supplied Git tag.
+
+== Native capabilities
+
+The native-capability consumer runs host-side Flutter tests for privacy, media,
+locale BR, and geometry boundaries from the same tag. Physical Android/iOS
+floor/current runs and OS permission/lifecycle receipts remain the separate
+V1S-13 external matrix.
+
+== Formal future channel
+
+`tool/check_canaries.dart` and the signed-bundle tools remain fail-closed
+preparation for a future authorized formal channel. They do not describe,
+authorize, or materialize this Git candidate, and no GitHub Release or pub.dev
+publication accompanies `v1.0.0-rc.1`.

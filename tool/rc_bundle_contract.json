@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "goal": "V1S-16",
+  "supportedChannel": "signed-bundle",
+  "toolingState": "PRE_MATERIALIZATION_READY",
+  "materializationRequiresFormalReadiness": true,
+  "publicationOrderAuthority": "tool/package_release_contract.json",
+  "outputDirectory": "build/rc-bundles",
+  "archive": {
+    "format": "tar.gz",
+    "source": "git-archive-exact-source-sha",
+    "compression": "git-archive-deterministic",
+    "digest": "sha256",
+    "canonicalSourceDigest": "sha256(path-utf8,zero,file-bytes,zero)"
+  },
+  "signature": {
+    "format": "openpgp-armored-detached",
+    "manifest": "bundle-manifest.json",
+    "suffix": ".asc"
+  },
+  "tag": {
+    "prefix": "v",
+    "signed": true,
+    "exactSourceSha": true,
+    "force": false
+  },
+  "remote": {
+    "provider": "github-release",
+    "prerelease": true,
+    "immutablePackageAssets": true,
+    "digestVerificationAfterUpload": true
+  },
+  "receipt": {
+    "appendOnlyLedger": "materialization-ledger.jsonl",
+    "finalReceipt": "materialization-receipt.json",
+    "partialFailureStopsCohort": true,
+    "automaticRetry": false
+  }
+}

@@ -1,0 +1,1058 @@
+/// Immutable template for one skill distributed by `dartitect codex sync`.
+final class DartitectSkillTemplate {
+  /// Creates a complete managed-skill template.
+  const DartitectSkillTemplate({
+    required this.name,
+    required this.displayName,
+    required this.shortDescription,
+    required this.defaultPrompt,
+    required this.files,
+  });
+
+  /// Stable directory and invocation name.
+  final String name;
+
+  /// Human-facing name used by Codex interfaces.
+  final String displayName;
+
+  /// Short human-facing summary used by Codex interfaces.
+  final String shortDescription;
+
+  /// Skill-specific prompt inserted by Codex interfaces.
+  final String defaultPrompt;
+
+  /// Relative skill files, excluding generated metadata and manifest.
+  final Map<String, String> files;
+
+  /// Complete UI metadata generated alongside the skill.
+  String get openAiYaml =>
+      '''interface:
+  display_name: "$displayName"
+  short_description: "$shortDescription"
+  default_prompt: "$defaultPrompt"
+policy:
+  allow_implicit_invocation: true
+''';
+}
+
+/// Typed skill templates distributed by `dartitect codex sync`.
+const List<DartitectSkillTemplate>
+dartitectSkillCatalog = <DartitectSkillTemplate>[
+  DartitectSkillTemplate(
+    name: 'dartitect-design',
+    displayName: 'Dartitect Design',
+    shortDescription: 'Choose the smallest Dartitect package set',
+    defaultPrompt:
+        r'Use $dartitect-design to select a minimal Dartitect architecture.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-design
+description: Select the smallest Dartitect package and skill stack for a new Dart or Flutter application or feature. Use for greenfield architecture choices; do not use for brownfield migration or detailed implementation.
+---
+
+# Design with Dartitect
+
+## When to use
+
+Use this skill before implementing a new application, feature, composition root,
+or provider boundary when the required Dartitect packages are not yet clear.
+
+## When not to use
+
+Use `$dartitect-adopt` for an existing codebase migration. Route detailed runtime,
+reactive, offline-first, telemetry, adapter, testing, CLI, or MCP work to the
+matching focused skill after the stack is selected.
+
+## Invariants
+
+Choose the smallest stack that satisfies the feature. Keep domain/application
+contracts provider-neutral, use constructor injection, and make every resource
+owned or borrowed. Do not add a container, global runtime, provider package, or
+remote telemetry without a stated requirement.
+
+## Workflow
+
+1. Classify the target as pure Dart, basic Flutter, reactive UI, offline-first,
+   provider integration, or development tooling.
+2. Identify platforms, authoritative data source, failure model, lifecycle
+   owner, isolate boundaries, and telemetry policy.
+3. Select only the packages and focused skills needed for those boundaries.
+4. Record explicit exclusions so optional packages do not become defaults.
+
+Read [references/selection-matrix.md](references/selection-matrix.md) when
+choosing packages or routing the implementation.
+
+## Validate
+
+Confirm every selected package owns a concrete responsibility, every provider
+stays at infrastructure composition, and removing any unneeded package would not
+break a stated requirement.
+''',
+      'references/selection-matrix.md': r'''# Selection matrix
+
+- Pure Dart result/ownership/composition: `dartitect` plus `$dartitect-runtime`.
+- Basic Flutter ViewModels and commands: add `dartitect_flutter` and keep the
+  established `dartitect_flutter.dart` entrypoint.
+- Hot/warm/cold resources, causal refresh, families, collections, selectors, or
+  advanced builders: use the opt-in reactive/material entrypoints and
+  `$dartitect-reactive`.
+- Local-authority paging or durable mutations/outbox: combine the reactive
+  runtime with `$dartitect-offline-first`; add a storage adapter only after the
+  application chooses its provider.
+- Dataset DAG orchestration, checkpoints, leases, progress, or headless ACKs:
+  add `dartitect_sync` with `$dartitect-offline-first`; keep scheduling, retry,
+  conflicts, storage transactions, and provider resources consumer-owned.
+- Neutral logs/reporting/tracing: add `dartitect_observability` and
+  `$dartitect-observability`; add `dartitect_sentry` only for an already selected
+  and consumer-initialized Sentry Hub.
+- Dio or ObjectBox integration: add only the matching adapter and use
+  `$dartitect-adapters`.
+- Deterministic consumer tests: add `dartitect_testing` as a dev dependency and
+  use `$dartitect-testing`.
+- Inspection, generators, policy, or CI gates: use `dartitect_cli` and/or
+  `dartitect_lints` with `$dartitect-tooling`.
+- Local bounded agent context: add `dartitect_mcp` as a dev dependency and use
+  `$dartitect-mcp`; scripts should call the CLI directly.
+
+ObjectBox has no web support. CLI and MCP run on the Dart VM. Material widgets
+belong only in Material presentation code. Provider adapters never belong in
+domain, application, ViewModel, or presentation layers.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
+    name: 'dartitect-adopt',
+    displayName: 'Dartitect Adopt',
+    shortDescription: 'Migrate existing projects incrementally',
+    defaultPrompt:
+        r'Use $dartitect-adopt to plan a bounded Dartitect migration.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-adopt
+description: Inventory and migrate an existing Dart or Flutter codebase to Dartitect incrementally with reviewed baselines and explicit boundaries. Use for brownfield adoption; do not use for greenfield stack selection or isolated implementation.
+---
+
+# Adopt Dartitect
+
+## When to use
+
+Use this skill when existing architecture, globals, providers, violations, or
+lifecycle assumptions must be discovered before Dartitect can be introduced.
+
+## When not to use
+
+Use `$dartitect-design` for a new application or feature. After the migration
+slice is defined, use the focused skill responsible for its implementation.
+
+## Invariants
+
+Inspect before changing code. Preserve behavior, migrate one explicit boundary
+at a time, and distinguish pre-existing debt from new violations. Never use a
+baseline to hide unreviewed findings, convert a generic catch into success, move
+live resources across isolates, edit generated files, or introduce global
+Store, Dio, telemetry, or runtime state.
+
+## Workflow
+
+1. Record tests, analyzer, `dartitect doctor`, and
+   `dartitect scan --no-baseline` before migration.
+2. Inventory composition roots, owners, disposal order, repositories,
+   background entrypoints, provider SDKs, and telemetry paths.
+3. Select one vertical slice with explicit compatibility and rollback limits.
+4. Introduce constructor injection, typed failures, ownership, and tests before
+   moving to another slice.
+5. Create a baseline only for reviewed remaining debt and remove stale entries.
+
+For discovery, read [references/inventory.md](references/inventory.md). For the
+migration sequence and CLI/MCP boundaries, read
+[references/incremental-migration.md](references/incremental-migration.md).
+
+## Validate
+
+Compare the post-slice tests, analyzer, doctor, and unbaselined scan with the
+recorded baseline. Confirm the slice has one owner, reverse disposal, no new
+global/provider leakage, and a smaller or unchanged reviewed-debt set.
+''',
+      'references/inventory.md': r'''# Brownfield inventory
+
+Record:
+
+- app, session, route, and background-isolate composition roots;
+- global singletons, service locators, clients, Stores, subscriptions, timers,
+  commands, ViewModels, and error handlers;
+- which resources are created, borrowed, disposed, or leaked at each root;
+- domain/application contracts and infrastructure imports crossing inward;
+- expected failure types versus unexpected exceptions;
+- local versus remote data authority, queues/outboxes, retry and conflict rules;
+- logging, error capture, tracing, redaction, and duplicate provider hooks;
+- generated code and consumer-owned schemas that Dartitect must not replace.
+
+Keep an evidence table with current behavior, owner, proposed boundary, test,
+and rollback condition for each selected migration slice.
+''',
+      'references/incremental-migration.md': r'''# Incremental migration
+
+Start with read-only CLI operations. `inspect`, `scan`, and `doctor` do not write.
+Run `scan --no-baseline` before deciding whether a baseline is warranted. Preview
+baselines, generators, and Codex sync before applying them. Stable config v1 is
+recreated and reviewed; experimental configs are never migrated.
+
+The local MCP may assist discovery with bounded inspect, scan, doctor, explain,
+adoption, and preview tools. It is read-only by default. A write requires server
+opt-in, a reviewed preview, an opaque unexpired single-use plan, explicit
+confirmation, client approval, full revalidation, serialization, and a lock.
+
+Migrate constructor boundaries before replacing behavior. Add one provider
+adapter at a time, with consumer ownership explicit. Reject duplicate Sentry or
+Dio instrumentation. Keep compatibility shims narrow, tested, and scheduled for
+removal. Never broaden the slice merely to make the migration look complete.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
+    name: 'dartitect-runtime',
+    displayName: 'Dartitect Runtime',
+    shortDescription: 'Build core and basic Flutter runtimes',
+    defaultPrompt:
+        r'Use $dartitect-runtime to implement an owned Dartitect runtime.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-runtime
+description: Implement Dartitect Result, ownership, composition, commands, ViewModels, isolates, and basic Flutter bindings. Use for core or thin Flutter runtime work; route advanced reactive and offline-first behavior to their focused skills.
+---
+
+# Build a Dartitect runtime
+
+## When to use
+
+Use this skill for `Result<T, F>`, resource ownership, composition roots,
+`Command0`, ViewModels, app/session/route lifetimes, isolate graphs, and the
+basic `dartitect_flutter.dart` entrypoint.
+
+## When not to use
+
+Use `$dartitect-reactive` for `ReactiveOwner`, `LiveResource`, resource families,
+live collections, or advanced builders. Use `$dartitect-offline-first` for local
+authority, paging, durable mutations, or outbox recovery.
+
+## Invariants
+
+Use constructor injection. Record every resource as owned or borrowed and
+dispose dependents before dependencies. Build a fresh graph per app, session,
+route, or background isolate. Transfer configuration and validated trace
+context—not clients, Stores, subscriptions, or other live resources.
+
+Expected failures use `Result<T, F>`. Unexpected exceptions remain crashes, may
+be reported once, and are rethrown with their stack. Keep `BuildContext` out of
+ViewModels, domain, repositories, and services.
+
+## Workflow
+
+Define failure types and contracts, build the smallest composition root, wire
+commands/ViewModels, then document ownership and reverse disposal. Select
+`ViewModelHost.create` for owned values and `.value` for borrowed values.
+
+Read [references/results-and-commands.md](references/results-and-commands.md),
+[references/ownership-and-isolates.md](references/ownership-and-isolates.md), or
+[references/basic-flutter.md](references/basic-flutter.md) only for the boundary
+being implemented.
+
+## Validate
+
+Test `Ok`/`Err`, crash rethrow, cancellation or busy policy, disposal order,
+owned/borrowed host behavior, stale completion, and zero notifications or
+resources after disposal.
+''',
+      'references/results-and-commands.md': r'''# Results and commands
+
+Use `Result<T, F>` only for expected failures a caller can handle. Do not erase
+failure types, stringify them at the domain boundary, or translate an unexpected
+exception into `Err` without an explicit recovery contract.
+
+`Command0<T, F>`, `Command1<A, T, F>`, and dedicated
+`KeyedCommand1<K, A, T, F>` expose expected `Err<F>` as state and do not report
+it automatically. Reject is the default; join, drop, bounded sequential,
+restart-latest, bounded concurrent, and bounded keyed policies are explicit. An
+unexpected exception transitions to crashed, can be reported once through an
+injected reporter, and is rethrown. A disposed command is terminal and does not
+notify. One-shot navigation/snackbar effects use a bounded, route-owned,
+single-consumer channel rather than being replayed as command data.
+''',
+      'references/ownership-and-isolates.md': r'''# Ownership and isolates
+
+The composition root creates dependencies from longest-lived to shortest-lived
+and disposes them in reverse. Dispose bindings and commands, then subscriptions,
+watchers and queries, then clients and Stores, then flush/dispose owned
+observability. Consumer-owned providers close after all Dartitect borrowers.
+
+Each isolate creates a fresh graph from transferable configuration. Validate
+incoming trace context before using it. Never transfer a live client, Store,
+owner, command, ViewModel, subscription, timer, or callback closure that captures
+one. Close isolate-local resources in `finally`.
+''',
+      'references/basic-flutter.md': r'''# Basic Flutter runtime
+
+Use `ViewModelHost.create` when the widget subtree creates and owns the ViewModel;
+use `ViewModelHost.value` when a route/composition root owns it. The host must not
+dispose a borrowed value. `ViewModelHost.create` may call `start` exactly once;
+the first build never waits for it, and readiness remains explicit state. Use
+selected listenable builders to narrow rebuilds and pause their local listeners
+under disabled `TickerMode`.
+
+Create commands and bounded `EffectChannel` values outside `build`, bind their
+state/effects declaratively, and drain them with their owner. Only
+`EffectListener` uses its current mounted context. Keep `BuildContext` and
+navigation out of the ViewModel. Use replayable `SessionState`, not an effect,
+for forced logout and remove routes before closing the old session graph. For
+hot/warm/cold resources or advanced list/page builders, switch to
+`$dartitect-reactive` instead of growing the basic runtime ad hoc.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
+    name: 'dartitect-reactive',
+    displayName: 'Dartitect Reactive',
+    shortDescription: 'Build causal reactive Flutter runtimes',
+    defaultPrompt:
+        r'Use $dartitect-reactive to implement a causal reactive feature.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-reactive
+description: Implement Dartitect ReactiveOwner, hot/warm/cold lifecycle, LiveResource, causal refresh, families, collections, selectors, and headless builders. Use for the opt-in advanced Flutter reactive runtime; do not use for basic commands/ViewModels or durable offline mutations.
+---
+
+# Build a reactive Dartitect runtime
+
+## When to use
+
+Use this skill when a feature needs explicit dependency tracking, temperature,
+authoritative live sources, causal refresh, bounded keyed resources, incremental
+collections, selectors, debounce, or reactive Flutter builders.
+
+## When not to use
+
+Use `$dartitect-runtime` for basic commands and ViewModels. Use
+`$dartitect-offline-first` when paging or mutation correctness depends on local
+database authority, an outbox, retries, conflicts, or crash recovery.
+
+## Invariants
+
+One `ReactiveOwner` owns a graph; disposed owners are terminal. Resource data
+state is separate from hot/warm/cold temperature. Sources create activation-local
+sessions and borrow injected providers. Refresh completion must name its causal
+boundary. Collections publish complete validated updates atomically. Widgets
+borrow resources and never dispose them from `build`.
+
+## Workflow
+
+Choose owner and activation policy, model the authoritative source, select the
+required refresh completion type, then add bounded families/collections and the
+smallest builder entrypoint. State backpressure, retry, retention, and disposal
+semantics explicitly.
+
+Read [references/lifecycle-and-resources.md](references/lifecycle-and-resources.md),
+[references/families-and-collections.md](references/families-and-collections.md),
+or [references/selectors-and-builders.md](references/selectors-and-builders.md)
+for the feature being implemented.
+
+## Validate
+
+Test hot/warm/cold transitions, stale-publication rejection, expected failure,
+crash-and-explicit-retry, backpressure, exact causal refresh, bounded eviction,
+atomic collection failure, selected rebuilds, TickerMode pause, and complete
+graph cleanup.
+''',
+      'references/lifecycle-and-resources.md':
+          r'''# Lifecycle and live resources
+
+Nested `ReactiveOwner.update` calls join the outer transaction; listeners run
+only after affected computed values stabilize. A compute crash preserves the
+prior graph snapshot, is reported through the injected reporter, and is
+rethrown. Disposal removes every edge and listener.
+
+`LiveResource<T, F>` separates waiting/ready/failed/crashed data from hot/warm/
+cold temperature. A hot resource owns an active source session, warm retains
+last-known data without upstream activity, and cold discards both. Use an
+`AsyncLifecycleBarrier` so disposal closes admission, cancels cooperatively,
+drains admitted work, and rejects stale publication.
+
+Select `RemoteRefresh`, `LocalCommitRefresh`, or `ObservedLocalRefresh` according
+to the completion the caller needs. Observed refresh waits for the exact typed
+revision and requires a positive timeout mapped explicitly to `F`.
+''',
+      'references/families-and-collections.md': r'''# Families and collections
+
+`ResourceFamily<K, T, F>` shares equal keys only inside one explicit family.
+Acquire and release a `FamilyLease` per retained consumer. Bound idle entries by
+positive TTL, count, and weight. Never evict active leases, observers, or hot
+resources. Remove an entry from the index before asynchronous disposal so a
+reacquisition creates a new generation.
+
+`LiveCollection<K, T>` keeps stable item nodes and publishes membership, order,
+length, and item changes separately. Select `replaceAll`, `diffByKey`, or
+`versionedByKey` explicitly. Validate keys and the entire projection before one
+atomic publication. Duplicate keys, projection crashes, cancellation, or stale
+background completion preserve the prior snapshot. Removed nodes retain a
+tombstone only while listeners or configured warm retention require it.
+''',
+      'references/selectors-and-builders.md': r'''# Selectors and builders
+
+`ReactiveSelector<S, T>` owns one subscription to a borrowed `Listenable` and
+notifies only when its configured equality changes. `DebouncedReactiveValue<T>`
+owns its timer, publishes only the latest distinct value, supports explicit
+`flush()`, and cancels pending publication on dispose.
+
+Import `dartitect_flutter_reactive.dart` for headless `ReactiveValueBuilder`,
+`LiveResourceBuilder`, `LiveCollectionBuilder`, and `PagedLiveBuilder`.
+Material or Cupertino rendering stays in consumer presentation. Collection
+builders observe structure; render stable `LiveItem` values separately so one
+item does not rebuild the list. TickerMode pauses observations and offscreen
+rebuilds. Route/composition owners drain and dispose borrowed resources outside
+`build`. Consumer views require localized labels, stable semantics, keyboard
+access, and supported text-scale tests.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
+    name: 'dartitect-offline-first',
+    displayName: 'Dartitect Offline First',
+    shortDescription: 'Build local-authority pages and outboxes',
+    defaultPrompt: r'Use $dartitect-offline-first to implement a durable local-first flow.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-offline-first
+description: Implement Dartitect local-authority pagination, mutations, durable outbox delivery, idempotency, retries, conflicts, compensation, and crash recovery. Use for offline-first correctness; do not use for generic reactive UI or provider setup alone.
+---
+
+# Build offline-first Dartitect flows
+
+## When to use
+
+Use this skill when the local store is authoritative for presentation and remote
+pages, mutations, or dataset sync must cross an explicit durable boundary.
+
+## When not to use
+
+Use `$dartitect-reactive` for live UI without persistence/delivery semantics.
+Use `$dartitect-adapters` to wire a chosen database or transport provider after
+the repository contracts are defined.
+
+## Invariants
+
+Remote data never patches presentation state directly. The repository-owned
+local transaction is authoritative. A mutation changes domain data and enqueues
+its outbox operation atomically. Reuse one non-empty consumer-scoped idempotency
+key for every at-least-once attempt. Persist acknowledgement before reporting
+synced. Never auto-rollback queued or uncertain changes.
+
+## Workflow
+
+Define local snapshot and revision contracts, implement page writes or
+`applyLocalAndEnqueue`, map expected delivery failures, choose retry/conflict/
+compensation policy, and specify new-session recovery. Add provider integration
+only at the infrastructure composition root.
+
+Read [references/local-first-pagination.md](references/local-first-pagination.md)
+for pages, [references/mutations-and-outbox.md](references/mutations-and-outbox.md)
+for writes and recovery, or [references/sync-execution.md](references/sync-execution.md)
+for foreground/headless dataset orchestration.
+
+## Validate
+
+Test duplicate remote items, cancellation before local commit, exact-revision
+observation, stale search, same-key serialization, different-key concurrency,
+idempotent retries, rejection/conflict/uncertain outcomes, compensation,
+acknowledgement persistence failure, crash recovery, and zero residual work.
+''',
+      'references/local-first-pagination.md': r'''# Local-first pagination
+
+`PagedLiveResource<C, K, T, F>` requests a `PageBatch`, deduplicates by the
+consumer key callback, and gives a `PageWrite` to the repository-owned local
+transaction. The transaction returns a `PageWriteReceipt`; advance the cursor
+only after the borrowed `LiveResource<PagedLocalSnapshot<K, T>, F>` publishes
+that exact revision. Update the exposed `LiveCollection` only from the local
+snapshot.
+
+Refresh uses a joining lane, load-more drops reentrant calls, and search uses
+restart-latest. Check cancellation before local write so a stale search cannot
+patch the database. Expected request, write, or observation-timeout failure
+preserves last local data and the valid cursor. Keep the synchronous timeline
+bounded to phase facts rather than domain payloads.
+''',
+      'references/mutations-and-outbox.md': r'''# Mutations and outbox
+
+`MutationCommand<A, K, T, F>` serializes operations per entity key. The
+`MutationOutboxStore.applyLocalAndEnqueue` implementation performs the domain
+write and persists `OutboxOperation` in one transaction. Dartitect does not
+define entities, outbox schema, endpoints, or conflict rules.
+
+Map expected delivery failures through `MutationFailurePolicy` to pending,
+rejected, conflicted, or uncertain. Only definitive rejection may run an
+explicit compensation transaction. Transient retries are opt-in, bounded, and
+reuse the operation/idempotency key. An unexpected delivery crash is reported
+once and rethrown; if delivery may have committed, persist uncertainty and stop
+only that key lane until repository audit, a deliberate pending decision, and
+`resume(key)`. On a new session, `recoverPending()` deduplicates idempotency keys
+and drains pending records only; uncertain records require human/domain policy.
+''',
+      'references/sync-execution.md': r'''# Sync execution
+
+Use `dartitect_sync` only when a feature needs an explicit dataset DAG,
+checkpoints, leases/fencing, progress, deadlines, or headless acknowledgements.
+The repository operation commits remote results into the authoritative local
+transaction before returning a confirmed checkpoint. A failed dependency blocks
+only downstream datasets; independent branches continue.
+
+Treat checkpoint and lease ports as borrowed. Persist the lease fencing token
+atomically with checkpoint writes and reject stale writers. Validate headless
+payloads before graph creation, create a fresh `OwnedGraph` per accepted request,
+deduplicate request IDs, and transfer data rather than provider objects. Retry,
+scheduling, authentication, conflicts, schemas, and durable cross-process
+deduplication remain consumer policy. Expected failure returns `Err`; an
+unexpected exception preserves its stack and is never retried automatically.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
+    name: 'dartitect-observability',
+    displayName: 'Dartitect Observability',
+    shortDescription: 'Configure private provider-neutral telemetry',
+    defaultPrompt: r'Use $dartitect-observability to design sanitized Dartitect telemetry.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-observability
+description: Configure Dartitect provider-neutral logging, reporting, W3C tracing, redaction, Flutter bindings, and payload-free reactive events. Use for telemetry contracts and policy; use the adapters skill for provider-specific wiring.
+---
+
+# Configure Dartitect observability
+
+## When to use
+
+Use this skill for `ObservabilityRuntime`, redaction/sampling/dispatch policy,
+error reporting, W3C propagation, Flutter error capture, or reactive diagnostic
+events.
+
+## When not to use
+
+Use `$dartitect-adapters` for Dio, ObjectBox, Sentry, or custom provider wiring.
+Do not add remote telemetry merely because observability contracts exist.
+
+## Invariants
+
+Create the runtime explicitly; local developer logging is the safe default and
+remote destinations are opt-in. Sanitize before every destination. Never record
+credentials, authorization, cookies, bodies, headers, query strings, DSNs,
+identity, identifying paths, domain payloads, or dynamic error text in reactive
+events. Errors/fatal are never sampled away. Destination failure stays isolated.
+
+## Workflow
+
+Define the data policy first, then choose owned/borrowed sinks, reporter, tracer,
+propagator, Flutter binding, and reactive observers. End every span exactly once
+and define reverse flush/disposal.
+
+Read [references/telemetry-contract.md](references/telemetry-contract.md),
+[references/flutter-and-providers.md](references/flutter-and-providers.md), or
+[references/reactive-events.md](references/reactive-events.md) for the boundary
+being configured.
+
+## Validate
+
+Test redaction at every destination, unsampled error/fatal delivery, sink
+isolation, queue bounds, exact-once span end, trace-context validation,
+handler chaining/restoration/recursion, borrowed provider lifetime, and absence
+of payload or identity in reactive events.
+''',
+      'references/telemetry-contract.md': r'''# Telemetry contract
+
+Accept only valid W3C `traceparent`, forward optional `tracestate`, and keep
+baggage off by default. Transfer only validated context between isolates. End
+operation spans exactly once in `finally`.
+
+Expected `Err<F>` remains command state and is not automatically reported.
+Unexpected crashes may be reported once with sanitized mechanism, handled state,
+fingerprint, and allowlisted attributes, then are rethrown with the original
+stack. Errors and fatal events bypass sampling. Bounded destination queues must
+have explicit overflow behavior, and one destination failure cannot affect the
+application or another destination.
+''',
+      'references/flutter-and-providers.md': r'''# Flutter and providers
+
+Install one `FlutterErrorBinding`. Chain the previous Flutter/platform handlers,
+prevent recursion, and restore exactly those handlers on disposal. Keep
+foreground capture separate from background-isolate reporting.
+
+Provider SDK initialization, credentials, release/environment configuration,
+consent, and shutdown belong to the consumer. Provider adapters borrow injected
+SDK objects unless their registration explicitly owns them. For Sentry, borrow
+the consumer-initialized Hub; never initialize, configure, or close it. Reject
+duplicate capture or tracing such as simultaneous Dartitect Dio instrumentation
+and `sentry_dio`.
+''',
+      'references/reactive-events.md': r'''# Payload-free reactive events
+
+`ReactiveChangeEvent` may contain only its fixed source and outcome kind, an
+exact pre-registered static `ChangeCause`, monotonic revisions/duration, and
+listener count. It never contains values, keys, idempotency IDs, error text,
+stack traces, or user identity. Reject reconstructed or dynamic causes before
+state changes begin.
+
+Register observers as explicitly owned or borrowed. `ReactiveJournal` is a
+bounded memory-only local diagnostic ring and clears permanently on disposal.
+`ReactiveObserverLoggerAdapter` emits the fixed `reactive.change` message plus
+allowlisted facts; normal runtime redaction still runs. A failing observer is
+reported once, disabled, and cannot change runtime state or the caller's error.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
+    name: 'dartitect-adapters',
+    displayName: 'Dartitect Adapters',
+    shortDescription: 'Integrate explicit provider boundaries',
+    defaultPrompt:
+        r'Use $dartitect-adapters to integrate a Dartitect provider safely.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-adapters
+description: Integrate Dartitect with Dio, ObjectBox, Sentry, or a custom provider using isolated provider references and explicit ownership. Use for infrastructure wiring; do not use to select application architecture or define domain policy.
+---
+
+# Integrate Dartitect adapters
+
+## When to use
+
+Use this skill after the application has selected a transport, storage, or
+telemetry provider and needs to wire its Dartitect adapter at composition.
+
+## When not to use
+
+Use `$dartitect-design` to decide whether a provider is needed,
+`$dartitect-observability` for neutral telemetry policy, and
+`$dartitect-offline-first` for repository/outbox semantics.
+
+## Invariants
+
+Create adapters in an app/session/isolate infrastructure composition root.
+Provider SDKs, generated models, credentials, and configuration remain
+consumer-owned. No global client, Store, Hub, or adapter crosses into domain,
+application, ViewModel, or presentation. Record owned/borrowed lifetime and
+dispose borrowers before providers.
+
+## Workflow
+
+Select exactly one provider reference below, define the application-owned
+contract it implements, wire ownership and sanitized telemetry, then test the
+real SDK boundary plus deterministic failure cases.
+
+- Dio: [references/dio.md](references/dio.md)
+- ObjectBox: [references/objectbox.md](references/objectbox.md)
+- Sentry: [references/sentry.md](references/sentry.md)
+- Another provider: [references/custom-provider.md](references/custom-provider.md)
+
+## Validate
+
+Verify typed failure mapping, cancellation/concurrency where applicable,
+minimal telemetry, provider ownership, reverse disposal, no duplicate
+instrumentation, real boundary compatibility, and zero residual resources.
+''',
+      'references/dio.md': r'''# Dio adapter
+
+Create `DioOwner` or borrow an injected Dio instance in infrastructure. Map
+cancellation, transport, HTTP, and configuration failures distinctly. Preserve
+the caller's cancellation and concurrency semantics.
+
+Record only allowlisted method/protocol/status facts—never body, headers, query,
+credentials, or identifying path. Propagate only through the configured W3C
+propagator. Reject duplicate tracing/capture between Dartitect and `sentry_dio`.
+Test with Dio's real interceptor/adapter boundary and deterministic no-network
+responses. Dispose an owned Dio only after requests and instrumentation drain.
+''',
+      'references/objectbox.md': r'''# ObjectBox adapter
+
+The consumer owns entities, annotations, model JSON, generated Dart code, and
+Store configuration. Never edit generated files or treat the adapter as an ORM
+abstraction. ObjectBox has no web support.
+
+Create Store/query/watcher resources per native composition root. Close watchers
+and queries before the Store. Across isolates, pass supported configuration or
+provider references and create isolate-local queries; never send a live Store.
+Use the real generated Store/query/watcher fixture, cover same-path locking and
+cleanup, and run the supported native-host matrix.
+''',
+      'references/sentry.md': r'''# Sentry adapter
+
+The consumer initializes and configures Sentry, supplies the DSN through its own
+secure configuration, and closes the SDK. Dartitect adapters borrow an injected
+Hub and never initialize, reconfigure, or close it.
+
+Map only sanitized logs, errors, spans, mechanisms, fingerprints, and allowlisted
+attributes. Avoid duplicate Flutter error, Dio, or tracing capture. Test through
+a fake Hub with zero network, including destination failure and borrowed
+lifetime. Dispose Dartitect sinks/reporters/tracers before the consumer closes
+the Hub.
+''',
+      'references/custom-provider.md': r'''# Custom provider
+
+Implement an application-owned or small reusable adapter against Dartitect's
+public contracts. Keep provider imports in infrastructure and accept provider
+objects/configuration through constructor injection.
+
+A reusable adapter needs an isolated optional package, explicit ownership,
+minimal/redacted telemetry, deterministic no-network tests, a real SDK boundary
+test, supported-platform documentation, dependency/version rationale, compatible
+license, and supply-chain review. Do not add a generic abstraction that hides
+provider constraints or changes the domain contract.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
+    name: 'dartitect-testing',
+    displayName: 'Dartitect Testing',
+    shortDescription: 'Test failures, lifecycles, and providers',
+    defaultPrompt:
+        r'Use $dartitect-testing to design a Dartitect verification matrix.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-testing
+description: Test Dartitect consumers, failure and lifecycle matrices, real provider fixtures, and residual-resource cleanup with deterministic fakes. Use for verification or leak diagnosis; do not use as a substitute for implementation design.
+---
+
+# Test Dartitect boundaries
+
+## When to use
+
+Use this skill when selecting fakes, fixtures, public entrypoints, lifecycle/
+failure scenarios, provider boundary tests, or cleanup assertions.
+
+## When not to use
+
+Use the focused implementation skill to define the behavior first. Do not mock
+away the SDK boundary whose compatibility the test is meant to prove.
+
+## Invariants
+
+Test through public entrypoints. Prefer deterministic fakes from
+`dartitect_testing`; inject clocks, IDs, destinations, executors, process
+runners, and filesystem roots. Use real generated/provider fixtures where code
+generation or SDK lifecycle is the contract. Disable network. Every test owns
+and disposes what it creates and proves no residual resources.
+
+## Workflow
+
+Build a matrix across success, expected failure, unexpected crash,
+cancellation/concurrency, lifecycle temperature, disposal, and provider failure.
+Choose deterministic fakes for policy and real fixtures for integration.
+
+Read [references/runtime-and-reactive.md](references/runtime-and-reactive.md),
+[references/sync.md](references/sync.md),
+[references/provider-fixtures.md](references/provider-fixtures.md), or
+[references/tooling.md](references/tooling.md) for the boundary under test.
+
+## Validate
+
+Assert observable state and ownership rather than internal wording. Include
+original-stack rethrow, exact-once reporting/span end, stale-completion
+rejection, handler restoration, sink isolation, timers/subscriptions/isolates
+drained, and zero network or leaked filesystem artifacts.
+''',
+      'references/runtime-and-reactive.md': r'''# Runtime and reactive tests
+
+Cover `Ok`, `Err`, unexpected rethrow with original stack, every bounded command
+policy, disposed terminal state, `start` once, owned/borrowed hosts, effects
+before/after listener, FIFO/overflow/second consumer, forced logout after route
+removal, and reverse disposal.
+
+For reactive work, cover hot/warm/cold transitions, activation-local sessions,
+backpressure, retry after crash, exact-revision refresh, family sharing and
+eviction, atomic collection failure, tombstone expiry, background projection
+staleness, selector equality, debounce cancellation, TickerMode pause,
+payload-free rebuild diagnostics, and localized Material semantics. End with no
+listeners, timers, effects, sessions, source sessions, family leases,
+projection workers, or graph edges.
+''',
+      'references/sync.md': r'''# Sync tests
+
+Use `OwnedGraphHarness` to prove rollback, drain-before-close, failed swap
+retention, and exact zero admitted work. Use `SyncContractHarness` with manual
+clock, sequence IDs, checkpoints, crash fault points, and fencing leases for a
+deterministic DAG matrix.
+
+Cover missing/duplicate/cyclic dependencies, stable plan order, downstream-only
+blocking, independent branches, cancellation, deadlines, lease refusal/loss,
+stale fencing rejection, checkpoint write failure, progress bounds, unexpected
+rethrow with original stack, duplicate headless requests, protocol rejection,
+fresh graph per accepted request, and shutdown drain. Add one real generated
+storage fixture for checkpoint transactions without moving consumer schema or
+conflict policy into the adapter.
+''',
+      'references/provider-fixtures.md': r'''# Provider fixtures
+
+- Dio: use the real Dio adapter/interceptor boundary with mock transport; test
+  cancellation, concurrency, typed failure, minimal attributes, propagation,
+  and duplicate instrumentation without network.
+- ObjectBox: use consumer-generated entities/model/Store/query/watcher; test
+  transactions, same-path locking, cleanup, and isolate attachment on supported
+  native hosts.
+- Sentry: use a fake Hub, no DSN and zero network; test sanitized mapping,
+  destination failure, duplicate capture prevention, and borrowed lifetime.
+- Custom providers: pair deterministic contract tests with at least one real SDK
+  boundary fixture that proves version and lifecycle compatibility.
+''',
+      'references/tooling.md': r'''# Tooling tests
+
+Use temporary roots and injected process/filesystem boundaries. Cover read-only
+commands, dry-run/apply separation, unknown config rejection, reviewed baseline
+fingerprints, stale plans, conflicts, recovery journals, symlink/path escape,
+permissions, Unicode and spaces, and idempotent managed-skill sync.
+
+Native setup tests remain offline by injecting download, archive, host, temp
+root, and atomic replacement. Cover supported mappings, pinned hashes, corrupt
+or truncated archives, missing exact members, unsupported hosts, read-only
+destinations, cache revalidation, and cleanup. MCP protocol tests also cover
+expiry, replay, concurrency/lock, output sanitization, and clean shutdown.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
+    name: 'dartitect-modeling',
+    displayName: 'Dartitect Modeling',
+    shortDescription: 'Generate immutable Dartitect value models',
+    defaultPrompt: r'Use $dartitect-modeling to define and synchronize Dartitect value models.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-modeling
+description: Define, generate, validate, or review immutable Dartitect value models with DartitectValue, ValueEquality, typed copyWith, and model sync/check. Use for Dartitect-owned value generation; exclude DTO/JSON, unions, DI, ViewModels, state, and HTTP clients.
+---
+
+# Model values with Dartitect
+
+## When to use
+
+Use this skill for `@DartitectValue()`, generated value semantics, typed
+`copyWith`, model ownership manifests, or `model sync/check`.
+
+## When not to use
+
+Use provider-specific tooling for DTO/JSON, schema, or native generators. Use
+the runtime, reactive, adapters, or tooling skill for ViewModels, state, HTTP,
+DI, and unrelated CLI behavior.
+
+## Invariants
+
+Keep the annotation passive in `dartitect`; generation belongs to the CLI. One
+source library contains exactly one annotated final, non-generic class. Declare
+the matching `part`, extend `ValueEquality`, mix in the calculated generated
+mixin, expose typed public final fields, and use one unnamed generative
+constructor whose named parameters correspond exactly to those fields.
+
+Do not declare fields through mutable collection interfaces such as `List`,
+`Set`, `Map`, or `Iterable`; wrap immutable values in a consumer-owned type.
+Generation does not own JSON, DTOs, unions, DI, ViewModels, state, routes, or
+clients and may coexist with provider-owned generators in distinct part files.
+
+## Workflow
+
+Use `dartitect model sync` for a read-only preview, or `--dry-run` for an
+explicit preview. Only `dartitect model sync --apply` may recover and converge
+outputs. Run `dartitect model check` in CI. Commit every
+`*.dartitect.g.dart` output and `.dartitect/model-outputs.json` so a clean
+checkout compiles without installing the CLI.
+
+Never hand-edit or force-adopt a generated model. A digest conflict means the
+consumer bytes must be reviewed and ownership restored explicitly. A pending
+journal is inspected by preview/check and recovered only by `sync --apply`.
+
+## Validate
+
+The generated mixin supplies abstract getters, `equalityFields`, and typed
+`copyWith` only. Nullable fields preserve on omission, replace on a non-null
+value, and clear with `clear<Field>: true`; passing a value and clear together
+must fail. Non-nullable fields have no clear flag. Do not generate equality,
+hashing, or `toString` because `ValueEquality` centralizes those semantics.
+
+Test bootstrap with the exact missing part/mixin only, clean post-sync analysis,
+preserve/replace/clear behavior, full equality participation, create/update/
+no-op/orphan convergence, consumer edits, manifest corruption/path escapes,
+CRLF canonicalization, pending recovery, and stable JSON/exit codes.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
+    name: 'dartitect-tooling',
+    displayName: 'Dartitect Tooling',
+    shortDescription: 'Operate CLI, lints, generators, and gates',
+    defaultPrompt:
+        r'Use $dartitect-tooling to operate or extend Dartitect tooling.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-tooling
+description: Operate or extend the Dartitect CLI, config, scan, doctor, baselines, lints, generators, native setup, and release gates. Use for shell/CI architecture tooling; MCP configuration and protocol work belongs to the MCP skill.
+---
+
+# Operate Dartitect tooling
+
+## When to use
+
+Use this skill for CLI commands/services, stable config v1, scanner/doctor policy,
+baselines, analyzer diagnostics, generators, Codex sync, native fixture setup,
+or repository release gates.
+
+## When not to use
+
+Use `$dartitect-mcp` for local MCP tools, resources, protocol, previews, or
+opt-in MCP writes. Use runtime skills for application behavior.
+
+## Invariants
+
+Inspection is read-only. Mutations preview by default or provide explicit
+dry-run/apply separation. Reject experimental versions and preserve unknown v1
+extension fields without interpreting them.
+Baselines cover reviewed existing debt only. Generators stage, validate, refuse
+conflicts, and recover transactionally. Codex sync replaces only valid
+manifest-owned skills and preserves consumer-owned files/directories.
+
+## Workflow
+
+Identify the command contract and exit codes, resolve roots by real path
+segments, construct a deterministic preview, validate the complete staged
+result, then commit atomically. Update tests, docs, diagnostics, catalogs, and
+release gates that expose the behavior.
+
+Read [references/cli-scan-and-lints.md](references/cli-scan-and-lints.md),
+[references/generation-and-native.md](references/generation-and-native.md), or
+[references/release-gates.md](references/release-gates.md) as applicable.
+
+## Validate
+
+Test idempotency, conflicts, stale state, interrupted recovery, path/symlink
+confinement, permissions, CRLF, Unicode/spaces, unknown-key preservation, stable
+JSON/exit codes, generated-consumer behavior, and unchanged tracked files after
+verification.
+''',
+      'references/cli-scan-and-lints.md': r'''# CLI, scan, and lints
+
+Keep `inspect`, `scan`, and ordinary `doctor` read-only. Deep doctor is explicit
+and bounded. Accept exactly stable config v1 with `native_strict`; reject
+experimental versions, preserve unknown v1 extension keys without interpreting
+them, never store credentials, and provide no compatibility migrator.
+
+Scan only declared roots using real path segments; ignore nested caches and
+generated code. A baseline fingerprints code, path, and evidence without line
+number. New findings fail, obsolete entries warn, and local suppressions require
+a reason. Keep CLI and official analyzer-plugin diagnostics semantically aligned
+while respecting their different hosts and entrypoints.
+''',
+      'references/generation-and-native.md': r'''# Generation and native setup
+
+Stage generated content outside the destination, validate it, refuse
+consumer-owned collisions, record a journal, and replace only the declared
+target. Recover the old data on interruption. Generated-once files become
+consumer-owned; fully generated files need an ownership manifest before update.
+
+Native fixture setup accepts only reviewed host/artifact mappings, verifies a
+pinned hash before extracting one exact member, installs through same-directory
+staging, and revalidates ignored cache markers. Keep download, archive, host,
+temporary-root, and atomic replacement injectable for offline tests. Never run
+provider code generation by hand or edit its output.
+''',
+      'references/release-gates.md': r'''# Release gates
+
+Run formatting, analysis, public API snapshots, package/example tests,
+generated-consumer matrices, public documentation/link checks, skills coverage,
+MCP catalog freshness, CI/security policy, license/SBOM/advisory checks, native
+fixtures, and publish dry-runs in proportion to the change and as required by
+the repository workflow.
+
+Pin external Actions by full commit SHA. OSV exceptions are exact advisory IDs
+with justification, analysis link, and short expiry; package-wide ignores and
+PackageOverrides are forbidden. A dry-run never authorizes publishing or tags.
+Platform-specific evidence must run on its supported host, and builds must
+leave tracked files unchanged.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
+    name: 'dartitect-mcp',
+    displayName: 'Dartitect MCP',
+    shortDescription: 'Use the bounded local Dartitect MCP',
+    defaultPrompt:
+        r'Use $dartitect-mcp to inspect this project through local MCP.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-mcp
+description: Configure, use, or extend the local Dartitect MCP server, bounded tools/resources, reviewed previews, and opt-in writes. Use for MCP-specific workflows; exclude shell automation, remote services, application access, and CI scripting.
+---
+
+# Use the local Dartitect MCP
+
+## When to use
+
+Use this skill when a local MCP client needs typed Dartitect inspection,
+diagnostics, adoption context, public guide resources, reviewed previews, or the
+server's guarded write flow.
+
+## When not to use
+
+Use `$dartitect-tooling` and the CLI directly for shell scripts, CI, generators,
+release gates, or native setup. The MCP is not a remote service, HTTP/OAuth
+endpoint, ChatGPT web plugin, shell bridge, arbitrary file reader, or debugger
+for a running application.
+
+## Invariants
+
+The server is local STDIO and read-only by default. Stdout is JSON-RPC only.
+Roots are preconfigured and canonical; tool paths are relative and confined.
+Never expose secrets, environment, arbitrary files, raw internal errors, or
+unbounded results. Tool/resource schemas stay closed and generated resources
+come from maintained repository sources.
+
+## Workflow
+
+Configure a trusted root, use inspect/scan/doctor/explain/adoption/resource
+reads first, then request a preview. Enable server writes only for an intended,
+reviewed local change and retain client approval.
+
+Read [references/setup-and-surface.md](references/setup-and-surface.md) for
+configuration/tools/resources and [references/reviewed-writes.md](references/reviewed-writes.md)
+for mutation security.
+
+## Validate
+
+Test real-process startup/shutdown, stdout purity, structured plus text output,
+bounded pagination, root/path/symlink rejection, resource catalog freshness,
+write-disabled behavior, preview/apply annotations, expiry, replay, stale state,
+confirmation, locking, revalidation, and sanitized failures.
+''',
+      'references/setup-and-surface.md': r'''# Setup and surface
+
+Run `dart run dartitect_mcp:dartitect_mcp --root .` and register that local STDIO
+command in the MCP client. Multiple roots must already exist and are addressed
+by configured names. Do not put credentials in command arguments or environment.
+
+The closed read surface provides inspect, bounded scan, doctor, finding
+explanation, adoption planning, and change previews. Generated resources expose
+package metadata, diagnostics, canonical English guides, and credential-free
+config v1. There is no free-form file resource. Results include structured
+content plus compatible JSON text. Read tools/previews are annotated read-only;
+only apply is mutable/destructive.
+''',
+      'references/reviewed-writes.md': r'''# Reviewed writes
+
+Start the server with `--allow-writes` only when a reviewed local mutation is
+intended. The flag alone grants nothing. Apply requires all of:
+
+1. server write opt-in;
+2. a prior read-only preview;
+3. an opaque plan ID that is unexpired and unused;
+4. `confirmed: true` after user review;
+5. client MCP approval;
+6. complete root, state, and operation revalidation;
+7. in-process serialization plus an exclusive filesystem lock.
+
+Plans are single-use even after a failed attempt. Expiry, replay, stale state,
+concurrency, path, permission, and I/O errors remain structured and sanitized.
+Do not bypass the flow, broaden roots, or use MCP writes as CI automation.
+''',
+    },
+  ),
+];

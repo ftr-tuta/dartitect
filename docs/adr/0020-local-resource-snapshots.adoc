@@ -1,0 +1,17 @@
+= ADR-0020: Local resource snapshots drive presentation
+
+Status:: ACCEPTED
+
+Context:: A refresh or sync operation must not replace local presentation
+authority with the transport response. Presentation still needs explicit
+waiting, content, empty, expected failure, and unexpected-crash states.
+
+Decision:: `ResourceSnapshot<T, M>` carries locally authoritative data plus
+consumer metadata. Flutter maps reactive `ResourceDataState` values containing
+snapshots into sealed presentation states with a pure projection. The mapping
+does not fetch, persist, dispose, or own any resource. Expected failures remain
+typed; unexpected crashes retain their original stack trace.
+
+Consequences:: Repositories and local stores decide when data changes. Views
+render projections and cannot accidentally make remote payloads authoritative
+or hide crashes behind ordinary empty/error states.

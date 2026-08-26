@@ -1,0 +1,11 @@
+= ADR-0010: Native CLI and templates
+
+Status:: ACCEPTED
+
+Decision:: Implement the bounded CLI with dart:io/dart:convert. Templates are
+allowlisted Dart strings rendered to an in-memory operation plan; there is no
+Mason, hook runner, remote registry, or arbitrary template code.
+
+Consequences:: Every mutation supports dry-run, rejects conflicts before
+writing, stages beside the destination, and rolls back files created by the
+current invocation.

@@ -1,0 +1,10 @@
+= ADR-0007: Sealed Result
+
+Status:: ACCEPTED
+
+Decision:: Result has only `Ok<T>` and `Err<T>(Object, StackTrace)`. Consumers
+use exhaustive patterns. There is no operator DSL, Equatable dependency,
+universal Failure base, or promise of structural equality.
+
+Consequences:: Failures keep their origin and the type remains small. APIs that
+naturally throw are not forced to return Result.

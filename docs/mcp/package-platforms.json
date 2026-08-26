@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "packages": {
+    "dartitect": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
+    "dartitect_sync": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
+    "dartitect_isolates": {"platforms": ["Dart VM", "Flutter native"], "stability": "development"},
+    "dartitect_flutter": {"platforms": ["Flutter"], "stability": "development"},
+    "dartitect_observability": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
+    "dartitect_dio": {"platforms": ["Dio platforms"], "stability": "development"},
+    "dartitect_objectbox": {"platforms": ["Android", "iOS", "Linux", "macOS", "Windows"], "stability": "development"},
+    "dartitect_sentry": {"platforms": ["Dart", "Flutter"], "stability": "development"},
+    "dartitect_testing": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
+    "dartitect_cli": {"platforms": ["Dart VM"], "stability": "development"},
+    "dartitect_lints": {"platforms": ["Dart analyzer"], "stability": "development"},
+    "dartitect_locale_br": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
+    "dartitect_geometry": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
+    "dartitect_privacy": {"platforms": ["iOS", "Flutter non-iOS notSupported"], "stability": "development"},
+    "dartitect_media": {"platforms": ["Android", "iOS", "Flutter other notSupported"], "stability": "development"},
+    "dartitect_mcp": {"platforms": ["Dart VM", "STDIO"], "stability": "development"}
+  }
+}

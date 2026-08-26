@@ -1,0 +1,43 @@
+= ADR 0024: stable v1 package topology
+:status: accepted
+:date: 2026-08-24
+
+== Context
+
+The pre-1.0 workspace had eleven packages, thirteen public entrypoints,
+offline mutation in core, direct sync dependencies in adapter-neutral
+observability/Dio, and a Material presentation library. That topology made the
+minimal dependency contract larger than the behavior required.
+
+== Decision
+
+The stable v1 workspace has twelve reviewed packages. +dartitect_isolates+ is
+added as a pure-Dart worker lifecycle package. Offline mutation/outbox contracts
+move from core to +dartitect_sync+. +dartitect_observability+ depends only on
+core; +dartitect_dio+ depends only on core and observability. The Material
+entrypoint and widgets are removed: applications own design-system rendering
+over the headless reactive builders.
+
++dartitect_mcp+ remains a separately installable host-tooling package. It is
+retained because typed local STDIO resources and reviewed previews are useful
+to AI clients that cannot call a shell directly. It never enters application
+runtime graphs, performs HTTP/OAuth, or receives private roadmap resources.
+
+Every package exposes one same-named public entrypoint except
++dartitect_flutter+, which additionally exposes the opt-in headless reactive
+entrypoint. Packages do not reexport other Dartitect packages. The checked DAG
+in +tool/check_package_topology.dart+ is authoritative.
+
+Versions are released lockstep at +1.0.0+; examples are not published.
+Publishing, tagging, and an RC decision require explicit human approval after
+CI and Security succeed on the exact candidate SHA.
+
+== Consequences
+
+Basic core users do not pull Flutter, reactive, adapters, observability,
+Material, or tooling. Flutter users select basic or reactive APIs without a
+design-system commitment. Provider schemas, DTOs, clients, Stores, telemetry
+destinations, and rendering remain consumer-owned.
+
+Removing prototype entrypoints before 1.0 is deliberately breaking. There is
+no compatibility migration for experimental config versions or +AsyncCommand+.

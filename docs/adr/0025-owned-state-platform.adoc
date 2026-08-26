@@ -1,0 +1,68 @@
+= ADR-0025: Owned dependency-injection and state platform
+
+Status:: Accepted for implementation
+Date:: 2026-08-24
+Release status:: NOT READY FOR 1.0 RC
+
+== Context
+
+Dartitect already exposes explicit ownership, commands, a reactive graph,
+live resources, bounded families, incremental collections, causal paging,
+offline mutations, and Flutter selectors. Describing those capabilities as
+unrelated helpers left applications without one coherent contract for replacing
+external dependency-injection and state-management runtimes.
+
+== Decision
+
+Dartitect is the owned DI and state platform for applications that adopt it.
+Capability parity is the target; API imitation is not. Constructor injection is
+the normal dependency mechanism. Application, session, feature, route/ViewModel,
+operation, and isolate graphs have explicit identities and owners. Every isolate
+builds and tears down a fresh graph from transferable data.
+
+MVVM is strict: a composition boundary constructs a ViewModel and passes it to
+the View. Presentation code does not look up repositories, clients, Stores,
+session graphs, or services through `BuildContext`. `DartitectScope` carries
+only a typed composition-root façade with stable identity to the boundary that
+creates ViewModels; it is not a type registry.
+
+The state taxonomy is:
+
+* widget-local ephemeral state remains in Flutter `State` or local listenables;
+* ViewModel state uses immutable values and owned `ValueListenable` nodes;
+* transient work uses bounded policy-aware commands;
+* live data uses owned resources with typed failure and crash states;
+* keyed and ordered data uses bounded families, collections, and causal pages;
+* durable truth remains in consumer repositories, stores, outbox, checkpoints,
+  and journals;
+* one-shot UI reactions use bounded, single-consumer owned effect channels;
+* authentication/session state is replayable application state, never an
+  effect.
+
+The basic Flutter entrypoint remains
+`package:dartitect_flutter/dartitect_flutter.dart`. Advanced graph, resource,
+source, family, collection, paging, and builder APIs remain opt-in through
+`package:dartitect_flutter/dartitect_flutter_reactive.dart`. Neither entrypoint
+exports Material or Cupertino widgets.
+
+== Dependency boundary
+
+Publishable packages, generated applications, examples, and reference apps may
+not depend on Provider, Riverpod, BLoC, GetIt/Injectable, MobX, Signals, or an
+equivalent DI/state runtime. The CLI and analyzer inspect manifests, imports,
+reexports, generated sources, and templates. Comparative dependencies are
+confined to an unpublished tooling workspace.
+
+Navigation, immutable-model tooling, serialization, HTTP, databases, secure
+storage, analytics, observability providers, and platform SDKs remain permitted
+at their appropriate consumer-owned boundaries. Dartitect does not become a
+router, ORM, HTTP client, model generator, or vendor SDK.
+
+== Consequences
+
+The platform must provide stable scope identities, safe ViewModel start and
+teardown, owned effects and session state, Flutter-native reactive values,
+bounded async sources and commands, diagnostics without payloads, deterministic
+testing harnesses, and two independent workloads. The active release gates are
+defined by `tool/goal_gates.json`; architecture completion alone does not
+authorize a tag, GitHub Release, or package publication.

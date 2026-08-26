@@ -1,0 +1,45 @@
+= V1S-13 native device evidence
+
+Status:: EXTERNAL EVIDENCE REQUIRED
+Authority:: `tool/native_evidence_contract.json`
+Structural gate:: `dart run tool/check_native_evidence.dart --contract-only`
+Formal gate:: `dart run tool/check_native_evidence.dart`
+Candidate-bound receipts:: Recorded outside the tracked root tree
+
+V1S-13 uses a fail-closed nine-cell matrix. An exact candidate needs Android
+media on floor/current emulators and a current physical device, iOS media on
+floor/current simulators and a current physical device, and iOS privacy on its
+floor/current simulators and a current physical device. Generic `floor` or
+`current` labels are not receipts: every run records exact OS/API, SDK, Flutter,
+Dart, device model, source SHA, UTC interval, scenarios, and a hashed device ID.
+
+The current Android emulator cell is the locally runnable ninth cell. The other
+eight platform/device cells remain pending and begin producing evidence against
+this root candidate. Prior repository-history receipts are not candidate
+evidence and are not exposed in the public tree.
+
+== Automated harness
+
+`tool/run_native_evidence.dart` creates a disposable Flutter host outside the
+repository, injects candidate packages, executes the selected integration test
+on a connected device, drives the Android external-Activity and exact
+instrumented-task background/foreground cycle, removes its test gallery asset,
+and writes an ignored receipt below `build/native-evidence/`.
+
+Portable `adb` discovery checks `ANDROID_SDK_ROOT`, `ANDROID_HOME`, and then
+`PATH`, using `adb.exe` on Windows. The harness refuses a dirty tracked tree;
+the receipt checker rejects cross-SHA, duplicate, partial, generic-version,
+wrong-device-kind, or dirty-tree evidence.
+
+== Required scenarios
+
+The matrix covers initial-versus-denied legacy Android state, granted/denied
+permissions, no legacy request on Android 29+, explicit ATT request, limited
+iOS Photos access, save with album, borrowed source preservation, missing and
+invalid files, cancellation during detach, rotation/configuration changes,
+background/foreground, cleanup after failure, main-thread callbacks, and a
+clean tracked native project after every run.
+
+The goal remains external until all nine receipts exist for the same exact
+candidate SHA. Missing physical hardware or an unavailable Apple host remains
+missing evidence, never a pass.
