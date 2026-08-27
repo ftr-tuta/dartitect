@@ -1,31 +1,25 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "plan": "DARTITECT_PLANO_UNICO_DE_EVOLUCAO_CODEX",
   "assessedOn": "2026-08-27",
-  "status": "NOT_READY",
-  "localImplementation": {
-    "goals": ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10"],
-    "selectedFindings": "FIXED",
-    "optionalSlices": "DEFERRED",
-    "gates": "PASS_LOCAL_MATRIX"
+  "status": "ACTIONS_READINESS_PENDING",
+  "formalAuthority": {
+    "workflow": "CI",
+    "requiredCheck": "CI / Required",
+    "branch": "main",
+    "artifact": "actions-readiness-v1",
+    "retentionDays": 90
   },
-  "candidateBinding": {
-    "status": "EXACT_SHA_RECEIPT_REQUIRED",
-    "sourceSha": null,
-    "sourceTree": null
-  },
-  "externalBlockers": [
-    "unique successful same-SHA CI workflow receipt",
-    "unique successful same-SHA Security workflow receipt",
-    "physical Android 14/API 34 native receipt",
-    "same-SHA iOS and native floor/current receipts",
-    "clean final-candidate canary and benchmark archive"
+  "nativeMatrix": [
+    "android-media-floor-build",
+    "android-media-current-emulator",
+    "ios-media-floor-build",
+    "ios-privacy-floor-build",
+    "ios-current-simulator"
   ],
-  "authority": {
-    "tagCreated": false,
-    "githubReleaseCreated": false,
-    "pubDevPublished": false,
-    "distributionAuthorized": false,
-    "humanDecisionRequired": true
-  }
+  "humanRole": {
+    "technicalEvidence": false,
+    "publicationTrigger": true
+  },
+  "localValidationCanDeclareReadiness": false
 }

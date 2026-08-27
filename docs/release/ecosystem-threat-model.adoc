@@ -1,7 +1,7 @@
 = Offline, sync, isolate, and telemetry threat model
 :toc:
 
-Status:: Locally reviewed for `1.0.0-rc.3`; remote Security evidence required
+Status:: Locally reviewed for `1.0.0-rc.3`; `CI / Required` evidence pending
 Review date:: 2026-08-24
 
 == Offline mutation and outbox
@@ -139,7 +139,6 @@ and own deletion/retention of the source file.
 
 Local negative tests, fault injection, generated ObjectBox fixtures, two
 independent workloads, zero-residual census, and the checked SBOM/license
-inventory are necessary but not sufficient. A stable release also requires the
-Security workflow and CI to pass on the exact final candidate SHA plus an
-explicit delegated review-authority decision. No exception silently weakens
-this model.
+inventory are necessary but not sufficient. A stable release also requires
+`CI / Required` on the exact final candidate SHA and its unaltered
+`actions-readiness-v1` artifact. No exception silently weakens this model.

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "target": "refs/heads/main",
+  "enforcement": "active",
+  "bypassActors": [],
+  "requiredStatusChecks": ["CI / Required"],
+  "strictRequiredStatusChecks": true,
+  "requiredConversationResolution": true,
+  "deletionBlocked": true,
+  "nonFastForwardBlocked": true
+}

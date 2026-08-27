@@ -1,6 +1,6 @@
 = Git-tag canary contract
 
-Status:: Implemented; public-tag receipt and physical-device evidence remain external
+Status:: Implemented; Git and native canaries are coordinated by GitHub Actions
 Machine authority:: `tool/canaries/canary_contract.json`
 Gate:: `dart run tool/run_git_canaries.dart --repository=<url> --ref=v1.0.0-rc.3`
 
@@ -40,9 +40,9 @@ library comes from the supplied Git tag.
 == Native capabilities
 
 The native-capability consumer runs host-side Flutter tests for privacy, media,
-locale BR, and geometry boundaries from the same tag. Physical Android/iOS
-floor/current runs and OS permission/lifecycle receipts remain the separate
-V1S-13 external matrix.
+locale BR, and geometry boundaries from the same tag. Android/iOS floor and
+hosted runtime runs, OS permissions, and lifecycle are the five V1S-13 cells
+inside the same coordinated Actions graph.
 
 == Formal future channel
 

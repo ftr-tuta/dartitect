@@ -1,58 +1,58 @@
-= Dartitect 1.0 readiness decision
+= Dartitect 1.0 Actions readiness
 
-Status:: GIT CONSUMPTION CANDIDATE ASSEMBLED; NOT READY FOR FORMAL RELEASE
-Implementation status:: Code and the sixteen-package `1.0.0-rc.3` cohort are assembled; external root checks and native evidence remain pending
-Decision date:: 2026-08-26 UTC
-Current candidate cohort:: `1.0.0-rc.3`
-Decision authority:: maintainer-delegated automation recorded in `tool/goal_gates.json`
+The currently assembled lockstep cohort is `1.0.0-rc.3`. This policy must
+authorize that exact source before the publication workflow can act on it.
 
-== Decision
+Status:: ACTIONS READINESS PENDING
+Authority:: `tool/actions_readiness_policy.json`
+Required branch check:: `CI / Required`
+Formal artifact:: `actions-readiness-v1`
+Retention:: 90 days
 
-The public tree is the complete Git candidate for 16 packages and 17 public
-entrypoints. Its consumption tag is annotated, unsigned, protected, and carries
-no GitHub Release. Dependency overrides pin every selected and transitive
-Dartitect package to the same repository/tag/commit. No package is authorized
-for pub.dev publication.
+== Technical authority
 
-This record does not claim formal `READY_FOR_1_0_RC` or `READY_FOR_1_0` status.
-The technical-hardening work corrects the previously recorded
-`OwnedRuntimeSlot.replaceGraph` ambiguity and its focused replacement/cleanup
-matrix passes. That removes the semantic blocker but does not authorize this
-cohort: the clean final candidate still needs same-SHA CI, Security, native,
-hosted/Git canary, benchmark, and release-audit receipts.
+GitHub Actions owns all tests, security checks, native evidence, clean-clone
+audits, benchmarks, canaries, and release dry-runs. The coordinated `CI`
+workflow runs on pull requests, merge queue candidates, and pushes to `main`.
+The `Security` workflow is diagnostic-only; merge-candidate OSV scanning runs
+inside `CI` and therefore contributes to the single required result.
 
-== Root evidence boundary
+`CI / Required` depends on every Linux, Windows, macOS/iOS, Android emulator,
+clean-clone, Git-consumption, and OSV job. A failure, cancellation, or skipped
+dependency makes the aggregate check fail.
 
-The root SHA and tree cannot be written into their own tree. The private
-checkpoint records them after the canonical commit is created. That exact SHA
-must receive:
+== Main readiness artifact
 
-* Linux / Flutter 3.47.1 (floor);
-* Linux / Flutter stable;
-* Windows / Flutter 3.47.1;
-* macOS and iOS / Flutter 3.47.1;
-* OSV / merge candidate on push;
-* trusted Security/OSV scanning;
-* clean-clone release audit;
-* Git consumption through an annotated tag and remote URL.
+Only a successful `push` run on `main` creates `actions-readiness-v1`. The
+artifact contains the exact source SHA and Git tree, workflow run ID and
+attempt, all required job conclusions, the five native manifests, and SHA-256
+digests for every included artifact. Pull requests validate the implementation
+but do not create release authorization.
 
-The candidate is not tagged until the pre-tag local audits and disposable bare-
-remote canaries pass. After the public protected tag exists, the three canaries
-must be repeated against `https://github.com/ftr-tuta/dartitect.git`.
+`dart run tool/check_rc_readiness.dart --contract-only` validates structure and
+explicitly cannot declare readiness. Formal mode runs only inside the hosted
+main CI execution and accepts only the artifact from that current run. Missing,
+expired, cross-run, cross-SHA, cross-tree, skipped, cancelled, or altered input
+fails closed.
 
-== Remaining evidence
+== Native matrix
 
-The native harness defines five candidate-bound cells. Android runtime behavior
-is verified only on a physical Android 14/API 34 device through the isolated
-ADB server; API 24 is build compatibility, not runtime evidence. iOS evidence
-uses deployment-floor builds plus a dynamically selected CI simulator. No
-Android emulator or physical iPhone is part of this candidate.
+The nominal matrix is identical for RC and stable validation:
 
-The five receipts, CI and Security runs, dry-runs, benchmarks, and Git canaries
-must all refer to the same final `main` SHA. Until those receipts close V1S-04
-and V1S-13, `rc_readiness_decision` remains `NOT_READY_FOR_1_0_RC`.
+* Android API 24 build compatibility;
+* Android API 34 runtime on a clean GitHub-hosted Google APIs x86_64 AVD;
+* iOS 14 media build;
+* iOS 12 privacy build;
+* current iOS runtime on an installed `macos-15` simulator.
 
-The formal signed-bundle/pub.dev path remains `NOT_AUTHORIZED`. Stable promotion
-remains `NOT_ASSEMBLED` and its publication decision remains `NOT_AUTHORIZED`.
+No technical evidence uses consumer hardware or a privately managed runner.
+Local runs are optional development feedback only.
 
-Signed-off-by: ftr <ftr@tuta.com>
+== Publication
+
+The `Publish` workflow is the sole human decision point. Its actor supplies
+`source_sha`, `ci_run_id`, and `channel`. The workflow verifies that the CI run
+is a successful `main` run for the SHA, downloads the corresponding unexpired
+artifact, validates its hashes, and only then creates the selected tag, GitHub
+Release, or pub.dev publication. The actor is provenance, not technical
+evidence.

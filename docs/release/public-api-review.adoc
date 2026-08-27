@@ -107,6 +107,5 @@ candidate and complete same-SHA canaries rather than a patch claim.
 == Decision
 
 The API surface is suitable for the current release-candidate line and a
-controlled pre-release use. Final RC approval remains governed by the separate
-readiness record and requires CI and Security evidence for the final candidate
-SHA.
+controlled pre-release use. Final RC readiness requires `CI / Required` and the
+unaltered `actions-readiness-v1` artifact for the final candidate SHA.

@@ -1,10 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:crypto/crypto.dart';
-
+import 'src/android_emulator_evidence.dart';
 import 'src/native_evidence_harness.dart';
 
+const _androidApplicationId =
+    'dev.dartitect.dartitect_native_capabilities_harness';
 const _iosApplicationId = 'dev.dartitect.dartitectNativeCapabilitiesHarness';
 const _iosLifecycleReadyFile = 'dartitect-ios-lifecycle-ready';
 const _iosSuccessFile = 'dartitect-ios-integration-passed';
@@ -61,7 +63,7 @@ Future<void> _main(List<String> arguments) async {
   }
   final environment = Platform.environment;
   if (environment['GITHUB_ACTIONS'] != 'true') {
-    throw StateError('CI native receipts require GitHub Actions.');
+    throw StateError('CI native manifests require GitHub Actions.');
   }
   final root = File.fromUri(Platform.script).parent.parent.absolute;
   final contract = _object(
@@ -74,11 +76,6 @@ Future<void> _main(List<String> arguments) async {
     (candidate) => candidate['id'] == cellId,
     orElse: () => throw FormatException('Unknown native CI cell: $cellId'),
   );
-  if (cell['evidenceKind'] == 'physical') {
-    throw const FormatException(
-      'Physical evidence cannot be manufactured by a CI runner.',
-    );
-  }
   final sourceSha = (await _run(root, 'git', const <String>[
     'rev-parse',
     'HEAD',
@@ -117,7 +114,7 @@ Future<void> _main(List<String> arguments) async {
   }
   final temporary = await Directory(temporaryRoot)
       .createTemp('dartitect-native-ci-');
-  Map<String, String>? environmentReceipt;
+  Map<String, Object?>? environmentMetadata;
   Map<String, String>? versions;
   try {
     switch (cellId) {
@@ -157,7 +154,30 @@ Future<void> _main(List<String> arguments) async {
             '--version',
           ])).combined.split('\n').first.trim(),
         };
-        environmentReceipt = _buildEnvironment(environment);
+        environmentMetadata = _buildEnvironment(environment);
+      case 'android-media-current-emulator':
+        final emulator = await _androidEmulator(
+          root: root,
+          temporary: temporary,
+          environment: environment,
+        );
+        versions = <String, String>{
+          'os': emulator.osVersion,
+          'flutter': _exact(flutter['frameworkVersion'], 'Flutter'),
+          'dart': _exact(flutter['dartSdkVersion'], 'Dart'),
+          'androidSdk': _androidSdkVersion(environment),
+          'adb': emulator.adbVersion,
+        };
+        environmentMetadata = <String, Object?>{
+          ..._hostedRunnerEnvironment(environment, 'emulator'),
+          'apiLevel': emulator.apiLevel,
+          'systemImage': androidEvidenceSystemImage,
+          'avdName': androidEvidenceAvd,
+          'osVersion': emulator.osVersion,
+          'model': emulator.model,
+          'bootCompleted': true,
+          'cleanShutdown': true,
+        };
       case 'ios-media-floor-build':
         final result = await _iosFloor(
           root: root,
@@ -166,7 +186,7 @@ Future<void> _main(List<String> arguments) async {
           floor: '14.0',
         );
         versions = _appleVersions(flutter, result.iosSdk, result.hostOs);
-        environmentReceipt = _buildEnvironment(environment);
+        environmentMetadata = _buildEnvironment(environment);
       case 'ios-privacy-floor-build':
         final result = await _iosFloor(
           root: root,
@@ -175,7 +195,7 @@ Future<void> _main(List<String> arguments) async {
           floor: '12.0',
         );
         versions = _appleVersions(flutter, result.iosSdk, result.hostOs);
-        environmentReceipt = _buildEnvironment(environment);
+        environmentMetadata = _buildEnvironment(environment);
       case 'ios-current-simulator':
         final simulator = await _iosSimulator(
           root: root,
@@ -187,14 +207,11 @@ Future<void> _main(List<String> arguments) async {
           simulator.iosSdk,
           simulator.osVersion,
         )..['photosPermissionTool'] = simulator.photosPermissionToolVersion;
-        environmentReceipt = <String, String>{
-          'kind': 'simulator',
-          'runnerOs': _requiredEnvironment(environment, 'RUNNER_OS'),
-          'runnerImage': _runnerImage(environment),
-          'deviceModel': simulator.model,
-          'deviceIdSha256': sha256
-              .convert(utf8.encode(simulator.id))
-              .toString(),
+        environmentMetadata = <String, Object?>{
+          ..._hostedRunnerEnvironment(environment, 'simulator'),
+          'runtime': simulator.osVersion,
+          'model': simulator.model,
+          'cleanupCompleted': true,
         };
       default:
         throw FormatException('Unsupported native CI cell: $cellId');
@@ -208,40 +225,427 @@ Future<void> _main(List<String> arguments) async {
     if (dirtyAfter != dirtyBefore) {
       throw StateError('CI native execution changed the source tree.');
     }
-    final receipt = <String, Object?>{
-      'schemaVersion': 2,
+    final manifest = <String, Object?>{
+      'schemaVersion': 3,
       'goal': 'V1S-13',
       'cellId': cellId,
       'sourceSha': sourceSha,
       'sourceTree': sourceTree,
-      'result': 'passed',
+      'result': 'success',
       'platform': cell['platform'],
       'capabilities': cell['capabilities'],
       'evidenceKind': cell['evidenceKind'],
       'versions': versions,
-      'environment': environmentReceipt,
+      'environment': environmentMetadata,
       'startedAt': startedAt.toIso8601String(),
       'completedAt': DateTime.now().toUtc().toIso8601String(),
-      'sourceDirty': false,
       'treeClean': true,
       'scenarios': cell['requiredScenarios'],
-      'workflow': _workflow(environment, sourceSha),
+      'workflow': _workflow(environment, sourceSha, sourceTree),
     };
-    final receiptDirectory = Directory(
-      '${root.path}/${contract['receiptDirectory']}',
+    final manifestDirectory = Directory(
+      '${root.path}/${contract['manifestDirectory']}',
     );
-    await receiptDirectory.create(recursive: true);
-    final receiptFile = File(
-      '${receiptDirectory.path}/$cellId-$sourceSha.json',
+    await manifestDirectory.create(recursive: true);
+    final manifestFile = File(
+      '${manifestDirectory.path}/$cellId-$sourceSha.json',
     );
-    await receiptFile.writeAsString(
-      '${const JsonEncoder.withIndent('  ').convert(receipt)}\n',
+    await manifestFile.writeAsString(
+      '${const JsonEncoder.withIndent('  ').convert(manifest)}\n',
     );
-    stdout.writeln('Native CI receipt: ${receiptFile.path}');
+    stdout.writeln('Native CI manifest: ${manifestFile.path}');
   } finally {
     if (temporary.existsSync()) await temporary.delete(recursive: true);
   }
 }
+
+Future<_AndroidEmulatorBuild> _androidEmulator({
+  required Directory root,
+  required Directory temporary,
+  required Map<String, String> environment,
+}) async {
+  if (!Platform.isLinux) {
+    throw StateError('Android emulator evidence must run on Linux Actions.');
+  }
+  requireHostedAndroidEmulatorEnvironment(environment);
+  final deviceId = _requiredEnvironment(
+    environment,
+    'DARTITECT_ANDROID_EMULATOR_ID',
+  );
+  var completed = false;
+  try {
+    final flutterDevices = await _run(root, 'flutter', const <String>[
+      'devices',
+      '--machine',
+    ], redact: deviceId);
+    final metadata = validateAndroidEmulator(
+      requestedId: deviceId,
+      apiLevel: await _adb(root, deviceId, const <String>[
+        'shell',
+        'getprop',
+        'ro.build.version.sdk',
+      ]),
+      bootCompleted: await _adb(root, deviceId, const <String>[
+        'shell',
+        'getprop',
+        'sys.boot_completed',
+      ]),
+      qemu: await _adb(root, deviceId, const <String>[
+        'shell',
+        'getprop',
+        'ro.kernel.qemu',
+      ]),
+      osVersion: await _adb(root, deviceId, const <String>[
+        'shell',
+        'getprop',
+        'ro.build.version.release',
+      ]),
+      model: await _adb(root, deviceId, const <String>[
+        'shell',
+        'getprop',
+        'ro.product.model',
+      ]),
+      flutterDevicesJson: flutterDevices.stdout,
+    );
+    final adbVersion = (await _run(root, 'adb', const <String>[
+      'version',
+    ])).stdout.split('\n').first.trim();
+    if (adbVersion.isEmpty) throw StateError('ADB version is unavailable.');
+
+    final consumer = Directory('${temporary.path}/android-current');
+    await _createHost(consumer, const <String>['android']);
+    await materializeNativeEvidenceHarness(
+      root: root,
+      consumer: consumer,
+      packages: const <String>{'dartitect_media', 'dartitect_privacy'},
+    );
+    await _run(consumer, 'flutter', const <String>['pub', 'get']);
+    await _runAndroidIntegration(consumer, root, deviceId, metadata.apiLevel);
+
+    final packageState = await _adb(root, deviceId, const <String>[
+      'shell',
+      'dumpsys',
+      'package',
+      _androidApplicationId,
+    ]);
+    if (RegExp(r'android\.permission\.WRITE_EXTERNAL_STORAGE:\s+granted=true')
+        .hasMatch(packageState)) {
+      throw StateError('API 34 harness holds a legacy storage permission.');
+    }
+    await _cleanupAndroidTestAssets(root, deviceId);
+    if (!await _androidTestAssetsAreAbsent(root, deviceId)) {
+      throw StateError('Android test media remains after cleanup.');
+    }
+
+    await _run(consumer, 'flutter', const <String>['build', 'apk', '--debug']);
+    final apk = File(
+      '${consumer.path}/build/app/outputs/flutter-apk/app-debug.apk',
+    );
+    if (!apk.existsSync()) throw StateError('Clean harness APK is missing.');
+    await _adb(root, deviceId, <String>['install', '-r', '-t', apk.path]);
+    await _adb(root, deviceId, const <String>[
+      'shell',
+      'pm',
+      'clear',
+      _androidApplicationId,
+    ]);
+    if (!await _applicationDataIsClean(root, deviceId)) {
+      throw StateError('Android harness data was not cleaned.');
+    }
+    await _adb(root, deviceId, const <String>[
+      'uninstall',
+      _androidApplicationId,
+    ], allowFailure: true);
+    await _adb(root, deviceId, androidShutdownOperation);
+    completed = true;
+    return _AndroidEmulatorBuild(
+      apiLevel: metadata.apiLevel,
+      osVersion: metadata.osVersion,
+      model: metadata.model,
+      adbVersion: adbVersion,
+    );
+  } finally {
+    if (!completed) {
+      await _captureAndroidDiagnostics(root, deviceId, environment);
+      await _cleanupAndroidTestAssets(root, deviceId, allowFailure: true);
+      await _adb(root, deviceId, const <String>[
+        'shell',
+        'pm',
+        'clear',
+        _androidApplicationId,
+      ], allowFailure: true);
+      await _adb(root, deviceId, androidShutdownOperation, allowFailure: true);
+    }
+  }
+}
+
+Future<void> _runAndroidIntegration(
+  Directory consumer,
+  Directory root,
+  String deviceId,
+  int apiLevel,
+) async {
+  final lifecycle = Completer<void>();
+  final process = await Process.start('flutter', <String>[
+    'test',
+    'integration_test/android_media_test.dart',
+    '-d',
+    deviceId,
+    '--dart-define=DARTITECT_ANDROID_API=$apiLevel',
+    '--dart-define=DARTITECT_EXERCISE_LIFECYCLE=true',
+  ], workingDirectory: consumer.path);
+  stdout.writeln(
+    '> flutter test integration_test/android_media_test.dart '
+    '-d <hosted-emulator>',
+  );
+  var lifecycleTriggered = false;
+  final stdoutDone = process.stdout
+      .transform(utf8.decoder)
+      .transform(const LineSplitter())
+      .forEach((line) {
+        stdout.writeln(line.replaceAll(deviceId, '<hosted-emulator>'));
+        if (!lifecycleTriggered && line.contains('DARTITECT_LIFECYCLE_READY')) {
+          lifecycleTriggered = true;
+          unawaited(
+            _exerciseAndroidLifecycle(root, deviceId).then(
+              (_) => lifecycle.complete(),
+              onError: lifecycle.completeError,
+            ),
+          );
+        }
+      });
+  final stderrDone = process.stderr
+      .transform(utf8.decoder)
+      .transform(const LineSplitter())
+      .forEach(
+        (line) =>
+            stderr.writeln(line.replaceAll(deviceId, '<hosted-emulator>')),
+      );
+  final exit = await process.exitCode;
+  await Future.wait<void>(<Future<void>>[stdoutDone, stderrDone]);
+  if (!lifecycleTriggered) {
+    throw StateError('Android integration did not request lifecycle exercise.');
+  }
+  await lifecycle.future;
+  if (exit != 0) throw StateError('Android emulator integration test failed.');
+}
+
+Future<void> _exerciseAndroidLifecycle(Directory root, String deviceId) async {
+  final accelerometer = (await _adb(root, deviceId, const <String>[
+    'shell',
+    'settings',
+    'get',
+    'system',
+    'accelerometer_rotation',
+  ])).trim();
+  final rotation = (await _adb(root, deviceId, const <String>[
+    'shell',
+    'settings',
+    'get',
+    'system',
+    'user_rotation',
+  ])).trim();
+  if (!const <String>{'0', '1'}.contains(accelerometer) ||
+      int.tryParse(rotation) == null) {
+    throw StateError('Could not capture Android rotation state.');
+  }
+  final target = rotation == '0' ? '1' : '0';
+  try {
+    await _adb(root, deviceId, const <String>[
+      'shell',
+      'settings',
+      'put',
+      'system',
+      'accelerometer_rotation',
+      '0',
+    ]);
+    await _adb(root, deviceId, <String>[
+      'shell',
+      'settings',
+      'put',
+      'system',
+      'user_rotation',
+      target,
+    ]);
+    await Future<void>.delayed(const Duration(seconds: 2));
+    final task = await _resumedTaskId(root, deviceId);
+    await _adb(root, deviceId, const <String>[
+      'shell',
+      'am',
+      'start',
+      '-a',
+      'android.settings.SETTINGS',
+    ]);
+    await Future<void>.delayed(const Duration(seconds: 2));
+    await _adb(root, deviceId, <String>[
+      'shell',
+      'am',
+      'task',
+      'lock',
+      '$task',
+    ]);
+    await Future<void>.delayed(const Duration(seconds: 2));
+    final activities = await _adb(root, deviceId, const <String>[
+      'shell',
+      'dumpsys',
+      'activity',
+      'activities',
+    ]);
+    if (!activities
+        .split('\n')
+        .any(
+          (line) =>
+              line.contains('topResumedActivity=') &&
+              line.contains(_androidApplicationId),
+        )) {
+      throw StateError('Instrumented Android task did not resume.');
+    }
+  } finally {
+    await _adb(root, deviceId, const <String>[
+      'shell',
+      'am',
+      'task',
+      'lock',
+      'stop',
+    ], allowFailure: true);
+    await _adb(root, deviceId, <String>[
+      'shell',
+      'settings',
+      'put',
+      'system',
+      'user_rotation',
+      rotation,
+    ], allowFailure: true);
+    await _adb(root, deviceId, <String>[
+      'shell',
+      'settings',
+      'put',
+      'system',
+      'accelerometer_rotation',
+      accelerometer,
+    ], allowFailure: true);
+  }
+  final restoredAccelerometer = (await _adb(root, deviceId, const <String>[
+    'shell',
+    'settings',
+    'get',
+    'system',
+    'accelerometer_rotation',
+  ])).trim();
+  final restoredRotation = (await _adb(root, deviceId, const <String>[
+    'shell',
+    'settings',
+    'get',
+    'system',
+    'user_rotation',
+  ])).trim();
+  if (restoredAccelerometer != accelerometer || restoredRotation != rotation) {
+    throw StateError('Android rotation state was not restored.');
+  }
+}
+
+Future<int> _resumedTaskId(Directory root, String deviceId) async {
+  final activities = await _adb(root, deviceId, const <String>[
+    'shell',
+    'dumpsys',
+    'activity',
+    'activities',
+  ]);
+  int? taskId;
+  for (final line in activities.split('\n')) {
+    final match = RegExp(r'\* Task\{[^\n]* #(\d+) ').firstMatch(line);
+    if (match != null) taskId = int.parse(match.group(1)!);
+    if (line.contains('topResumedActivity=') &&
+        line.contains(_androidApplicationId) &&
+        taskId != null) {
+      return taskId;
+    }
+  }
+  throw StateError('Could not resolve the resumed instrumented task.');
+}
+
+Future<void> _cleanupAndroidTestAssets(
+  Directory root,
+  String deviceId, {
+  bool allowFailure = false,
+}) async {
+  await _adb(root, deviceId, const <String>[
+    'shell',
+    'content',
+    'delete',
+    '--uri',
+    'content://media/external/images/media',
+    '--where',
+    "_display_name='dartitect-v1s13.png'",
+  ], allowFailure: allowFailure);
+}
+
+Future<bool> _androidTestAssetsAreAbsent(
+  Directory root,
+  String deviceId,
+) async {
+  final output = await _adb(root, deviceId, const <String>[
+    'shell',
+    'content',
+    'query',
+    '--uri',
+    'content://media/external/images/media',
+    '--projection',
+    '_id',
+    '--where',
+    "_display_name='dartitect-v1s13.png'",
+  ]);
+  return !RegExp(r'\bRow:\s*\d+').hasMatch(output) &&
+      !RegExp(r'_id=\d+').hasMatch(output);
+}
+
+Future<bool> _applicationDataIsClean(Directory root, String deviceId) async {
+  final output = await _adb(root, deviceId, const <String>[
+    'shell',
+    'run-as',
+    _androidApplicationId,
+    'sh',
+    '-c',
+    r'dirty=0; for path in shared_prefs files databases app_flutter; do [ -d "$path" ] && [ -n "$(ls -A "$path" 2>/dev/null)" ] && dirty=1; done; [ "$dirty" -eq 0 ] && echo CLEAN || echo DIRTY',
+  ]);
+  return output.trim() == 'CLEAN';
+}
+
+Future<void> _captureAndroidDiagnostics(
+  Directory root,
+  String deviceId,
+  Map<String, String> environment,
+) async {
+  final temp = environment['RUNNER_TEMP'];
+  if (temp == null || temp.trim().isEmpty) return;
+  final directory = Directory('$temp/android-emulator-diagnostics');
+  await directory.create(recursive: true);
+  final logcat = await _adb(root, deviceId, const <String>[
+    'logcat',
+    '-d',
+    '-v',
+    'threadtime',
+  ], allowFailure: true);
+  final metadata = await _adb(root, deviceId, const <String>[
+    'shell',
+    'getprop',
+  ], allowFailure: true);
+  await File('${directory.path}/logcat.txt').writeAsString(logcat);
+  await File('${directory.path}/getprop.txt').writeAsString(metadata);
+}
+
+Future<String> _adb(
+  Directory root,
+  String deviceId,
+  List<String> arguments, {
+  bool allowFailure = false,
+}) async => (await _run(
+  root,
+  'adb',
+  <String>['-s', deviceId, ...arguments],
+  redact: deviceId,
+  allowFailure: allowFailure,
+)).stdout;
 
 Future<void> _createHost(Directory consumer, List<String> platforms) async {
   await _run(consumer.parent, 'flutter', <String>[
@@ -432,7 +836,6 @@ Future<_SimulatorBuild> _iosSimulator({
       photosPermissionTool,
     );
     return _SimulatorBuild(
-      id: id,
       model: model,
       osVersion: osVersion,
       iosSdk: (await _run(root, 'xcrun', const <String>[
@@ -789,21 +1192,35 @@ String _xcodeVersion() {
   return (result.stdout as String).trim().replaceAll('\n', ' / ');
 }
 
-Map<String, String> _buildEnvironment(Map<String, String> environment) =>
-    <String, String>{
-      'kind': 'build',
-      'runnerOs': _requiredEnvironment(environment, 'RUNNER_OS'),
-      'runnerImage': _runnerImage(environment),
-    };
+Map<String, Object?> _buildEnvironment(Map<String, String> environment) =>
+    _hostedRunnerEnvironment(environment, 'build');
+
+Map<String, Object?> _hostedRunnerEnvironment(
+  Map<String, String> environment,
+  String kind,
+) {
+  if (_requiredEnvironment(environment, 'RUNNER_ENVIRONMENT') !=
+      'github-hosted') {
+    throw StateError('Native evidence rejects non-GitHub-hosted runners.');
+  }
+  return <String, Object?>{
+    'kind': kind,
+    'provider': 'github-hosted',
+    'runnerName': _requiredEnvironment(environment, 'RUNNER_NAME'),
+    'runnerOs': _requiredEnvironment(environment, 'RUNNER_OS'),
+    'runnerImage': _runnerImage(environment),
+  };
+}
 
 Map<String, Object?> _workflow(
   Map<String, String> environment,
   String sourceSha,
+  String sourceTree,
 ) {
   final repository = _requiredEnvironment(environment, 'GITHUB_REPOSITORY');
   final runId = int.parse(_requiredEnvironment(environment, 'GITHUB_RUN_ID'));
   return <String, Object?>{
-    'workflow': _requiredEnvironment(environment, 'GITHUB_WORKFLOW'),
+    'name': _requiredEnvironment(environment, 'GITHUB_WORKFLOW'),
     'runId': runId,
     'runAttempt': int.parse(
       _requiredEnvironment(environment, 'GITHUB_RUN_ATTEMPT'),
@@ -812,6 +1229,7 @@ Map<String, Object?> _workflow(
     'event': _requiredEnvironment(environment, 'GITHUB_EVENT_NAME'),
     'url': 'https://github.com/$repository/actions/runs/$runId',
     'sourceSha': sourceSha,
+    'sourceTree': sourceTree,
   };
 }
 
@@ -951,16 +1369,28 @@ final class _AppleBuild {
   final String hostOs;
 }
 
+final class _AndroidEmulatorBuild {
+  const _AndroidEmulatorBuild({
+    required this.apiLevel,
+    required this.osVersion,
+    required this.model,
+    required this.adbVersion,
+  });
+
+  final int apiLevel;
+  final String osVersion;
+  final String model;
+  final String adbVersion;
+}
+
 final class _SimulatorBuild {
   const _SimulatorBuild({
-    required this.id,
     required this.model,
     required this.osVersion,
     required this.iosSdk,
     required this.photosPermissionToolVersion,
   });
 
-  final String id;
   final String model;
   final String osVersion;
   final String iosSdk;

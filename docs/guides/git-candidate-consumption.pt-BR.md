@@ -65,5 +65,5 @@ dart run tool/run_git_canaries.dart \
 ```
 
 O gate rejeita tag ausente/lightweight, commit misto, qualquer pacote Dartitect
-hosted e resolução por path local. Evidência física Android/iOS continua sendo
-um gate externo separado.
+hosted e resolução por path local. A evidência nativa vem dos jobs hospedados de
+emulador/simulador dentro de `CI / Required`.

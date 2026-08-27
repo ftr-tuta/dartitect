@@ -1,32 +1,41 @@
 = Lockstep 1.0 publication runbook
 
-Status:: Contract frozen; no RC or stable publication authorized
-Machine authority:: +tool/package_release_contract.json+
+Status:: Manual trigger; technical evidence fully automated
+Machine authority:: `tool/actions_readiness_policy.json`
+Workflow:: `.github/workflows/publish.yaml`
 
-== Preconditions
+== Inputs
 
-Use one exact +main+ SHA in a clean clone. Verify the delegated decision for the
-requested stage and channel, the 16-package cohort/version/constraints, clean
-tracked tree, CI and Security runs, API snapshot, SBOM/licenses/advisories,
-Dartdoc, canaries, and topological publish dry-runs. Do not use dependency
-overrides, +path:+ dependencies, local package caches as evidence, or a source
-tree different from the authorized SHA.
+The actor starts `Publish` with exactly:
 
-The pre-RC packaged-canary channel and its hash/source checks are specified in
-+docs/release/packaged-canaries.adoc+. A cache is acceptable there only when the
-lockfile digest equals the materialized archive digest; the final RC validation
-still installs the immutable artifacts from the selected real channel.
+* `source_sha`: full lowercase SHA already contained in `main`;
+* `ci_run_id`: successful `CI` push run for that SHA;
+* `channel`: `github-release`, `pub-dev-prerelease`, or `pub-dev-stable`.
 
-+tool/rc_readiness_decision.json+ and
-+tool/rc_distribution_authorization.json+ are separate records. The structural
-gate +dart run tool/check_rc_readiness.dart --contract-only+ accepts an explicit
-+NOT_READY_FOR_1_0_RC+ state only while it remains unsigned, unbound to a SHA,
-unbound to a channel, and lists concrete blockers. The formal command without
-+--contract-only+ requires an exact candidate SHA/tree on +main+, completed
-+V1S-00+ through +V1S-14+, unique successful same-SHA CI and Security receipts,
-and a later independent authorization for exactly one distribution channel.
+This choice is the only human release decision. It supplies no missing test,
+security, native, canary, benchmark, or audit evidence.
 
-The current deterministic order is:
+== Fail-closed verification
+
+Before any external write, the workflow:
+
+. validates input shapes and checks out `source_sha` exactly;
+. queries the GitHub Actions API and requires a successful `CI` push on `main`
+  whose head SHA is `source_sha`;
+. downloads `actions-readiness-v1` from `ci_run_id` (an expired artifact fails);
+. requires `CI / Required`, the matching SHA/tree/run ID and attempt, and
+  successful conclusions for every coordinated job;
+. recomputes every native and repository artifact SHA-256;
+. validates that prerelease/stable channel selection matches the cohort;
+. records `GITHUB_ACTOR`, source SHA, CI run, channel, and publication run URL.
+
+Any missing, skipped, cancelled, failed, expired, cross-run, cross-SHA,
+cross-tree, or altered input stops before tag, Release, or package publication.
+
+== Publication order
+
+pub.dev uses the exact `publicationOrder` in
+`tool/package_release_contract.json`:
 
 [source,text]
 ----
@@ -48,91 +57,17 @@ dartitect_sentry
 dartitect_testing
 ----
 
-== Receipt before action
+The workflow stops on the first publication failure. pub.dev versions are
+immutable, so a partial cohort is never overwritten or completed from another
+source SHA; prepare a new version after diagnosing the failure.
 
-Create an append-only cohort ledger before the first external write. Each
-package entry records:
+== Channels
 
-* schema version and unique cohort/channel identifier;
-* exact source SHA, package, version, layer, and order index;
-* canonical sorted-file/source SHA-256 and channel/archive SHA-256;
-* SBOM SHA-256 and signed-bundle provenance/signature when applicable;
-* Dart/Flutter versions, publisher identity, command, and UTC timestamp;
-* +pending+, +published+, +verified+, +failed+, or +abandoned+ state;
-* the immutable channel response or query evidence.
+`github-release` creates the version tag/Release at `source_sha` and attaches
+publication provenance plus the readiness manifest. A pub.dev channel creates
+the exact version tag, configures the repository secret token, and publishes
+the cohort sequentially. The GitHub run itself remains the durable actor and
+operation record.
 
-Receipt entries that are +published+ or +verified+ are never rewritten or
-deleted. Corrections append a new observation.
-
-== Materialization
-
-For each package, confirm every package in its earlier dependency layer is
-+verified+, reconfirm local artifact digests, perform exactly one manual upload,
-query the channel, compare the immutable digest, append the receipt, and only
-then advance. There is no concurrent publication, automatic retry, dependent
-skip, or overwrite.
-
-For a signed-bundle RC channel, the same order names the archives even though
-no pub.dev write occurs. For a pub.dev prerelease, validate the configured
-publisher and exact package name immediately before every upload.
-
-The signed-bundle implementation is specified in
-+docs/release/signed-bundle-channel.adoc+. Candidate preparation is deliberately
-unsigned and non-materializing. The materializer re-runs formal V1S-15 before
-creating any signature, tag, GitHub prerelease, or asset; uploads package
-archives sequentially; downloads every remote asset; and records an append-only
-resume ledger plus a final receipt only after exact digest verification.
-
-== Stable promotion gate
-
-+tool/check_stable_candidate.dart --contract-only+ validates the fail-closed
-V1-18 tooling without claiming a stable candidate. A future validated record
-binds the final materialized RC digest to a new +1.0.0+ SHA on +main+, repeats
-CI, Security, clean clone, release audit, SBOM, licenses, and all publish
-dry-runs, and records their same-SHA receipts.
-
-The RC-to-stable comparison rejects additions, deletions, and renames. Outside
-the closed release-record list, a modified file must be byte-identical after
-only the exact +1.0.0-rc.N+ version and internal constraint are normalized to
-their stable values. A package changelog may only prepend its +1.0.0+ section.
-This permits release metadata while rejecting functional changes disguised as
-a promotion.
-
-After formal V1S-17, +tool/prepare_stable_candidate.dart+ can prepare the
-reviewable working-tree metadata change on a clean +main+ descendant of the
-final RC. It preserves the immutable RC decision/tooling records, promotes the
-active tracked version identities and lockstep constraints, and prefixes all 16
-changelogs. It performs no network write, tag, signature, Release creation, or
-package publication; generated artifacts, the complete audit, and the new
-candidate commit still follow explicitly.
-
-+tool/stable_publication_authorization.json+ is independent from both
-+READY_FOR_1_0+ and stable-candidate validation. It remains +NOT_AUTHORIZED+
-until a later delegated decision identifies the exact stable SHA, signed
-+v1.0.0+ tag, pub.dev channel, and the two authorized actions. Candidate
-validation alone never permits either external write.
-
-== Failure and resume
-
-Stop on error, timeout, lost response, digest mismatch, or unexpected channel
-state. Query the exact package/version first.
-
-* Matching published digest: append +verified+ and resume with the next entry.
-* Absent version: an explicit resume decision may repeat only the identical
-  package/source/digests.
-* Different digest or unexpected existing version: block as a security
-  incident; do not upload anything else.
-* Required source/artifact change: mark remaining entries +abandoned+ and move
-  all 16 packages to the next cohort. Never complete dependents around a missing
-  dependency.
-
-An incomplete cohort cannot receive an RC/stable tag or GitHub Release and
-cannot support a readiness decision. Preserve the ledger and document the next
-cohort that supersedes it.
-
-== Post-materialization
-
-Install all canaries from the real channel using the recorded digests, confirm
-one resolved cohort and absence of monorepo paths, repeat platform/device and
-upgrade tests, and record zero-residual evidence. Tag/Release creation happens
-only at the separately authorized stage and points to the exact source SHA.
+No phone, tablet, iPhone, USB device, or private runner participates in this
+workflow. Local dry-runs are useful feedback but never publication authority.

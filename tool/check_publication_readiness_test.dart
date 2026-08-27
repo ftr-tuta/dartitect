@@ -5,73 +5,68 @@ import 'package:crypto/crypto.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('structural mode cannot declare readiness', () async {
+  test('accepts the exact successful main CI artifact', () async {
     final fixture = await _Fixture.create();
     addTearDown(fixture.dispose);
 
-    final result = await fixture.check(contractOnly: true);
+    final result = await fixture.check();
 
     expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
-    expect(result.stdout, contains('cannot declare release readiness'));
+    expect(result.stdout, contains('authorized by CI run 123'));
+    expect(result.stdout, contains('actor release-operator'));
   });
 
-  test(
-    'accepts a current main Actions manifest with all successful jobs',
-    () async {
-      final fixture = await _Fixture.create();
-      addTearDown(fixture.dispose);
-
-      final result = await fixture.check();
-
-      expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
-      expect(result.stdout, contains('current main CI execution'));
-    },
-  );
-
-  test('rejects a divergent run id or attempt', () async {
+  test('rejects a divergent CI run id', () async {
     final fixture = await _Fixture.create();
     addTearDown(fixture.dispose);
-    final manifest = fixture.readManifest();
-    manifest['runAttempt'] = 2;
-    await fixture.writeManifest(manifest);
 
     final result = await fixture.check(runId: 999);
 
     expect(result.exitCode, 1);
-    expect(result.stderr, contains('current CI execution'));
+    expect(result.stderr, contains('does not match source_sha and ci_run_id'));
   });
 
-  test('rejects failed, cancelled, and skipped jobs', () async {
-    for (final conclusion in const <String>[
-      'failure',
-      'cancelled',
-      'skipped',
+  test('rejects a divergent CI run attempt', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+
+    final result = await fixture.check(runAttempt: 2);
+
+    expect(result.exitCode, 1);
+    expect(result.stderr, contains('does not match source_sha and ci_run_id'));
+  });
+
+  test('rejects an expired, missing, or altered artifact', () async {
+    for (final mutation in <Future<void> Function(_Fixture)>[
+      (fixture) =>
+          File('${fixture.artifactRoot.path}/native/ios-current-simulator.json')
+              .delete(),
+      (fixture) =>
+          File('${fixture.artifactRoot.path}/native/ios-current-simulator.json')
+              .writeAsString('altered\n'),
     ]) {
       final fixture = await _Fixture.create();
       addTearDown(fixture.dispose);
-      final manifest = fixture.readManifest();
-      ((manifest['jobs']! as List<Object?>).first
-              as Map<String, Object?>)['conclusion'] =
-          conclusion;
-      await fixture.writeManifest(manifest);
+      await mutation(fixture);
 
       final result = await fixture.check();
 
       expect(result.exitCode, 1);
-      expect(result.stderr, contains('missing, skipped, or failed'));
+      expect(result.stderr, contains('expired, missing, or altered'));
     }
   });
 
-  test('rejects an altered artifact', () async {
+  test('rejects a source SHA outside the referenced artifact', () async {
     final fixture = await _Fixture.create();
     addTearDown(fixture.dispose);
-    await File('${fixture.artifactRoot.path}/native/ios-current-simulator.json')
-        .writeAsString('altered\n');
+    final manifest = fixture.readManifest();
+    manifest['sourceSha'] = '0000000000000000000000000000000000000000';
+    await fixture.writeManifest(manifest);
 
     final result = await fixture.check();
 
     expect(result.exitCode, 1);
-    expect(result.stderr, contains('altered or is missing'));
+    expect(result.stderr, contains('does not match source_sha and ci_run_id'));
   });
 }
 
@@ -85,23 +80,13 @@ final class _Fixture {
 
   static Future<_Fixture> create() async {
     final sourceRoot = Directory.current.absolute;
-    final root = await Directory.systemTemp.createTemp('actions-readiness-');
-    for (final path in const <String>[
-      'tool/actions_readiness_policy.json',
-      'tool/native_evidence_contract.json',
-    ]) {
-      final destination = File('${root.path}/$path');
-      await destination.parent.create(recursive: true);
-      await File('${sourceRoot.path}/$path').copy(destination.path);
-    }
-    for (final path in const <String>[
-      '.github/workflows/ci.yaml',
-      '.github/workflows/publish.yaml',
-    ]) {
-      final file = File('${root.path}/$path');
-      await file.parent.create(recursive: true);
-      await file.writeAsString('name: fixture\n');
-    }
+    final root = await Directory.systemTemp.createTemp(
+      'publication-readiness-',
+    );
+    final policyFile = File('${root.path}/tool/actions_readiness_policy.json');
+    await policyFile.parent.create(recursive: true);
+    await File('${sourceRoot.path}/tool/actions_readiness_policy.json')
+        .copy(policyFile.path);
     await File('${root.path}/README.md').writeAsString('fixture\n');
     await _run(root, 'git', const <String>['init', '-q']);
     await _run(root, 'git', const <String>['config', 'user.name', 'fixture']);
@@ -122,12 +107,10 @@ final class _Fixture {
       '--format=%T',
       'HEAD',
     ])).stdout.toString().trim();
+    final policy =
+        jsonDecode(policyFile.readAsStringSync()) as Map<String, Object?>;
     final artifactRoot = Directory('${root.path}/build/actions-readiness-v1');
     await artifactRoot.create(recursive: true);
-    final policy = jsonDecode(
-      File('${root.path}/tool/actions_readiness_policy.json')
-          .readAsStringSync(),
-    ) as Map<String, Object?>;
     final digests = <Map<String, Object?>>[];
     for (final cell
         in (policy['nativeCells']! as List<Object?>).cast<String>()) {
@@ -181,31 +164,28 @@ final class _Fixture {
       File('${artifactRoot.path}/actions-readiness-v1.json')
           .writeAsString(jsonEncode(value));
 
-  Future<ProcessResult> check({bool contractOnly = false, int runId = 123}) {
+  Future<ProcessResult> check({int runId = 123, int runAttempt = 1}) {
     final checker = File(
-      '${Directory.current.path}/tool/check_rc_readiness.dart',
+      '${Directory.current.path}/tool/check_publication_readiness.dart',
     );
     return Process.run(
       Platform.resolvedExecutable,
       <String>[
         checker.path,
         '--root=${root.path}',
-        if (contractOnly)
-          '--contract-only'
-        else
-          '--manifest=${artifactRoot.path}/actions-readiness-v1.json',
+        '--source-sha=$sha',
+        '--ci-run-id=$runId',
+        '--channel=github-release',
+        '--manifest=${artifactRoot.path}/actions-readiness-v1.json',
       ],
       environment: <String, String>{
         ...Platform.environment,
         'GITHUB_ACTIONS': 'true',
         'RUNNER_ENVIRONMENT': 'github-hosted',
-        'GITHUB_WORKFLOW': 'CI',
-        'GITHUB_EVENT_NAME': 'push',
-        'GITHUB_REF': 'refs/heads/main',
-        'GITHUB_SHA': sha,
-        'GITHUB_RUN_ID': '$runId',
-        'GITHUB_RUN_ATTEMPT': '1',
-        'GITHUB_REPOSITORY': 'ftr-tuta/dartitect',
+        'GITHUB_WORKFLOW': 'Publish',
+        'GITHUB_EVENT_NAME': 'workflow_dispatch',
+        'GITHUB_ACTOR': 'release-operator',
+        'CI_RUN_ATTEMPT': '$runAttempt',
       },
     );
   }

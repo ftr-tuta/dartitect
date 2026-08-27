@@ -66,10 +66,10 @@ mantenha a branch focada e corrija checks com falha na mesma branch.
 ## Pull requests
 
 Explique resultado, testes, plataformas, risco de compatibilidade e validação
-externa restante. Complete cada item aplicável do template e execute checks
-proporcionais antes do push. Os checks obrigatórios de CI e Security devem passar
-contra o merge candidate; o audit de autoria usa o head do PR porque o GitHub cria
-um commit de merge sintético.
+hospedada restante. Complete cada item aplicável do template e execute checks
+proporcionais antes do push. O check obrigatório `CI / Required` deve passar
+contra o merge candidate; o audit de autoria usa o head do PR porque o GitHub
+cria um commit de merge sintético.
 
 Use somente squash merge, com o título do PR como título final do Conventional
 Commit. Resolva todas as conversas, atualize a branch quando exigido e apague a

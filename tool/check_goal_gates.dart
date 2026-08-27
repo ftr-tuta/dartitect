@@ -6,7 +6,6 @@ const _schemaStatuses = <String>{
   'IN_PROGRESS',
   'BLOCKED',
   'IMPLEMENTED_LOCAL',
-  'EXTERNAL_REQUIRED',
   'COMPLETE',
   'CANCELLED',
 };
@@ -484,9 +483,8 @@ void _validateStatuses(
         errors.add('${goal.id} contains an unauthorized reviewer.');
       }
     }
-    // EXTERNAL_REQUIRED is a fail-closed waiting state, not a completion
-    // claim. COMPLETE above remains the only state that requires every
-    // predecessor to be complete.
+    // COMPLETE remains the only state that requires every predecessor and
+    // same-SHA Actions evidence to be complete.
   }
 }
 

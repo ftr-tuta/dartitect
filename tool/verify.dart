@@ -103,12 +103,6 @@ Future<void> main(List<String> arguments) async {
     if (!stableCohort)
       const _Command('dart', <String>[
         'run',
-        'tool/check_rc_artifacts.dart',
-        '--contract-only',
-      ]),
-    if (!stableCohort)
-      const _Command('dart', <String>[
-        'run',
         'tool/check_rc_validation.dart',
         '--contract-only',
       ]),
@@ -133,7 +127,7 @@ Future<void> main(List<String> arguments) async {
     ]),
     const _Command('dart', <String>[
       'test',
-      'tool/run_native_evidence_test.dart',
+      'tool/run_native_ci_evidence_test.dart',
     ]),
     const _Command('dart', <String>[
       'test',
@@ -145,7 +139,12 @@ Future<void> main(List<String> arguments) async {
     ]),
     const _Command('dart', <String>[
       'test',
-      'tool/prepare_stable_candidate_test.dart',
+      'tool/check_rc_readiness_test.dart',
+      'tool/check_publication_readiness_test.dart',
+    ]),
+    const _Command('dart', <String>[
+      'test',
+      'tool/check_rc_validation_test.dart',
     ]),
     const _Command('dart', <String>[
       'run',

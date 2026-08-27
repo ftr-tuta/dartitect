@@ -60,10 +60,12 @@
     "docs/release/pub-dev-identity-audit.adoc",
     "docs/release/public-api-review.adoc",
     "docs/release/publication-runbook.adoc",
-    "tool/rc_readiness_decision.json",
-    "tool/rc_distribution_authorization.json",
-    "tool/rc_bundle_contract.json",
+    "tool/actions_readiness_policy.json",
+    "tool/check_rc_readiness.dart",
+    "tool/create_actions_readiness.dart",
+    "tool/check_publication_readiness.dart",
     "tool/rc_validation_contract.json",
-    "tool/stable_readiness_decision.json"
+    "tool/stable_candidate_contract.json",
+    ".github/workflows/publish.yaml"
   ]
 }

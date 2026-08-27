@@ -10,11 +10,12 @@ global.
 
 Todos os dezesseis pacotes públicos compartilham a linha candidata
 `1.0.0-rc.3`. Este cohort destina-se à tag Git protegida; a publicação no
-pub.dev não está autorizada. A evidência runtime Android usa aparelho físico
-Android 14/API 34, enquanto a API 24 é compatibilidade de build. iOS usa build e
-simulador no CI, nunca iPhone físico. A readiness formal permanece fail-closed
-até que este hardening seja montado no próximo candidato e todos os gates
-obrigatórios sejam repetidos contra um único SHA autoritativo.
+pub.dev não está autorizada. A API 24 Android é coberta por compatibilidade de
+build e o runtime Android 14/API 34 roda em emulador limpo hospedado pelo GitHub.
+iOS usa builds nos pisos e o simulador instalado no runner macOS hospedado. Não
+é necessário telefone, tablet, iPhone ou runner próprio. Comandos locais são
+feedback opcional; somente `CI / Required` e seu artefato de `main`
+`actions-readiness-v1` constituem evidência formal de release.
 
 ## Por que existe
 
@@ -275,6 +276,6 @@ de verificação não publicam.
 ## Licença e próximos passos
 
 A linha candidata atual e as versões futuras usam a
-[Licença BSD 3-Clause](LICENSE). As prioridades restantes são CI de plataformas
-e Security/advisories no SHA final, evidência nativa física e uma decisão
-explícita de readiness pela autoridade de revisão delegada.
+[Licença BSD 3-Clause](LICENSE). O GitHub Actions executa todos os gates
+técnicos; uma pessoa escolhe apenas o canal no workflow manual de publicação,
+depois da validação do SHA exato em `main` e do run de CI.

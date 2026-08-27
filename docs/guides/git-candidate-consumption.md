@@ -66,5 +66,5 @@ dart run tool/run_git_canaries.dart \
 ```
 
 The gate rejects a missing/lightweight tag, a mixed commit, any hosted
-Dartitect package, and any local path resolution. Physical Android/iOS evidence
-remains a separate external gate.
+Dartitect package, and any local path resolution. Native evidence is supplied
+by hosted emulator/simulator jobs inside `CI / Required`.

@@ -58,7 +58,7 @@ limpeza não relacionada, HTML Dartdoc gerado, publicação ou tags na mudança.
 Envie somente a branch de tópico. Use título Conventional Commit adequado ao
 commit final de squash e complete cada seção aplicável do template: resultado,
 ownership, compatibilidade, impacto de plataforma, evidências, integração nativa
-e gates externos restantes.
+e gates hospedados restantes.
 
 O GitHub Actions faz checkout e build do merge candidate. Em `pull_request`, o
 release audit recebe `github.event.pull_request.head.sha` somente para autoria,
@@ -68,8 +68,8 @@ commits que não são merge são auditados e o merge sintético da fila é exclu
 
 Se um check falhar, corrija na mesma branch e mantenha o ruleset inalterado.
 Resolva conversas de review e atualize a branch quando exigido. Com um único
-mantenedor, o ruleset exige intencionalmente zero aprovações, mas ainda exige os
-cinco checks e threads resolvidas.
+mantenedor, o ruleset exige intencionalmente zero aprovações, mas ainda exige
+`CI / Required` e threads resolvidas.
 
 ## Faça squash e limpe
 
@@ -79,7 +79,7 @@ Antes de habilitar auto-merge, confirme que a conta GitHub seleciona
 do commit e as mensagens dos commits viram o corpo. O GitHub apaga a branch de
 tópico automaticamente.
 
-Após o merge, aguarde CI e Security na `main`. Confirme que o remoto tem somente
+Após o merge, aguarde `CI / Required` na `main`. Confirme que o remoto tem somente
 `main`, o ruleset não tem atores de bypass, o novo commit e todo o histórico
 alcançável têm autoria canônica e o GitHub lista somente `ftr-tuta` como
 contribuidor. Verifique que clone novo está limpo. Crie e verifique novo bundle
@@ -121,10 +121,7 @@ do título do PR e o corpo a partir dos commits.
 
 Proteja a `main` sem atores de bypass, com proteção contra exclusão e
 non-fast-forward, resolução obrigatória de threads, branch atualizada, zero
-aprovações enquanto houver apenas um mantenedor e estes checks obrigatórios:
-
-- `Linux / Flutter 3.47.1 (floor)`;
-- `Linux / Flutter stable`;
-- `Windows / Flutter 3.47.1`;
-- `macOS and iOS / Flutter 3.47.1`;
-- `OSV / merge candidate`.
+aprovações enquanto houver apenas um mantenedor e exatamente um check
+obrigatório: `CI / Required`. Seu grafo contém todas as dependências de
+plataformas, nativas, segurança, auditoria, benchmarks e canários; não configure
+jobs componentes como checks obrigatórios separados.

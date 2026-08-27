@@ -9,11 +9,12 @@ tooling, and optional infrastructure adapters without a global container.
 
 All sixteen public packages share the `1.0.0-rc.3` candidate line. This cohort
 targets the protected Git tag; pub.dev publication is not authorized. Android
-runtime evidence is physical Android 14/API 34, while API 24 is build
-compatibility. iOS evidence is CI build plus simulator, never a physical
-iPhone. Formal release readiness remains fail-closed until this hardening work
-is assembled in the next candidate and every required gate is repeated against
-one authoritative SHA.
+API 24 is covered by build compatibility and Android 14/API 34 runtime runs on
+a clean GitHub-hosted emulator. iOS uses deployment-floor builds and the
+simulator installed on the GitHub-hosted macOS runner. No phone, tablet, iPhone,
+or privately managed runner is required. Local commands provide optional
+feedback; only `CI / Required` and its main-branch `actions-readiness-v1`
+artifact are formal release evidence.
 
 ## Why it exists
 
@@ -281,6 +282,6 @@ package is published by repository verification commands.
 ## License and next steps
 
 The current candidate line and future versions are available under the
-[BSD 3-Clause License](LICENSE). The remaining priorities are final-SHA
-platform CI, Security/advisory evidence, physical native evidence, and an
-explicit delegated review-authority readiness decision.
+[BSD 3-Clause License](LICENSE). GitHub Actions performs every technical gate;
+a human selects only the manual publication channel after the exact main SHA
+and CI run are verified.

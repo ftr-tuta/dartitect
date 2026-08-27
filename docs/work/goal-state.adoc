@@ -1,6 +1,10 @@
 = Dartitect hardening goal state
 :revdate: 2026-08-27
 
+NOTE: This is a historical execution journal. References to separate Security
+runs, manual receipts, or connected hardware were superseded by `CI / Required`
+and `actions-readiness-v1` on 2026-08-27.
+
 == Active checkpoint
 
 Goal:: `10 — Readiness final`

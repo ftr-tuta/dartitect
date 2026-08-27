@@ -1,12 +1,14 @@
 {
-  "schemaVersion": 2,
-  "receiptSchemaVersion": 2,
+  "schemaVersion": 3,
+  "manifestSchemaVersion": 3,
   "goal": "V1S-13",
+  "authority": "github-actions-current-run",
   "harness": "tool/canaries/native_capabilities",
   "android": {
     "floorApi": 24,
-    "physicalApi": 34,
-    "requiredAdbServerSocket": "tcp:127.0.0.1:5038",
+    "emulatorApi": 34,
+    "systemImage": "system-images;android-34;google_apis;x86_64",
+    "avdName": "dartitect-api-34",
     "applicationId": "dev.dartitect.dartitect_native_capabilities_harness",
     "manifest": "packages/dartitect_media/android/src/main/AndroidManifest.xml",
     "plugin": "packages/dartitect_media/android/src/main/java/dev/dartitect/media/DartitectMediaPlugin.java",
@@ -52,18 +54,17 @@
       ]
     },
     {
-      "id": "android-media-current-physical",
+      "id": "android-media-current-emulator",
       "platform": "android",
       "capabilities": ["media", "privacy"],
-      "evidenceKind": "physical",
+      "evidenceKind": "emulator",
       "floor": false,
-      "requiredVersionKeys": ["os", "flutter", "dart", "adb"],
+      "requiredVersionKeys": ["os", "flutter", "dart", "androidSdk", "adb"],
       "requiredScenarios": [
-        "exactly-one-physical-device",
+        "github-hosted-runner",
+        "clean-avd",
         "boot-complete",
         "api-34",
-        "device-space-recorded",
-        "battery-recorded",
         "status-without-legacy-permission",
         "privacy-not-supported",
         "save-with-album",
@@ -76,8 +77,8 @@
         "background-foreground",
         "owned-state-cleanup",
         "media-cleanup",
-        "preferences-cleanup",
-        "clean-harness-reinstalled",
+        "application-data-clean",
+        "emulator-shutdown",
         "tree-clean"
       ]
     },
@@ -139,16 +140,9 @@
       ]
     }
   ],
-  "receiptDirectory": "build/native-evidence",
-  "receiptDigest": "sha256",
+  "manifestDirectory": "build/native-evidence",
+  "manifestDigest": "sha256",
   "trackedTreeMustRemainClean": true,
-  "rawDeviceIdentifiersForbidden": true,
-  "ciEvidenceKinds": ["build", "simulator"],
-  "physicalRetention": {
-    "kind": "installed-app",
-    "applicationId": "dev.dartitect.dartitect_native_capabilities_harness",
-    "dataClean": true,
-    "mediaClean": true,
-    "apkDigest": "sha256"
-  }
+  "hostedRunnersOnly": true,
+  "allowedEvidenceKinds": ["build", "emulator", "simulator"]
 }

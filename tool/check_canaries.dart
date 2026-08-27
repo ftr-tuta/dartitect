@@ -8,34 +8,13 @@ Future<void> main(List<String> arguments) async {
   final workspace = File.fromUri(Platform.script).parent.parent.absolute;
   final allowDirty = arguments.contains('--allow-dirty');
   final keepArtifacts = arguments.contains('--keep-artifacts');
-  final bundleArguments = arguments
-      .where((argument) => argument.startsWith('--bundle='))
-      .toList();
-  if (bundleArguments.length > 1 ||
-      arguments.any(
-        (argument) =>
-            argument != '--allow-dirty' &&
-            argument != '--keep-artifacts' &&
-            !argument.startsWith('--bundle='),
-      )) {
+  if (arguments.any(
+    (argument) => argument != '--allow-dirty' && argument != '--keep-artifacts',
+  )) {
     throw ArgumentError(
       'Usage: dart run tool/check_canaries.dart [--allow-dirty] '
-      '[--keep-artifacts] [--bundle=<materialized-bundle>]',
+      '[--keep-artifacts]',
     );
-  }
-  final bundle = bundleArguments.isEmpty
-      ? null
-      : Directory(bundleArguments.single.substring('--bundle='.length))
-            .absolute;
-  if (bundle != null) {
-    final materialized = await _run(
-      workspace,
-      Platform.resolvedExecutable,
-      <String>['run', 'tool/check_rc_artifacts.dart', '--bundle', bundle.path],
-    );
-    if (materialized.exitCode != 0) {
-      throw StateError('The supplied bundle is not a materialized RC.');
-    }
   }
   final status = await _run(workspace, 'git', const <String>[
     'status',
@@ -60,33 +39,23 @@ Future<void> main(List<String> arguments) async {
   );
   _validateContract(contract, release);
 
-  final bundleManifest = bundle == null
-      ? null
-      : _jsonObject(
-          await File('${bundle.path}/bundle-manifest.json').readAsString(),
-        );
-  final sourceSha = bundleManifest == null
-      ? (await _run(workspace, 'git', const <String>[
-          'rev-parse',
-          'HEAD',
-        ])).stdout.trim()
-      : bundleManifest['sourceSha'] as String;
+  final sourceSha = (await _run(workspace, 'git', const <String>[
+    'rev-parse',
+    'HEAD',
+  ])).stdout.trim();
   final root = await Directory.systemTemp.createTemp(
     'dartitect-packaged-canaries-',
   );
   final receiptDirectory = Directory('${workspace.path}/build/canary-receipts');
-  final receiptGoal = bundle == null ? 'V1S-10' : 'V1S-17';
-  final receiptFile = File(
-    '${receiptDirectory.path}/${bundle == null ? 'v1s10' : 'v1s17'}-$sourceSha.json',
-  );
+  final receiptFile = File('${receiptDirectory.path}/v1s10-$sourceSha.json');
   var succeeded = false;
   final repository = _HostedRepository(
     workspace: workspace,
     root: Directory('${root.path}/repository'),
     sourceSha: sourceSha,
     packageNames: _strings(release['publicationOrder']),
-    bundle: bundle,
-    workingTree: !treeClean && allowDirty && bundle == null,
+    bundle: null,
+    workingTree: !treeClean && allowDirty,
   );
   try {
     stdout.writeln(
@@ -118,15 +87,13 @@ Future<void> main(List<String> arguments) async {
     });
     final receipt = <String, Object?>{
       'schemaVersion': 1,
-      'goal': receiptGoal,
+      'goal': 'V1S-10',
       'sourceSha': sourceSha,
       'trackedTreeClean': treeClean,
       'cohortVersion': release['cohortVersion'],
-      'artifactSource': bundle == null
-          ? repository.workingTree
-                ? 'working-tree-development'
-                : contract['artifactSource']
-          : 'materialized-signed-bundle',
+      'artifactSource': repository.workingTree
+          ? 'working-tree-development'
+          : contract['artifactSource'],
       'digestAlgorithm': 'sha256',
       'dartVersion': Platform.version,
       'flutterVersion': flutter,

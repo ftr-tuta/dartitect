@@ -3,6 +3,10 @@
 :toc: left
 :toclevels: 3
 
+NOTE: This ledger preserves historical findings. Its earlier separate
+CI/Security receipts and connected-hardware policy were superseded by the
+GitHub-hosted `CI / Required` and `actions-readiness-v1` policy.
+
 == Authority and baseline
 
 This ledger tracks the findings selected by
