@@ -128,11 +128,10 @@ import 'package:dartitect_modeling/dartitect_modeling.dart';
 part 'model_$padded.dartitect.g.dart';
 
 @DartitectValue()
-final class Model$padded extends ValueEquality with _\$Model${padded}Dartitect {
-  const Model$padded({required this.id, required this.label});
-  final int id;
-  final String? label;
-}
+final class const Model$padded({
+  required final int id,
+  required final String? label,
+}) extends ValueEquality with _\$Model${padded}Dartitect;
 ''');
     }
     final generator = DartitectModelGenerator(root);

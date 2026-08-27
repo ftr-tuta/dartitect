@@ -530,6 +530,38 @@
         "declaration": "final class PlannedFileOperation"
       },
       {
+        "name": "PrimaryConstructorMigration",
+        "declaration": "final class PrimaryConstructorMigration"
+      },
+      {
+        "name": "PrimaryConstructorMigrationDiagnostic",
+        "declaration": "final class PrimaryConstructorMigrationDiagnostic"
+      },
+      {
+        "name": "PrimaryConstructorMigrationException",
+        "declaration": "final class PrimaryConstructorMigrationException implements Exception"
+      },
+      {
+        "name": "PrimaryConstructorMigrationFaultEvent",
+        "declaration": "final class PrimaryConstructorMigrationFaultEvent"
+      },
+      {
+        "name": "PrimaryConstructorMigrationFaultInjector",
+        "declaration": "typedef PrimaryConstructorMigrationFaultInjector = FutureOr<void> Function(PrimaryConstructorMigrationFaultEvent)"
+      },
+      {
+        "name": "PrimaryConstructorMigrationFaultPoint",
+        "declaration": "enum PrimaryConstructorMigrationFaultPoint"
+      },
+      {
+        "name": "PrimaryConstructorMigrationOperation",
+        "declaration": "final class PrimaryConstructorMigrationOperation"
+      },
+      {
+        "name": "PrimaryConstructorMigrationReport",
+        "declaration": "final class PrimaryConstructorMigrationReport"
+      },
+      {
         "name": "ProjectScan",
         "declaration": "final class ProjectScan"
       },

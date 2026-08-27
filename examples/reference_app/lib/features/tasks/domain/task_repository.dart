@@ -45,13 +45,13 @@ final class TaskObservationTimeoutFailure extends TaskFailure {
 }
 
 /// Immutable desired task state persisted in the consumer outbox.
-final class TaskMutation {
-  /// Creates a mutation for one task.
-  const TaskMutation({required this.taskId, required this.completed});
-
+final class const TaskMutation({
   /// Affected task key.
-  final int taskId;
+  required final int taskId,
 
   /// Desired completion value, making duplicate delivery idempotent.
-  final bool completed;
+  required final bool completed,
+}) {
+  /// Creates a mutation for one task.
+  this;
 }

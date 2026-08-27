@@ -326,13 +326,15 @@ final class ${name.pascal}Service {
       '''import 'package:dartitect/dartitect.dart';
 
 /// Immutable domain value generated without product schema assumptions.
-final class ${name.pascal}Model extends ValueEquality {
-  ${name.pascal}Model({
-    required this.id,
-    Iterable<String> labels = const <String>[],
-  }) : labels = immutableListCopy(labels);
+final class ${name.pascal}Model({
+  /// Stable consumer-owned model identifier.
+  required final String id,
+  Iterable<String> labels = const <String>[],
+}) extends ValueEquality {
+  /// Creates a model while defensively copying collection input.
+  this : labels = immutableListCopy(labels);
 
-  final String id;
+  /// Immutable labels retained by the generated model.
   final List<String> labels;
 
   @override
@@ -495,10 +497,12 @@ import 'package:dartitect_sync/dartitect_sync.dart';
 
 import '../domain/${name.snake}_repository.dart';
 
-final class ${name.pascal}Mutation extends ValueEquality {
-  const ${name.pascal}Mutation({required this.aggregateId});
-
-  final String aggregateId;
+final class const ${name.pascal}Mutation({
+  /// Consumer-owned aggregate identifier.
+  required final String aggregateId,
+}) extends ValueEquality {
+  /// Completes the primary constructor without adding runtime behavior.
+  this;
 
   @override
   Iterable<Object?> get equalityFields => <Object?>[aggregateId];

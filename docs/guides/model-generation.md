@@ -6,24 +6,30 @@
 
 Model generation is limited to immutable value boilerplate. The generator scans
 `lib/**` and each immediate `packages/*/lib/**` tree without following symlinks.
-An annotated source library contains exactly one model and its matching part.
+An annotated source library owns one deterministic Dartitect part.
 
 | Contract | Supported 1.0 form | Rejected form |
 |---|---|---|
-| Annotation | `@DartitectValue()` resolved to the element from `package:dartitect`, including prefixes and reexports | Homonymous or unresolved annotations |
-| Class | Concrete `final`, non-generic, extends `ValueEquality`, mixes in `_$TypeDartitect` | Abstract, non-final, generic, or complex inheritance |
+| Annotation | `@DartitectValue()` resolved to the element from `package:dartitect_modeling`, including prefixes and reexports | Homonymous or unresolved annotations |
+| Class | Concrete `final`, extends `ValueEquality`, mixes in `_$TypeDartitect` | Abstract, non-final, or complex inheritance |
 | Part | Exactly one `part '<source>.dartitect.g.dart';` | Missing, duplicate, or mismatched part |
-| Fields | At least one public, typed, instance, non-late `final` field with no initializer | Private, inferred, static, late, mutable, or initialized fields |
+| Fields | At least one public, typed, named `final` primary-constructor field | Private, inferred, positional, late, or mutable fields |
 | Collections | Consumer-owned immutable class wrapper types | Mutable collection interfaces, including aliases of `List`, `Set`, `Map`, `Iterable`, queues, hash/tree collections, and typed-data lists |
-| Constructor | Exactly one unnamed, generative constructor whose named parameters correspond exactly to the fields | Named, factory, external, positional, missing, duplicate, or type-mismatched parameters |
+| Constructor | One unnamed primary constructor; use `class const` when constant construction is required | Traditional, named-primary, factory-only, external, or positional forms |
 
 The generator does not create JSON, unions, DTO/entity schemas, ObjectBox
 entities, dependency injection, ViewModels, routes, REST clients, runtime
 reflection, or mutable models. Other generators may coexist only when they own
 different output files.
 
-Invalid source produces `DT1021` and no model output is applied. Annotation
+Missing primary constructors produce `DT1030` and no model output is applied. Annotation
 identity is semantic, not a lexical name comparison.
+
+Run `dartitect model migrate primary` for a read-only semantic preview of
+eligible traditional value classes. Only `--apply` takes the shared project
+lock, writes the dedicated source journal, revalidates bytes, and commits or
+rolls back the complete edit. Behavioral classes and ambiguous constructors are
+reported for consumer review and are never rewritten heuristically.
 
 ## Generated equality and `copyWith`
 
@@ -57,6 +63,8 @@ identity, a version/projection, or a precomputed hash.
 | `dartitect model sync --dry-run` | No | Reports pending recovery | 0 when fresh, 1 for findings |
 | `dartitect model check` | Never | Reports pending recovery | 0 when fresh, 1 for findings |
 | `dartitect model sync --apply` | Yes, atomically | Recovers first, rediscovers, replans, then applies | 0 on success, 1 for model findings |
+| `dartitect model migrate primary` | No; preview by default | Reports its own pending source journal | 0 when no migration remains, 1 for a preview/findings |
+| `dartitect model migrate primary --apply` | Yes, atomically | Rolls back an incomplete source transaction before rediscovery | 0 on success |
 
 Both commands accept `--json`. Global exit code 2 means usage/configuration
 failure and 3 means I/O/internal failure. Preview, dry-run, and check never

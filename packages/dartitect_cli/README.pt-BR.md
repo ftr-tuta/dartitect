@@ -39,6 +39,7 @@ dartitect inspect --json
 dartitect scan --no-baseline
 dartitect doctor
 dartitect model check
+dartitect model migrate primary
 dartitect dependencies audit
 dartitect fleet versions apps/a apps/b --root . --json
 dartitect fleet check apps/a apps/b --root . --json
@@ -61,6 +62,8 @@ Veja `example/README.md` para comandos e exit codes.
   manifest via transações recuperáveis de create/update/delete.
 - Gerador de modelos e auditor de dependências fornecem values nativos e
   política offline direta/transitiva.
+- A migração de primary constructors fornece preview/apply semântico com lock
+  compartilhado, journal próprio de source e rollback integral.
 - Sync distribui onze templates e substitui apenas skills com manifest; skills
   do consumidor permanecem intactas.
 - Runner converte o serviço em exit codes estáveis.

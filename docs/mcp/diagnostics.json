@@ -20,6 +20,8 @@
     "DT1023": {"summary": "A model generation journal requires explicit recovery.", "remediation": "Review state, then run `dartitect model sync --apply`."},
     "DT1024": {"summary": "Android launch background resources are missing or invalid.", "remediation": "Restore a static app-owned launch_background.xml."},
     "DT1025": {"summary": "iOS launch storyboard resources are missing or disconnected.", "remediation": "Restore LaunchScreen.storyboard and UILaunchStoryboardName."},
+    "DT1030": {"summary": "A DartitectValue model has no unnamed primary constructor.", "remediation": "Review `dartitect model migrate primary`, then apply the semantic edit."},
+    "DT1031": {"summary": "A traditional model constructor cannot be migrated automatically without changing semantics.", "remediation": "Review constructor bodies, initializers, documentation, and field ownership manually."},
     "DT2000": {"summary": "dartitect.json is missing.", "remediation": "Preview and review `dartitect init`."},
     "DT2001": {"summary": "dartitect.json is invalid.", "remediation": "Correct the reported JSON Pointer without discarding unknown keys."},
     "DT2002": {"summary": "An unknown config key was preserved.", "remediation": "Check whether it belongs to a newer SDK."},

@@ -41,6 +41,7 @@ dartitect inspect --json
 dartitect scan --no-baseline
 dartitect doctor
 dartitect model check
+dartitect model migrate primary
 dartitect dependencies audit
 dartitect fleet versions apps/a apps/b --root . --json
 dartitect fleet check apps/a apps/b --root . --json
@@ -63,6 +64,8 @@ See `example/README.md` for all commands and exit codes.
   model outputs through recoverable create/update/delete transactions.
 - `DartitectModelGenerator` and `EcosystemDependencyAuditor` provide native
   value generation and offline direct/transitive policy checks.
+- `PrimaryConstructorMigration` provides semantic preview/apply with a shared
+  project lock, dedicated source journal, and integral rollback.
 - `CodexSkillSynchronizer` synchronizes eleven templates and replaces only
   manifest-owned skills; consumer-owned skills remain untouched.
 - `DartitectCliRunner` maps the public service to stable exit codes.

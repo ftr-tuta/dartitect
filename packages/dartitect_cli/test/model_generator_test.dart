@@ -42,9 +42,10 @@ void main() {
       await _runGeneratedConsumerContract(root);
 
       await source.writeAsString(
-        _userSource
-            .replaceFirst('final String? email;', 'final int? email;')
-            .replaceFirst('required this.email,', 'required this.email,'),
+        _userSource.replaceFirst(
+          'required final String? email,',
+          'required final int? email,',
+        ),
       );
       final updated = await generator.apply();
       expect(updated.updatedPaths, <String>['lib/user.dartitect.g.dart']);
@@ -65,14 +66,13 @@ void main() {
       final root = await _modelPackage();
       addTearDown(() => root.delete(recursive: true));
       await File('${root.path}/lib/bad.dart').writeAsString('''
-import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_modeling/dartitect_modeling.dart';
 part 'bad.dartitect.g.dart';
 
 @DartitectValue()
-class Bad<T> extends ValueEquality with _\$BadDartitect {
-  Bad({required this.values});
-  final List<T> values;
-}
+final class Bad<T>({
+  required final List<T> values,
+}) extends ValueEquality with _\$BadDartitect;
 ''');
 
       final report = await DartitectModelGenerator(root).inspect();
@@ -99,16 +99,15 @@ class Bad<T> extends ValueEquality with _\$BadDartitect {
       final root = await _modelPackage();
       addTearDown(() => root.delete(recursive: true));
       await File('${root.path}/lib/bad.dart').writeAsString('''
-import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_modeling/dartitect_modeling.dart';
 part 'bad.dartitect.g.dart';
 
 typedef MutableValues = List<int>;
 
 @DartitectValue()
-abstract final class Bad extends ValueEquality with _\$BadDartitect {
-  const Bad({required this.values});
-  final MutableValues values;
-}
+abstract final class Bad({
+  required final MutableValues values,
+}) extends ValueEquality with _\$BadDartitect;
 ''');
 
       final report = await DartitectModelGenerator(root).inspect();
@@ -125,30 +124,30 @@ abstract final class Bad extends ValueEquality with _\$BadDartitect {
     final root = await _modelPackage();
     addTearDown(() => root.delete(recursive: true));
     await File('${root.path}/lib/annotations.dart').writeAsString('''
-export 'package:dartitect/dartitect.dart'
+export 'package:dartitect_modeling/dartitect_modeling.dart'
     show DartitectValue, ValueEquality;
 ''');
     await File('${root.path}/lib/prefixed.dart').writeAsString(
       _userSource
           .replaceAll(
-            "import 'package:dartitect/dartitect.dart';",
-            "import 'package:dartitect/dartitect.dart' as d;",
+            "import 'package:dartitect_modeling/dartitect_modeling.dart';",
+            "import 'package:dartitect_modeling/dartitect_modeling.dart' as d;",
           )
           .replaceAll('@DartitectValue()', '@d.DartitectValue()')
           .replaceAll('extends ValueEquality', 'extends d.ValueEquality')
           .replaceAll('user.dartitect.g.dart', 'prefixed.dartitect.g.dart')
-          .replaceAll('class User', 'class Prefixed')
+          .replaceAll('class const User', 'class const Prefixed')
           .replaceAll('_\$UserDartitect', '_\$PrefixedDartitect')
           .replaceAll('const User', 'const Prefixed'),
     );
     await File('${root.path}/lib/reexported.dart').writeAsString(
       _userSource
           .replaceAll(
-            "import 'package:dartitect/dartitect.dart';",
+            "import 'package:dartitect_modeling/dartitect_modeling.dart';",
             "import 'package:model_fixture/annotations.dart';",
           )
           .replaceAll('user.dartitect.g.dart', 'reexported.dartitect.g.dart')
-          .replaceAll('class User', 'class Reexported')
+          .replaceAll('class const User', 'class const Reexported')
           .replaceAll('_\$UserDartitect', '_\$ReexportedDartitect')
           .replaceAll('const User', 'const Reexported'),
     );
@@ -168,7 +167,7 @@ export 'package:dartitect/dartitect.dart'
     final root = await _modelPackage();
     addTearDown(() => root.delete(recursive: true));
     await File('${root.path}/lib/fake.dart').writeAsString('''
-import 'package:dartitect/dartitect.dart' show ValueEquality;
+import 'package:dartitect_modeling/dartitect_modeling.dart' show ValueEquality;
 part 'fake.dartitect.g.dart';
 
 final class DartitectValue {
@@ -176,16 +175,18 @@ final class DartitectValue {
 }
 
 @DartitectValue()
-final class Fake extends ValueEquality with _\$FakeDartitect {
-  const Fake({required this.id});
-  final String id;
-}
+final class const Fake({
+  required final String id,
+}) extends ValueEquality with _\$FakeDartitect;
 ''');
 
     final report = await DartitectModelGenerator(root).inspect();
     expect(report.plan, isNull);
     expect(report.operations, isEmpty);
-    expect(report.diagnostics.single.message, contains('package:dartitect'));
+    expect(
+      report.diagnostics.single.message,
+      contains('package:dartitect_modeling'),
+    );
   });
 
   test(
@@ -196,16 +197,15 @@ final class Fake extends ValueEquality with _\$FakeDartitect {
       await File('${root.path}/lib/library_model.dart').writeAsString('''
 library;
 
-import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_modeling/dartitect_modeling.dart';
 
 part 'support.dart';
 part 'library_model.dartitect.g.dart';
 
 @DartitectValue()
-final class LibraryModel extends ValueEquality with _\$LibraryModelDartitect {
-  const LibraryModel({required this.id});
-  final String id;
-}
+final class const LibraryModel({
+  required final String id,
+}) extends ValueEquality with _\$LibraryModelDartitect;
 ''');
       await File('${root.path}/lib/support.dart').writeAsString('''
 part of 'library_model.dart';
@@ -231,17 +231,16 @@ const supportValue = 1;
       final partRoot = await _modelPackage();
       addTearDown(() => partRoot.delete(recursive: true));
       await File('${partRoot.path}/lib/container.dart').writeAsString('''
-import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_modeling/dartitect_modeling.dart';
 part 'part_model.dart';
 ''');
       await File('${partRoot.path}/lib/part_model.dart').writeAsString('''
 part of 'container.dart';
 
 @DartitectValue()
-final class PartModel extends ValueEquality with _\$PartModelDartitect {
-  const PartModel({required this.id});
-  final String id;
-}
+final class const PartModel({
+  required final String id,
+}) extends ValueEquality with _\$PartModelDartitect;
 ''');
       final partReport = await DartitectModelGenerator(partRoot).inspect();
       expect(partReport.plan, isNull);
@@ -259,7 +258,7 @@ final class PartModel extends ValueEquality with _\$PartModelDartitect {
       final malformedRoot = await _modelPackage();
       addTearDown(() => malformedRoot.delete(recursive: true));
       await File('${malformedRoot.path}/lib/malformed.dart').writeAsString('''
-import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_modeling/dartitect_modeling.dart';
 part 'malformed.dartitect.g.dart';
 
 @DartitectValue()
@@ -312,16 +311,14 @@ final class Malformed extends ValueEquality with _\$MalformedDartitect {
 }
 
 const _userSource = '''
-import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_modeling/dartitect_modeling.dart';
 part 'user.dartitect.g.dart';
 
 @DartitectValue()
-final class User extends ValueEquality with _\$UserDartitect {
-  const User({required this.id, required this.email});
-
-  final String id;
-  final String? email;
-}
+final class const User({
+  required final String id,
+  required final String? email,
+}) extends ValueEquality with _\$UserDartitect;
 ''';
 
 Future<Directory> _modelPackage() async {
@@ -333,13 +330,20 @@ name: model_fixture
 environment:
   sdk: ^3.13.0
 dependencies:
-  dartitect: any
+  dartitect_modeling: any
 ''');
   final dartitect = await Isolate.resolvePackageUri(
     Uri.parse('package:dartitect/dartitect.dart'),
   );
   if (dartitect == null) throw StateError('dartitect package is unresolved');
   final dartitectRoot = dartitect.resolve('../');
+  final modeling = await Isolate.resolvePackageUri(
+    Uri.parse('package:dartitect_modeling/dartitect_modeling.dart'),
+  );
+  if (modeling == null) {
+    throw StateError('dartitect_modeling package is unresolved');
+  }
+  final modelingRoot = modeling.resolve('../');
   await File('${root.path}/.dart_tool/package_config.json').writeAsString(
     jsonEncode(<String, Object?>{
       'configVersion': 2,
@@ -353,6 +357,12 @@ dependencies:
         <String, Object?>{
           'name': 'dartitect',
           'rootUri': dartitectRoot.toString(),
+          'packageUri': 'lib/',
+          'languageVersion': '3.13',
+        },
+        <String, Object?>{
+          'name': 'dartitect_modeling',
+          'rootUri': modelingRoot.toString(),
           'packageUri': 'lib/',
           'languageVersion': '3.13',
         },

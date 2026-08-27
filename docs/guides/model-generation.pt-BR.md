@@ -6,24 +6,30 @@
 
 A geração de modelos se limita a boilerplate de values imutáveis. O gerador
 varre `lib/**` e cada árvore imediata `packages/*/lib/**` sem seguir symlinks.
-Uma library anotada contém exatamente um modelo e seu part correspondente.
+Uma library anotada possui um único part Dartitect determinístico.
 
 | Contrato | Forma suportada em 1.0 | Forma rejeitada |
 |---|---|---|
-| Annotation | `@DartitectValue()` resolvido para o elemento de `package:dartitect`, inclusive por prefixo e reexport | Annotations homônimas ou não resolvidas |
-| Classe | `final` concreta, não genérica, estende `ValueEquality` e aplica `_$TypeDartitect` | Abstrata, não final, genérica ou com herança complexa |
+| Annotation | `@DartitectValue()` resolvido para o elemento de `package:dartitect_modeling`, inclusive por prefixo e reexport | Annotations homônimas ou não resolvidas |
+| Classe | `final` concreta, estende `ValueEquality` e aplica `_$TypeDartitect` | Abstrata, não final ou com herança complexa |
 | Part | Exatamente um `part '<source>.dartitect.g.dart';` | Part ausente, duplicado ou incompatível |
-| Campos | Ao menos um campo público, tipado, de instância, `final`, non-late e sem initializer | Campos privados, inferidos, static, late, mutáveis ou inicializados |
+| Campos | Ao menos um campo público, tipado, nomeado e `final` no primary constructor | Campos privados, inferidos, positional, late ou mutáveis |
 | Collections | Wrappers imutáveis de classe pertencentes ao consumidor | Interfaces de collection mutáveis, inclusive aliases de `List`, `Set`, `Map`, `Iterable`, queues, collections hash/tree e listas typed-data |
-| Construtor | Exatamente um construtor generativo sem nome cujos parâmetros nomeados correspondem exatamente aos campos | Parâmetros nomeados de forma incorreta, positional, ausentes, duplicados ou com tipo divergente; construtor named, factory ou external |
+| Construtor | Um primary constructor sem nome; use `class const` quando construção constante for necessária | Formas tradicionais, primary named, somente factory, external ou positional |
 
 O gerador não cria JSON, unions, schemas de DTO/entity, entities ObjectBox,
 injeção de dependência, ViewModels, rotas, clients REST, reflexão runtime nem
 modelos mutáveis. Outros geradores podem coexistir somente quando possuem
 arquivos de saída distintos.
 
-Source inválido produz `DT1021` e nenhum output de modelo é aplicado. A
+Primary constructor ausente produz `DT1030` e nenhum output de modelo é aplicado. A
 identidade da annotation é semântica, não uma comparação de nome lexical.
+
+Execute `dartitect model migrate primary` para um preview sem escrita da edição
+semântica de values tradicionais elegíveis. Somente `--apply` adquire o lock
+compartilhado, grava o journal próprio de source, revalida os bytes e commit ou
+faz rollback da edição completa. Classes comportamentais e construtores
+ambíguos exigem revisão do consumidor e nunca são reescritos por heurística.
 
 ## Equality gerada e `copyWith`
 
@@ -56,6 +62,8 @@ identidade, versão/projeção ou hash pré-calculado.
 | `dartitect model sync --dry-run` | Não | Informa recovery pendente | 0 quando fresh, 1 para findings |
 | `dartitect model check` | Nunca | Informa recovery pendente | 0 quando fresh, 1 para findings |
 | `dartitect model sync --apply` | Sim, atomicamente | Recupera, redescobre, recalcula o plano e aplica | 0 no sucesso, 1 para findings de modelo |
+| `dartitect model migrate primary` | Não; preview por padrão | Informa seu próprio journal de source pendente | 0 quando não resta migração, 1 para preview/findings |
+| `dartitect model migrate primary --apply` | Sim, atomicamente | Faz rollback de source incompleto antes de redescobrir | 0 no sucesso |
 
 Os dois commands aceitam `--json`. O exit code global 2 indica falha de uso ou
 configuração, e 3 indica falha de I/O ou interna. Preview, dry-run e check nunca

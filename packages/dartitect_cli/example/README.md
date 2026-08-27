@@ -12,6 +12,7 @@ dartitect init --dry-run
 dartitect baseline create --dry-run
 dartitect codex sync --dry-run
 dartitect model check --json
+dartitect model migrate primary --json
 dartitect model sync
 dartitect dependencies audit --json
 dartitect dependencies explain uuid
@@ -28,6 +29,8 @@ have no migration; recreate and review stable v1 with `init`.
 Unlike create-only mutators, convergent `model sync` previews by default and
 only `model sync --apply` writes or recovers; `--dry-run` and `--apply` cannot
 be combined. Generated outputs and `.dartitect/model-outputs.json` are committed.
+Primary-constructor migration also previews by default; only
+`model migrate primary --apply` writes source under its lock and journal.
 Fleet commands never write. Upgrade has no apply mode; its preview exposes a
 state token that callers of the typed project service can review and revalidate
 under the project lock. Policy uses only a local, doubly pinned bundle.

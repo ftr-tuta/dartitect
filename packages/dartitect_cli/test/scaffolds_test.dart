@@ -79,6 +79,14 @@ void main() {
           .content;
       expect(viewModel, contains('// ignore: must_call_super'));
       expect(viewModel, contains('super.dispose();'));
+      final model = operations
+          .singleWhere(
+            (operation) =>
+                operation.relativePath.endsWith('catalog_model.dart'),
+          )
+          .content;
+      expect(model, contains('final class CatalogModel({'));
+      expect(model, contains('this : labels = immutableListCopy(labels);'));
     }
     expect(
       rendered[ScaffoldBlueprint.remoteRead]!.map(
@@ -100,7 +108,11 @@ void main() {
       rendered[ScaffoldBlueprint.offlineMutation]!
           .map((operation) => operation.content)
           .join(),
-      allOf(contains('MutationLane'), contains('MutationOutboxStore')),
+      allOf(
+        contains('MutationLane'),
+        contains('MutationOutboxStore'),
+        contains('final class const CatalogMutation({'),
+      ),
     );
     expect(
       rendered[ScaffoldBlueprint.syncDataset]!

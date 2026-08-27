@@ -252,7 +252,7 @@ final class DartitectModelGenerator {
               code: 'DT1021',
               message:
                   'DartitectValue must resolve to the annotation declared by '
-                  'package:dartitect.',
+                  'package:dartitect_modeling.',
               path: path,
             ),
           );
@@ -328,10 +328,10 @@ final class DartitectModelGenerator {
     required List<ModelDiagnostic> diagnostics,
   }) {
     final before = diagnostics.length;
-    void reject(String message, [AstNode? node]) {
+    void reject(String message, [AstNode? node, String code = 'DT1021']) {
       diagnostics.add(
         ModelDiagnostic(
-          code: 'DT1021',
+          code: code,
           message: message,
           path: path,
           line: node == null ? null : lineAt(node.offset),
@@ -340,6 +340,10 @@ final class DartitectModelGenerator {
     }
 
     final name = declaration.namePart.typeName.lexeme;
+    final primaryConstructor = switch (declaration.namePart) {
+      final PrimaryConstructorDeclaration constructor => constructor,
+      _ => null,
+    };
     final expectedPart =
         '${_basename(path, removeExtension: true)}.dartitect.g.dart';
     final partUris = unit.directives
@@ -377,86 +381,66 @@ final class DartitectModelGenerator {
     }
 
     final fields = <_Field>[];
-    for (final member
-        in declaration.body.members.whereType<FieldDeclaration>()) {
-      if (member.isStatic ||
-          !member.fields.isFinal ||
-          member.fields.isLate ||
-          member.fields.type == null) {
+    if (primaryConstructor == null) {
+      reject(
+        'DartitectValue classes must declare an unnamed primary constructor.',
+        declaration,
+        'DT1030',
+      );
+    } else {
+      if (primaryConstructor.constructorName != null) {
         reject(
-          'Model fields must be typed, instance, final, and non-late.',
-          member,
-        );
-        continue;
-      }
-      final typeAnnotation = member.fields.type!;
-      final type = typeAnnotation.toSource();
-      if (_isMutableCollection(typeAnnotation)) {
-        reject(
-          'Mutable collection interfaces are not supported in model fields.',
-          member,
+          'DartitectValue primary constructors must be unnamed.',
+          primaryConstructor,
         );
       }
-      for (final variable in member.fields.variables) {
-        final fieldName = variable.name.lexeme;
-        if (fieldName.startsWith('_') || variable.initializer != null) {
+      for (final parameter in primaryConstructor.formalParameters.parameters) {
+        final parameterName = parameter.name?.lexeme;
+        final typeAnnotation = parameter.type;
+        if (parameter is! RegularFormalParameter ||
+            parameter.finalKeyword == null ||
+            !parameter.isNamed ||
+            parameterName == null ||
+            typeAnnotation == null) {
           reject(
-            'Model fields must be public and initialized by the constructor.',
-            variable,
+            'Model primary parameters must be typed, named, and final.',
+            parameter,
           );
           continue;
         }
+        if (parameterName.startsWith('_')) {
+          reject(
+            'Model primary parameters must declare public fields.',
+            parameter,
+          );
+          continue;
+        }
+        if (_isMutableCollection(typeAnnotation)) {
+          reject(
+            'Mutable collection interfaces are not supported in model fields.',
+            parameter,
+          );
+        }
+        final type = typeAnnotation.toSource();
         fields.add(
           _Field(
-            name: fieldName,
+            name: parameterName,
             type: type,
             nullable: type.trim().endsWith('?'),
           ),
         );
       }
     }
-    if (fields.isEmpty)
+    if (fields.isEmpty) {
       reject('A DartitectValue class must declare at least one field.');
-
-    final constructors = declaration.body.members
-        .whereType<ConstructorDeclaration>()
-        .toList(growable: false);
-    if (constructors.length != 1 ||
-        constructors.single.name != null ||
-        constructors.single.factoryKeyword != null ||
-        constructors.single.externalKeyword != null) {
-      reject(
-        'The class must have one unnamed generative constructor.',
-        declaration,
-      );
-    } else {
-      final parameters = constructors.single.parameters.parameters;
-      final names = <String>[];
-      for (final parameter in parameters) {
-        final parameterName = parameter.name?.lexeme;
-        if (!parameter.isNamed || parameterName == null) {
-          reject('Every model constructor parameter must be named.', parameter);
-          continue;
-        }
-        names.add(parameterName);
-        final field = fields
-            .where((field) => field.name == parameterName)
-            .firstOrNull;
-        if (field == null) continue;
-        final declaredType = parameter.type?.toSource();
-        if (declaredType != null && declaredType != field.type) {
-          reject(
-            'Constructor parameter types must match their fields.',
-            parameter,
-          );
-        }
-      }
-      final fieldNames = fields.map((field) => field.name).toList();
-      if (names.length != fieldNames.length ||
-          !names.toSet().containsAll(fieldNames)) {
+    }
+    for (final member in declaration.body.members) {
+      if (member is FieldDeclaration && member.isStatic) continue;
+      if (member is FieldDeclaration || member is ConstructorDeclaration) {
         reject(
-          'Constructor named parameters must correspond exactly to fields.',
-          constructors.single,
+          'Model instance fields and constructors must be declared by the '
+          'primary constructor.',
+          member,
         );
       }
     }
@@ -511,7 +495,7 @@ final class DartitectModelGenerator {
               diagnostic.message.contains(annotated.mixinName) ||
               diagnostic.diagnosticCode.lowerCaseName ==
                       'non_abstract_class_inherits_abstract_member' &&
-          diagnostic.message.contains('ValueEquality.equalityFields');
+                  diagnostic.message.contains('ValueEquality.equalityFields');
           if (expectedBootstrap) continue;
           diagnostics.add(
             ModelDiagnostic(
@@ -746,11 +730,4 @@ final class _Field {
   final String name;
   final String type;
   final bool nullable;
-}
-
-extension<T> on Iterable<T> {
-  T? get firstOrNull {
-    final iterator = this.iterator;
-    return iterator.moveNext() ? iterator.current : null;
-  }
 }

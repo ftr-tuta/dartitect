@@ -8,6 +8,7 @@ import '../fleet/fleet_service.dart';
 import '../generation/generation_engine.dart';
 import '../generation/scaffolds.dart';
 import '../model/model_generator.dart';
+import '../model/primary_constructor_migration.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
 import '../scan/project_scanner.dart';
@@ -103,6 +104,9 @@ final class DartitectCliRunner {
     } on DartitectChangeException catch (error) {
       _stderr.writeln('${error.code}: ${error.message}');
       return DartitectExitCode.findings.code;
+    } on PrimaryConstructorMigrationException catch (error) {
+      _stderr.writeln(error.message);
+      return DartitectExitCode.internal.code;
     } on FileSystemException catch (error) {
       _stderr.writeln('IO failure: ${error.message}');
       return DartitectExitCode.internal.code;
@@ -452,6 +456,11 @@ final class ${name.pascal}App extends StatelessWidget {
   }
 
   Future<int> _model(Directory root, _CliArguments arguments) async {
+    if (arguments.positionals.length == 2 &&
+        arguments.positionals[0] == 'migrate' &&
+        arguments.positionals[1] == 'primary') {
+      return _modelMigratePrimary(root, arguments);
+    }
     if (arguments.positionals.length != 1 ||
         !const <String>{
           'check',
@@ -519,6 +528,70 @@ final class ${name.pascal}App extends StatelessWidget {
         preview: false,
       );
       return DartitectExitCode.findings.code;
+    }
+  }
+
+  Future<int> _modelMigratePrimary(
+    Directory root,
+    _CliArguments arguments,
+  ) async {
+    arguments.requireOnlyFlags(<String>{'json', 'verbose', 'dry-run', 'apply'});
+    if (arguments.flags.contains('dry-run') &&
+        arguments.flags.contains('apply')) {
+      throw const _UsageException(
+        '--dry-run and --apply are mutually exclusive.',
+      );
+    }
+    final migration = PrimaryConstructorMigration(root);
+    final preview = await migration.inspect();
+    if (!arguments.flags.contains('apply') || preview.diagnostics.isNotEmpty) {
+      _writePrimaryMigrationReport(
+        preview,
+        json: arguments.flags.contains('json'),
+      );
+      return preview.diagnostics.isEmpty &&
+              preview.operations.isEmpty &&
+              !preview.pendingRecovery
+          ? DartitectExitCode.success.code
+          : DartitectExitCode.findings.code;
+    }
+    final applied = await migration.apply();
+    _writePrimaryMigrationReport(
+      applied,
+      json: arguments.flags.contains('json'),
+    );
+    return DartitectExitCode.success.code;
+  }
+
+  void _writePrimaryMigrationReport(
+    PrimaryConstructorMigrationReport report, {
+    required bool json,
+  }) {
+    if (json) {
+      _stdout.writeln(jsonEncode(report.toJson()));
+      return;
+    }
+    for (final diagnostic in report.diagnostics) {
+      final line = diagnostic.line == null ? '' : ':${diagnostic.line}';
+      _stdout.writeln(
+        '${diagnostic.rule} ${diagnostic.path}$line ${diagnostic.message}',
+      );
+    }
+    for (final operation in report.operations) {
+      _stdout.writeln('MIGRATE ${operation.path} (${operation.modelCount})');
+    }
+    if (report.pendingRecovery) {
+      _stdout.writeln(
+        'RECOVERY .dartitect/model-primary-migration-journal.json',
+      );
+    }
+    if (report.applied) {
+      _stdout.writeln('APPLIED ${report.modelCount} model(s).');
+    } else {
+      _stdout.writeln(
+        'PREVIEW no files written. Use --apply to migrate primary '
+        'constructors.',
+      );
     }
   }
 
@@ -862,6 +935,8 @@ Read-only commands:
   doctor [--json] [--deep]         Validate toolchain, config, and project.
   inspect [--json]                  Emit consolidated architecture metadata.
   model check [--json]              Validate generated model freshness.
+  model migrate primary [--dry-run|--apply] [--json]
+                                    Preview or apply semantic constructor edits.
   dependencies audit [--json]      Audit direct/transitive packages offline.
   dependencies explain <package>   Explain the ledger decision/replacement.
   fleet versions <root...>         Report declared and locked SDK versions.
