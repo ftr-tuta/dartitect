@@ -93,10 +93,6 @@ void main() {
           .readAsStringSync();
       for (final marker in const <String>[
         '--reporter=expanded',
-        "'wm'",
-        "'user-rotation'",
-        "'lock'",
-        "'free'",
         '_cleanupAndroidTestAssets',
         '_androidTestAssetsAreAbsent',
         '_applicationDataIsClean',
@@ -104,6 +100,7 @@ void main() {
       ]) {
         expect(runner, contains(marker));
       }
+      expect(runner, isNot(contains("'user-rotation'")));
     },
   );
 }
