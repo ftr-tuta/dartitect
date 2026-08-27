@@ -21,6 +21,13 @@ void main() {
       boundaryParityRelativePath(root, source.absolute.uri.toString()),
       'lib/feature.dart',
     );
+    expect(
+      boundaryParityRelativePath(
+        root,
+        'lib${Platform.pathSeparator}feature.dart',
+      ),
+      'lib/feature.dart',
+    );
     if (Platform.isWindows) {
       final uriWithLowercaseDrive = source.absolute.uri
           .toString()
@@ -48,6 +55,10 @@ void main() {
         root,
         File('${outside.path}/feature.dart').uri.toString(),
       ),
+      throwsFormatException,
+    );
+    expect(
+      () => boundaryParityRelativePath(root, '../outside/feature.dart'),
       throwsFormatException,
     );
   });

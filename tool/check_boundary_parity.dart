@@ -125,22 +125,35 @@ List<Object?> _list(Object? value) {
 /// both forms avoids interpreting the URI text as a relative Windows path.
 String boundaryParityRelativePath(Directory root, String path) {
   final uri = Uri.tryParse(path);
-  final file = uri != null && uri.scheme == 'file'
-      ? File.fromUri(uri)
-      : File(path);
-  final rootPath = root.absolute.path;
-  final prefix = rootPath.endsWith(Platform.pathSeparator)
-      ? rootPath
-      : '$rootPath${Platform.pathSeparator}';
-  final filePath = file.absolute.path;
+  final file = switch (uri) {
+    Uri(scheme: 'file') => File.fromUri(uri),
+    _ when File(path).isAbsolute => File(path),
+    _ => File.fromUri(root.absolute.uri.resolve(path.replaceAll('\\', '/'))),
+  };
+  final rootPath = _normalizedBoundaryPath(root.absolute.path);
+  final prefix = rootPath.endsWith('/') ? rootPath : '$rootPath/';
+  final filePath = _normalizedBoundaryPath(file.absolute.path);
   final comparedPrefix = Platform.isWindows ? prefix.toLowerCase() : prefix;
   final comparedFilePath = Platform.isWindows
       ? filePath.toLowerCase()
       : filePath;
   if (!comparedFilePath.startsWith(comparedPrefix)) {
-    throw FormatException('Analyzer path is outside the parity fixture.');
+    throw FormatException(
+      'Analyzer path is outside the parity fixture: '
+      'root=${root.absolute.uri}, input=${jsonEncode(path)}, '
+      'resolved=${file.absolute.uri}.',
+    );
   }
-  return filePath.substring(prefix.length).replaceAll('\\', '/');
+  return filePath.substring(prefix.length);
+}
+
+String _normalizedBoundaryPath(String path) {
+  var normalized = path.replaceAll('\\', '/');
+  if (Platform.isWindows &&
+      (normalized.startsWith('//?/') || normalized.startsWith('//./'))) {
+    normalized = normalized.substring(4);
+  }
+  return normalized;
 }
 
 bool _same(List<String> left, List<String> right) {
