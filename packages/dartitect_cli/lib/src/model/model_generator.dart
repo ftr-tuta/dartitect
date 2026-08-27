@@ -511,7 +511,7 @@ final class DartitectModelGenerator {
               diagnostic.message.contains(annotated.mixinName) ||
               diagnostic.diagnosticCode.lowerCaseName ==
                       'non_abstract_class_inherits_abstract_member' &&
-                  diagnostic.message.contains('ValueEquality.equalityFields');
+          diagnostic.message.contains('ValueEquality.equalityFields');
           if (expectedBootstrap) continue;
           diagnostics.add(
             ModelDiagnostic(
@@ -576,7 +576,7 @@ bool _hasDartitectValue(ClassDeclaration declaration) =>
       final element = annotation.element;
       return element?.enclosingElement?.displayName == 'DartitectValue' &&
           element?.library?.uri.toString() ==
-              'package:dartitect/src/dartitect_value.dart';
+              'package:dartitect_modeling/src/annotations.dart';
     });
 
 bool _isMutableCollection(TypeAnnotation type) {

@@ -156,6 +156,27 @@ abstract final class DartitectGeneratedCatalog {
       ],
       "stability": "development"
     },
+    "dartitect_modeling": {
+      "version": "1.0.0-rc.3",
+      "description": "Immutable values, explicit codecs, projections, and boundary mapping primitives for Dartitect.",
+      "documentation": "Pure-Dart, web-compatible immutable modeling primitives for Dartitect. Import this package to opt into values, JSON codecs, projections, or boundary mappers. Each capability requires its own annotation; provider schemas and runtime application architecture remain consumer-owned.",
+      "platforms": [
+        "Dart",
+        "Flutter",
+        "web"
+      ],
+      "stability": "development"
+    },
+    "dartitect_modeling_analyzer": {
+      "version": "1.0.0-rc.3",
+      "description": "Shared read-only semantic compiler for Dartitect modeling tools and analyzer integrations.",
+      "documentation": "Read-only Analyzer-backed semantic compiler shared by the Dartitect CLI and official lints. Runtime applications must never depend on this package.",
+      "platforms": [
+        "Dart VM",
+        "Dart analyzer"
+      ],
+      "stability": "development"
+    },
     "dartitect_objectbox": {
       "version": "1.0.0-rc.3",
       "description": "Optional explicit Store and observation lifecycle integration for ObjectBox.",
@@ -427,6 +448,6 @@ abstract final class DartitectGeneratedCatalog {
       ]
     }
   },
-  "apiSnapshotHash": "a4e22abf"
+  "apiSnapshotHash": "8e4b3d29"
 }''';
 }

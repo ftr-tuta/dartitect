@@ -1,4 +1,4 @@
-import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_modeling/dartitect_modeling.dart';
 
 part 'profile.dartitect.g.dart';
 

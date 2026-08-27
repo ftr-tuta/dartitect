@@ -1,41 +1,50 @@
 ---
 name: dartitect-modeling
-description: Define, generate, validate, or review immutable Dartitect value models with DartitectValue, ValueEquality, typed copyWith, and model sync/check. Use for Dartitect-owned value generation; exclude DTO/JSON, unions, DI, ViewModels, state, and HTTP clients.
+description: Define, generate, validate, or review opt-in Dartitect values, JSON codecs, projections, lenses, and boundary mappers. Use for consumer-owned modeling and model sync/check/migration; exclude provider schema, DI, ViewModels, state, and HTTP clients.
 ---
 
 # Model values with Dartitect
 
 ## When to use
 
-Use this skill for `@DartitectValue()`, generated value semantics, typed
-`copyWith`, model ownership manifests, or `model sync/check`.
+Use this skill for the independent `@DartitectValue()`, `@DartitectJson()`,
+`@DartitectProjection()`, and `@DartitectMapper()` capabilities, generated
+value semantics, codecs, projections/lenses, pure mappers, ownership manifests,
+or `model sync/check/migrate primary`.
 
 ## When not to use
 
-Use provider-specific tooling for DTO/JSON, schema, or native generators. Use
+Use provider-specific tooling for provider DTO/entity schema or native generators. Use
 the runtime, reactive, adapters, or tooling skill for ViewModels, state, HTTP,
 DI, and unrelated CLI behavior.
 
 ## Invariants
 
-Keep the annotation passive in `dartitect`; generation belongs to the CLI. One
-source library contains exactly one annotated final, non-generic class. Declare
-the matching `part`, extend `ValueEquality`, mix in the calculated generated
-mixin, expose typed public final fields, and use one unnamed generative
-constructor whose named parameters correspond exactly to those fields.
+Keep annotations passive in `dartitect_modeling`; generation belongs to host
+tooling. A source library may contain multiple annotated final classes and owns
+one deterministic Dartitect part. Models use a primary constructor, extend
+`ValueEquality`, expose immutable typed fields, and may be generic, const, use
+defaults, records, and parts when the shared semantic compiler validates them.
 
-Do not declare fields through mutable collection interfaces such as `List`,
-`Set`, `Map`, or `Iterable`; wrap immutable values in a consumer-owned type.
-Generation does not own JSON, DTOs, unions, DI, ViewModels, state, routes, or
-clients and may coexist with provider-owned generators in distinct part files.
+Use `ImmutableValueList`, `ImmutableValueSet`, and `ImmutableValueMap` for
+structural collection fields. JSON, projections, and mappers are never enabled
+by the value marker. Unknown JSON keys reject by default, untrusted limits are
+64 depth/10,000 items/100,000 nodes, and any trusted or custom limit choice is
+explicit. Mappers automate only assignable lossless fields; renames and static
+consumer hooks are explicit. Never infer narrowing, enum/string, dates, IDs,
+relations, or flattening. Provider-owned generators use distinct outputs.
 
 ## Workflow
 
 Use `dartitect model sync` for a read-only preview, or `--dry-run` for an
 explicit preview. Only `dartitect model sync --apply` may recover and converge
 outputs. Run `dartitect model check` in CI. Commit every
-`*.dartitect.g.dart` output and `.dartitect/model-outputs.json` so a clean
+`*.dartitect.g.dart` output and namespaced manifest so a clean
 checkout compiles without installing the CLI.
+
+Use `dartitect model migrate primary` to preview traditional-to-primary
+constructor edits. Only `--apply` may take the project lock, journal source
+bytes, revalidate, and commit or roll back the complete semantic edit.
 
 Never hand-edit or force-adopt a generated model. A digest conflict means the
 consumer bytes must be reviewed and ownership restored explicitly. A pending
@@ -43,13 +52,15 @@ journal is inspected by preview/check and recovered only by `sync --apply`.
 
 ## Validate
 
-The generated mixin supplies abstract getters, `equalityFields`, and typed
-`copyWith` only. Nullable fields preserve on omission, replace on a non-null
+The generated model surface supplies `equalityFields`, descriptors/lenses, and
+typed `copyWith`. Nullable fields preserve on omission, replace on a non-null
 value, and clear with `clear<Field>: true`; passing a value and clear together
 must fail. Non-nullable fields have no clear flag. Do not generate equality,
 hashing, or `toString` because `ValueEquality` centralizes those semantics.
 
-Test bootstrap with the exact missing part/mixin only, clean post-sync analysis,
-preserve/replace/clear behavior, full equality participation, create/update/
-no-op/orphan convergence, consumer edits, manifest corruption/path escapes,
-CRLF canonicalization, pending recovery, and stable JSON/exit codes.
+Test primary constructors, generics, const/defaults, records, multiple models,
+preserve/replace/clear behavior, defensive structural collections, JSON
+round-trip/malformed/bounds, projection selection, lossless/lossy mapping and
+hooks. Also cover create/update/no-op/orphan convergence, migration preview/
+apply/recovery, consumer edits, manifest corruption/path escapes, CRLF,
+concurrency, pending recovery, and stable JSON/SARIF/exit codes.

@@ -10,6 +10,7 @@ environment:
 dependencies:
   dartitect: 1.0.0-rc.3
   dartitect_flutter: 1.0.0-rc.3
+  dartitect_modeling: 1.0.0-rc.3
   flutter:
     sdk: flutter
 

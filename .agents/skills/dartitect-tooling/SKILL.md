@@ -1,13 +1,13 @@
 ---
 name: dartitect-tooling
-description: Operate or extend the Dartitect CLI, config, scan, doctor, baselines, lints, generators, native setup, and release gates. Use for shell/CI architecture tooling; MCP configuration and protocol work belongs to the MCP skill.
+description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, fleet, lints, semantic compiler, generators, native setup, and release gates. Use for shell/CI architecture tooling; MCP configuration and protocol work belongs to the MCP skill.
 ---
 
 # Operate Dartitect tooling
 
 ## When to use
 
-Use this skill for CLI commands/services, stable config v1, scanner/doctor policy,
+Use this skill for CLI commands/services, stable config v1, verify/scanner/doctor policy,
 baselines, analyzer diagnostics, generators, Codex sync, native fixture setup,
 or repository release gates.
 
@@ -18,15 +18,17 @@ opt-in MCP writes. Use runtime skills for application behavior.
 
 ## Invariants
 
-Inspection is read-only. Mutations preview by default or provide explicit
+Inspection and `dartitect verify` are strictly read-only. Mutations preview by default or provide explicit
 dry-run/apply separation. Reject experimental versions and preserve unknown v1
 extension fields without interpreting them.
 Baselines cover reviewed existing debt only. Generators stage, validate, refuse
 conflicts, and recover transactionally. Codex sync replaces only valid
 manifest-owned skills and preserves consumer-owned files/directories.
 Every reviewed project change binds only its semantic inputs in a sorted
-SHA-256 manifest. Acquire the cross-process project lock before revalidation and
-hold it through commit, rollback, or recovery.
+SHA-256 manifest. Partition generated ownership, reports, and journals by
+`GenerationNamespace`. Acquire the cross-process project lock before
+revalidation and hold it through commit, rollback, or recovery. Migrate RC3
+ownership only when manifest metadata, recorded digest, and current bytes match.
 
 ## Workflow
 

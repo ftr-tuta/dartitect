@@ -77,6 +77,77 @@ final class DartitectSuppression {
   };
 }
 
+/// Reviewed modeling adoption preset encoded inside stable config v1.
+enum DartitectModelingPreset {
+  /// Value semantics only; every other capability remains disabled.
+  minimal('minimal'),
+
+  /// Complete opt-in defaults for new Dartitect-owned models.
+  recommended('recommended_complete'),
+
+  /// Incremental adoption that tolerates existing project tooling.
+  interop('interop_existing_project');
+
+  const DartitectModelingPreset(this.wireName);
+
+  /// Stable JSON name.
+  final String wireName;
+}
+
+/// Additive modeling configuration for stable config v1.
+final class DartitectModelingConfig {
+  /// Creates an explicit modeling block.
+  const DartitectModelingConfig({
+    required this.preset,
+    this.maxDepth = 64,
+    this.maxCollectionItems = 10000,
+    this.maxNodes = 100000,
+  });
+
+  /// Adoption preset; annotations still control individual capabilities.
+  final DartitectModelingPreset preset;
+
+  /// Untrusted JSON nesting bound.
+  final int maxDepth;
+
+  /// Untrusted per-collection item bound.
+  final int maxCollectionItems;
+
+  /// Untrusted total decoded-node bound.
+  final int maxNodes;
+
+  /// Stable machine representation.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'preset': preset.wireName,
+    'jsonLimits': <String, Object?>{
+      'maxDepth': maxDepth,
+      'maxCollectionItems': maxCollectionItems,
+      'maxNodes': maxNodes,
+    },
+  };
+}
+
+/// Additive ecosystem policy for incremental adoption.
+final class DartitectEcosystemConfig {
+  /// Creates an explicit ecosystem block.
+  const DartitectEcosystemConfig({
+    this.adoption = 'incremental',
+    this.installedOverlap = 'warning',
+  });
+
+  /// Stable adoption mode.
+  final String adoption;
+
+  /// Disposition for an installed but non-leaking overlapping runtime.
+  final String installedOverlap;
+
+  /// Stable machine representation.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'adoption': adoption,
+    'installedOverlap': installedOverlap,
+  };
+}
+
 /// Stable v1 Native Strict configuration.
 ///
 /// Experimental configuration versions are deliberately not migrated. A
@@ -105,6 +176,8 @@ final class DartitectConfig {
         'sync-dataset',
       ],
     },
+    this.modeling,
+    this.ecosystem,
     Map<String, Object?> unknown = const <String, Object?>{},
   }) : layers = _copyLayers(layers),
        compositionRoots = List<String>.unmodifiable(compositionRoots),
@@ -154,6 +227,8 @@ final class DartitectConfig {
       'generatedSuffixes',
       'suppressions',
       'scaffolds',
+      'modeling',
+      'ecosystem',
     };
     final version = _requiredInt(json, 'configVersion');
     if (version != currentConfigVersion) {
@@ -185,6 +260,8 @@ final class DartitectConfig {
       generatedSuffixes: _suffixList(json['generatedSuffixes']),
       suppressions: _parseSuppressions(json['suppressions']),
       scaffolds: _parseScaffolds(json['scaffolds']),
+      modeling: _parseModeling(json['modeling']),
+      ecosystem: _parseEcosystem(json['ecosystem']),
       unknown: <String, Object?>{
         for (final entry in json.entries)
           if (!known.contains(entry.key)) entry.key: entry.value,
@@ -216,6 +293,12 @@ final class DartitectConfig {
   /// Generated-once scaffold layout and supported blueprint selection.
   final Map<String, Object?> scaffolds;
 
+  /// Optional modeling adoption. Absence preserves pre-RC4 consumers.
+  final DartitectModelingConfig? modeling;
+
+  /// Optional ecosystem coexistence policy.
+  final DartitectEcosystemConfig? ecosystem;
+
   /// Unknown keys retained only after the complete stable schema validates.
   final Map<String, Object?> unknown;
 
@@ -229,6 +312,8 @@ final class DartitectConfig {
     'generatedSuffixes': generatedSuffixes,
     'suppressions': suppressions.map((value) => value.toJson()).toList(),
     'scaffolds': scaffolds,
+    if (modeling != null) 'modeling': modeling!.toJson(),
+    if (ecosystem != null) 'ecosystem': ecosystem!.toJson(),
     ...unknown,
   };
 
@@ -408,6 +493,69 @@ final class DartitectConfig {
         if (entry.key != 'layout' && entry.key != 'blueprints')
           entry.key: entry.value,
     };
+  }
+
+  static DartitectModelingConfig? _parseModeling(Object? value) {
+    if (value == null) return null;
+    if (value is! Map<String, Object?>) {
+      throw const DartitectConfigException('/modeling', 'expected an object');
+    }
+    final presetValue = value['preset'];
+    final preset = DartitectModelingPreset.values
+        .where((candidate) => candidate.wireName == presetValue)
+        .firstOrNull;
+    if (preset == null) {
+      throw const DartitectConfigException(
+        '/modeling/preset',
+        'expected minimal, recommended_complete, or interop_existing_project',
+      );
+    }
+    final limits = value['jsonLimits'];
+    if (limits is! Map<String, Object?>) {
+      throw const DartitectConfigException(
+        '/modeling/jsonLimits',
+        'expected an object',
+      );
+    }
+    int positive(String key) {
+      final raw = limits[key];
+      if (raw is! int || raw <= 0) {
+        throw DartitectConfigException(
+          '/modeling/jsonLimits/$key',
+          'expected a positive integer',
+        );
+      }
+      return raw;
+    }
+
+    return DartitectModelingConfig(
+      preset: preset,
+      maxDepth: positive('maxDepth'),
+      maxCollectionItems: positive('maxCollectionItems'),
+      maxNodes: positive('maxNodes'),
+    );
+  }
+
+  static DartitectEcosystemConfig? _parseEcosystem(Object? value) {
+    if (value == null) return null;
+    if (value is! Map<String, Object?>) {
+      throw const DartitectConfigException('/ecosystem', 'expected an object');
+    }
+    final adoption = value['adoption'];
+    final overlap = value['installedOverlap'];
+    if (adoption != 'incremental') {
+      throw const DartitectConfigException(
+        '/ecosystem/adoption',
+        'expected incremental',
+      );
+    }
+    if (overlap != 'warning') {
+      throw const DartitectConfigException(
+        '/ecosystem/installedOverlap',
+        'expected warning',
+      );
+    }
+    return const DartitectEcosystemConfig();
   }
 
   static List<String> _globList(Object? value, String pointer) {

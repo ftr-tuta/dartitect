@@ -6,46 +6,54 @@
   "publicationLayers": [
     [
       "dartitect",
-      "dartitect_cli",
       "dartitect_geometry",
-      "dartitect_lints",
       "dartitect_locale_br",
       "dartitect_privacy"
     ],
     [
       "dartitect_flutter",
       "dartitect_isolates",
-      "dartitect_mcp",
       "dartitect_media",
+      "dartitect_modeling",
       "dartitect_observability",
       "dartitect_sync"
     ],
     [
+      "dartitect_modeling_analyzer",
       "dartitect_drift",
       "dartitect_dio",
       "dartitect_objectbox",
       "dartitect_sentry",
       "dartitect_testing"
+    ],
+    [
+      "dartitect_cli",
+      "dartitect_lints"
+    ],
+    [
+      "dartitect_mcp"
     ]
   ],
   "publicationOrder": [
     "dartitect",
-    "dartitect_cli",
     "dartitect_geometry",
-    "dartitect_lints",
     "dartitect_locale_br",
     "dartitect_privacy",
     "dartitect_flutter",
     "dartitect_isolates",
-    "dartitect_mcp",
     "dartitect_media",
+    "dartitect_modeling",
     "dartitect_observability",
     "dartitect_sync",
+    "dartitect_modeling_analyzer",
     "dartitect_drift",
     "dartitect_dio",
     "dartitect_objectbox",
     "dartitect_sentry",
-    "dartitect_testing"
+    "dartitect_testing",
+    "dartitect_cli",
+    "dartitect_lints",
+    "dartitect_mcp"
   ],
   "artifactContract": {
     "cleanClone": true,

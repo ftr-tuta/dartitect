@@ -140,10 +140,6 @@
         "declaration": "final class DartitectDiagnosticsEmitter implements AsyncDisposable"
       },
       {
-        "name": "DartitectValue",
-        "declaration": "final class DartitectValue"
-      },
-      {
         "name": "Disposable",
         "declaration": "abstract interface class Disposable"
       },
@@ -382,6 +378,10 @@
         "declaration": "final class DartitectConfigException implements FormatException"
       },
       {
+        "name": "DartitectEcosystemConfig",
+        "declaration": "final class DartitectEcosystemConfig"
+      },
+      {
         "name": "DartitectExitCode",
         "declaration": "enum DartitectExitCode"
       },
@@ -400,6 +400,14 @@
       {
         "name": "DartitectModelGenerator",
         "declaration": "final class DartitectModelGenerator"
+      },
+      {
+        "name": "DartitectModelingConfig",
+        "declaration": "final class DartitectModelingConfig"
+      },
+      {
+        "name": "DartitectModelingPreset",
+        "declaration": "enum DartitectModelingPreset"
       },
       {
         "name": "DartitectProjectService",
@@ -1504,6 +1512,110 @@
       {
         "name": "MethodChannelGalleryMediaService",
         "declaration": "final class MethodChannelGalleryMediaService implements GalleryMediaService"
+      }
+    ],
+    "packages/dartitect_modeling/lib/dartitect_modeling.dart": [
+      {
+        "name": "CyclicValueException",
+        "declaration": "final class CyclicValueException implements Exception"
+      },
+      {
+        "name": "DartitectField",
+        "declaration": "final class DartitectField"
+      },
+      {
+        "name": "DartitectJson",
+        "declaration": "final class DartitectJson"
+      },
+      {
+        "name": "DartitectMapper",
+        "declaration": "final class DartitectMapper"
+      },
+      {
+        "name": "DartitectProjection",
+        "declaration": "final class DartitectProjection"
+      },
+      {
+        "name": "DartitectUnknownKeys",
+        "declaration": "enum DartitectUnknownKeys"
+      },
+      {
+        "name": "DartitectValue",
+        "declaration": "final class DartitectValue"
+      },
+      {
+        "name": "Err",
+        "declaration": "final class Err<F extends Object> extends Result<Never, F>"
+      },
+      {
+        "name": "Ok",
+        "declaration": "final class Ok<T> extends Result<T, Never>"
+      },
+      {
+        "name": "Result",
+        "declaration": "sealed class Result<T, F extends Object> extends ValueEquality"
+      },
+      {
+        "name": "ResultOperations",
+        "declaration": "extension ResultOperations<T, F extends Object> on Result<T, F>"
+      },
+      {
+        "name": "ValueEquality",
+        "declaration": "abstract class ValueEquality"
+      }
+    ],
+    "packages/dartitect_modeling_analyzer/lib/dartitect_modeling_analyzer.dart": [
+      {
+        "name": "ModelingCapability",
+        "declaration": "enum ModelingCapability"
+      },
+      {
+        "name": "ModelingCompatibility",
+        "declaration": "enum ModelingCompatibility"
+      },
+      {
+        "name": "ModelingCompatibilityDecisionIr",
+        "declaration": "final class ModelingCompatibilityDecisionIr"
+      },
+      {
+        "name": "ModelingDiagnostic",
+        "declaration": "final class ModelingDiagnostic"
+      },
+      {
+        "name": "ModelingDiagnosticSeverity",
+        "declaration": "enum ModelingDiagnosticSeverity"
+      },
+      {
+        "name": "ModelingFieldIr",
+        "declaration": "final class ModelingFieldIr"
+      },
+      {
+        "name": "ModelingJsonIr",
+        "declaration": "final class ModelingJsonIr"
+      },
+      {
+        "name": "ModelingLibraryIr",
+        "declaration": "final class ModelingLibraryIr"
+      },
+      {
+        "name": "ModelingMapperIr",
+        "declaration": "final class ModelingMapperIr"
+      },
+      {
+        "name": "ModelingModelIr",
+        "declaration": "final class ModelingModelIr"
+      },
+      {
+        "name": "ModelingProjectionIr",
+        "declaration": "final class ModelingProjectionIr"
+      },
+      {
+        "name": "ModelingTypeIr",
+        "declaration": "final class ModelingTypeIr"
+      },
+      {
+        "name": "ModelingWorkspaceIr",
+        "declaration": "final class ModelingWorkspaceIr"
       }
     ],
     "packages/dartitect_objectbox/lib/dartitect_objectbox.dart": [

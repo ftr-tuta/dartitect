@@ -112,6 +112,8 @@ const Map<String, String> _decisions = <String, String>{
   'dartitect_locale_br': 'add-pure-dart-brazilian-values',
   'dartitect_mcp': 'keep-local-reviewed-tooling',
   'dartitect_media': 'add-explicit-gallery-boundary',
+  'dartitect_modeling': 'add-opt-in-modeling-runtime',
+  'dartitect_modeling_analyzer': 'add-shared-read-only-semantic-compiler',
   'dartitect_objectbox': 'keep-optional-native-adapter',
   'dartitect_observability': 'keep-provider-neutral-core',
   'dartitect_privacy': 'add-explicit-tracking-authorization-boundary',

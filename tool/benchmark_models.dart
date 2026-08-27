@@ -88,11 +88,14 @@ name: dartitect_model_benchmark
 environment:
   sdk: ^3.13.0
 dependencies:
-  dartitect: any
+  dartitect_modeling: any
 ''');
     final coreUri = Directory('${repository.path}/packages/dartitect')
         .absolute
         .uri;
+    final modelingUri = Directory(
+      '${repository.path}/packages/dartitect_modeling',
+    ).absolute.uri;
     await File('${root.path}/.dart_tool/package_config.json').writeAsString(
       jsonEncode(<String, Object?>{
         'configVersion': 2,
@@ -109,13 +112,19 @@ dependencies:
             'packageUri': 'lib/',
             'languageVersion': '3.13',
           },
+          <String, Object?>{
+            'name': 'dartitect_modeling',
+            'rootUri': modelingUri.toString(),
+            'packageUri': 'lib/',
+            'languageVersion': '3.13',
+          },
         ],
       }),
     );
     for (var index = 0; index < size; index += 1) {
       final padded = index.toString().padLeft(4, '0');
       await File('${root.path}/lib/models/model_$padded.dart').writeAsString('''
-import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_modeling/dartitect_modeling.dart';
 part 'model_$padded.dartitect.g.dart';
 
 @DartitectValue()

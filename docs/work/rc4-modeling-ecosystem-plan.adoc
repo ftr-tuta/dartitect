@@ -1,0 +1,141 @@
+= Dartitect 1.0.0-rc.4 modeling and modular ecosystem plan
+
+Status:: In implementation
+Branch:: +feat/rc4-modeling-ecosystem+
+Baseline:: +2a8261aa5dc8a79990ce00a599ee42c0d7fa2202+
+Delivery:: one PR, ten conventional commits, squash merge
+
+== Entry gates and release boundary
+
+The clean-clone baseline must contain PRs #2 and #3, seventeen RC3 packages,
+the complete Drift slice, and a successful +CI / Required+. The pub.dev pages
+for +dartitect_modeling+ and +dartitect_modeling_analyzer+ must both return 404.
+Any mismatch produces +BLOCKED_BASELINE+ before branch creation or edits.
+
+RC4 creates no tag, GitHub Release, publication, handoff, or ledger. After the
+single PR passes +CI / Required+, it is squash-merged. The mainline required
+check must also pass before the checkout is synchronized and proven clean.
+
+== Modular architecture
+
++dartitect_modeling+ is a pure-Dart, web-compatible package depending only on
++dartitect+. It owns +DartitectValue+ and independently opt-in
++DartitectJson+, +DartitectProjection+, and +DartitectMapper+ capabilities. It
+reexports +ValueEquality+ and +Result+ without leaving a core alias.
+
+Immutable list, set, and map value collections make defensive copies, expose
+read-only surfaces, implement structural equality/hashing, and reject cycles.
+JSON codecs use typed failures and payload-free paths. Unknown keys are
+rejected by default; untrusted decoding is bounded to depth 64, 10,000 items
+per collection, and 100,000 total nodes. Trusted mode or other limits requires
+an explicit choice.
+
+Descriptors and lenses are generated from validated IR. Projections target
+records/selectors. Pure one-way or bidirectional mappers return +Result+ and
+automate only semantically assignable, lossless fields. Rename and consumer-
+owned static hooks are explicit. Narrowing, enum/string, dates, identifiers,
+relations, and flattening are never inferred.
+
++dartitect_modeling_analyzer+ depends on +dartitect_modeling+ and Analyzer. Its
+read-only compiler is shared by CLI and lints. The public IR covers workspace,
+library, model, field/type, capability, JSON, projection, mapper, and explainable
+compatibility decisions. Discovery uses resolved +DartType+, element/library
+identity, and +ClassElement.primaryConstructor+. Renderers receive validated IR
+only. Generics, const/defaults, records, parts, and multiple models per library
+produce one deterministic part per library.
+
++DT1020+, +DT1022+, and +DT1023+ retain freshness, ownership, and recovery
+meaning. The aggregate +DT1021+ is replaced by granular +DT1030+ diagnostics
+with stable rule, severity, path, line, and optional +fixId+.
+
+== Tooling and adoption
+
+Stable +configVersion: 1+ gains optional +modeling+ and +ecosystem+ blocks.
+Absence of +modeling+ preserves current consumers. Presets are +minimal+,
++recommended_complete+, and +interop_existing_project+.
+
++dartitect model migrate primary [--dry-run|--apply] [--json]+ previews by
+default and uses semantic edits, a project lock, its own journal, and integral
+rollback. +dartitect verify [--json|--sarif]+ is strictly read-only. Fleet adds
+model/provider status; upgrade remains preview-only in RC4. MCP exposes bounded
+reviewed previews and the existing guarded write protocol.
+
+Generation is partitioned by +GenerationNamespace+. Release, protocol,
+semantic schema, renderer, manifest, report, and journal versions are separate.
+RC3 ownership migrates only when manifest data, recorded digest, and current
+bytes all agree.
+
+Installed Riverpod, BLoC, Provider, GetIt, MobX, Signals, and equivalent
+runtimes are overlap warnings in RC4. Provider leakage, service location,
+duplicate ownership, or concrete boundary leakage remain errors. Incremental
+audit/design guidance changes accordingly. Provider adapters continue to
+require consumer-owned schema, one writer, and no dual-write.
+
+== Ordered goals and commits
+
+. +feat(modeling): establish modular modeling packages+
+  ** packages, ADRs, topology, config, inventories, release authorities, API
+     skeleton, skills, and MCP.
+. +feat(modeling): require primary constructors+
+  ** rules, codemod, eligible migrations, scaffolds, examples, and docs.
+. +refactor(modeling): share semantic compiler+
+  ** public IR, workspace discovery, one Analyzer lifecycle, parity,
+     diagnostics, and fixes.
+. +feat(modeling): add value collections and json codecs+
+  ** generic value generation, immutable collections, codecs, typed failures,
+     limits, and adversarial tests.
+. +feat(modeling): generate projections and boundary mappers+
+  ** records/selectors, one-way/bidirectional mappers, explicit converters, and
+     reusable testing harnesses.
+. +test(modeling): enforce provider constructor evidence+
+  ** versioned registry and real ObjectBox 5.3.2 fixture. Declaring +var+
+     parameters are allowed for provider-owned entities; traditional
+     constructors require proven generator/runtime incompatibility.
+. +refactor(cli): namespace generation transactions+
+  ** namespaces, safe RC3 manifest migration, source journal, shared lock,
+     fault recovery, and cohort-independent headers.
+. +feat(tooling): support modular adoption and verification+
+  ** verify, fleet, MCP previews/writes, SARIF, and interop policy.
+. +docs: document the rc4 modeling ecosystem+
+  ** benchmarks, ADRs, EN/pt-BR, canaries, threat model, executable examples,
+     and generated catalogs.
+. +chore(release): prepare 1.0.0-rc.4 cohort+
+  ** nineteen package versions, changelogs, constraints, Git overrides,
+     topological order, SBOM/licenses, snapshots, and dry-run.
+
+== Evidence matrix
+
+Tests cover valid/invalid primary constructors, generics, const/defaults,
+records, parts, multiple models, migration preview/apply/recovery, ownership,
+concurrency, symlinks, traversal, and every generation fault point. Runtime
+coverage includes equality/hash/copyWith, defensive collections, JSON
+round-trip/malformed/bounds, projections, lossless/lossy mappings, hooks,
+Drift rows, ObjectBox entities, and engine-to-engine rejection.
+
+Canaries cover pure Dart, JSON, projections, mappers, ObjectBox primary, Drift,
+mixed Dartitect+ObjectBox+Drift, Flutter MVVM, positive/negative interop,
+workspace, Chrome, and clean clone. Provider schemas stay in separate bounded
+contexts with no SDK-owned schema, bridge, automatic migration, cross-engine
+transaction, or dual-write.
+
+Benchmarks use five cold runs for median/RSS and twenty warm incremental runs
+for p95 on the same host. More than 10% regression blocks without recorded
+approval. Cache is disposable and never authoritative.
+
+CI coordinates compiler/modeling, mixed generators, ObjectBox/Drift, platform
+compatibility, benchmark artifacts, Chrome modeling/JSON plus Drift Web,
+committed outputs, and clean-clone publish dry-run under the exact needs graph
+of +CI / Required+. Parallel local suites cancel siblings at first failure.
+
+Final gates include pub get; format; Dart/Flutter analyze; focused package,
+provider, and canary tests; API and matrix snapshots; boundary parity;
++dartitect verify+; +model check+; fleet; +tool/verify.dart --skip-get --web
+--native-objectbox+; +release_audit --docs --publish-dry-run+; and
++git diff --exit-code -- .+.
+
+== Final PR report
+
+The PR description or comment records baseline and head SHAs, ten commits,
+package/entrypoint counts, migration count and exceptions, ObjectBox evidence,
+benchmarks, APIs, diagnostics, canaries, commands, gates, and explicit
+confirmation that nothing was published.

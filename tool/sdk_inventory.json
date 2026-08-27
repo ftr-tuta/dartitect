@@ -10,7 +10,7 @@
       "entrypoints": [
         "dartitect.dart"
       ],
-      "publicSymbolCount": 81
+      "publicSymbolCount": 80
     },
     {
       "name": "dartitect_cli",
@@ -19,12 +19,13 @@
       "runtimeDependencies": [
         "analyzer",
         "crypto",
-        "dart_style"
+        "dart_style",
+        "dartitect_modeling_analyzer"
       ],
       "entrypoints": [
         "dartitect_cli.dart"
       ],
-      "publicSymbolCount": 59
+      "publicSymbolCount": 62
     },
     {
       "name": "dartitect_dio",
@@ -97,7 +98,8 @@
       "decision": "keep-analyzer-host",
       "runtimeDependencies": [
         "analysis_server_plugin",
-        "analyzer"
+        "analyzer",
+        "dartitect_modeling_analyzer"
       ],
       "entrypoints": [
         "main.dart"
@@ -139,6 +141,31 @@
         "dartitect_media.dart"
       ],
       "publicSymbolCount": 12
+    },
+    {
+      "name": "dartitect_modeling",
+      "version": "1.0.0-rc.3",
+      "decision": "add-opt-in-modeling-runtime",
+      "runtimeDependencies": [
+        "dartitect"
+      ],
+      "entrypoints": [
+        "dartitect_modeling.dart"
+      ],
+      "publicSymbolCount": 12
+    },
+    {
+      "name": "dartitect_modeling_analyzer",
+      "version": "1.0.0-rc.3",
+      "decision": "add-shared-read-only-semantic-compiler",
+      "runtimeDependencies": [
+        "analyzer",
+        "dartitect_modeling"
+      ],
+      "entrypoints": [
+        "dartitect_modeling_analyzer.dart"
+      ],
+      "publicSymbolCount": 13
     },
     {
       "name": "dartitect_objectbox",

@@ -20,6 +20,8 @@
       "packages/dartitect_privacy/lib/dartitect_privacy.dart",
       "packages/dartitect_media/lib/dartitect_media.dart",
       "packages/dartitect_mcp/lib/dartitect_mcp.dart",
+      "packages/dartitect_modeling/lib/dartitect_modeling.dart",
+      "packages/dartitect_modeling_analyzer/lib/dartitect_modeling_analyzer.dart",
       "tool/setup_objectbox_vm.dart"
     ],
     "dartitect-audit": [
@@ -71,6 +73,8 @@
     ],
     "dartitect-modeling": [
       "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect_modeling/lib/dartitect_modeling.dart",
+      "packages/dartitect_modeling_analyzer/lib/dartitect_modeling_analyzer.dart",
       "packages/dartitect_cli/lib/dartitect_cli.dart"
     ],
     "dartitect-testing": [
@@ -81,6 +85,7 @@
     "dartitect-tooling": [
       "packages/dartitect_cli/lib/dartitect_cli.dart",
       "packages/dartitect_lints/lib/main.dart",
+      "packages/dartitect_modeling_analyzer/lib/dartitect_modeling_analyzer.dart",
       "tool/setup_objectbox_vm.dart"
     ],
     "dartitect-mcp": [
