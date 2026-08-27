@@ -48,7 +48,7 @@ Future<void> main() async {
     if (fields.length < 8) continue;
     final code = mapping[fields[2]];
     if (code == null) continue;
-    final path = _relative(fixture, fields[3]);
+    final path = boundaryParityRelativePath(fixture, fields[3]);
     plugin.putIfAbsent(path, () => <String>[]).add(code);
   }
 
@@ -119,10 +119,25 @@ List<Object?> _list(Object? value) {
   return value;
 }
 
-String _relative(Directory root, String path) =>
-    File(path).absolute.path
-        .substring(root.absolute.path.length + 1)
-        .replaceAll(Platform.pathSeparator, '/');
+/// Normalizes analyzer machine-format paths relative to [root].
+///
+/// The analyzer may emit a native absolute path or a `file:` URI. Handling
+/// both forms avoids interpreting the URI text as a relative Windows path.
+String boundaryParityRelativePath(Directory root, String path) {
+  final uri = Uri.tryParse(path);
+  final file = uri != null && uri.scheme == 'file'
+      ? File.fromUri(uri)
+      : File(path);
+  final rootPath = root.absolute.path;
+  final prefix = rootPath.endsWith(Platform.pathSeparator)
+      ? rootPath
+      : '$rootPath${Platform.pathSeparator}';
+  final filePath = file.absolute.path;
+  if (!filePath.startsWith(prefix)) {
+    throw FormatException('Analyzer path is outside the parity fixture.');
+  }
+  return filePath.substring(prefix.length).replaceAll('\\', '/');
+}
 
 bool _same(List<String> left, List<String> right) {
   if (left.length != right.length) return false;

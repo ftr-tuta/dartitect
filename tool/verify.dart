@@ -191,6 +191,10 @@ Future<void> main(List<String> arguments) async {
       'test',
       'examples/model_generator_fixture',
     ]),
+    const _Command('dart', <String>[
+      'test',
+      'tool/check_boundary_parity_test.dart',
+    ]),
     const _Command('dart', <String>['run', 'tool/check_boundary_parity.dart']),
     if (nativeObjectBox)
       const _Command('flutter', <String>[
