@@ -1,6 +1,6 @@
 ---
 name: dartitect-adapters
-description: Integrate Dartitect with Dio, ObjectBox, Sentry, or a custom provider using isolated provider references and explicit ownership. Use for infrastructure wiring; do not use to select application architecture or define domain policy.
+description: Integrate Dartitect with Dio, Drift, ObjectBox, Sentry, or a custom provider using isolated provider references and explicit ownership. Use for infrastructure wiring; do not use to select application architecture or define domain policy.
 ---
 
 # Integrate Dartitect adapters
@@ -31,7 +31,9 @@ contract it implements, wire ownership and sanitized telemetry, then test the
 real SDK boundary plus deterministic failure cases.
 
 - Dio: [references/dio.md](references/dio.md)
+- Drift: [references/drift.md](references/drift.md)
 - ObjectBox: [references/objectbox.md](references/objectbox.md)
+- Drift + ObjectBox coexistence: [references/coexistence.md](references/coexistence.md)
 - Sentry: [references/sentry.md](references/sentry.md)
 - Another provider: [references/custom-provider.md](references/custom-provider.md)
 

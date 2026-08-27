@@ -70,8 +70,10 @@
   ],
   "infrastructurePackages": [
     "dio",
+    "drift",
     "objectbox",
     "dartitect_dio",
+    "dartitect_drift",
     "dartitect_objectbox",
     "retrofit",
     "json_annotation"
@@ -81,6 +83,7 @@
     "RequestOptions",
     "Response",
     "CancelToken",
+    "GeneratedDatabase",
     "Store",
     "Box",
     "Query",
@@ -99,6 +102,9 @@
   ],
   "providerCodegenAnnotations": [
     "JsonSerializable",
+    "DriftDatabase",
+    "DriftAccessor",
+    "UseRowClass",
     "Entity",
     "RestApi"
   ]

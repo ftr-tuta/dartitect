@@ -99,7 +99,7 @@ Future<void> main() async {
       );
     }
   }
-  if (packages.length != 16) errors.add('Expected exactly 16 packages.');
+  if (packages.length != 17) errors.add('Expected exactly 17 packages.');
   for (final path in licensePaths) {
     final license = File('${root.path}/$path');
     if (!await license.exists() ||

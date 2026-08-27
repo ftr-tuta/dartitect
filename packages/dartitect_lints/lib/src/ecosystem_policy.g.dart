@@ -263,6 +263,8 @@ const _records = <String, DartitectLintEcosystemRecord>{
   ),
   'dart_style': _approved,
   'dio': _approved,
+  'drift': _approved,
+  'drift_dev': _approved,
   'elementary': DartitectLintEcosystemRecord(
     DartitectEcosystemDecision.prohibitedNativeStrict,
     replacement: 'constructor injection and explicit ViewModels',
@@ -384,6 +386,7 @@ const _records = <String, DartitectLintEcosystemRecord>{
   'sentry_flutter': _approved,
   'share_plus': _approved,
   'shared_preferences': _approved,
+  'sqlite3': _approved,
   'signals': DartitectLintEcosystemRecord(
     DartitectEcosystemDecision.prohibitedNativeStrict,
     replacement: 'Dartitect resources and native listenables',

@@ -98,6 +98,11 @@ const Map<String, Set<String>> _allowed = <String, Set<String>>{
   'dartitect': <String>{},
   'dartitect_cli': <String>{},
   'dartitect_dio': <String>{'dartitect', 'dartitect_observability'},
+  'dartitect_drift': <String>{
+    'dartitect',
+    'dartitect_observability',
+    'dartitect_sync',
+  },
   'dartitect_flutter': <String>{'dartitect'},
   'dartitect_isolates': <String>{'dartitect'},
   'dartitect_lints': <String>{},

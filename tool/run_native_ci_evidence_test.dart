@@ -100,6 +100,7 @@ void main() {
       ]) {
         expect(runner, contains(marker));
       }
+      expect(runner, isNot(contains("'user-rotation'")));
     },
   );
 }

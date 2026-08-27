@@ -1,0 +1,7 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        generate_for:
+          - tool/drift_fixture/**
+          - tool/canaries/drift_provider/lib/infrastructure/provider_database.dart

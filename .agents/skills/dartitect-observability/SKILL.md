@@ -13,7 +13,7 @@ events and the versioned payload-free topology/lifecycle protocol.
 
 ## When not to use
 
-Use `$dartitect-adapters` for Dio, ObjectBox, Sentry, or custom provider wiring.
+Use `$dartitect-adapters` for Dio, Drift, ObjectBox, Sentry, or custom provider wiring.
 Do not add remote telemetry merely because observability contracts exist.
 
 ## Invariants

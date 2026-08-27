@@ -1,0 +1,19 @@
+name: dartitect_drift_provider_canary
+description: Consumer-owned Drift schema and sync-port packaged canary.
+version: 0.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  dartitect: 1.0.0-rc.3
+  dartitect_drift: 1.0.0-rc.3
+  dartitect_observability: 1.0.0-rc.3
+  dartitect_sync: 1.0.0-rc.3
+  drift: 2.34.3
+
+dev_dependencies:
+  build_runner: 2.16.0
+  drift_dev: 2.34.3
+  test: 1.31.1

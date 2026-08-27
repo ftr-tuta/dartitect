@@ -163,6 +163,7 @@ Future<void> main(List<String> arguments) async {
       'dartitect_locale_br',
       'dartitect_geometry',
       'dartitect_observability',
+      'dartitect_drift',
       'dartitect_sentry',
       'dartitect_mcp',
     ])
@@ -178,7 +179,11 @@ Future<void> main(List<String> arguments) async {
     if (nativeObjectBox)
       _Command(
         'flutter',
-        const <String>['test', 'test/native_objectbox_workload_test.dart'],
+        const <String>[
+          'test',
+          'test/native_objectbox_workload_test.dart',
+          'test/drift_objectbox_bounded_contexts_test.dart',
+        ],
         workingDirectory: 'examples/reference_app',
         environment: _nativeObjectBoxEnvironment(root),
       ),
@@ -196,6 +201,10 @@ Future<void> main(List<String> arguments) async {
       'tool/check_boundary_parity_test.dart',
     ]),
     const _Command('dart', <String>['run', 'tool/check_boundary_parity.dart']),
+    const _Command('dart', <String>[
+      'run',
+      'tool/run_drift_native_fixture.dart',
+    ]),
     if (nativeObjectBox)
       const _Command('flutter', <String>[
         'test',
@@ -223,6 +232,11 @@ Future<void> main(List<String> arguments) async {
       'sync',
       '--dry-run',
     ]),
+    if (web)
+      const _Command('dart', <String>[
+        'run',
+        'tool/run_drift_web_fixture.dart',
+      ]),
     if (web)
       for (final package in <String>[
         'dartitect',

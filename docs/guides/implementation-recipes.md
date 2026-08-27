@@ -165,6 +165,9 @@ composition:
 
 ```dart
 final dioOwner = DioOwner.create();
+final driftOwner = await DriftDatabaseOwner.create<AppDatabase>(
+  openDatabase: openConsumerDatabase,
+);
 final objectBoxOwner = await ObjectBoxStoreOwner.create(openStore: openStore);
 final telemetry = ObservabilityRuntime(
   logSinks: <LogSinkRegistration>[
@@ -174,10 +177,12 @@ final telemetry = ObservabilityRuntime(
 
 try {
   final dio = dioOwner.dio;
+  final database = driftOwner.database;
   final store = objectBoxOwner.store;
-  // Inject application-owned interfaces implemented with dio/store.
+  // Inject application-owned interfaces implemented with dio/database/store.
 } finally {
   dioOwner.dispose();
+  await driftOwner.disposeAsync();
   await objectBoxOwner.disposeAsync();
   await telemetry.disposeAsync();
   // The consumer closes consumerOwnedHub afterward.
@@ -186,12 +191,21 @@ try {
 
 Most applications need only one or two of these adapters. Dio exposes typed
 cancellation/transport/HTTP/configuration failures and minimal telemetry.
+Drift borrows a consumer-generated database type: the application owns tables,
+migrations, DAOs, executor selection, native paths, web worker/WASM assets, and
+storage policy. Adapt `Selectable.watch()` with `StreamReactiveSource`.
 ObjectBox entities/model/codegen remain consumer-owned and it has no web
 support. Sentry borrows an already initialized Hub. Reject duplicate
 instrumentation. Follow the provider examples for
 [Dio](../../packages/dartitect_dio/example/dartitect_dio_example.dart),
+[Drift](../../packages/dartitect_drift/example/dartitect_drift_example.dart),
 [ObjectBox](../../packages/dartitect_objectbox/example/dartitect_objectbox_example.dart),
 and [Sentry](../../packages/dartitect_sentry/example/dartitect_sentry_example.dart).
+
+When Drift and ObjectBox coexist, put them in distinct bounded contexts. Keep
+repositories separate, dispose observations/sync/repositories before either
+database, and allow one writer per dataset or partition. Do not dual-write,
+bridge engines, or imply a cross-engine transaction; migrate data explicitly.
 
 ## Owned graph and atomic swap
 

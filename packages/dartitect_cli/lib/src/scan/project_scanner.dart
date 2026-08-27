@@ -265,6 +265,9 @@ final class ProjectScanner {
       if (dependencies.contains('dio') ||
           dependencies.contains('dartitect_dio'))
         'dio',
+      if (dependencies.contains('drift') ||
+          dependencies.contains('dartitect_drift'))
+        'drift',
       if (dependencies.contains('objectbox') ||
           dependencies.contains('dartitect_objectbox'))
         'objectbox',
@@ -716,9 +719,15 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
   var hasBackground = false;
 
   bool get _isDomain => classification.isLayer('domain');
+  bool get _isApplication => classification.isLayer('application');
   bool get _isData => classification.isLayer('data');
   bool get _isPresentation => classification.isLayer('presentation');
-  bool get _isInfrastructure => classification.isLayer('infrastructure');
+  bool get _isInfrastructure =>
+      classification.isLayer('infrastructure') ||
+      packageName != null &&
+          DartitectArchitectureRules.infrastructurePackages.contains(
+            packageName,
+          );
 
   @override
   void visitImportDirective(ImportDirective node) {
@@ -912,10 +921,11 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
         uri,
       );
     }
-    if (_isDomain && (uri.contains('/data/') || infrastructure)) {
+    if ((_isDomain || _isApplication) &&
+        (uri.contains('/data/') || infrastructure)) {
       _report(
         DartitectRuleCodes.domainInfrastructure,
-        'Domain code must not import data implementations or adapters.',
+        'Domain/application code must not import data implementations or adapters.',
         literal.offset,
         uri,
       );

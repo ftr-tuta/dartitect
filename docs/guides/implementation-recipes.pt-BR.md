@@ -165,6 +165,9 @@ infraestrutura:
 
 ```dart
 final dioOwner = DioOwner.create();
+final driftOwner = await DriftDatabaseOwner.create<AppDatabase>(
+  openDatabase: openConsumerDatabase,
+);
 final objectBoxOwner = await ObjectBoxStoreOwner.create(openStore: openStore);
 final telemetry = ObservabilityRuntime(
   logSinks: <LogSinkRegistration>[
@@ -174,10 +177,12 @@ final telemetry = ObservabilityRuntime(
 
 try {
   final dio = dioOwner.dio;
+  final database = driftOwner.database;
   final store = objectBoxOwner.store;
-  // Injete interfaces da aplicação implementadas com dio/store.
+  // Injete interfaces da aplicação implementadas com dio/database/store.
 } finally {
   dioOwner.dispose();
+  await driftOwner.disposeAsync();
   await objectBoxOwner.disposeAsync();
   await telemetry.disposeAsync();
   // O consumidor fecha consumerOwnedHub depois.
@@ -186,12 +191,23 @@ try {
 
 A maioria das aplicações precisa de apenas um ou dois adapters. Dio expõe
 falhas tipadas de cancelamento/transporte/HTTP/config e telemetria mínima.
+Drift toma emprestado um tipo de banco gerado pelo consumidor: tabelas,
+migrations, DAOs, seleção de executor, paths native, assets worker/WASM web e
+política de storage pertencem à aplicação. Adapte `Selectable.watch()` com
+`StreamReactiveSource`.
 Entidades/model/codegen ObjectBox pertencem ao consumidor e não há suporte web.
 Sentry toma um Hub já inicializado emprestado. Rejeite instrumentação duplicada.
 Siga os exemplos de
 [Dio](../../packages/dartitect_dio/example/dartitect_dio_example.dart),
+[Drift](../../packages/dartitect_drift/example/dartitect_drift_example.dart),
 [ObjectBox](../../packages/dartitect_objectbox/example/dartitect_objectbox_example.dart)
 e [Sentry](../../packages/dartitect_sentry/example/dartitect_sentry_example.dart).
+
+Quando Drift e ObjectBox coexistirem, coloque-os em bounded contexts distintos.
+Mantenha repositories separados, descarte observations/sync/repositories antes
+dos bancos e permita um writer por dataset ou partition. Não faça dual-write,
+bridge entre engines nem simule transação cross-engine; migre dados
+explicitamente.
 
 ## Grafo owned e troca atômica
 

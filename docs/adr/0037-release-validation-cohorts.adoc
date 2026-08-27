@@ -5,7 +5,7 @@ Status:: ACCEPTED
 Context:: Runtime, Flutter, tooling, and provider adapters fail in different
 ways and need focused evidence. Publishing their versions independently before
 1.0 would add compatibility combinations that the current canaries do not prove.
-The release contract already publishes all sixteen packages in dependency order
+The release contract already publishes all seventeen packages in dependency order
 with one version.
 
 Decision:: Maintain four logical validation cohorts:
@@ -14,7 +14,7 @@ Decision:: Maintain four logical validation cohorts:
 * Flutter: `dartitect_flutter`;
 * tooling: `dartitect_testing`, `dartitect_cli`, `dartitect_lints`, and
   `dartitect_mcp`;
-* adapters: `dartitect_dio`, `dartitect_objectbox`,
+* adapters: `dartitect_dio`, `dartitect_drift`, `dartitect_objectbox`,
   `dartitect_observability`, `dartitect_sentry`, `dartitect_geometry`,
   `dartitect_locale_br`, `dartitect_media`, and `dartitect_privacy`.
 

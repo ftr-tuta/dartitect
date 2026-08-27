@@ -51,7 +51,7 @@ final class DartitectBoundaryRule extends MultiAnalysisRule {
   /// Domain importing infrastructure.
   static const domainInfrastructureImport = LintCode(
     'dartitect_domain_infrastructure_import',
-    'Domain code must not import data implementations or adapters.',
+    'Domain/application code must not import data implementations or adapters.',
     correctionMessage: 'Depend on a pure-Dart contract instead.',
     uniqueName: 'DartitectLint.domainInfrastructureImport',
   );
@@ -282,6 +282,13 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
 
   bool get _generated => _classification.isGeneratedInfrastructure;
 
+  bool get _isProviderPackage {
+    final root = context.package?.root.path.replaceAll('\\', '/');
+    if (root == null) return false;
+    final package = root.split('/').where((part) => part.isNotEmpty).last;
+    return DartitectArchitectureRules.infrastructurePackages.contains(package);
+  }
+
   @override
   void visitCompilationUnit(CompilationUnit node) {
     if (_resolution.configurationError == null) return;
@@ -325,6 +332,7 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
           node.element,
           DartitectArchitectureRules.infrastructurePackages,
         ) &&
+        !_isProviderPackage &&
         !classification.isLayer('infrastructure') &&
         !classification.isCompositionRoot &&
         !_providerImportAlreadyReported) {
@@ -377,7 +385,8 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
         )) {
       _reportAtNode(node, DartitectBoundaryRule.architectureCodegen);
     }
-    if (!_classification.isLayer('infrastructure') &&
+    if (!_isProviderPackage &&
+        !_classification.isLayer('infrastructure') &&
         DartitectArchitectureRules.providerCodegenAnnotations.contains(name) &&
         _isFromPackages(
           node.element,
@@ -544,6 +553,7 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
     final segments = _sourceSegments;
     final fileName = segments.last;
     final isDomain = classification.isLayer('domain');
+    final isApplication = classification.isLayer('application');
     final isData = classification.isLayer('data');
     final isPresentation =
         classification.isLayer('presentation') ||
@@ -553,7 +563,7 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
     if (isDomain && uri.startsWith('package:flutter/')) {
       _reportAtNode(literal, DartitectBoundaryRule.domainFlutterImport);
     }
-    if (isDomain &&
+    if ((isDomain || isApplication) &&
         (uri.contains('/data/') ||
             package != null &&
                 DartitectArchitectureRules.infrastructurePackages.contains(

@@ -12,13 +12,21 @@ Future<void> main(List<String> arguments) async {
       blueprint: 'remote-read',
     ),
     _Scenario('dio', 'developer', <String>['dio'], blueprint: 'local-first'),
+    _Scenario('drift', 'developer', <String>[
+      'drift',
+    ], blueprint: 'offline-mutation'),
     _Scenario('objectbox', 'developer', <String>[
       'objectbox',
     ], blueprint: 'offline-mutation'),
     _Scenario('sentry', 'sentry', <String>[
       'sentry',
     ], blueprint: 'sync-dataset'),
-    _Scenario('full', 'sentry', <String>['dio', 'objectbox', 'sentry']),
+    _Scenario('full', 'sentry', <String>[
+      'dio',
+      'drift',
+      'objectbox',
+      'sentry',
+    ]),
     _Scenario('background', 'developer', <String>[], background: true),
   ];
   for (final scenario in scenarios) {
@@ -101,6 +109,7 @@ Future<void> backgroundMain(SendPort output) async {
     ]);
     await _run(project, 'flutter', const <String>['analyze']);
     await _run(project, 'flutter', const <String>['test']);
+    await _verifyProviderNeutralScaffold(project, scenario);
     if (builds) {
       await _run(project, 'flutter', const <String>['build', 'web']);
       if (Platform.isLinux) {
@@ -121,6 +130,45 @@ Future<void> backgroundMain(SendPort output) async {
     } else {
       stderr.writeln('Matrix artifacts retained at ${parent.path}');
     }
+  }
+}
+
+Future<void> _verifyProviderNeutralScaffold(
+  Directory project,
+  _Scenario scenario,
+) async {
+  final dartFiles = <File>[];
+  await for (final entity in Directory(
+    '${project.path}/lib',
+  ).list(recursive: true, followLinks: false)) {
+    if (entity is File && entity.path.endsWith('.dart')) dartFiles.add(entity);
+  }
+  for (final file in dartFiles) {
+    final relative = file.path
+        .substring(project.path.length + 1)
+        .replaceAll(Platform.pathSeparator, '/');
+    final source = await file.readAsString();
+    if ((relative.contains('/domain/') ||
+            relative.contains('/application/') ||
+            relative.contains('/presentation/')) &&
+        (source.contains('package:drift/') ||
+            source.contains('package:dartitect_drift/'))) {
+      throw StateError('Drift leaked into provider-neutral $relative.');
+    }
+  }
+  if (!scenario.adapters.contains('drift')) return;
+  final recipe = File('${project.path}/docs/drift-composition-root.md');
+  if (!await recipe.exists()) {
+    throw StateError('Drift composition-root recipe was not generated.');
+  }
+  final generatedSchema = dartFiles.any((file) {
+    final name = file.uri.pathSegments.last;
+    return name.contains('database') ||
+        name.contains('table') ||
+        name.endsWith('.g.dart');
+  });
+  if (generatedSchema) {
+    throw StateError('Drift scaffold generated consumer-owned schema code.');
   }
 }
 

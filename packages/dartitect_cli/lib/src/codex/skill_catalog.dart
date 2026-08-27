@@ -106,7 +106,7 @@ break a stated requirement.
 - Neutral logs/reporting/tracing: add `dartitect_observability` and
   `$dartitect-observability`; add `dartitect_sentry` only for an already selected
   and consumer-initialized Sentry Hub.
-- Dio or ObjectBox integration: add only the matching adapter and use
+- Dio, Drift, or ObjectBox integration: add only the matching adapter and use
   `$dartitect-adapters`.
 - Deterministic consumer tests: add `dartitect_testing` as a dev dependency and
   use `$dartitect-testing`.
@@ -555,7 +555,7 @@ events and the versioned payload-free topology/lifecycle protocol.
 
 ## When not to use
 
-Use `$dartitect-adapters` for Dio, ObjectBox, Sentry, or custom provider wiring.
+Use `$dartitect-adapters` for Dio, Drift, ObjectBox, Sentry, or custom provider wiring.
 Do not add remote telemetry merely because observability contracts exist.
 
 ## Invariants
@@ -649,7 +649,7 @@ under ADR 0034 and install no remote destination or global Flutter hook.
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-adapters
-description: Integrate Dartitect with Dio, ObjectBox, Sentry, or a custom provider using isolated provider references and explicit ownership. Use for infrastructure wiring; do not use to select application architecture or define domain policy.
+description: Integrate Dartitect with Dio, Drift, ObjectBox, Sentry, or a custom provider using isolated provider references and explicit ownership. Use for infrastructure wiring; do not use to select application architecture or define domain policy.
 ---
 
 # Integrate Dartitect adapters
@@ -680,7 +680,9 @@ contract it implements, wire ownership and sanitized telemetry, then test the
 real SDK boundary plus deterministic failure cases.
 
 - Dio: [references/dio.md](references/dio.md)
+- Drift: [references/drift.md](references/drift.md)
 - ObjectBox: [references/objectbox.md](references/objectbox.md)
+- Drift + ObjectBox coexistence: [references/coexistence.md](references/coexistence.md)
 - Sentry: [references/sentry.md](references/sentry.md)
 - Another provider: [references/custom-provider.md](references/custom-provider.md)
 
@@ -713,6 +715,38 @@ and queries before the Store. Across isolates, pass supported configuration or
 provider references and create isolate-local queries; never send a live Store.
 Use the real generated Store/query/watcher fixture, cover same-path locking and
 cleanup, and run the supported native-host matrix.
+''',
+      'references/drift.md': r'''# Drift adapter
+
+The consumer owns the `GeneratedDatabase`, tables, DAOs, migrations, codecs,
+executor, database path, and web assets/storage policy. `dartitect_drift`
+provides lifecycle, transaction, checkpoint, journal, and sanitized tracing
+around those injected choices; it is not an ORM or universal database layer.
+
+Use a consumer conditional export with a stub, `dart.library.ffi` for native,
+and `dart.library.js_interop` for web. Native may use
+`NativeDatabase.createInBackground`; web uses app-owned `WasmDatabase.open`, a
+compatible worker and `sqlite3.wasm`, correct MIME/COOP/COEP policy, and a
+multi-context-safe storage implementation. Reject unsafe IndexedDB/in-memory
+for multi-context durability.
+
+Use `DriftDatabaseOwner.create` only when the composition root owns the
+database; use `.value` for borrowed databases. Keep domain and outbox writes in
+one `DriftMutationTransaction`. Pass fencing tokens unchanged to consumer-owned
+checkpoint callbacks. Adapt `Selectable.watch()` with `StreamReactiveSource`.
+Dispose observations, sync, and repositories before the database.
+''',
+      'references/coexistence.md': r'''# Drift and ObjectBox coexistence
+
+Use separate bounded contexts, repositories, schemas, files/directories, and
+database owners. ViewModels depend only on application/domain contracts. Keep
+one writer per dataset or partition and dispose observations, sync runs, and
+repositories before either engine.
+
+Do not dual-write, bridge engines, share a schema, or imply a cross-engine
+transaction. A change of engine is an explicit, resumable application
+migration with validation and compensation. Prove coexistence with both real
+generators and both real databases open simultaneously.
 ''',
       'references/sentry.md': r'''# Sentry adapter
 

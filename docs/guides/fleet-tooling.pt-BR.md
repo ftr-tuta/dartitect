@@ -38,7 +38,7 @@ sha256sum tool/fleet_policy_bundle.json
 dartitect fleet policy apps/a apps/b \
   --root . \
   --bundle=tool/fleet_policy_bundle.json \
-  --sha256=3a012ef82b57696c2aa7fcacd04a4dd06e46301861c5c9494015dcc6c658b384 \
+  --sha256=74df5fd60ff50069b1dc25d96221c315b9c76491804f180e127a453bdcd84b21 \
   --json
 ```
 

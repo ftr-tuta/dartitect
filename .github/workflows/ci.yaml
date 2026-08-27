@@ -66,6 +66,11 @@ jobs:
           DARTITECT_BENCHMARK_ARTIFACTS: ${{ runner.temp }}/dartitect-benchmark
       - name: Install verified ObjectBox native library
         run: dart run tool/setup_objectbox_vm.dart
+      - name: Exercise Drift background executor and persistence
+        run: dart run tool/run_drift_native_fixture.dart
+      - name: Exercise ObjectBox and Drift coexistence
+        if: matrix.flutter == '3.47.1'
+        run: flutter test tool/objectbox_native_fixture
       - name: Verify workspace with native ObjectBox
         run: dart run tool/verify.dart --skip-get --native-objectbox
       - name: Audit release artifacts and package dry-runs
@@ -144,6 +149,8 @@ jobs:
         working-directory: tool/benchmark_workspace
       - name: Install verified ObjectBox native library
         run: dart run tool/setup_objectbox_vm.dart
+      - name: Exercise Drift background executor and persistence
+        run: dart run tool/run_drift_native_fixture.dart
       - name: Verify workspace with native ObjectBox
         run: dart run tool/verify.dart --skip-get --native-objectbox
       - name: Build reference app for Windows
@@ -409,6 +416,8 @@ jobs:
           retention-days: 30
       - name: Install verified ObjectBox native library
         run: dart run tool/setup_objectbox_vm.dart
+      - name: Exercise Drift background executor and persistence
+        run: dart run tool/run_drift_native_fixture.dart
       - name: Verify workspace with native ObjectBox
         run: dart run tool/verify.dart --skip-get --native-objectbox
       - name: Build reference app for macOS
@@ -442,6 +451,42 @@ jobs:
       - name: Compile and link adapters app for iOS without signing
         run: flutter build ios --no-codesign
         working-directory: examples/adapters_app
+      - name: Confirm tracked files are unchanged
+        if: always()
+        run: git diff --exit-code -- .
+
+  drift-web:
+    name: Drift Web / Chrome 2.34.3
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: "3.47.1"
+          channel: stable
+          cache: true
+      - name: Resolve workspace from the lockfile
+        run: flutter pub get
+      - name: Require hosted Chrome
+        run: google-chrome --version
+      - name: Exercise portable and isolated Drift Web profiles
+        env:
+          DARTITECT_DRIFT_WEB_DIAGNOSTICS: ${{ runner.temp }}/drift-web-diagnostics
+        run: dart run tool/run_drift_web_fixture.dart
+      - name: Upload Drift Web diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: drift-web-diagnostics-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/drift-web-diagnostics
+          if-no-files-found: warn
+          retention-days: 7
       - name: Confirm tracked files are unchanged
         if: always()
         run: git diff --exit-code -- .
@@ -538,6 +583,7 @@ jobs:
       - windows
       - macos
       - android-emulator
+      - drift-web
       - clean-clone
       - git-consumption
       - osv

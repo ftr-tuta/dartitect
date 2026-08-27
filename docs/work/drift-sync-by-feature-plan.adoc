@@ -1,0 +1,200 @@
+= Drift storage and sync by feature plan
+:toc:
+:toclevels: 3
+
+Status:: Accepted for implementation
+Cohort:: `1.0.0-rc.3`
+Branch:: `feat/drift-sync-by-feature`
+Delivery:: One pull request named `feat: add Drift feature storage and sync integration`
+
+== Scope and invariants
+
+This plan adds `dartitect_drift` as the seventeenth publishable package and the
+eighteenth public entrypoint. The package is pure Dart and depends only on
+`dartitect`, `dartitect_observability`, `dartitect_sync`, and `drift ^2.34.3`.
+The consumer owns every Drift schema, migration, executor, table, DAO, codec,
+and application outbox.
+
+The integration is feature-first. Drift and ObjectBox may coexist only in
+separate bounded contexts with separate repositories and one writer for each
+dataset or partition. Cross-engine transactions, dual writes, provider imports
+in ViewModels, and SDK-owned persistence schema are prohibited.
+
+No tag, GitHub Release, or pub.dev publication is part of this work. Release
+readiness is decided exclusively by hosted GitHub Actions through the exact
+required check `CI / Required`; publication remains a separate human action.
+
+== Goal 01: package and public API
+
+Create `dartitect_drift` at version `1.0.0-rc.3`, SDK `^3.13.0`, without
+Flutter, `drift_flutter`, ObjectBox, or a backend dependency. Resolve Drift to
+`2.34.3` in the workspace lockfile. `drift_dev` and `build_runner` are allowed
+only in consumer-owned fixtures that generate schema.
+
+The public surface consists of:
+
+* `OpenDriftDatabase<D>`: a consumer-owned `FutureOr<D> Function()`.
+* `DriftDatabaseOwner<D>`: owned construction and borrowed wrapping, guarded
+  access, idempotent concurrent disposal, and exactly-once close for owned
+  databases.
+* `DriftMutationTransaction<D>`: asynchronous callbacks inside
+  `GeneratedDatabase.transaction`; `Ok` commits, `Err` rolls back and is
+  returned unchanged, and exceptions roll back with the original stack.
+* `DriftSyncCheckpointStore<K, C, D>`: asynchronous consumer callbacks for
+  read, write, and remove. Fencing tokens are forwarded without
+  interpretation.
+* `DriftSyncRunJournal<K, D>`: consumer callbacks for append and incomplete-run
+  recovery with immutable return values.
+* `DriftInstrumentation`: closed, sanitized spans for open, close, transaction,
+  checkpoint, and journal operations. Tracing is borrowed and
+  failure-isolated.
+
+`DriftDatabaseOwner.create` accepts the opener, optional configuration,
+observer, and instrumentation. Configuration failure closes the opened
+database and preserves the primary failure even if cleanup also fails. The
+transaction adapter uses a private rollback sentinel and catches only that
+sentinel. Checkpoint operations check cancellation before every operation and
+after reads only; cancellation after committed writes or removes must not
+become an apparent storage failure.
+
+Instrumentation emits only fixed operation and outcome values. It never emits
+SQL, paths, table names, identifiers, payloads, failure text, errors, or stack
+traces. The package does not expose `DriftQuerySource`, a lease store, Flutter
+wrappers, schema, executors, tables, codecs, outboxes, or a universal database
+abstraction. Reactive recipes adapt `Selectable.watch()` through the existing
+`StreamReactiveSource`.
+
+Deliver LICENSE, changelog, English and Brazilian Portuguese READMEs, an
+executor-neutral example, public entrypoint, API docs, unit tests, and real
+database tests.
+
+== Goal 02: real fixtures and engine coexistence
+
+Create a shared consumer-owned generated Drift database that receives a
+`QueryExecutor`.
+
+The native fixture uses `NativeDatabase.createInBackground`, a fixture-owned
+temporary file, generated migrations, CRUD, asynchronous transactions,
+watching, close and reopen persistence, and deterministic teardown. Extend the
+native ObjectBox fixture with Drift, `drift_dev`, and `objectbox_generator` so
+both generators run and both engines open simultaneously in distinct bounded
+contexts. Observations, sync, and repositories are disposed before databases.
+
+Platform selection uses conditional exports in this order:
+
+* a default unsupported stub;
+* `dart.library.ffi` for native;
+* `dart.library.js_interop` for web.
+
+The web dependency graph must contain none of `objectbox`,
+`objectbox_flutter_libs`, or `dartitect_objectbox`.
+
+== Goal 03: deterministic Drift Web validation
+
+Create a Dart runner that downloads `sqlite3.wasm` from the immutable Drift
+`2.34.3` release URL and verifies SHA-256 before use. Compile the
+consumer-owned worker with `dart compile js -O4` from the lockfile, serve WASM
+as `application/wasm`, start headless Chrome with a temporary profile, and
+control two pages through Chrome DevTools Protocol without WebDriver. Chrome,
+servers, and temporary directories are always terminated.
+
+Run two profiles: portable without COOP/COEP and isolated with
+`Cross-Origin-Opener-Policy: same-origin` plus
+`Cross-Origin-Embedder-Policy: require-corp`. Both cover migration, CRUD,
+commit and rollback, watch propagation, persistence over close and reopen, and
+foreground recovery. The multi-context probe rejects `unsafeIndexedDb` and
+`inMemory`; it accepts only a safe implementation reported by Drift.
+
+Add hosted `drift-web` on `ubuntu-24.04` with real Chrome, timeout, and failure
+diagnostics. It participates in `CI / Required` and in the readiness job's
+exact expected-job list. Missing Chrome, incompatible worker, unsafe storage,
+or fixture failure is fatal; there is no fallback.
+
+Run native Drift on Linux, Windows, and macOS. Run ObjectBox and Drift
+coexistence on Linux.
+
+== Goal 04: tooling and policies
+
+Add `drift` to the CLI `--adapters` option. Scaffolding adds only a dependency
+and a composition-root recipe; it never generates schema, migration, executor,
+or web assets. Scanner, lints, and generated boundary policy classify Drift,
+`dartitect_drift`, `GeneratedDatabase`, tables, and DAOs as infrastructure and
+reject leakage into domain, application, and presentation without classifying
+neutral types as provider-specific.
+
+Update the MCP catalog and `dartitect-adapters` skill with Drift ownership,
+conditional import, reactive, and coexistence recipes. Extend the generated
+matrix with a Drift scenario and a full Dio, Drift, ObjectBox, and Sentry
+scenario, including native and web builds and provider-neutrality checks.
+
+The minimal canary recognizes and rejects Drift. The offline-first canary runs
+Drift and ObjectBox in distinct bounded contexts. A new provider canary proves
+the package, consumer-owned schema, and sync ports. Integrate the web runner
+into `tool/verify.dart --web`; `--native-objectbox` also runs real coexistence.
+
+== Goal 05: release authorities and documentation
+
+Update the dependency DAG, publish order, Git dependency overrides,
+inventories, ecosystem policy, testing matrices, skill coverage, license and
+dependency audit, SBOM, API snapshot, API docs, and generated catalog.
+`dartitect_drift` is published in layer three after
+`dartitect_observability` and `dartitect_sync`.
+
+Every release authority moves from 16 packages and 17 entrypoints to 17
+packages and 18 entrypoints while the complete cohort stays at
+`1.0.0-rc.3`. The pub.dev identity probe for `dartitect_drift` must return the
+expected 404 before these contracts are adopted; any other response blocks the
+name without choosing a replacement automatically.
+
+ADR 0038 records four feature storage profiles, app-owned web integration,
+bounded contexts, single-writer ownership, explicit migration, and the
+dual-write prohibition. Update root READMEs, English and Brazilian Portuguese
+guides, implementation status, and release documentation. Backend
+Compatibility Kit, Django/FastAPI, authentication, and a remote protocol stay
+explicitly post-1.0.
+
+== Goal 06: tests and completion
+
+Unit and real-database tests cover:
+
+* owned and borrowed databases, configuration and cleanup failures, concurrent
+  idempotent disposal, and guarded access;
+* commit, rollback for `Err`, rollback for exception, incorrectly unawaited
+  asynchronous work, and preservation of the original stack;
+* atomic domain plus outbox writes, streams only after commit, and no
+  publication after rollback;
+* checkpoint read, write, remove, cancellation boundaries, and fixture-level
+  rejection of stale fencing tokens inside one transaction;
+* journal append, recovery of incomplete attempts, and immutable lists;
+* sanitized spans and tracer failure isolation;
+* native background execution, migration and reopen, joint code generation,
+  simultaneous engines, repository separation, and teardown order;
+* web MIME, compatible assets, capabilities, two same-origin contexts, watch
+  propagation, persistence, both header profiles, and foreground recovery.
+
+The required local gates are:
+
+[source,console]
+----
+dart pub get
+dart format --output=none --set-exit-if-changed .
+flutter analyze
+dart test packages/dartitect_drift
+dart run tool/run_drift_native_fixture.dart
+dart run tool/run_drift_web_fixture.dart
+flutter test tool/objectbox_native_fixture
+dart run tool/verify.dart --skip-get --web --native-objectbox
+dart run tool/generated_project_matrix.dart --builds
+dart run tool/release_audit.dart --docs --publish-dry-run
+git diff --exit-code -- .
+----
+
+The pull request is complete only after `CI / Required` passes for the PR and
+merge queue, a clean clone recognizes 17 packages and 18 entrypoints, the
+publish dry-run includes `dartitect_drift`, and active gates find no
+`drift_flutter`, SDK-owned schema, dual write, physical-device runner, or
+publication declaration.
+
+Fixed assumptions are Flutter `3.47.1`, cohort `1.0.0-rc.3`, no changes to
+existing APIs, local feedback without formal release authority, and a later
+human-only publication workflow.

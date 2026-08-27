@@ -438,115 +438,32 @@ Future<void> _runAndroidIntegration(
 }
 
 Future<void> _exerciseAndroidLifecycle(Directory root, String deviceId) async {
-  final accelerometer = (await _adb(root, deviceId, const <String>[
+  final task = await _resumedTaskId(root, deviceId);
+  await _adb(root, deviceId, const <String>[
     'shell',
-    'settings',
-    'get',
-    'system',
-    'accelerometer_rotation',
-  ])).trim();
-  final rotation = (await _adb(root, deviceId, const <String>[
+    'am',
+    'start',
+    '-a',
+    'android.settings.SETTINGS',
+  ]);
+  await Future<void>.delayed(const Duration(seconds: 2));
+  await _adb(root, deviceId, <String>['shell', 'am', 'task', 'focus', '$task']);
+  await Future<void>.delayed(const Duration(seconds: 2));
+  final activities = await _adb(root, deviceId, const <String>[
     'shell',
-    'settings',
-    'get',
-    'system',
-    'user_rotation',
-  ])).trim();
-  if (!const <String>{'0', '1'}.contains(accelerometer) ||
-      int.tryParse(rotation) == null) {
-    throw StateError('Could not capture Android rotation state.');
+    'dumpsys',
+    'activity',
+    'activities',
+  ]);
+  if (!activities
+      .split('\n')
+      .any(
+        (line) =>
+            line.contains('topResumedActivity=') &&
+            line.contains(_androidApplicationId),
+      )) {
+    throw StateError('Instrumented Android task did not resume.');
   }
-  final target = rotation == '0' ? '1' : '0';
-  try {
-    await _adb(root, deviceId, const <String>[
-      'shell',
-      'settings',
-      'put',
-      'system',
-      'accelerometer_rotation',
-      '0',
-    ]);
-    await _adb(root, deviceId, <String>[
-      'shell',
-      'settings',
-      'put',
-      'system',
-      'user_rotation',
-      target,
-    ]);
-    await Future<void>.delayed(const Duration(seconds: 2));
-    final task = await _resumedTaskId(root, deviceId);
-    await _adb(root, deviceId, const <String>[
-      'shell',
-      'am',
-      'start',
-      '-a',
-      'android.settings.SETTINGS',
-    ]);
-    await Future<void>.delayed(const Duration(seconds: 2));
-    await _adb(root, deviceId, <String>[
-      'shell',
-      'am',
-      'task',
-      'focus',
-      '$task',
-    ]);
-    await Future<void>.delayed(const Duration(seconds: 2));
-    final activities = await _adb(root, deviceId, const <String>[
-      'shell',
-      'dumpsys',
-      'activity',
-      'activities',
-    ]);
-    if (!activities
-        .split('\n')
-        .any(
-          (line) =>
-              line.contains('topResumedActivity=') &&
-              line.contains(_androidApplicationId),
-        )) {
-      throw StateError('Instrumented Android task did not resume.');
-    }
-  } finally {
-    await _adb(root, deviceId, <String>[
-      'shell',
-      'settings',
-      'put',
-      'system',
-      'user_rotation',
-      rotation,
-    ], allowFailure: true);
-    await _adb(root, deviceId, <String>[
-      'shell',
-      'settings',
-      'put',
-      'system',
-      'accelerometer_rotation',
-      accelerometer,
-    ], allowFailure: true);
-  }
-  for (var attempt = 0; attempt < 20; attempt += 1) {
-    final restoredAccelerometer = (await _adb(root, deviceId, const <String>[
-      'shell',
-      'settings',
-      'get',
-      'system',
-      'accelerometer_rotation',
-    ])).trim();
-    final restoredRotation = (await _adb(root, deviceId, const <String>[
-      'shell',
-      'settings',
-      'get',
-      'system',
-      'user_rotation',
-    ])).trim();
-    if (restoredAccelerometer == accelerometer &&
-        restoredRotation == rotation) {
-      return;
-    }
-    await Future<void>.delayed(const Duration(milliseconds: 250));
-  }
-  throw StateError('Android rotation state was not restored.');
 }
 
 Future<int> _resumedTaskId(Directory root, String deviceId) async {

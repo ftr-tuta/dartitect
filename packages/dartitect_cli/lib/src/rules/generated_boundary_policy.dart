@@ -117,8 +117,10 @@ abstract final class DartitectArchitectureRules {
   /// Provider packages that remain in infrastructure/composition.
   static const Set<String> infrastructurePackages = <String>{
     'dio',
+    'drift',
     'objectbox',
     'dartitect_dio',
+    'dartitect_drift',
     'dartitect_objectbox',
     'retrofit',
     'json_annotation',
@@ -130,6 +132,7 @@ abstract final class DartitectArchitectureRules {
     'RequestOptions',
     'Response',
     'CancelToken',
+    'GeneratedDatabase',
     'Store',
     'Box',
     'Query',
@@ -154,6 +157,9 @@ abstract final class DartitectArchitectureRules {
   /// Provider serialization/schema annotations restricted to infrastructure.
   static const Set<String> providerCodegenAnnotations = <String>{
     'JsonSerializable',
+    'DriftDatabase',
+    'DriftAccessor',
+    'UseRowClass',
     'Entity',
     'RestApi',
   };

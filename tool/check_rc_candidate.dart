@@ -21,8 +21,8 @@ void main() {
       candidate['cohortVersion'] != cohort ||
       candidate['candidateState'] != 'GIT_CANDIDATE_ASSEMBLED' ||
       candidate['targetChannel'] != 'PROTECTED_GIT_TAG' ||
-      candidate['packageCount'] != 16 ||
-      candidate['publicEntrypointCount'] != 17) {
+      candidate['packageCount'] != 17 ||
+      candidate['publicEntrypointCount'] != 18) {
     errors.add('RC candidate metadata is incomplete or overstates readiness.');
   }
   if (release['cohortVersion'] != cohort) {
@@ -93,8 +93,8 @@ void main() {
       errors.add('$name changelog does not begin with $cohort.');
     }
   }
-  if (packages.length != 16 || !packages.containsAll(order)) {
-    errors.add('The candidate does not contain the exact 16-package cohort.');
+  if (packages.length != 17 || !packages.containsAll(order)) {
+    errors.add('The candidate does not contain the exact 17-package cohort.');
   }
 
   final snapshot = _object(
@@ -103,9 +103,9 @@ void main() {
     ),
   );
   if (snapshot['sdkVersion'] != cohort ||
-      _object(snapshot['entrypoints']).length != 17) {
+      _object(snapshot['entrypoints']).length != 18) {
     errors.add(
-      'The public API snapshot is not an RC snapshot of 17 entrypoints.',
+      'The public API snapshot is not an RC snapshot of 18 entrypoints.',
     );
   }
   final inventory = _object(
@@ -113,7 +113,7 @@ void main() {
   );
   final inventoryPackages = inventory['packages'];
   if (inventoryPackages is! List<Object?> ||
-      inventoryPackages.length != 16 ||
+      inventoryPackages.length != 17 ||
       inventoryPackages.whereType<Map<String, Object?>>().any(
         (package) => package['version'] != cohort,
       )) {
@@ -148,7 +148,7 @@ void main() {
     return;
   }
   stdout.writeln(
-    'RC candidate assembly contract passed for 16 packages at $cohort; '
+    'RC candidate assembly contract passed for 17 packages at $cohort; '
     'Git consumption is assembled and formal publication remains fail-closed.',
   );
 }

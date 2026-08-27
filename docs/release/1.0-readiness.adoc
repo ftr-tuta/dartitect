@@ -18,7 +18,7 @@ The `Security` workflow is diagnostic-only; merge-candidate OSV scanning runs
 inside `CI` and therefore contributes to the single required result.
 
 `CI / Required` depends on every Linux, Windows, macOS/iOS, Android emulator,
-clean-clone, Git-consumption, and OSV job. A failure, cancellation, or skipped
+Drift Web/Chrome, clean-clone, Git-consumption, and OSV job. A failure, cancellation, or skipped
 dependency makes the aggregate check fail.
 
 == Main readiness artifact
@@ -47,6 +47,20 @@ The nominal matrix is identical for RC and stable validation:
 
 No technical evidence uses consumer hardware or a privately managed runner.
 Local runs are optional development feedback only.
+
+== Drift storage matrix
+
+Linux, Windows, and macOS run the real consumer-generated native fixture with
+`NativeDatabase.createInBackground`, migration/reopen, CRUD, transactions, and
+watch behavior. Linux additionally opens generated ObjectBox and Drift stores
+simultaneously in distinct bounded contexts.
+
+The hosted `drift-web` job compiles the consumer worker, verifies the pinned
+Drift 2.34.3 `sqlite3.wasm` digest and MIME, then drives two same-origin pages
+through Chrome DevTools Protocol. Portable and COOP/COEP-isolated profiles must
+both prove migration, CRUD, commit/rollback, watch propagation, persistence,
+safe multi-context storage, and foreground resume. There is no in-memory,
+unsafe IndexedDB, missing-Chrome, or WebDriver fallback.
 
 == Publication
 

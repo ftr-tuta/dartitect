@@ -6,7 +6,7 @@ Snapshot gate:: `dart run tool/check_api_snapshot.dart`
 
 == Result
 
-The checked API snapshot covers all 17 public entrypoints and matches their
+The checked API snapshot covers all 18 public entrypoints and matches their
 source declarations. New ecosystem entrypoints are deliberately narrow;
 existing entrypoints remain source-compatible with the reviewed development
 cohort.
@@ -29,6 +29,12 @@ stale-checked, locked, and recoverable.
 | `package:dartitect_dio/dartitect_dio.dart`
 | Opt-in adapter exporting explicit Dio ownership, cancellation, safe failure
 mapping, and instrumentation.
+
+| `package:dartitect_drift/dartitect_drift.dart`
+| Executor-neutral adapter with explicit owned/borrowed database lifecycle,
+typed transactional rollback, consumer-owned checkpoint/journal callbacks, and
+fixed sanitized spans. Schema, migrations, executor, SQL, codecs, and assets
+remain consumer-owned.
 
 | `package:dartitect_flutter/dartitect_flutter.dart`
 | Stable thin ViewModel, Command0/Command1, selector, scope, and error binding.
@@ -101,7 +107,7 @@ sync authority/terminal receipts, isolate protocol v2, experimental diagnostics
 and derived resources, SARIF, and fleet services. Adding the dependency-upgrade
 enum value can affect exhaustive consumer switches; protocol v1 isolate peers
 are intentionally incompatible with v2. No stable deprecation is removed and
-no package/entrypoint is added. These changes require a fresh prerelease
+the Drift package/entrypoint is added without changing existing APIs. These changes require a fresh prerelease
 candidate and complete same-SHA canaries rather than a patch claim.
 
 == Decision

@@ -1,0 +1,36 @@
+= ADR-0038: Feature-owned storage profiles and bounded engine coexistence
+
+Status:: ACCEPTED
+
+Context:: Features can need ephemeral state, durable Drift storage, native-only
+ObjectBox storage, or remote-only authority. A universal database abstraction
+would hide executor, schema, transaction, migration, and platform constraints.
+Web Drift additionally requires application-owned worker/WASM assets, response
+headers, and an explicit safe storage implementation.
+
+Decision:: Each feature selects exactly one primary persistence profile:
+
+* ephemeral/in-memory, for non-durable feature state;
+* Drift, with consumer-owned generated schema, migrations, executor, codecs,
+  native file policy, and web assets/storage;
+* ObjectBox, with consumer-owned entities/model/codegen and native Store;
+* remote-only, with no local database authority.
+
+Decision:: Different features may use Drift and ObjectBox in the same process
+only as distinct bounded contexts. Repositories remain engine-specific,
+ViewModels import only application/domain contracts, and observations, sync
+runs, and repositories are disposed before their database owners. Each dataset
+or partition has one writer.
+
+Decision:: There is no dual-write path, engine bridge, cross-engine transaction,
+shared schema, or implicit migration. Moving data between profiles is an
+explicit, resumable application migration with validation and compensation.
+On web, the application owns `WasmDatabase.open`, worker compilation,
+`sqlite3.wasm`, MIME/COOP/COEP policy, and selection of a multi-context-safe
+storage implementation. Unsafe IndexedDB and in-memory storage are rejected for
+multi-context durability.
+
+Consequences:: Provider constraints remain visible where they can be tested.
+Drift native/web and ObjectBox native can evolve independently without leaking
+through feature contracts. Coexistence increases operational work, so it is a
+deliberate per-feature choice rather than an SDK-wide default.

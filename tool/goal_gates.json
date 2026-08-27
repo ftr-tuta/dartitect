@@ -12,7 +12,7 @@
   },
   "releaseStatus": "ACTIONS_READINESS_PENDING",
   "featurePolicy": "FEATURE_FREEZE",
-  "target": {"packageCount": 16, "entrypointCount": 17},
+  "target": {"packageCount": 17, "entrypointCount": 18},
   "statusPolicy": {
     "allowed": [
       "PLANNED", "IN_PROGRESS", "BLOCKED", "IMPLEMENTED_LOCAL",
@@ -43,7 +43,7 @@
       "id": "V1S-00", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": [],
       "owner": "Dartitect maintainers", "affectedPackages": [],
       "coveredPaths": ["tool/goal_gates.json", "tool/check_goal_gates.dart", "tool/check_goal_gates_test.dart", "docs/release/**", "docs/implementation-status.adoc"],
-      "acceptance": ["Use one active fail-closed roadmap authority, preserve the 16/17 topology, record the assembled Git candidate state, and keep formal readiness external under FEATURE_FREEZE."],
+      "acceptance": ["Use one active fail-closed roadmap authority, preserve the 17/18 topology, record the assembled Git candidate state, and keep formal readiness external under FEATURE_FREEZE."],
       "gateCommands": ["dart run tool/check_goal_gates.dart", "dart test tool/check_goal_gates_test.dart"],
       "evidence": ["tool/goal_gates.json", "tool/check_goal_gates_test.dart"],
       "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
@@ -157,7 +157,7 @@
     },
     {
       "id": "V1S-14", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-11", "V1S-12", "V1S-13"],
-      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_dio", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_sentry", "dartitect_sync", "dartitect_testing"],
+      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_dio", "dartitect_drift", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_sentry", "dartitect_sync", "dartitect_testing"],
       "coveredPaths": ["README*", ".github/ISSUE_TEMPLATE/bug_report.yml", ".agents/skills/**/.dartitect-skill.json", "docs/**", "examples/**", "packages/**/README*", "packages/**/CHANGELOG.md", "packages/**/pubspec.yaml", "pubspec.yaml", "tool/api_surface.snapshot.json", "tool/sdk_inventory.json", "tool/package_release_contract.json", "tool/rc_candidate_contract.json", "tool/check_rc_candidate.dart", "tool/check_pub_dev_identity.dart", "tool/run_clean_clone_release_audit.dart", "tool/release_audit.dart", "tool/generate_supply_chain.dart"],
       "acceptance": ["Finish bilingual docs, API review, examples, clean clone, dry-runs, Dartdoc, SBOM, licenses, advisories, ownership checks, changelogs, and the rc.N candidate."],
       "gateCommands": ["dart run tool/release_audit.dart --docs --publish-dry-run"],
@@ -189,7 +189,7 @@
     },
     {
       "id": "V1-18", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-17"],
-      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_dio", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_sentry", "dartitect_sync", "dartitect_testing"],
+      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_dio", "dartitect_drift", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_sentry", "dartitect_sync", "dartitect_testing"],
       "coveredPaths": ["packages/**/pubspec.yaml", "packages/**/CHANGELOG.md", ".github/workflows/**", "docs/release/**", "tool/goal_gates.json", "tool/stable_candidate_contract.json", "tool/check_stable_candidate.dart", "tool/check_stable_candidate_test.dart", "tool/check_public_docs.dart", "tool/check_api_snapshot.dart", "tool/check_sdk_inventory.dart", "tool/check_skill_coverage.dart", "tool/generate_supply_chain.dart", "tool/release_audit.dart", "tool/verify.dart"],
       "acceptance": ["Validate the stable candidate through CI / Required and actions-readiness-v1, then leave the human role limited to selecting the manual publication channel."],
       "gateCommands": ["dart run tool/check_stable_candidate.dart --contract-only", "dart run tool/release_audit.dart --docs --publish-dry-run"],

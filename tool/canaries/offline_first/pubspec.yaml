@@ -10,18 +10,22 @@ environment:
 dependencies:
   dartitect: 1.0.0-rc.3
   dartitect_dio: 1.0.0-rc.3
+  dartitect_drift: 1.0.0-rc.3
   dartitect_flutter: 1.0.0-rc.3
   dartitect_isolates: 1.0.0-rc.3
   dartitect_objectbox: 1.0.0-rc.3
   dartitect_observability: 1.0.0-rc.3
   dartitect_sync: 1.0.0-rc.3
   dio: 5.11.0
+  drift: 2.34.3
   flutter:
     sdk: flutter
   objectbox: 5.3.2
   objectbox_flutter_libs: 5.3.2
 
 dev_dependencies:
+  build_runner: 2.16.0
+  drift_dev: 2.34.3
   flutter_test:
     sdk: flutter
 

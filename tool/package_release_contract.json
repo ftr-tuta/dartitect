@@ -21,6 +21,7 @@
       "dartitect_sync"
     ],
     [
+      "dartitect_drift",
       "dartitect_dio",
       "dartitect_objectbox",
       "dartitect_sentry",
@@ -40,6 +41,7 @@
     "dartitect_media",
     "dartitect_observability",
     "dartitect_sync",
+    "dartitect_drift",
     "dartitect_dio",
     "dartitect_objectbox",
     "dartitect_sentry",

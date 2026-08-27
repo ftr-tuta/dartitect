@@ -924,6 +924,8 @@ const _bundledDecisions = <String, String>{
   'dart_polylabel2': 'advisory_alternative|dartitect_geometry|',
   'dart_style': 'approved||',
   'dio': 'approved||',
+  'drift': 'approved||',
+  'drift_dev': 'approved||',
   'elementary':
       'prohibited_native_strict|constructor injection and explicit ViewModels|',
   'flutter': 'approved||',
@@ -979,6 +981,7 @@ const _bundledDecisions = <String, String>{
   'sentry_flutter': 'approved||',
   'share_plus': 'approved||',
   'shared_preferences': 'approved||',
+  'sqlite3': 'approved||',
   'signals':
       'prohibited_native_strict|Dartitect resources and native listenables|',
   'signals_flutter':

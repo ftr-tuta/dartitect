@@ -13,7 +13,7 @@ Baseline:: `eb2693fa92ccf30546568ade6133c253776d5cab` on fetched `origin/main`
 Branch:: `feat/technical-hardening-plan`
 Last gate:: The complete aggregate matrix passed with native ObjectBox; all
 seven generated-project scenarios passed tests plus web/Linux builds; Dartdoc
-passed for all sixteen packages without warnings. Clean publish dry-runs are
+passed for all seventeen packages without warnings. Clean publish dry-runs are
 deliberately delegated to the exact-commit clean-clone receipt.
 Files in edit:: Cumulative Goals 00–10 implementation, RC.3 lockstep cohort,
 readiness contract, evidence ledger, release docs, and generated artifacts
@@ -395,7 +395,7 @@ RESULTS:: The continuous aggregate verifier passed, including all package and
 Flutter suites, native ObjectBox restart/workload, snapshots, contracts,
 five-sample debug/profile diagnostics and create/dispose gates, and zero
 residual censuses. Seven generated apps passed tests plus fourteen web/Linux
-builds and applicable native ObjectBox workloads. Dartdoc passed all sixteen
+builds and applicable native ObjectBox workloads. Dartdoc passed all seventeen
 packages with zero warnings/errors. Dirty publish validation rejected the
 working tree as designed; only the later clean-clone receipt is authoritative.
 PRE-EXISTING FAILURES:: The first RC.3 aggregate run exposed two mechanically

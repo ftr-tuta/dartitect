@@ -35,6 +35,7 @@
         "dartitect_locale_br",
         "dartitect_mcp",
         "dartitect_media",
+        "dartitect_drift",
         "dartitect_objectbox",
         "dartitect_privacy",
         "dartitect_sentry"
@@ -62,6 +63,7 @@
       "requiredPackages": [
         "dartitect",
         "dartitect_dio",
+        "dartitect_drift",
         "dartitect_flutter",
         "dartitect_isolates",
         "dartitect_objectbox",
@@ -71,16 +73,42 @@
       "forbiddenPackages": [],
       "commands": [
         "flutter pub get",
+        "dart run build_runner build --delete-conflicting-outputs",
         "flutter analyze",
         "flutter test test/offline_first_session_test.dart test/widget_test.dart",
-        "DARTITECT_NATIVE_OBJECTBOX=1 flutter test test/native_objectbox_workload_test.dart",
+        "DARTITECT_NATIVE_OBJECTBOX=1 flutter test test/native_objectbox_workload_test.dart test/drift_objectbox_bounded_contexts_test.dart",
         "flutter build host-desktop"
       ],
       "coverage": [
         "objectbox_local_first",
+        "drift_objectbox_bounded_contexts",
         "outbox_sync",
         "desktop",
         "session_replacement"
+      ],
+      "residualResourceCensus": 0
+    },
+    {
+      "id": "drift_provider",
+      "source": "tool/canaries/drift_provider",
+      "pubspec": "tool/canaries/drift_provider/pubspec.yaml",
+      "requiredPackages": [
+        "dartitect",
+        "dartitect_drift",
+        "dartitect_observability",
+        "dartitect_sync"
+      ],
+      "forbiddenPackages": ["dartitect_objectbox"],
+      "commands": [
+        "flutter pub get",
+        "dart run build_runner build --delete-conflicting-outputs",
+        "dart analyze",
+        "dart test"
+      ],
+      "coverage": [
+        "drift_provider_package",
+        "drift_consumer_owned_schema",
+        "drift_sync_ports"
       ],
       "residualResourceCensus": 0
     },

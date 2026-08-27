@@ -13,15 +13,15 @@ void main() {
   final errors = <String>[
     ...TestingMatrixAuditor().audit(ownership, composition),
   ];
-  if (ownership.rows.length != 22) {
-    errors.add('Testing matrices must contain exactly 22 resources.');
+  if (ownership.rows.length != 25) {
+    errors.add('Testing matrices must contain exactly 25 resources.');
   }
   if (errors.isNotEmpty) {
     stderr.writeln(errors.join('\n'));
     exitCode = 1;
     return;
   }
-  stdout.writeln('Ownership and composition matrices cover 22 resources.');
+  stdout.writeln('Ownership and composition matrices cover 25 resources.');
 }
 
 TestingMatrix _matrix(Object? value) {

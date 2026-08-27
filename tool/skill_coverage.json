@@ -9,6 +9,7 @@
       "packages/dartitect_isolates/lib/dartitect_isolates.dart",
       "packages/dartitect_observability/lib/dartitect_observability.dart",
       "packages/dartitect_dio/lib/dartitect_dio.dart",
+      "packages/dartitect_drift/lib/dartitect_drift.dart",
       "packages/dartitect_objectbox/lib/dartitect_objectbox.dart",
       "packages/dartitect_sentry/lib/dartitect_sentry.dart",
       "packages/dartitect_testing/lib/dartitect_testing.dart",
@@ -29,6 +30,7 @@
       "packages/dartitect_isolates/lib/dartitect_isolates.dart",
       "packages/dartitect_observability/lib/dartitect_observability.dart",
       "packages/dartitect_dio/lib/dartitect_dio.dart",
+      "packages/dartitect_drift/lib/dartitect_drift.dart",
       "packages/dartitect_objectbox/lib/dartitect_objectbox.dart",
       "packages/dartitect_sentry/lib/dartitect_sentry.dart",
       "packages/dartitect_testing/lib/dartitect_testing.dart",
@@ -50,6 +52,7 @@
       "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart",
       "packages/dartitect_isolates/lib/dartitect_isolates.dart",
       "packages/dartitect_dio/lib/dartitect_dio.dart",
+      "packages/dartitect_drift/lib/dartitect_drift.dart",
       "packages/dartitect_objectbox/lib/dartitect_objectbox.dart"
     ],
     "dartitect-observability": [
@@ -60,6 +63,7 @@
     ],
     "dartitect-adapters": [
       "packages/dartitect_dio/lib/dartitect_dio.dart",
+      "packages/dartitect_drift/lib/dartitect_drift.dart",
       "packages/dartitect_media/lib/dartitect_media.dart",
       "packages/dartitect_objectbox/lib/dartitect_objectbox.dart",
       "packages/dartitect_privacy/lib/dartitect_privacy.dart",
