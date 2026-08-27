@@ -458,20 +458,11 @@ Future<void> _exerciseAndroidLifecycle(Directory root, String deviceId) async {
   }
   final target = rotation == '0' ? '1' : '0';
   try {
-    await _adb(root, deviceId, const <String>[
-      'shell',
-      'settings',
-      'put',
-      'system',
-      'accelerometer_rotation',
-      '0',
-    ]);
     await _adb(root, deviceId, <String>[
       'shell',
-      'settings',
-      'put',
-      'system',
-      'user_rotation',
+      'wm',
+      'user-rotation',
+      'lock',
       target,
     ]);
     await Future<void>.delayed(const Duration(seconds: 2));
@@ -508,22 +499,22 @@ Future<void> _exerciseAndroidLifecycle(Directory root, String deviceId) async {
       throw StateError('Instrumented Android task did not resume.');
     }
   } finally {
-    await _adb(root, deviceId, <String>[
-      'shell',
-      'settings',
-      'put',
-      'system',
-      'user_rotation',
-      rotation,
-    ], allowFailure: true);
-    await _adb(root, deviceId, <String>[
-      'shell',
-      'settings',
-      'put',
-      'system',
-      'accelerometer_rotation',
-      accelerometer,
-    ], allowFailure: true);
+    if (accelerometer == '1') {
+      await _adb(root, deviceId, const <String>[
+        'shell',
+        'wm',
+        'user-rotation',
+        'free',
+      ], allowFailure: true);
+    } else {
+      await _adb(root, deviceId, <String>[
+        'shell',
+        'wm',
+        'user-rotation',
+        'lock',
+        rotation,
+      ], allowFailure: true);
+    }
   }
   for (var attempt = 0; attempt < 20; attempt += 1) {
     final restoredAccelerometer = (await _adb(root, deviceId, const <String>[

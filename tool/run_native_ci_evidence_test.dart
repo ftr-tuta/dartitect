@@ -93,6 +93,10 @@ void main() {
           .readAsStringSync();
       for (final marker in const <String>[
         '--reporter=expanded',
+        "'wm'",
+        "'user-rotation'",
+        "'lock'",
+        "'free'",
         '_cleanupAndroidTestAssets',
         '_androidTestAssetsAreAbsent',
         '_applicationDataIsClean',
