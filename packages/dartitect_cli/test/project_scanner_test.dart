@@ -63,6 +63,85 @@ dependencies:
     expect(scan.findings.single.code, 'DT0001');
   });
 
+  test(
+    'Drift stays in infrastructure without neutral type false positives',
+    () async {
+      final root = await Directory.systemTemp.createTemp('dartitect-drift-');
+      addTearDown(() => root.delete(recursive: true));
+      await _write(root, 'pubspec.yaml', '''name: drift_sample
+dependencies:
+  drift: any
+  dartitect_drift: any
+''');
+      await _write(
+        root,
+        'lib/features/orders/application/orders_service.dart',
+        "import 'package:drift/drift.dart';\nGeneratedDatabase? database;\n",
+      );
+      await _write(
+        root,
+        'lib/features/orders/presentation/orders_view_model.dart',
+        "import 'package:dartitect_drift/dartitect_drift.dart';\n",
+      );
+      await _write(
+        root,
+        'lib/features/orders/infrastructure/orders_database.dart',
+        "import 'package:drift/drift.dart';\nclass Orders extends Table {}\n",
+      );
+      await _write(
+        root,
+        'lib/features/orders/domain/table.dart',
+        'class Table {}\nclass Dao {}\n',
+      );
+
+      final scan = await ProjectScanner(root).scan();
+
+      expect(scan.capabilities, contains('drift'));
+      expect(
+        scan.violations.map((finding) => finding.path),
+        containsAll(<String>[
+          'lib/features/orders/application/orders_service.dart',
+          'lib/features/orders/presentation/orders_view_model.dart',
+        ]),
+      );
+      expect(
+        scan.violations.where(
+          (finding) => finding.path?.endsWith('/domain/table.dart') ?? false,
+        ),
+        isEmpty,
+      );
+      expect(
+        scan.violations.where(
+          (finding) => finding.path?.contains('/infrastructure/') ?? false,
+        ),
+        isEmpty,
+      );
+    },
+  );
+
+  test(
+    'provider adapter package is itself an infrastructure boundary',
+    () async {
+      final root = await Directory.systemTemp.createTemp(
+        'dartitect-provider-package-',
+      );
+      addTearDown(() => root.delete(recursive: true));
+      await _write(root, 'pubspec.yaml', '''name: dartitect_drift
+dependencies:
+  drift: any
+''');
+      await _write(
+        root,
+        'lib/src/owner.dart',
+        "import 'package:drift/drift.dart';\nGeneratedDatabase? database;\n",
+      );
+
+      final scan = await ProjectScanner(root).scan();
+
+      expect(scan.violations, isEmpty);
+    },
+  );
+
   test('audits transitive lockfile packages and generated imports', () async {
     final root = await Directory.systemTemp.createTemp('dartitect-lock-audit-');
     addTearDown(() => root.delete(recursive: true));

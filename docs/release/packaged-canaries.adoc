@@ -6,7 +6,7 @@ Gate:: `dart run tool/run_git_canaries.dart --repository=<url> --ref=v1.0.0-rc.3
 
 == Candidate source
 
-The Git candidate uses one annotated, unsigned, protected tag for all sixteen
+The Git candidate uses one annotated, unsigned, protected tag for all seventeen
 packages. The gate resolves that tag from the supplied remote, requires both the
 tag object and peeled commit, and installs every Dartitect dependency through a
 Git override with the same URL and ref. A lightweight/missing tag, hosted

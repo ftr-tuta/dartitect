@@ -70,7 +70,7 @@ known `OwnedRuntimeSlot.replaceGraph` semantic defect; its exact finding remains
 
 == Package and boundary map
 
-The workspace publishes sixteen lockstep packages and seventeen public
+The workspace publishes seventeen lockstep packages and eighteen public
 entrypoints (the Flutter package has core and reactive entrypoints).
 
 [cols="1,3,3"]
@@ -316,7 +316,7 @@ dispose is idempotent, and running/queued/key counts end at zero.
 |Public contract
 |The package changelog, EN/pt-BR package READMEs, lifecycle/command guides, and
 ADR 0019 document post-publication authority and callback reentrancy. The API
-snapshot now contains the typed exception across 17 public entrypoints.
+snapshot now contains the typed exception across 18 public entrypoints.
 
 |Gates
 |The three focused test files passed 21 tests. API snapshot, public docs, MCP
@@ -605,7 +605,7 @@ reproduce on the exact clean candidate SHA.
 |Item |Evidence
 
 |SemVer and candidate identity
-|The sixteen packages, internal constraints, examples, generated metadata,
+|The seventeen packages, internal constraints, examples, generated metadata,
 release contracts, canary contract, API snapshot, SDK inventory, supply-chain
 documents, and public docs form the lockstep `1.0.0-rc.3` cohort. Historical
 RC.2 changelog entries and the audited baseline SHA remain unchanged. Public
@@ -625,8 +625,8 @@ This produced fourteen host builds without relying on monorepo package imports
 inside generated application source.
 
 |API, docs, licenses, and security
-|All seventeen public entrypoints match the reviewed snapshot. Dartdoc passed
-all sixteen packages without warnings/errors. The SBOM/license inventory covers
+|All eighteen public entrypoints match the reviewed snapshot. Dartdoc passed
+all seventeen packages without warnings/errors. The SBOM/license inventory covers
 111 packages with zero `NOASSERTION`; public-doc parity covers eighteen
 translated guides; CI/Security policy pins reviewed external Actions and keeps
 formal remote receipts fail-closed.

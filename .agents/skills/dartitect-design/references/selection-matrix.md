@@ -15,7 +15,7 @@
 - Neutral logs/reporting/tracing: add `dartitect_observability` and
   `$dartitect-observability`; add `dartitect_sentry` only for an already selected
   and consumer-initialized Sentry Hub.
-- Dio or ObjectBox integration: add only the matching adapter and use
+- Dio, Drift, or ObjectBox integration: add only the matching adapter and use
   `$dartitect-adapters`.
 - Deterministic consumer tests: add `dartitect_testing` as a dev dependency and
   use `$dartitect-testing`.

@@ -5,15 +5,25 @@ import 'dart:typed_data';
 
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_flutter/dartitect_flutter_reactive.dart';
+import 'package:dartitect_drift/dartitect_drift.dart';
 import 'package:dartitect_objectbox/dartitect_objectbox.dart';
 import 'package:dartitect_observability/dartitect_observability.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../lib/fixture_entity.dart';
+import '../lib/drift_fixture_database.dart';
 import '../lib/objectbox.g.dart';
 
 void main() {
+  final originalWorkingDirectory = Directory.current;
+  setUpAll(() {
+    final fixture = Directory('tool/objectbox_native_fixture');
+    if (fixture.existsSync()) Directory.current = fixture.absolute;
+  });
+  tearDownAll(() => Directory.current = originalWorkingDirectory);
+
   test('real generated Store owns query and watcher before cleanup', () async {
     final tracer = _RecordingTracer();
     String? directoryPath;
@@ -344,10 +354,139 @@ void main() {
       await owner.disposeAsync();
     },
   );
+
+  test(
+    'ObjectBox and Drift coexist in separate bounded contexts and teardown',
+    () async {
+      final temporary = await Directory.systemTemp.createTemp(
+        'dartitect-coexistence-',
+      );
+      final teardown = <String>[];
+      final objectBoxOwner = await ObjectBoxStoreOwner.temporary(
+        openStore: (path) => openStore(directory: path),
+      );
+      final driftOwner =
+          await DriftDatabaseOwner.create<CoexistenceDriftDatabase>(
+            openDatabase: () => CoexistenceDriftDatabase(
+              NativeDatabase.createInBackground(
+                File('${temporary.path}/orders.sqlite'),
+              ),
+            ),
+          );
+      final notes = _ObjectBoxNotesRepository(objectBoxOwner.store, teardown);
+      final orders = _DriftOrdersRepository(driftOwner.database, teardown);
+      final observations = _FixtureObservationOwner(teardown);
+      final sync = _FixtureSyncOwner(teardown);
+      try {
+        notes.save('note-one');
+        await orders.save('order-one');
+
+        expect(notes.values(), <String>['note-one']);
+        expect(await orders.values(), <String>['order-one']);
+        expect(objectBoxOwner.store.isClosed(), isFalse);
+        expect(
+          await driftOwner.database.customSelect('SELECT 1').getSingle(),
+          isNotNull,
+        );
+      } finally {
+        await observations.disposeAsync();
+        await sync.disposeAsync();
+        await notes.disposeAsync();
+        await orders.disposeAsync();
+        teardown.add('objectbox-database');
+        await objectBoxOwner.disposeAsync();
+        teardown.add('drift-database');
+        await driftOwner.disposeAsync();
+        if (await temporary.exists()) await temporary.delete(recursive: true);
+      }
+
+      expect(teardown, <String>[
+        'observations',
+        'sync',
+        'objectbox-repository',
+        'drift-repository',
+        'objectbox-database',
+        'drift-database',
+      ]);
+    },
+  );
 }
 
 final class _FixtureSyncFailure implements Exception {
   const _FixtureSyncFailure();
+}
+
+final class _ObjectBoxNotesRepository implements AsyncDisposable {
+  _ObjectBoxNotesRepository(this._store, this._teardown);
+
+  final Store _store;
+  final List<String> _teardown;
+
+  void save(String value) {
+    _store.box<FixtureEntity>().put(FixtureEntity(value: value));
+  }
+
+  List<String> values() => _store
+      .box<FixtureEntity>()
+      .getAll()
+      .map((entity) => entity.value)
+      .toList(growable: false);
+
+  @override
+  Future<void> disposeAsync() async => _teardown.add('objectbox-repository');
+}
+
+final class _DriftOrdersRepository implements AsyncDisposable {
+  _DriftOrdersRepository(this._database, this._teardown);
+
+  final CoexistenceDriftDatabase _database;
+  final List<String> _teardown;
+
+  Future<void> save(String id) =>
+      DriftMutationTransaction<CoexistenceDriftDatabase>(_database)
+          .run<void, _FixtureSyncFailure>((database) async {
+            await database
+                .into(database.driftFixtureOrders)
+                .insert(
+                  DriftFixtureOrdersCompanion.insert(
+                    id: id,
+                    description: 'drift-only',
+                  ),
+                );
+            await database
+                .into(database.driftFixtureOutbox)
+                .insert(
+                  DriftFixtureOutboxCompanion.insert(payload: 'order:$id'),
+                );
+            return const Ok<void>(null);
+          })
+          .then((_) {});
+
+  Future<List<String>> values() async =>
+      (await _database.select(_database.driftFixtureOrders).get())
+          .map((row) => row.id)
+          .toList(growable: false);
+
+  @override
+  Future<void> disposeAsync() async => _teardown.add('drift-repository');
+}
+
+final class _FixtureObservationOwner implements AsyncDisposable {
+  _FixtureObservationOwner(this._teardown);
+
+  final List<String> _teardown;
+
+  @override
+  Future<void> disposeAsync() async => _teardown.add('observations');
+}
+
+final class _FixtureSyncOwner implements AsyncDisposable {
+  _FixtureSyncOwner(this._teardown);
+
+  final List<String> _teardown;
+
+  @override
+  Future<void> disposeAsync() async => _teardown.add('sync');
 }
 
 Future<void> _waitFor(

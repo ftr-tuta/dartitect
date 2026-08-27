@@ -1162,6 +1162,7 @@ final class DartitectProjectService {
     'dartitect',
     'dartitect_cli',
     'dartitect_dio',
+    'dartitect_drift',
     'dartitect_flutter',
     'dartitect_geometry',
     'dartitect_isolates',

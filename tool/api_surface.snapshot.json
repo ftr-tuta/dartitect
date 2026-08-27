@@ -672,6 +672,56 @@
         "declaration": "CancelToken ownCancelToken(ResourceOwner owner, {Object reason = 'Owner disposed'})"
       }
     ],
+    "packages/dartitect_drift/lib/dartitect_drift.dart": [
+      {
+        "name": "DriftCheckpointReader",
+        "declaration": "typedef DriftCheckpointReader<in K, out C, in D extends GeneratedDatabase> = FutureOr<C?> Function(D, K)"
+      },
+      {
+        "name": "DriftCheckpointRemover",
+        "declaration": "typedef DriftCheckpointRemover<in K, in D extends GeneratedDatabase> = FutureOr<void> Function(D, K)"
+      },
+      {
+        "name": "DriftCheckpointWriter",
+        "declaration": "typedef DriftCheckpointWriter<in K, in C, in D extends GeneratedDatabase> = FutureOr<void> Function(D, K, C, int?)"
+      },
+      {
+        "name": "DriftDatabaseOwner",
+        "declaration": "final class DriftDatabaseOwner<D extends GeneratedDatabase> implements AsyncDisposable"
+      },
+      {
+        "name": "DriftIncompleteAttemptsReader",
+        "declaration": "typedef DriftIncompleteAttemptsReader<out K, in D extends GeneratedDatabase> = FutureOr<List<IncompleteSyncAttempt<K>>> Function(D)"
+      },
+      {
+        "name": "DriftInstrumentation",
+        "declaration": "final class DriftInstrumentation"
+      },
+      {
+        "name": "DriftInstrumentedOperation",
+        "declaration": "enum DriftInstrumentedOperation"
+      },
+      {
+        "name": "DriftJournalAppender",
+        "declaration": "typedef DriftJournalAppender<in K, in D extends GeneratedDatabase> = FutureOr<void> Function(D, SyncJournalEntry<K>)"
+      },
+      {
+        "name": "DriftMutationTransaction",
+        "declaration": "final class DriftMutationTransaction<D extends GeneratedDatabase>"
+      },
+      {
+        "name": "DriftSyncCheckpointStore",
+        "declaration": "final class DriftSyncCheckpointStore<K, C, D extends GeneratedDatabase> implements SyncCheckpointStore<K, C>"
+      },
+      {
+        "name": "DriftSyncRunJournal",
+        "declaration": "final class DriftSyncRunJournal<K, D extends GeneratedDatabase> implements SyncRunJournal<K>"
+      },
+      {
+        "name": "OpenDriftDatabase",
+        "declaration": "typedef OpenDriftDatabase<out D extends GeneratedDatabase> = FutureOr<D> Function()"
+      }
+    ],
     "packages/dartitect_flutter/lib/dartitect_flutter.dart": [
       {
         "name": "CallbackFlutterCrashReporter",

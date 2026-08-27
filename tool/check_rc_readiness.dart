@@ -69,6 +69,7 @@ void _validatePolicy(
     'windows',
     'macos',
     'android-emulator',
+    'drift-web',
     'clean-clone',
     'git-consumption',
     'osv',

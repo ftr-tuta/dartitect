@@ -7,6 +7,13 @@ import '../lib/fixture_entity.dart';
 import '../lib/objectbox.g.dart';
 
 void main() {
+  final originalWorkingDirectory = Directory.current;
+  setUpAll(() {
+    final fixture = Directory('tool/objectbox_native_fixture');
+    if (fixture.existsSync()) Directory.current = fixture.absolute;
+  });
+  tearDownAll(() => Directory.current = originalWorkingDirectory);
+
   test('generated Store put/query cycle leaves no filesystem state', () async {
     const iterations = 500;
     final directory = await Directory.systemTemp.createTemp(

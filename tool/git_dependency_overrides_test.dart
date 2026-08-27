@@ -32,7 +32,7 @@ void main() {
     ]);
   });
 
-  test('supports any combination of the complete sixteen-package cohort', () {
+  test('supports any combination of the complete seventeen-package cohort', () {
     final contract = File('${root.path}/tool/package_release_contract.json')
         .readAsStringSync();
     final names = RegExp(
@@ -45,7 +45,7 @@ void main() {
       repository: 'https://example.invalid/dartitect.git',
       ref: 'v1.0.0-rc.3',
     );
-    expect(_packages(output).toSet(), hasLength(16));
+    expect(_packages(output).toSet(), hasLength(17));
   });
 
   test('rejects packages outside the public cohort', () {

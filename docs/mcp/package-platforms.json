@@ -7,6 +7,7 @@
     "dartitect_flutter": {"platforms": ["Flutter"], "stability": "development"},
     "dartitect_observability": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
     "dartitect_dio": {"platforms": ["Dio platforms"], "stability": "development"},
+    "dartitect_drift": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
     "dartitect_objectbox": {"platforms": ["Android", "iOS", "Linux", "macOS", "Windows"], "stability": "development"},
     "dartitect_sentry": {"platforms": ["Dart", "Flutter"], "stability": "development"},
     "dartitect_testing": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},

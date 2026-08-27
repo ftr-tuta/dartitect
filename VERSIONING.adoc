@@ -2,7 +2,7 @@
 
 == One lockstep 1.0.x cohort
 
-All 16 publishable packages use one version for every development, RC, and
+All 17 publishable packages use one version for every development, RC, and
 stable release. +dartitect_mcp+ is host-only tooling but remains part of the
 same version and publication cohort. A release with a missing package, a mixed
 version, or a changelog whose first release heading differs from the cohort is
@@ -85,7 +85,7 @@ uploads.
   +dartitect_lints+, +dartitect_locale_br+, +dartitect_privacy+.
 . Layer 1: +dartitect_flutter+, +dartitect_isolates+, +dartitect_mcp+,
   +dartitect_media+, +dartitect_observability+, +dartitect_sync+.
-. Layer 2: +dartitect_dio+, +dartitect_objectbox+, +dartitect_sentry+,
+. Layer 2: +dartitect_drift+, +dartitect_dio+, +dartitect_objectbox+, +dartitect_sentry+,
   +dartitect_testing+.
 
 +tool/package_release_contract.json+ is the machine authority for the cohort,
@@ -99,7 +99,7 @@ Every formally materialized hosted/bundle cohort is tied to one exact +main+
 SHA and starts from a clean clone with a clean tracked tree. It contains no
 dependency overrides or path dependencies. CI, Security, API review,
 SBOM/license/advisory checks,
-Dartdoc, clean-clone canaries, and all 16 publish dry-runs refer to the same
+Dartdoc, clean-clone canaries, and all 17 publish dry-runs refer to the same
 source SHA.
 
 For every package, record the cohort version, order index, sorted file
@@ -117,7 +117,7 @@ forbidden.
 
 == Partial publication recovery
 
-pub.dev does not provide a 16-package atomic transaction and published versions
+pub.dev does not provide a 17-package atomic transaction and published versions
 cannot be overwritten. Materialization therefore uses an append-only receipt
 ledger and stops at the first ambiguous or failed upload.
 
@@ -132,7 +132,7 @@ ledger and stops at the first ambiguous or failed upload.
   dependency to publish its dependents.
 . If any remaining artifact, source, dependency, or documentation must change,
   abandon the unfinished cohort, preserve all receipts, create the next
-  development/RC/patch cohort for all 16 packages, and rerun every gate.
+  development/RC/patch cohort for all 17 packages, and rerun every gate.
 . A digest mismatch or an unexpected package already present is a security
   incident and blocks the channel until reconciled.
 

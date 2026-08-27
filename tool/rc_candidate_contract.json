@@ -3,11 +3,11 @@
   "cohortVersion": "1.0.0-rc.3",
   "candidateState": "GIT_CANDIDATE_ASSEMBLED",
   "targetChannel": "PROTECTED_GIT_TAG",
-  "packageCount": 16,
-  "publicEntrypointCount": 17,
+  "packageCount": 17,
+  "publicEntrypointCount": 18,
   "nameRegistryObservation": {
     "registry": "https://pub.dev",
-    "observedAt": "2026-08-25T21:45:52Z",
+    "observedAt": "2026-08-27T00:00:00Z",
     "requestPattern": "GET /api/packages/{name}",
     "expectedStatus": 404,
     "packages": [
@@ -23,6 +23,7 @@
       "dartitect_media",
       "dartitect_observability",
       "dartitect_sync",
+      "dartitect_drift",
       "dartitect_dio",
       "dartitect_objectbox",
       "dartitect_sentry",

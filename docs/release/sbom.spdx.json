@@ -82,6 +82,66 @@
       "copyrightText": "NOASSERTION"
     },
     {
+      "name": "build",
+      "SPDXID": "SPDXRef-Package-build",
+      "versionInfo": "4.0.10",
+      "downloadLocation": "https://pub.dev/packages/build/versions/4.0.10",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "build_config",
+      "SPDXID": "SPDXRef-Package-build-config",
+      "versionInfo": "1.3.2",
+      "downloadLocation": "https://pub.dev/packages/build_config/versions/1.3.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "build_daemon",
+      "SPDXID": "SPDXRef-Package-build-daemon",
+      "versionInfo": "4.1.5",
+      "downloadLocation": "https://pub.dev/packages/build_daemon/versions/4.1.5",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "build_runner",
+      "SPDXID": "SPDXRef-Package-build-runner",
+      "versionInfo": "2.16.0",
+      "downloadLocation": "https://pub.dev/packages/build_runner/versions/2.16.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "built_collection",
+      "SPDXID": "SPDXRef-Package-built-collection",
+      "versionInfo": "5.1.1",
+      "downloadLocation": "https://pub.dev/packages/built_collection/versions/5.1.1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "built_value",
+      "SPDXID": "SPDXRef-Package-built-value",
+      "versionInfo": "8.12.7",
+      "downloadLocation": "https://pub.dev/packages/built_value/versions/8.12.7",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
       "name": "characters",
       "SPDXID": "SPDXRef-Package-characters",
       "versionInfo": "1.4.1",
@@ -92,10 +152,40 @@
       "copyrightText": "NOASSERTION"
     },
     {
+      "name": "charcode",
+      "SPDXID": "SPDXRef-Package-charcode",
+      "versionInfo": "1.4.0",
+      "downloadLocation": "https://pub.dev/packages/charcode/versions/1.4.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "checked_yaml",
+      "SPDXID": "SPDXRef-Package-checked-yaml",
+      "versionInfo": "2.0.4",
+      "downloadLocation": "https://pub.dev/packages/checked_yaml/versions/2.0.4",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
       "name": "cli_config",
       "SPDXID": "SPDXRef-Package-cli-config",
       "versionInfo": "0.2.0",
       "downloadLocation": "https://pub.dev/packages/cli_config/versions/0.2.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "cli_util",
+      "SPDXID": "SPDXRef-Package-cli-util",
+      "versionInfo": "0.5.2",
+      "downloadLocation": "https://pub.dev/packages/cli_util/versions/0.5.2",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
       "licenseDeclared": "BSD-3-Clause",
@@ -214,6 +304,16 @@
     {
       "name": "dartitect_dio",
       "SPDXID": "SPDXRef-Package-dartitect-dio",
+      "versionInfo": "1.0.0-rc.3",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "dartitect_drift",
+      "SPDXID": "SPDXRef-Package-dartitect-drift",
       "versionInfo": "1.0.0-rc.3",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
@@ -402,6 +502,26 @@
       "copyrightText": "NOASSERTION"
     },
     {
+      "name": "drift",
+      "SPDXID": "SPDXRef-Package-drift",
+      "versionInfo": "2.34.3",
+      "downloadLocation": "https://pub.dev/packages/drift/versions/2.34.3",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "drift_dev",
+      "SPDXID": "SPDXRef-Package-drift-dev",
+      "versionInfo": "2.34.3",
+      "downloadLocation": "https://pub.dev/packages/drift_dev/versions/2.34.3",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
       "name": "fake_async",
       "SPDXID": "SPDXRef-Package-fake-async",
       "versionInfo": "1.3.3",
@@ -492,6 +612,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
+      "name": "graphs",
+      "SPDXID": "SPDXRef-Package-graphs",
+      "versionInfo": "2.3.2",
+      "downloadLocation": "https://pub.dev/packages/graphs/versions/2.3.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
       "name": "hooks",
       "SPDXID": "SPDXRef-Package-hooks",
       "versionInfo": "2.2.0",
@@ -566,6 +696,16 @@
       "SPDXID": "SPDXRef-Package-jni-util",
       "versionInfo": "1.0.0",
       "downloadLocation": "https://pub.dev/packages/jni_util/versions/1.0.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "json_annotation",
+      "SPDXID": "SPDXRef-Package-json-annotation",
+      "versionInfo": "4.12.0",
+      "downloadLocation": "https://pub.dev/packages/json_annotation/versions/4.12.0",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
       "licenseDeclared": "BSD-3-Clause",
@@ -656,6 +796,16 @@
       "SPDXID": "SPDXRef-Package-mime",
       "versionInfo": "2.0.0",
       "downloadLocation": "https://pub.dev/packages/mime/versions/2.0.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "native_toolchain_c",
+      "SPDXID": "SPDXRef-Package-native-toolchain-c",
+      "versionInfo": "0.19.4",
+      "downloadLocation": "https://pub.dev/packages/native_toolchain_c/versions/0.19.4",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
       "licenseDeclared": "BSD-3-Clause",
@@ -812,10 +962,40 @@
       "copyrightText": "NOASSERTION"
     },
     {
+      "name": "process",
+      "SPDXID": "SPDXRef-Package-process",
+      "versionInfo": "5.0.5",
+      "downloadLocation": "https://pub.dev/packages/process/versions/5.0.5",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
       "name": "pub_semver",
       "SPDXID": "SPDXRef-Package-pub-semver",
       "versionInfo": "2.2.0",
       "downloadLocation": "https://pub.dev/packages/pub_semver/versions/2.2.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "pubspec_parse",
+      "SPDXID": "SPDXRef-Package-pubspec-parse",
+      "versionInfo": "1.5.0",
+      "downloadLocation": "https://pub.dev/packages/pubspec_parse/versions/1.5.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "recase",
+      "SPDXID": "SPDXRef-Package-recase",
+      "versionInfo": "4.1.0",
+      "downloadLocation": "https://pub.dev/packages/recase/versions/4.1.0",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
       "licenseDeclared": "BSD-3-Clause",
@@ -892,6 +1072,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
+      "name": "source_gen",
+      "SPDXID": "SPDXRef-Package-source-gen",
+      "versionInfo": "4.2.4",
+      "downloadLocation": "https://pub.dev/packages/source_gen/versions/4.2.4",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
       "name": "source_map_stack_trace",
       "SPDXID": "SPDXRef-Package-source-map-stack-trace",
       "versionInfo": "2.1.2",
@@ -919,6 +1109,26 @@
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
       "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "sqlite3",
+      "SPDXID": "SPDXRef-Package-sqlite3",
+      "versionInfo": "3.5.2",
+      "downloadLocation": "https://pub.dev/packages/sqlite3/versions/3.5.2",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "sqlparser",
+      "SPDXID": "SPDXRef-Package-sqlparser",
+      "versionInfo": "0.45.0",
+      "downloadLocation": "https://pub.dev/packages/sqlparser/versions/0.45.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
       "copyrightText": "NOASSERTION"
     },
     {
@@ -1269,6 +1479,316 @@
       "relatedSpdxElement": "SPDXRef-Package-string-scanner"
     },
     {
+      "spdxElementId": "SPDXRef-Package-build",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analyzer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-crypto"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-glob"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-logging"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-package-config"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-config",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-checked-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-config",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-json-annotation"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-config",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-config",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pubspec-parse"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-built-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-built-value"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-crypto"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-http-multi-server"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-logging"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-package-config"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pool"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pub-semver"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-shelf"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-shelf-web-socket"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-transform"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-watcher"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-web-socket-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-daemon",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analyzer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-args"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-build"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-build-config"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-build-daemon"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-built-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-built-value"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-convert"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-crypto"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dart-style"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-glob"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-graphs"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-http-multi-server"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-io"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-json-annotation"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-logging"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-mime"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-package-config"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pool"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pub-semver"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-shelf"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-shelf-web-socket"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-transform"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-watcher"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-web-socket-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-build-runner",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-built-value",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-built-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-built-value",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-built-value",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-fixnum"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-built-value",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-checked-yaml",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-json-annotation"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-checked-yaml",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-checked-yaml",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
       "spdxElementId": "SPDXRef-Package-cli-config",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-args"
@@ -1277,6 +1797,21 @@
       "spdxElementId": "SPDXRef-Package-cli-config",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-cli-util",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-ffi"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-cli-util",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-cli-util",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
     },
     {
       "spdxElementId": "SPDXRef-Package-code-assets",
@@ -1534,6 +2069,41 @@
       "relatedSpdxElement": "SPDXRef-Package-test"
     },
     {
+      "spdxElementId": "SPDXRef-Package-dartitect-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-build-runner"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-observability"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-sync"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-drift"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-drift-dev"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
       "spdxElementId": "SPDXRef-Package-dartitect-flutter",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-dartitect"
@@ -1691,12 +2261,22 @@
     {
       "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
       "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-build-runner"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-dartitect"
     },
     {
       "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-dartitect-dio"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-drift"
     },
     {
       "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
@@ -1727,6 +2307,16 @@
       "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-dio"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-drift"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-drift-dev"
     },
     {
       "spdxElementId": "SPDXRef-Package-dartitect-reference-app",
@@ -1806,12 +2396,37 @@
     {
       "spdxElementId": "SPDXRef-Package-dartitect-workspace",
       "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-build-runner"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-workspace",
+      "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-crypto"
     },
     {
       "spdxElementId": "SPDXRef-Package-dartitect-workspace",
       "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-drift"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-workspace",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-drift-dev"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-workspace",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-sqlite3"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-workspace",
+      "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-workspace",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-web"
     },
     {
       "spdxElementId": "SPDXRef-Package-dio",
@@ -1867,6 +2482,171 @@
       "spdxElementId": "SPDXRef-Package-dio-web-adapter",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-web"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-convert"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-sqlite3"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stack-trace"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-channel"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-web"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analyzer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-args"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-build"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-build-config"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-charcode"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-cli-util"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dart-style"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-drift"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-io"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-json-annotation"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-logging"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-package-config"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pub-semver"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-recase"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-gen"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-sqlite3"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-sqlparser"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-stream-transform"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-string-scanner"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-drift-dev",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
     },
     {
       "spdxElementId": "SPDXRef-Package-fake-async",
@@ -2014,6 +2794,11 @@
       "relatedSpdxElement": "SPDXRef-Package-string-scanner"
     },
     {
+      "spdxElementId": "SPDXRef-Package-graphs",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
       "spdxElementId": "SPDXRef-Package-hooks",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-collection"
@@ -2159,6 +2944,11 @@
       "relatedSpdxElement": "SPDXRef-Package-path"
     },
     {
+      "spdxElementId": "SPDXRef-Package-json-annotation",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
       "spdxElementId": "SPDXRef-Package-json-rpc-2",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-stack-trace"
@@ -2262,6 +3052,41 @@
       "spdxElementId": "SPDXRef-Package-material-color-utilities",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-native-toolchain-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-code-assets"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-native-toolchain-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-glob"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-native-toolchain-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-hooks"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-native-toolchain-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-logging"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-native-toolchain-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-native-toolchain-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-process"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-native-toolchain-c",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pub-semver"
     },
     {
       "spdxElementId": "SPDXRef-Package-objectbox",
@@ -2489,9 +3314,49 @@
       "relatedSpdxElement": "SPDXRef-Package-stack-trace"
     },
     {
+      "spdxElementId": "SPDXRef-Package-process",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-process",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-process",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-platform"
+    },
+    {
       "spdxElementId": "SPDXRef-Package-pub-semver",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-pubspec-parse",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-checked-yaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-pubspec-parse",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-pubspec-parse",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-json-annotation"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-pubspec-parse",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pub-semver"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-pubspec-parse",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
     },
     {
       "spdxElementId": "SPDXRef-Package-record-use",
@@ -2619,6 +3484,51 @@
       "relatedSpdxElement": "SPDXRef-Package-web-socket-channel"
     },
     {
+      "spdxElementId": "SPDXRef-Package-source-gen",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-analyzer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-gen",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-async"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-gen",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-build"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-gen",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dart-style"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-gen",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-glob"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-gen",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-gen",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pub-semver"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-gen",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-source-gen",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-yaml"
+    },
+    {
       "spdxElementId": "SPDXRef-Package-source-map-stack-trace",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-path"
@@ -2652,6 +3562,76 @@
       "spdxElementId": "SPDXRef-Package-source-span",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-term-glyph"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlite3",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-code-assets"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlite3",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlite3",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-crypto"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlite3",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-ffi"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlite3",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-hooks"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlite3",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlite3",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-native-toolchain-c"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlite3",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-path"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlite3",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-typed-data"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlite3",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-web"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlparser",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-charcode"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlparser",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-collection"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlparser",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-sqlparser",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-source-span"
     },
     {
       "spdxElementId": "SPDXRef-Package-stack-trace",

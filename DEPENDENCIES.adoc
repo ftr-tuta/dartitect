@@ -41,6 +41,13 @@ generated-output ownership and `dart_style` makes committed output identical to
 the canonical Dart formatter.
 | Generated apps and runtime packages do not depend on the CLI.
 
+| dartitect_drift
+| drift 2.34.3, dartitect, dartitect_observability, dartitect_sync
+| APPROVED EXCEPTION
+| Provides ownership, transaction, checkpoint, journal, and sanitized tracing
+around a consumer-generated Drift database without owning schema or executor.
+| Remove the adapter and compose Drift directly inside feature infrastructure.
+
 | dartitect_lints
 | analysis_server_plugin 0.3.18, analyzer 13.3.0
 | APPROVED EXCEPTION

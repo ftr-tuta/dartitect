@@ -5,7 +5,7 @@
 ## Canal
 
 `v1.0.0-rc.3` é uma tag anotada e não assinada para consumo Git sobre o cohort
-completo de dezesseis pacotes. Ela é protegida contra alteração e exclusão. Não
+completo de dezessete pacotes. Ela é protegida contra alteração e exclusão. Não
 é GitHub Release, publicação no pub.dev nem o futuro canal formal assinado.
 
 ## Adicione pacotes
@@ -44,7 +44,7 @@ dart run tool/git_dependency_overrides.dart dartitect_flutter
 dart run tool/git_dependency_overrides.dart dartitect_media,dartitect_privacy
 ```
 
-O gerador lê a ordem de publicação dos dezesseis pacotes e seus pubspecs,
+O gerador lê a ordem de publicação dos dezessete pacotes e seus pubspecs,
 percorre todas as dependências internas, rejeita pacotes desconhecidos e emite
 uma URL/ref comum com o path Git relativo de cada pacote.
 

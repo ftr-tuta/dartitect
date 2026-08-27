@@ -23,6 +23,7 @@ to migrate or coexist with another DI/application-state runtime.
 | Reactive graph, resources, families, collections, headless builders | `dartitect_flutter` | `package:dartitect_flutter/dartitect_flutter_reactive.dart` | Flutter | `$dartitect-reactive` | Basic `ChangeNotifier`/command composition is sufficient |
 | Logs, reporting, tracing, redaction | `dartitect_observability` | `package:dartitect_observability/dartitect_observability.dart` | Dart, Flutter, web | `$dartitect-observability` | A remote destination has not been explicitly selected; local developer logging already suffices |
 | Dio integration | `dartitect_dio` | `package:dartitect_dio/dartitect_dio.dart` | Dio platforms | `$dartitect-adapters` | The application did not choose Dio or the import would cross into domain/presentation |
+| Drift integration | `dartitect_drift` | `package:dartitect_drift/dartitect_drift.dart` | Dart, Flutter, web | `$dartitect-adapters`; combine with `$dartitect-offline-first` | The consumer expects an SDK-owned schema/executor or universal database abstraction |
 | ObjectBox integration | `dartitect_objectbox` | `package:dartitect_objectbox/dartitect_objectbox.dart` | Android, iOS, Linux, macOS, Windows | `$dartitect-adapters`; combine with `$dartitect-offline-first` | Web support or an ORM abstraction is required |
 | Sentry integration | `dartitect_sentry` | `package:dartitect_sentry/dartitect_sentry.dart` | Dart, Flutter | `$dartitect-adapters` + `$dartitect-observability` | The consumer has not initialized/selected Sentry or another hook already captures the same telemetry |
 | Tracking authorization | `dartitect_privacy` | `package:dartitect_privacy/dartitect_privacy.dart` | iOS; typed not-supported elsewhere | `$dartitect-adapters` | Authorization would be requested automatically or ATT is not required |
@@ -48,7 +49,7 @@ to `$dartitect-tooling`; it is not an application entrypoint.
 | Reactive lifecycle and UI | `$dartitect-reactive` | `$dartitect-runtime`, `$dartitect-testing` |
 | Local-first pagination or durable outbox | `$dartitect-offline-first` | `$dartitect-reactive`, provider `$dartitect-adapters`, `$dartitect-testing` |
 | Foreground or headless dataset sync | `$dartitect-offline-first` | `$dartitect-adapters`, `$dartitect-observability`, `$dartitect-testing` |
-| Dio, ObjectBox, Sentry, or custom provider | `$dartitect-adapters` | `$dartitect-observability` or `$dartitect-offline-first` according to policy |
+| Dio, Drift, ObjectBox, Sentry, or custom provider | `$dartitect-adapters` | `$dartitect-observability` or `$dartitect-offline-first` according to policy |
 | Telemetry policy and capture | `$dartitect-observability` | `$dartitect-adapters` only after selecting a provider |
 | Failure/lifecycle/provider verification | `$dartitect-testing` | The focused implementation skill |
 | CLI, scanner, lints, generators, native setup, release gates | `$dartitect-tooling` | Keep MCP work separate |

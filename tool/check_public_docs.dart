@@ -19,8 +19,8 @@ Future<void> main() async {
       .where((directory) => File('${directory.path}/pubspec.yaml').existsSync())
       .toList();
   packages.sort((left, right) => left.path.compareTo(right.path));
-  if (packages.length != 16) {
-    errors.add('Expected 16 publishable packages; found ${packages.length}.');
+  if (packages.length != 17) {
+    errors.add('Expected 17 publishable packages; found ${packages.length}.');
   }
 
   for (final package in packages) {

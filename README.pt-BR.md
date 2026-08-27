@@ -8,7 +8,7 @@ falhas tipadas, contratos pequenos de observabilidade, verificações de
 arquitetura, tooling seguro e adapters opcionais de infraestrutura sem container
 global.
 
-Todos os dezesseis pacotes públicos compartilham a linha candidata
+Todos os dezessete pacotes públicos compartilham a linha candidata
 `1.0.0-rc.3`. Este cohort destina-se à tag Git protegida; a publicação no
 pub.dev não está autorizada. A API 24 Android é coberta por compatibilidade de
 build e o runtime Android 14/API 34 roda em emulador limpo hospedado pelo GitHub.
@@ -60,6 +60,7 @@ fornecedor.
 | [`dartitect_flutter`](packages/dartitect_flutter/) | Ownership de ViewModel, comandos async, selectors, scope, binding de erros | Flutter | `1.0.0-rc.3` |
 | [`dartitect_observability`](packages/dartitect_observability/) | Logs, redaction, reporting, trace W3C, runtime limitado | Dart, Flutter, web | `1.0.0-rc.3` |
 | [`dartitect_dio`](packages/dartitect_dio/) | Ownership de Dio, falhas tipadas, cancelamento, telemetria mínima | Plataformas Dio | `1.0.0-rc.3` |
+| [`dartitect_drift`](packages/dartitect_drift/) | Lifecycle, transações, checkpoints e journals para banco Drift do consumidor | Dart, Flutter, web | `1.0.0-rc.3` |
 | [`dartitect_objectbox`](packages/dartitect_objectbox/) | Ownership de Store/query/watcher sobre modelos gerados pelo consumidor | Android, iOS, Linux, macOS, Windows | `1.0.0-rc.3` |
 | [`dartitect_sentry`](packages/dartitect_sentry/) | Adapters para Hub Sentry borrowed e inicializado pelo consumidor | Dart, Flutter | `1.0.0-rc.3` |
 | [`dartitect_privacy`](packages/dartitect_privacy/) | Status/request ATT explícito, sem prompt automático | iOS; not-supported tipado nas demais | `1.0.0-rc.3` |
@@ -108,7 +109,7 @@ dependency_overrides:
       path: packages/dartitect_flutter
 ```
 
-Gere os overrides exatos para qualquer combinação dos dezesseis pacotes com
+Gere os overrides exatos para qualquer combinação dos dezessete pacotes com
 `dart run tool/git_dependency_overrides.dart <pacote>[,<pacote>...]`. O
 [guia de consumo do candidato Git](docs/guides/git-candidate-consumption.pt-BR.md)
 documenta a validação e a diferença para o futuro canal formal assinado.
@@ -241,9 +242,10 @@ aprovação do cliente, revalidação integral, serialização e lock. Consulte 
 ## Compatibilidade e versionamento
 
 O workspace exige Dart `^3.13.0`; pacotes Flutter exigem Flutter `>=3.47.1`.
-ObjectBox não suporta web. CLI/MCP são ferramentas locais de VM. Pacotes
+Drift aceita executores native/web pertencentes ao consumidor; ObjectBox não
+suporta web. CLI/MCP são ferramentas locais de VM. Pacotes
 candidatos podem receber correções de API antes de um novo release; o cohort
-completo de dezesseis pacotes evolui em lockstep.
+completo de dezessete pacotes evolui em lockstep.
 
 Somente a config v1 estável é aceita; versões experimentais não possuem
 migração. Baselines ignoram números de linha. Mudanças de API pública são

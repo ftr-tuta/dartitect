@@ -245,7 +245,12 @@ final class DartitectCliRunner {
     final enabledAdapters = <String>{...adapters};
     if (observability == 'sentry') enabledAdapters.add('sentry');
     for (final adapter in enabledAdapters) {
-      if (!const <String>{'dio', 'objectbox', 'sentry'}.contains(adapter)) {
+      if (!const <String>{
+        'dio',
+        'drift',
+        'objectbox',
+        'sentry',
+      }.contains(adapter)) {
         throw _UsageException('Unsupported adapter "$adapter".');
       }
     }
@@ -381,6 +386,13 @@ final class ${name.pascal}App extends StatelessWidget {
       else
         ...scaffold.blueprint(blueprint, 'tasks'),
     ]);
+    if (adapters.contains('drift')) {
+      final recipe = File(
+        _join(project.path, 'docs/drift-composition-root.md'),
+      );
+      await recipe.parent.create(recursive: true);
+      await recipe.writeAsString(_driftCompositionRootRecipe, flush: true);
+    }
     final format = await Process.run('dart', <String>[
       'format',
       'lib',
@@ -776,6 +788,7 @@ final class ${name.pascal}App extends StatelessWidget {
     final closure = <String>{...packages};
     if (closure.contains('dartitect_flutter') ||
         closure.contains('dartitect_dio') ||
+        closure.contains('dartitect_drift') ||
         closure.contains('dartitect_objectbox')) {
       closure
         ..add('dartitect')
@@ -787,6 +800,7 @@ final class ${name.pascal}App extends StatelessWidget {
     if (closure.contains('dartitect_observability') ||
         closure.contains('dartitect_testing') ||
         closure.contains('dartitect_dio') ||
+        closure.contains('dartitect_drift') ||
         closure.contains('dartitect_objectbox')) {
       closure
         ..add('dartitect')
@@ -809,6 +823,31 @@ final class ${name.pascal}App extends StatelessWidget {
 
   static String _join(String left, String right) =>
       '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
+
+  static const _driftCompositionRootRecipe = '''# Drift composition-root recipe
+
+`dartitect create app --adapters=drift` adds only the `dartitect_drift`
+dependency and this recipe. The application owns its Drift schema, migrations,
+executor, codecs, database file or web assets, and generated code.
+
+1. Put the consumer `GeneratedDatabase`, tables, and DAOs under the feature's
+   `infrastructure/` directory. Keep them out of domain, application, and
+   presentation.
+2. Select the executor in consumer code with conditional exports: a stub, then
+   `dart.library.ffi` for native and `dart.library.js_interop` for web. Configure
+   `NativeDatabase.createInBackground` or `WasmDatabase.open` there.
+3. At an app, session, route, or isolate composition root, open the database
+   through `DriftDatabaseOwner.create(openDatabase: ...)`. Inject repositories,
+   `DriftMutationTransaction`, `DriftSyncCheckpointStore`, and
+   `DriftSyncRunJournal`; do not expose Drift types through feature contracts.
+4. Adapt a consumer `Selectable.watch()` stream through Dartitect's existing
+   `StreamReactiveSource`. Dispose observations, sync, and repositories before
+   the database owner.
+
+When Drift and ObjectBox coexist, assign different bounded contexts and a
+single writer per dataset or partition. Do not dual-write, bridge schemas, or
+attempt a transaction across engines.
+''';
 
   static const _help = '''Dartitect ${CommandEnvelope.sdkVersion}
 

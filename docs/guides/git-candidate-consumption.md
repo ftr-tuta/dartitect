@@ -5,7 +5,7 @@
 ## Channel
 
 `v1.0.0-rc.3` is an annotated, unsigned Git-consumption tag over the complete
-sixteen-package cohort. It is protected against updates and deletion. It is not
+seventeen-package cohort. It is protected against updates and deletion. It is not
 a GitHub Release, a pub.dev publication, or the future signed formal release
 channel.
 
@@ -45,7 +45,7 @@ dart run tool/git_dependency_overrides.dart dartitect_flutter
 dart run tool/git_dependency_overrides.dart dartitect_media,dartitect_privacy
 ```
 
-The generator reads the checked sixteen-package publication order and package
+The generator reads the checked seventeen-package publication order and package
 pubspecs, follows all internal dependencies, rejects unknown packages, and
 emits one common URL/ref with a package-relative Git path.
 

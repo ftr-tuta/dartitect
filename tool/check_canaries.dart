@@ -187,6 +187,12 @@ Future<Map<String, Object?>> _runCanary({
       await run('flutter', const <String>['test']);
       break;
     case 'offline_first':
+      await run('dart', const <String>[
+        'run',
+        'build_runner',
+        'build',
+        '--delete-conflicting-outputs',
+      ]);
       await run('flutter', const <String>['analyze']);
       await run('flutter', const <String>[
         'test',
@@ -195,16 +201,31 @@ Future<Map<String, Object?>> _runCanary({
       ]);
       await run(
         'flutter',
-        const <String>['test', 'test/native_objectbox_workload_test.dart'],
+        const <String>[
+          'test',
+          'test/native_objectbox_workload_test.dart',
+          'test/drift_objectbox_bounded_contexts_test.dart',
+        ],
         extraEnvironment: _nativeObjectBoxEnvironment(workspace),
         receiptCommand:
             'DARTITECT_NATIVE_OBJECTBOX=1 flutter test '
-            'test/native_objectbox_workload_test.dart',
+            'test/native_objectbox_workload_test.dart '
+            'test/drift_objectbox_bounded_contexts_test.dart',
       );
       await run('flutter', <String>[
         'build',
         _hostDesktopTarget(),
       ], receiptCommand: 'flutter build host-desktop');
+      break;
+    case 'drift_provider':
+      await run('dart', const <String>[
+        'run',
+        'build_runner',
+        'build',
+        '--delete-conflicting-outputs',
+      ]);
+      await run('dart', const <String>['analyze']);
+      await run('dart', const <String>['test']);
       break;
     case 'native_capabilities':
       await run('flutter', const <String>['analyze']);
@@ -414,13 +435,14 @@ void _validateContract(
   final ids = <String>{
     for (final canary in _objects(contract['canaries'])) canary['id'] as String,
   };
-  if (ids.length != 3 ||
+  if (ids.length != 4 ||
       !ids.containsAll(const <String>{
         'minimal',
         'offline_first',
+        'drift_provider',
         'native_capabilities',
       })) {
-    throw StateError('All three formal canaries are required.');
+    throw StateError('All four formal canaries are required.');
   }
   const requiredCoverage = <String>{
     'flutter_simple',
@@ -432,6 +454,10 @@ void _validateContract(
     'large_assets',
     'multipackage_workspace',
     'consumer_owned_codegen',
+    'drift_objectbox_bounded_contexts',
+    'drift_provider_package',
+    'drift_consumer_owned_schema',
+    'drift_sync_ports',
   };
   final coverage = <String>{
     for (final canary in _objects(contract['canaries']))

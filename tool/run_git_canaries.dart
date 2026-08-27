@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'git_dependency_overrides.dart';
 
-/// Resolves and runs all three consumer canaries from one annotated Git tag.
+/// Resolves and runs all consumer canaries from one annotated Git tag.
 Future<void> main(List<String> arguments) async {
   final options = _Options.parse(arguments);
   final workspace = File.fromUri(Platform.script).parent.parent.absolute;
@@ -150,6 +150,12 @@ Future<Map<String, Object?>> _runCanary({
       await run('flutter', const <String>['analyze']);
       await run('flutter', const <String>['test']);
     case 'offline_first':
+      await run('dart', const <String>[
+        'run',
+        'build_runner',
+        'build',
+        '--delete-conflicting-outputs',
+      ]);
       await run('flutter', const <String>['analyze']);
       await run('flutter', const <String>[
         'test',
@@ -158,16 +164,30 @@ Future<Map<String, Object?>> _runCanary({
       ]);
       await run(
         'flutter',
-        const <String>['test', 'test/native_objectbox_workload_test.dart'],
+        const <String>[
+          'test',
+          'test/native_objectbox_workload_test.dart',
+          'test/drift_objectbox_bounded_contexts_test.dart',
+        ],
         extraEnvironment: _nativeObjectBoxEnvironment(workspace),
         receiptCommand:
             'DARTITECT_NATIVE_OBJECTBOX=1 flutter test '
-            'test/native_objectbox_workload_test.dart',
+            'test/native_objectbox_workload_test.dart '
+            'test/drift_objectbox_bounded_contexts_test.dart',
       );
       await run('flutter', <String>[
         'build',
         _hostDesktopTarget(),
       ], receiptCommand: 'flutter build host-desktop');
+    case 'drift_provider':
+      await run('dart', const <String>[
+        'run',
+        'build_runner',
+        'build',
+        '--delete-conflicting-outputs',
+      ]);
+      await run('dart', const <String>['analyze']);
+      await run('dart', const <String>['test']);
     case 'native_capabilities':
       await run('flutter', const <String>['analyze']);
       await run('flutter', const <String>['test']);

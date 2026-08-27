@@ -105,6 +105,7 @@ const Map<String, String> _decisions = <String, String>{
   'dartitect': 'keep-minimal-core',
   'dartitect_cli': 'keep-host-tooling',
   'dartitect_dio': 'keep-optional-adapter',
+  'dartitect_drift': 'add-consumer-owned-drift-sync-adapter',
   'dartitect_flutter': 'keep-headless-and-widgets-no-material-entrypoint',
   'dartitect_isolates': 'add-pure-dart-worker-lifecycle',
   'dartitect_lints': 'keep-analyzer-host',

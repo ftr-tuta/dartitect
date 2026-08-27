@@ -41,6 +41,21 @@
       "publicSymbolCount": 26
     },
     {
+      "name": "dartitect_drift",
+      "version": "1.0.0-rc.3",
+      "decision": "add-consumer-owned-drift-sync-adapter",
+      "runtimeDependencies": [
+        "dartitect",
+        "dartitect_observability",
+        "dartitect_sync",
+        "drift"
+      ],
+      "entrypoints": [
+        "dartitect_drift.dart"
+      ],
+      "publicSymbolCount": 12
+    },
+    {
       "name": "dartitect_flutter",
       "version": "1.0.0-rc.3",
       "decision": "keep-headless-and-widgets-no-material-entrypoint",
