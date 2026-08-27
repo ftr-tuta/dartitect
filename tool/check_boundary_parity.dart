@@ -5,7 +5,19 @@ import 'package:dartitect_cli/dartitect_cli.dart';
 
 Future<void> main() async {
   final root = File.fromUri(Platform.script).parent.parent.absolute;
-  final fixture = Directory('${root.path}/tool/analyzer_plugin_fixture');
+  final sourceFixture = Directory('${root.path}/tool/analyzer_plugin_fixture');
+  final sandbox = await Directory.systemTemp.createTemp(
+    'dartitect-boundary-parity-',
+  );
+  final fixture = await _prepareFixture(root, sourceFixture, sandbox);
+  try {
+    await _check(root, fixture);
+  } finally {
+    await sandbox.delete(recursive: true);
+  }
+}
+
+Future<void> _check(Directory root, Directory fixture) async {
   final corpus = _object(
     jsonDecode(
       await File('${root.path}/tool/boundary_parity_corpus.json')
@@ -43,9 +55,11 @@ Future<void> main() async {
     throw StateError('Analyzer parity fixture did not complete cleanly.');
   }
   final plugin = <String, List<String>>{};
+  var modelingRuleObserved = false;
   for (final line in '${analyzed.stdout}'.split(RegExp(r'\r?\n'))) {
     final fields = line.split('|');
     if (fields.length < 8) continue;
+    if (fields[2] == 'DARTITECT_DT1032') modelingRuleObserved = true;
     final code = mapping[fields[2]];
     if (code == null) continue;
     final path = boundaryParityRelativePath(fixture, fields[3]);
@@ -53,6 +67,9 @@ Future<void> main() async {
   }
 
   final errors = <String>[];
+  if (!modelingRuleObserved) {
+    errors.add('Analyzer plugin did not emit the shared DT1032 probe.');
+  }
   final casePaths = <String>{};
   for (final testCase in cases) {
     final path = testCase['path'];
@@ -104,6 +121,51 @@ Future<void> main() async {
     '${analyzerWatch.elapsedMilliseconds} ms.',
   );
 }
+
+Future<Directory> _prepareFixture(
+  Directory root,
+  Directory sourceFixture,
+  Directory sandbox,
+) async {
+  final fixture = Directory('${sandbox.path}/fixture');
+  await _copyDirectory(sourceFixture, fixture);
+  final lints = Directory(
+    '${root.path}/tool/analyzer_plugin_workspace/dartitect_lints',
+  );
+  await File('${fixture.path}/analysis_options.yaml').writeAsString('''
+plugins:
+  dartitect_lints:
+    path: ${_yamlPath(lints.path)}
+''');
+  await File('${fixture.path}/lib/modeling_probe.dart').writeAsString('''
+final class DartitectValue {
+  const DartitectValue();
+}
+
+@DartitectValue()
+final class ModelingProbe {
+  const ModelingProbe({required this.id});
+  final String id;
+}
+''');
+  return fixture;
+}
+
+Future<void> _copyDirectory(Directory source, Directory destination) async {
+  await destination.create(recursive: true);
+  await for (final entity in source.list(recursive: true, followLinks: false)) {
+    final relative = entity.path.substring(source.path.length + 1);
+    final target = '${destination.path}${Platform.pathSeparator}$relative';
+    if (entity is Directory) {
+      await Directory(target).create(recursive: true);
+    } else if (entity is File) {
+      await File(target).parent.create(recursive: true);
+      await entity.copy(target);
+    }
+  }
+}
+
+String _yamlPath(String path) => jsonEncode(path.replaceAll('\\', '/'));
 
 Map<String, Object?> _object(Object? value) {
   if (value is! Map<String, Object?>) {

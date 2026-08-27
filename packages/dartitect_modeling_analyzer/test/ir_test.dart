@@ -11,6 +11,7 @@ void main() {
     const field = ModelingFieldIr(name: 'name', type: type);
     const model = ModelingModelIr(
       name: 'Profile',
+      sourcePath: 'lib/profile.dart',
       fields: <ModelingFieldIr>[field],
       capabilities: <ModelingCapability>{ModelingCapability.value},
     );

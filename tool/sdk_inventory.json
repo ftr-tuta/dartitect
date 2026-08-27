@@ -99,6 +99,7 @@
       "runtimeDependencies": [
         "analysis_server_plugin",
         "analyzer",
+        "analyzer_plugin",
         "dartitect_modeling_analyzer"
       ],
       "entrypoints": [
@@ -165,7 +166,7 @@
       "entrypoints": [
         "dartitect_modeling_analyzer.dart"
       ],
-      "publicSymbolCount": 13
+      "publicSymbolCount": 20
     },
     {
       "name": "dartitect_objectbox",

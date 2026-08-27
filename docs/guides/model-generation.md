@@ -6,7 +6,8 @@
 
 Model generation is limited to immutable value boilerplate. The generator scans
 `lib/**` and each immediate `packages/*/lib/**` tree without following symlinks.
-An annotated source library owns one deterministic Dartitect part.
+An annotated source library may contain models in its defining unit and parts;
+all models share one deterministic Dartitect part.
 
 | Contract | Supported 1.0 form | Rejected form |
 |---|---|---|
@@ -16,14 +17,18 @@ An annotated source library owns one deterministic Dartitect part.
 | Fields | At least one public, typed, named `final` primary-constructor field | Private, inferred, positional, late, or mutable fields |
 | Collections | Consumer-owned immutable class wrapper types | Mutable collection interfaces, including aliases of `List`, `Set`, `Map`, `Iterable`, queues, hash/tree collections, and typed-data lists |
 | Constructor | One unnamed primary constructor; use `class const` when constant construction is required | Traditional, named-primary, factory-only, external, or positional forms |
+| Library shape | Multiple models, generics with bounds, const/defaults, records, and ordinary parts | A generated part per model or renderer access to unresolved AST/types |
 
 The generator does not create JSON, unions, DTO/entity schemas, ObjectBox
 entities, dependency injection, ViewModels, routes, REST clients, runtime
 reflection, or mutable models. Other generators may coexist only when they own
 different output files.
 
-Missing primary constructors produce `DT1030` and no model output is applied. Annotation
-identity is semantic, not a lexical name comparison.
+Missing primary constructors produce `DT1030` and no model output is applied.
+Annotation identity is semantic, not a lexical name comparison. The shared
+read-only compiler owns one Analyzer lifecycle and produces the same public IR,
+granular `DT1030+` rules, source locations, severities, and fix IDs for the CLI
+and official lints. The renderer receives only validated IR.
 
 Run `dartitect model migrate primary` for a read-only semantic preview of
 eligible traditional value classes. Only `--apply` takes the shared project
@@ -95,7 +100,7 @@ Updates and deletes require the existing bytes to match the recorded digest.
 
 | Artifact | 1.0 schema | Compatibility rule |
 |---|---:|---|
-| Semantic model input signature | 1 | Included in the manifest input digest; a contract change makes output stale |
+| Semantic model input signature | 2 | Includes library identity, capabilities, generics, defaults, types, and all models in the generated part |
 | JSON command report | 1 | Consumers must select the supported schema explicitly |
 | `.dartitect/model-outputs.json` | 1 | Missing ownership conflicts with candidate outputs; malformed, older, or future schemas fail closed |
 | `.dartitect/generation-journal.json` | 2 | Malformed, older, or future schemas stop recovery and preserve residue for diagnosis |

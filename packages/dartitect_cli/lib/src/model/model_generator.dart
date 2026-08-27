@@ -1,26 +1,35 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
-import 'package:analyzer/dart/analysis/results.dart';
-import 'package:analyzer/dart/analysis/utilities.dart';
-import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/diagnostic/diagnostic.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:dartitect_modeling_analyzer/dartitect_modeling_analyzer.dart';
 
 import '../generation/generation_engine.dart';
 
 /// Stable model-generation diagnostic.
 final class ModelDiagnostic {
-  /// Creates a source contract diagnostic.
+  /// Creates a source, ownership, or freshness diagnostic.
   const ModelDiagnostic({
     required this.code,
     required this.message,
     required this.path,
+    this.severity = ModelingDiagnosticSeverity.error,
     this.line,
+    this.fixId,
   });
 
-  /// Stable DT102x code.
+  /// Creates the CLI representation of a shared compiler diagnostic.
+  factory ModelDiagnostic.fromModeling(ModelingDiagnostic diagnostic) =>
+      ModelDiagnostic(
+        code: diagnostic.rule,
+        message: diagnostic.message,
+        path: diagnostic.path,
+        severity: diagnostic.severity,
+        line: diagnostic.line,
+        fixId: diagnostic.fixId,
+      );
+
+  /// Stable `DTnnnn` rule.
   final String code;
 
   /// Payload-free actionable message.
@@ -29,15 +38,23 @@ final class ModelDiagnostic {
   /// Project-relative source or output path.
   final String path;
 
+  /// Stable severity shared with lints and verification.
+  final ModelingDiagnosticSeverity severity;
+
   /// Optional one-based source line.
   final int? line;
 
+  /// Optional stable semantic-fix identifier.
+  final String? fixId;
+
   /// Stable JSON representation.
   Map<String, Object?> toJson() => <String, Object?>{
-    'code': code,
+    'rule': code,
+    'severity': severity.name,
     'message': message,
     'path': path,
     if (line != null) 'line': line,
+    if (fixId != null) 'fixId': fixId,
   };
 }
 
@@ -155,7 +172,7 @@ final class ModelGenerationException implements Exception {
   String toString() => 'Model source validation failed.';
 }
 
-/// Native Analyzer-backed Dartitect value generator.
+/// Native Analyzer-backed Dartitect model generator.
 final class DartitectModelGenerator {
   /// Creates a generator for one project or pub workspace root.
   DartitectModelGenerator(
@@ -202,115 +219,24 @@ final class DartitectModelGenerator {
   }
 
   Future<_Discovery> _discover() async {
-    final files = await _sourceFiles();
-    final diagnostics = <ModelDiagnostic>[];
+    final compilation = await ModelingCompiler(root).compile();
+    final diagnostics = <ModelDiagnostic>[
+      for (final diagnostic in compilation.diagnostics)
+        ModelDiagnostic.fromModeling(diagnostic),
+    ];
     final operations = <FileGenerationOperation>[];
-    final annotatedFiles = <_AnnotatedFile>[];
-    final collection = AnalysisContextCollection(
-      includedPaths: <String>[root.path],
-      excludedPaths: <String>[
-        _join(root.path, '.dart_tool'),
-        _join(root.path, 'build'),
-      ],
-    );
-    try {
-      for (final file in files) {
-        final source = await file.readAsString();
-        final parsed = parseString(
-          content: source,
-          path: file.path,
-          throwIfDiagnostics: false,
-        );
-        final lexical = parsed.unit.declarations
-            .whereType<ClassDeclaration>()
-            .where(_hasLexicalDartitectValue)
-            .toList(growable: false);
-        if (lexical.isEmpty) continue;
-        final path = _relative(file.path);
-        final context = collection.contextFor(file.path);
-        final result = await context.currentSession.getResolvedUnit(file.path);
-        if (result is! ResolvedUnitResult) {
-          diagnostics.add(
-            ModelDiagnostic(
-              code: 'DT1021',
-              message: 'Analyzer could not resolve the model library.',
-              path: path,
-            ),
-          );
-          continue;
-        }
-        final candidates = result.unit.declarations
-            .whereType<ClassDeclaration>()
-            .where(_hasLexicalDartitectValue)
-            .toList(growable: false);
-        final annotated = candidates
-            .where(_hasDartitectValue)
-            .toList(growable: false);
-        if (annotated.length != candidates.length) {
-          diagnostics.add(
-            ModelDiagnostic(
-              code: 'DT1021',
-              message:
-                  'DartitectValue must resolve to the annotation declared by '
-                  'package:dartitect_modeling.',
-              path: path,
-            ),
-          );
-        }
-        if (annotated.isEmpty) continue;
-        if (annotated.length != 1) {
-          diagnostics.add(
-            ModelDiagnostic(
-              code: 'DT1021',
-              message:
-                  'A source library must contain exactly one DartitectValue '
-                  'class.',
-              path: path,
-            ),
-          );
-          continue;
-        }
-        final declaration = annotated.single;
-        final model = _validateModel(
-          result.unit,
-          declaration,
-          path: path,
-          lineAt: (offset) => result.lineInfo.getLocation(offset).lineNumber,
-          diagnostics: diagnostics,
-        );
-        if (model == null) continue;
-        final outputPath =
-            path.substring(0, path.length - '.dart'.length) +
-            '.dartitect.g.dart';
-        annotatedFiles.add(
-          _AnnotatedFile(
-            file: file,
-            outputPath: outputPath,
-            mixinName: '_\$${model.name}Dartitect',
-          ),
-        );
-        operations.add(
-          FileGenerationOperation(
-            relativePath: outputPath,
-            content: _render(model, sourcePath: path),
-            ownership: GeneratedOwnership.fullyGenerated,
-            sourcePath: path,
-            inputSignature: _semanticSignature(model, sourcePath: path),
-          ),
-        );
-      }
-    } finally {
-      await collection.dispose();
+    for (final library in compilation.workspace.libraries) {
+      operations.add(
+        FileGenerationOperation(
+          relativePath: library.outputPath,
+          content: _render(library),
+          ownership: GeneratedOwnership.fullyGenerated,
+          sourcePath: library.path,
+          inputSchemaVersion: 2,
+          inputSignature: _semanticSignature(library),
+        ),
+      );
     }
-
-    if (annotatedFiles.isNotEmpty) {
-      await _validateAnalyzerBootstrap(annotatedFiles, diagnostics);
-    }
-    diagnostics.sort((left, right) {
-      final path = left.path.compareTo(right.path);
-      if (path != 0) return path;
-      return (left.line ?? 0).compareTo(right.line ?? 0);
-    });
     operations.sort(
       (left, right) => left.relativePath.compareTo(right.relativePath),
     );
@@ -319,415 +245,145 @@ final class DartitectModelGenerator {
       List<ModelDiagnostic>.unmodifiable(diagnostics),
     );
   }
-
-  _Model? _validateModel(
-    CompilationUnit unit,
-    ClassDeclaration declaration, {
-    required String path,
-    required int Function(int) lineAt,
-    required List<ModelDiagnostic> diagnostics,
-  }) {
-    final before = diagnostics.length;
-    void reject(String message, [AstNode? node, String code = 'DT1021']) {
-      diagnostics.add(
-        ModelDiagnostic(
-          code: code,
-          message: message,
-          path: path,
-          line: node == null ? null : lineAt(node.offset),
-        ),
-      );
-    }
-
-    final name = declaration.namePart.typeName.lexeme;
-    final primaryConstructor = switch (declaration.namePart) {
-      final PrimaryConstructorDeclaration constructor => constructor,
-      _ => null,
-    };
-    final expectedPart =
-        '${_basename(path, removeExtension: true)}.dartitect.g.dart';
-    final partUris = unit.directives
-        .whereType<PartDirective>()
-        .map((directive) => directive.uri.stringValue)
-        .whereType<String>()
-        .toList(growable: false);
-    if (partUris.where((uri) => uri == expectedPart).length != 1) {
-      reject('The library must declare exactly `part \'$expectedPart\';`.');
-    }
-    if (declaration.finalKeyword == null) {
-      reject('DartitectValue classes must be final.', declaration);
-    }
-    if (declaration.abstractKeyword != null) {
-      reject('DartitectValue classes must be concrete.', declaration);
-    }
-    if (declaration.namePart.typeParameters != null) {
-      reject(
-        'Generic DartitectValue classes are not supported in 1.0.',
-        declaration,
-      );
-    }
-    final superclass = declaration.extendsClause?.superclass.toSource();
-    if (superclass == null || superclass.split('.').last != 'ValueEquality') {
-      reject('DartitectValue classes must extend ValueEquality.', declaration);
-    }
-    final expectedMixin = '_\$${name}Dartitect';
-    final mixins =
-        declaration.withClause?.mixinTypes
-            .map((type) => type.toSource())
-            .toList(growable: false) ??
-        const <String>[];
-    if (!mixins.contains(expectedMixin)) {
-      reject('The class must mix in $expectedMixin.', declaration);
-    }
-
-    final fields = <_Field>[];
-    if (primaryConstructor == null) {
-      reject(
-        'DartitectValue classes must declare an unnamed primary constructor.',
-        declaration,
-        'DT1030',
-      );
-    } else {
-      if (primaryConstructor.constructorName != null) {
-        reject(
-          'DartitectValue primary constructors must be unnamed.',
-          primaryConstructor,
-        );
-      }
-      for (final parameter in primaryConstructor.formalParameters.parameters) {
-        final parameterName = parameter.name?.lexeme;
-        final typeAnnotation = parameter.type;
-        if (parameter is! RegularFormalParameter ||
-            parameter.finalKeyword == null ||
-            !parameter.isNamed ||
-            parameterName == null ||
-            typeAnnotation == null) {
-          reject(
-            'Model primary parameters must be typed, named, and final.',
-            parameter,
-          );
-          continue;
-        }
-        if (parameterName.startsWith('_')) {
-          reject(
-            'Model primary parameters must declare public fields.',
-            parameter,
-          );
-          continue;
-        }
-        if (_isMutableCollection(typeAnnotation)) {
-          reject(
-            'Mutable collection interfaces are not supported in model fields.',
-            parameter,
-          );
-        }
-        final type = typeAnnotation.toSource();
-        fields.add(
-          _Field(
-            name: parameterName,
-            type: type,
-            nullable: type.trim().endsWith('?'),
-          ),
-        );
-      }
-    }
-    if (fields.isEmpty) {
-      reject('A DartitectValue class must declare at least one field.');
-    }
-    for (final member in declaration.body.members) {
-      if (member is FieldDeclaration && member.isStatic) continue;
-      if (member is FieldDeclaration || member is ConstructorDeclaration) {
-        reject(
-          'Model instance fields and constructors must be declared by the '
-          'primary constructor.',
-          member,
-        );
-      }
-    }
-
-    final generatedParameters = <String>{
-      for (final field in fields) field.name,
-    };
-    for (final field in fields.where((field) => field.nullable)) {
-      final clearName = _clearName(field.name);
-      if (!generatedParameters.add(clearName)) {
-        reject(
-          'Nullable clear flag `$clearName` collides with a field.',
-          declaration,
-        );
-      }
-    }
-    if (diagnostics.length != before) return null;
-    return _Model(name: name, partUri: expectedPart, fields: fields);
-  }
-
-  Future<void> _validateAnalyzerBootstrap(
-    List<_AnnotatedFile> files,
-    List<ModelDiagnostic> diagnostics,
-  ) async {
-    final collection = AnalysisContextCollection(
-      includedPaths: <String>[root.path],
-      excludedPaths: <String>[
-        _join(root.path, '.dart_tool'),
-        _join(root.path, 'build'),
-      ],
-    );
-    try {
-      for (final annotated in files) {
-        final context = collection.contextFor(annotated.file.path);
-        final result = await context.currentSession.getResolvedUnit(
-          annotated.file.path,
-        );
-        if (result is! ResolvedUnitResult) {
-          diagnostics.add(
-            ModelDiagnostic(
-              code: 'DT1021',
-              message: 'Analyzer could not resolve the model library.',
-              path: _relative(annotated.file.path),
-            ),
-          );
-          continue;
-        }
-        for (final diagnostic in result.diagnostics) {
-          if (diagnostic.severity != Severity.error) continue;
-          final expectedBootstrap =
-              diagnostic.message.contains(_basename(annotated.outputPath)) ||
-              diagnostic.message.contains(annotated.mixinName) ||
-              diagnostic.diagnosticCode.lowerCaseName ==
-                      'non_abstract_class_inherits_abstract_member' &&
-                  diagnostic.message.contains('ValueEquality.equalityFields');
-          if (expectedBootstrap) continue;
-          diagnostics.add(
-            ModelDiagnostic(
-              code: 'DT1021',
-              message: 'Analyzer: ${diagnostic.message}',
-              path: _relative(annotated.file.path),
-              line: result.lineInfo.getLocation(diagnostic.offset).lineNumber,
-            ),
-          );
-        }
-      }
-    } finally {
-      await collection.dispose();
-    }
-  }
-
-  Future<List<File>> _sourceFiles() async {
-    final roots = <Directory>[];
-    final lib = Directory(_join(root.path, 'lib'));
-    if (await lib.exists()) roots.add(lib);
-    final packages = Directory(_join(root.path, 'packages'));
-    if (await packages.exists()) {
-      await for (final package in packages.list(followLinks: false)) {
-        if (package is! Directory) continue;
-        final packageLib = Directory(_join(package.path, 'lib'));
-        if (await packageLib.exists()) roots.add(packageLib);
-      }
-    }
-    final files = <File>[];
-    for (final sourceRoot in roots) {
-      await for (final entity in sourceRoot.list(
-        recursive: true,
-        followLinks: false,
-      )) {
-        if (entity is File &&
-            entity.path.endsWith('.dart') &&
-            !entity.path.endsWith('.dartitect.g.dart')) {
-          files.add(entity.absolute);
-        }
-      }
-    }
-    files.sort((left, right) => left.path.compareTo(right.path));
-    return files;
-  }
-
-  String _relative(String path) => path
-      .substring(root.path.length + 1)
-      .replaceAll(Platform.pathSeparator, '/');
-
-  static String _join(String left, String right) =>
-      '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
 }
 
-bool _hasLexicalDartitectValue(ClassDeclaration declaration) =>
-    declaration.metadata.any(
-      (annotation) =>
-          annotation.name.toSource().split('.').last == 'DartitectValue',
-    );
+String _semanticSignature(ModelingLibraryIr library) => jsonEncode(
+  <String, Object?>{
+    'schemaVersion': 2,
+    'library': library.uri,
+    'source': library.path,
+    'part': library.outputPath,
+    'models': <Object?>[
+      for (final model in library.models)
+        <String, Object?>{
+          'class': model.name,
+          'source': model.sourcePath,
+          'const': model.isConst,
+          'capabilities': model.capabilities.map((value) => value.name).toList()
+            ..sort(),
+          'typeParameters': <Object?>[
+            for (final parameter in model.typeParameters)
+              <String, Object?>{
+                'name': parameter.name,
+                if (parameter.bound != null)
+                  'bound': parameter.bound!.displayName,
+              },
+          ],
+          'constructor': <Object?>[
+            for (final field in model.fields)
+              <String, Object?>{
+                'name': field.name,
+                'type': field.type.displayName,
+                'library': field.type.libraryUri,
+                'nullable': field.type.nullable,
+                'required': field.isRequiredNamed,
+                if (field.defaultCode != null) 'default': field.defaultCode,
+              },
+          ],
+        },
+    ],
+    'configuration': <String, Object?>{
+      'equality': 'ValueEquality',
+      'copyWith': 'typed-clear-flags-v1',
+    },
+  },
+);
 
-bool _hasDartitectValue(ClassDeclaration declaration) =>
-    declaration.metadata.any((annotation) {
-      final element = annotation.element;
-      return element?.enclosingElement?.displayName == 'DartitectValue' &&
-          element?.library?.uri.toString() ==
-              'package:dartitect_modeling/src/annotations.dart';
-    });
-
-bool _isMutableCollection(TypeAnnotation type) {
-  final normalized = type.toSource().replaceAll(RegExp(r'\s+'), '');
-  final base = RegExp(r'^(?:[A-Za-z_][A-Za-z0-9_]*\.)?([A-Za-z_][A-Za-z0-9_]*)')
-      .firstMatch(normalized)
-      ?.group(1);
-  final resolvedBase = type.type?.extensionTypeErasure.element?.displayName;
-  const mutableInterfaces = <String>{
-    'List',
-    'Set',
-    'Map',
-    'Iterable',
-    'Queue',
-    'HashMap',
-    'LinkedHashMap',
-    'SplayTreeMap',
-    'HashSet',
-    'LinkedHashSet',
-    'SplayTreeSet',
-    'Uint8List',
-    'Int8List',
-    'Uint16List',
-    'Int16List',
-    'Uint32List',
-    'Int32List',
-    'Uint64List',
-    'Int64List',
-    'Float32List',
-    'Float64List',
-  };
-  return mutableInterfaces.contains(base) ||
-      mutableInterfaces.contains(resolvedBase);
-}
-
-String _semanticSignature(_Model model, {required String sourcePath}) =>
-    jsonEncode(<String, Object?>{
-      'schemaVersion': 1,
-      'source': sourcePath,
-      'class': model.name,
-      'part': model.partUri,
-      'constructor': <Object?>[
-        for (final field in model.fields)
-          <String, Object?>{
-            'name': field.name,
-            'type': field.type,
-            'nullable': field.nullable,
-          },
-      ],
-      'configuration': <String, Object?>{
-        'equality': 'ValueEquality',
-        'copyWith': 'typed-clear-flags-v1',
-      },
-    });
-
-String _render(_Model model, {required String sourcePath}) {
-  final sourceName = _basename(sourcePath);
+String _render(ModelingLibraryIr library) {
+  final sourceName = _basename(library.path);
+  final partName = _basename(library.outputPath);
   final buffer = StringBuffer()
     ..writeln('// GENERATED CODE - DO NOT EDIT BY HAND.')
-    ..writeln('// Dartitect model generator 1.0.0-rc.3, input schema 1.')
+    ..writeln('// Dartitect model generator 1.0.0-rc.3, input schema 2.')
     ..writeln()
-    ..writeln("part of '$sourceName';")
-    ..writeln()
-    ..writeln('mixin _\$${model.name}Dartitect on ValueEquality {');
-  for (final field in model.fields) {
-    buffer.writeln('  ${field.type} get ${field.name};');
-  }
-  buffer
-    ..writeln()
-    ..writeln('  @override')
-    ..writeln('  Iterable<Object?> get equalityFields => <Object?>[');
-  for (final field in model.fields) {
-    buffer.writeln('    ${field.name},');
-  }
-  buffer
-    ..writeln('  ];')
-    ..writeln()
-    ..writeln('  ${model.name} copyWith({');
-  for (final field in model.fields) {
-    final parameterType = field.nullable ? field.type : '${field.type}?';
-    buffer.writeln('    $parameterType ${field.name},');
-    if (field.nullable) {
-      buffer.writeln('    bool ${_clearName(field.name)} = false,');
-    }
-  }
-  buffer.writeln('  }) {');
-  for (final field in model.fields.where((field) => field.nullable)) {
-    final clear = _clearName(field.name);
+    ..writeln("part of '$sourceName';");
+  for (final model in library.models.where(
+    (model) => model.capabilities.contains(ModelingCapability.value),
+  )) {
+    final declaration = _typeParameterDeclaration(model);
+    final use = _typeParameterUse(model);
     buffer
-      ..writeln('    if ($clear && ${field.name} != null) {')
+      ..writeln()
       ..writeln(
-        "      throw ArgumentError('${field.name} and $clear cannot be used together.');",
-      )
-      ..writeln('    }');
-  }
-  buffer.writeln('    return ${model.name}(');
-  for (final field in model.fields) {
-    if (field.nullable) {
-      buffer.writeln(
-        '      ${field.name}: ${_clearName(field.name)} '
-        '? null : ${field.name} ?? this.${field.name},',
+        'mixin _\$${model.name}Dartitect$declaration on ValueEquality {',
       );
-    } else {
-      buffer.writeln(
-        '      ${field.name}: ${field.name} ?? this.${field.name},',
-      );
+    for (final field in model.fields) {
+      buffer.writeln('  ${field.type.displayName} get ${field.name};');
     }
+    buffer
+      ..writeln()
+      ..writeln('  @override')
+      ..writeln('  Iterable<Object?> get equalityFields => <Object?>[');
+    for (final field in model.fields) {
+      buffer.writeln('    ${field.name},');
+    }
+    buffer
+      ..writeln('  ];')
+      ..writeln()
+      ..writeln('  ${model.name}$use copyWith({');
+    for (final field in model.fields) {
+      final parameterType = field.type.nullable
+          ? field.type.displayName
+          : '${field.type.displayName}?';
+      buffer.writeln('    $parameterType ${field.name},');
+      if (field.type.nullable) {
+        buffer.writeln('    bool ${_clearName(field.name)} = false,');
+      }
+    }
+    buffer.writeln('  }) {');
+    for (final field in model.fields.where((field) => field.type.nullable)) {
+      final clear = _clearName(field.name);
+      buffer
+        ..writeln('    if ($clear && ${field.name} != null) {')
+        ..writeln(
+          "      throw ArgumentError('${field.name} and $clear cannot be used together.');",
+        )
+        ..writeln('    }');
+    }
+    buffer.writeln('    return ${model.name}$use(');
+    for (final field in model.fields) {
+      if (field.type.nullable) {
+        buffer.writeln(
+          '      ${field.name}: ${_clearName(field.name)} '
+          '? null : ${field.name} ?? this.${field.name},',
+        );
+      } else {
+        buffer.writeln(
+          '      ${field.name}: ${field.name} ?? this.${field.name},',
+        );
+      }
+    }
+    buffer
+      ..writeln('    );')
+      ..writeln('  }')
+      ..writeln('}');
   }
-  buffer
-    ..writeln('    );')
-    ..writeln('  }')
-    ..writeln('}');
   return DartFormatter(
     languageVersion: DartFormatter.latestLanguageVersion,
     lineEnding: '\n',
-  ).format(buffer.toString(), uri: model.partUri);
+  ).format(buffer.toString(), uri: partName);
 }
+
+String _typeParameterDeclaration(ModelingModelIr model) {
+  if (model.typeParameters.isEmpty) return '';
+  return '<${model.typeParameters.map((parameter) {
+    final bound = parameter.bound;
+    return bound == null ? parameter.name : '${parameter.name} extends ${bound.displayName}';
+  }).join(', ')}>';
+}
+
+String _typeParameterUse(ModelingModelIr model) => model.typeParameters.isEmpty
+    ? ''
+    : '<${model.typeParameters.map((parameter) => parameter.name).join(', ')}>';
 
 String _clearName(String field) =>
     'clear${field[0].toUpperCase()}${field.substring(1)}';
 
-String _basename(String path, {bool removeExtension = false}) {
-  final name = path.replaceAll('\\', '/').split('/').last;
-  if (!removeExtension) return name;
-  final dot = name.lastIndexOf('.');
-  return dot < 0 ? name : name.substring(0, dot);
-}
+String _basename(String path) => path.replaceAll('\\', '/').split('/').last;
 
 final class _Discovery {
   const _Discovery(this.operations, this.diagnostics);
 
   final List<FileGenerationOperation> operations;
   final List<ModelDiagnostic> diagnostics;
-}
-
-final class _AnnotatedFile {
-  const _AnnotatedFile({
-    required this.file,
-    required this.outputPath,
-    required this.mixinName,
-  });
-
-  final File file;
-  final String outputPath;
-  final String mixinName;
-}
-
-final class _Model {
-  const _Model({
-    required this.name,
-    required this.partUri,
-    required this.fields,
-  });
-
-  final String name;
-  final String partUri;
-  final List<_Field> fields;
-}
-
-final class _Field {
-  const _Field({
-    required this.name,
-    required this.type,
-    required this.nullable,
-  });
-
-  final String name;
-  final String type;
-  final bool nullable;
 }

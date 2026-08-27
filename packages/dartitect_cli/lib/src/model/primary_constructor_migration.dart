@@ -7,6 +7,7 @@ import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:crypto/crypto.dart';
+import 'package:dartitect_modeling_analyzer/dartitect_modeling_analyzer.dart';
 
 /// Transaction boundary exposed to deterministic migration recovery tests.
 enum PrimaryConstructorMigrationFaultPoint {
@@ -213,7 +214,7 @@ final class PrimaryConstructorMigration {
           );
           continue;
         }
-        final edits = <_SourceEdit>[];
+        final edits = <ModelingSourceEdit>[];
         var modelCount = 0;
         for (final declaration
             in result.unit.declarations
@@ -221,7 +222,7 @@ final class PrimaryConstructorMigration {
                 .where(_hasLexicalDartitectValue)
                 .where(_hasDartitectValue)) {
           if (declaration.namePart is PrimaryConstructorDeclaration) continue;
-          final edit = _primaryEdit(declaration);
+          final edit = primaryConstructorSourceEdits(declaration);
           if (edit == null) {
             diagnostics.add(
               PrimaryConstructorMigrationDiagnostic(
@@ -533,94 +534,6 @@ final class PrimaryConstructorMigration {
       '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
 }
 
-List<_SourceEdit>? _primaryEdit(ClassDeclaration declaration) {
-  if (declaration.finalKeyword == null || declaration.abstractKeyword != null) {
-    return null;
-  }
-  final constructors = declaration.body.members
-      .whereType<ConstructorDeclaration>()
-      .toList(growable: false);
-  if (constructors.length != 1) return null;
-  final constructor = constructors.single;
-  if (constructor.name != null ||
-      constructor.factoryKeyword != null ||
-      constructor.externalKeyword != null ||
-      constructor.initializers.isNotEmpty ||
-      constructor.documentationComment != null) {
-    return null;
-  }
-  final fields = <String, FieldDeclaration>{};
-  for (final member in declaration.body.members.whereType<FieldDeclaration>()) {
-    if (member.isStatic) continue;
-    if (!member.fields.isFinal ||
-        member.fields.isLate ||
-        member.fields.type == null ||
-        member.fields.variables.length != 1 ||
-        member.fields.variables.single.initializer != null) {
-      return null;
-    }
-    final name = member.fields.variables.single.name.lexeme;
-    if (name.startsWith('_') || fields.containsKey(name)) return null;
-    fields[name] = member;
-  }
-  if (fields.isEmpty) return null;
-  final parameters = <String>[];
-  final seen = <String>{};
-  for (final parameter in constructor.parameters.parameters) {
-    if (parameter is! FieldFormalParameter ||
-        !parameter.isNamed ||
-        parameter.name.lexeme.startsWith('_')) {
-      return null;
-    }
-    final name = parameter.name.lexeme;
-    final field = fields[name];
-    if (field == null || !seen.add(name)) return null;
-    final documentation = field.documentationComment?.toSource();
-    final metadata = <String>{
-      for (final annotation in field.metadata) annotation.toSource(),
-      for (final annotation in parameter.metadata) annotation.toSource(),
-    };
-    final declaration =
-        '${parameter.requiredKeyword == null ? '' : 'required '}'
-        'final ${field.fields.type!.toSource()} $name'
-        '${parameter.defaultClause?.toSource() ?? ''},';
-    final lines = <String>[
-      if (documentation != null) ...documentation.split('\n'),
-      ...metadata,
-      declaration,
-    ];
-    parameters.add(lines.map((line) => '  $line').join('\n'));
-  }
-  if (seen.length != fields.length) return null;
-  final namePart = declaration.namePart.toSource();
-  final primary = StringBuffer()
-    ..write(constructor.constKeyword == null ? '' : 'const ')
-    ..write(namePart)
-    ..writeln('({')
-    ..writeln(parameters.join('\n'))
-    ..write('})');
-  final edits = <_SourceEdit>[
-    _SourceEdit(
-      offset: declaration.namePart.offset,
-      length: declaration.namePart.length,
-      replacement: primary.toString(),
-    ),
-    _SourceEdit(
-      offset: constructor.offset,
-      length: constructor.length,
-      replacement: '',
-    ),
-    for (final field in fields.values)
-      _SourceEdit(
-        offset: field.documentationComment?.offset ?? field.offset,
-        length:
-            field.end - (field.documentationComment?.offset ?? field.offset),
-        replacement: '',
-      ),
-  ];
-  return edits;
-}
-
 bool _hasLexicalDartitectValue(ClassDeclaration declaration) =>
     declaration.metadata.any(
       (annotation) =>
@@ -637,18 +550,6 @@ bool _hasDartitectValue(ClassDeclaration declaration) =>
 
 String _digest(String content) =>
     sha256.convert(utf8.encode(content)).toString();
-
-final class _SourceEdit {
-  const _SourceEdit({
-    required this.offset,
-    required this.length,
-    required this.replacement,
-  });
-
-  final int offset;
-  final int length;
-  final String replacement;
-}
 
 final class _MigrationJournal {
   const _MigrationJournal({required this.phase, required this.entries});

@@ -60,12 +60,10 @@ void main() {
     },
   );
 
-  test(
-    'rejects generic, mutable collections, and malformed contracts',
-    () async {
-      final root = await _modelPackage();
-      addTearDown(() => root.delete(recursive: true));
-      await File('${root.path}/lib/bad.dart').writeAsString('''
+  test('uses granular rules for mutable and malformed contracts', () async {
+    final root = await _modelPackage();
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/lib/bad.dart').writeAsString('''
 import 'package:dartitect_modeling/dartitect_modeling.dart';
 part 'bad.dartitect.g.dart';
 
@@ -75,20 +73,77 @@ final class Bad<T>({
 }) extends ValueEquality with _\$BadDartitect;
 ''');
 
-      final report = await DartitectModelGenerator(root).inspect();
-      expect(report.plan, isNull);
-      expect(report.diagnostics, isNotEmpty);
+    final report = await DartitectModelGenerator(root).inspect();
+    expect(report.plan, isNull);
+    expect(report.diagnostics, isNotEmpty);
+    expect(
+      report.diagnostics.map((finding) => finding.code),
+      everyElement(startsWith('DT10')),
+    );
+    expect(
+      report.diagnostics.map((finding) => finding.message).join('\n'),
+      contains('Mutable collection'),
+    );
+    expect(
+      report.diagnostics.map((finding) => finding.code),
+      contains('DT1037'),
+    );
+  });
+
+  test(
+    'generics records defaults parts and multiple models share one output',
+    () async {
+      final root = await _modelPackage();
+      addTearDown(() => root.delete(recursive: true));
+      await File('${root.path}/lib/models.dart').writeAsString('''
+library;
+
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+
+part 'more_models.dart';
+part 'models.dartitect.g.dart';
+
+@DartitectValue()
+final class const Box<T extends Object>({
+  required final T value,
+  final (int, {String label}) metadata = (0, label: ''),
+}) extends ValueEquality with _\$BoxDartitect<T>;
+''');
+      await File('${root.path}/lib/more_models.dart').writeAsString('''
+part of 'models.dart';
+
+@DartitectValue()
+final class const Pair({
+  required final String left,
+  final String right = 'default',
+}) extends ValueEquality with _\$PairDartitect;
+''');
+
+      final generator = DartitectModelGenerator(root);
+      final preview = await generator.inspect();
       expect(
-        report.diagnostics.map((finding) => finding.code),
-        everyElement('DT1021'),
+        preview.diagnostics,
+        isEmpty,
+        reason:
+            '${preview.diagnostics.map((value) => value.toJson()).toList()}',
       );
       expect(
-        report.diagnostics.map((finding) => finding.message).join('\n'),
-        contains('Generic'),
+        preview.operations.map((operation) => operation.relativePath),
+        <String>['lib/models.dartitect.g.dart'],
       );
+      final output = preview.operations.single.content;
+      expect(output, contains('mixin _\$BoxDartitect<T extends Object>'));
+      expect(output, contains('(int, {String label}) get metadata'));
+      expect(output, contains('mixin _\$PairDartitect'));
+
+      await generator.apply();
+      final analyzed = await Process.run(Platform.resolvedExecutable, <String>[
+        'analyze',
+      ], workingDirectory: root.path);
       expect(
-        report.diagnostics.map((finding) => finding.message).join('\n'),
-        contains('Mutable collection'),
+        analyzed.exitCode,
+        0,
+        reason: '${analyzed.stdout}\n${analyzed.stderr}',
       );
     },
   );

@@ -6,7 +6,8 @@
 
 A geração de modelos se limita a boilerplate de values imutáveis. O gerador
 varre `lib/**` e cada árvore imediata `packages/*/lib/**` sem seguir symlinks.
-Uma library anotada possui um único part Dartitect determinístico.
+Uma library anotada pode conter modelos na unit de definição e em parts; todos
+os modelos compartilham um único part Dartitect determinístico.
 
 | Contrato | Forma suportada em 1.0 | Forma rejeitada |
 |---|---|---|
@@ -16,14 +17,19 @@ Uma library anotada possui um único part Dartitect determinístico.
 | Campos | Ao menos um campo público, tipado, nomeado e `final` no primary constructor | Campos privados, inferidos, positional, late ou mutáveis |
 | Collections | Wrappers imutáveis de classe pertencentes ao consumidor | Interfaces de collection mutáveis, inclusive aliases de `List`, `Set`, `Map`, `Iterable`, queues, collections hash/tree e listas typed-data |
 | Construtor | Um primary constructor sem nome; use `class const` quando construção constante for necessária | Formas tradicionais, primary named, somente factory, external ou positional |
+| Forma da library | Múltiplos modelos, generics com bounds, const/defaults, records e parts comuns | Um part gerado por modelo ou acesso do renderer a AST/types não resolvidos |
 
 O gerador não cria JSON, unions, schemas de DTO/entity, entities ObjectBox,
 injeção de dependência, ViewModels, rotas, clients REST, reflexão runtime nem
 modelos mutáveis. Outros geradores podem coexistir somente quando possuem
 arquivos de saída distintos.
 
-Primary constructor ausente produz `DT1030` e nenhum output de modelo é aplicado. A
-identidade da annotation é semântica, não uma comparação de nome lexical.
+Primary constructor ausente produz `DT1030` e nenhum output de modelo é
+aplicado. A identidade da annotation é semântica, não uma comparação de nome
+lexical. O compiler read-only compartilhado possui um único lifecycle do
+Analyzer e produz o mesmo IR público, regras granulares `DT1030+`, localizações,
+severities e fix IDs para CLI e lints oficiais. O renderer recebe somente IR
+validado.
 
 Execute `dartitect model migrate primary` para um preview sem escrita da edição
 semântica de values tradicionais elegíveis. Somente `--apply` adquire o lock
@@ -95,7 +101,7 @@ registrado.
 
 | Artefato | Schema 1.0 | Regra de compatibilidade |
 |---|---:|---|
-| Assinatura semântica de input do modelo | 1 | Participa do digest de input no manifest; mudança de contrato torna o output stale |
+| Assinatura semântica de input do modelo | 2 | Inclui identidade da library, capabilities, generics, defaults, types e todos os modelos do part gerado |
 | Relatório JSON do command | 1 | Consumidores devem selecionar explicitamente o schema suportado |
 | `.dartitect/model-outputs.json` | 1 | Ownership ausente conflita com outputs candidatos; schemas malformados, anteriores ou futuros falham fechado |
 | `.dartitect/generation-journal.json` | 2 | Schemas malformados, anteriores ou futuros interrompem recovery e preservam resíduos para diagnóstico |

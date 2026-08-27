@@ -6,9 +6,9 @@
       "path": "lib/user.dartitect.g.dart",
       "source": "lib/user.dart",
       "generatorVersion": "1.0.0-rc.3",
-      "inputSchemaVersion": 1,
-      "inputDigest": "e9b9da82245c1556df39efd9d5527d48593bce79691ab154109f2badf66ffc18",
-      "outputDigest": "5c6a232b75001b02681d1e8e34fec2acfe72b1b5a62e23382ecbafc22f907cb7"
+      "inputSchemaVersion": 2,
+      "inputDigest": "bb112b7e6782852807cdfefcf5ea43694f60448f114c1cd63e031b9382b5f7da",
+      "outputDigest": "6677882e976b6386bc13dd5ac1a8c62f06095995f637a94eab1f498ce766123b"
     }
   ]
 }

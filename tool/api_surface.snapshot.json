@@ -1602,12 +1602,24 @@
         "declaration": "enum ModelingCapability"
       },
       {
+        "name": "ModelingClassCompilation",
+        "declaration": "final class ModelingClassCompilation"
+      },
+      {
         "name": "ModelingCompatibility",
         "declaration": "enum ModelingCompatibility"
       },
       {
         "name": "ModelingCompatibilityDecisionIr",
         "declaration": "final class ModelingCompatibilityDecisionIr"
+      },
+      {
+        "name": "ModelingCompilation",
+        "declaration": "final class ModelingCompilation"
+      },
+      {
+        "name": "ModelingCompiler",
+        "declaration": "final class ModelingCompiler"
       },
       {
         "name": "ModelingDiagnostic",
@@ -1642,12 +1654,28 @@
         "declaration": "final class ModelingProjectionIr"
       },
       {
+        "name": "ModelingSourceEdit",
+        "declaration": "final class ModelingSourceEdit"
+      },
+      {
         "name": "ModelingTypeIr",
         "declaration": "final class ModelingTypeIr"
       },
       {
+        "name": "ModelingTypeParameterIr",
+        "declaration": "final class ModelingTypeParameterIr"
+      },
+      {
         "name": "ModelingWorkspaceIr",
         "declaration": "final class ModelingWorkspaceIr"
+      },
+      {
+        "name": "hasLexicalModelingAnnotation",
+        "declaration": "bool hasLexicalModelingAnnotation(ClassDeclaration declaration)"
+      },
+      {
+        "name": "primaryConstructorSourceEdits",
+        "declaration": "List<ModelingSourceEdit>? primaryConstructorSourceEdits(ClassDeclaration declaration)"
       }
     ],
     "packages/dartitect_objectbox/lib/dartitect_objectbox.dart": [

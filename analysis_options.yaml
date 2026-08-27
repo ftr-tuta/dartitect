@@ -21,7 +21,7 @@ analyzer:
 
 plugins:
   dartitect_lints:
-    path: packages/dartitect_lints
+    path: tool/analyzer_plugin_workspace/dartitect_lints
 
 linter:
   rules:
