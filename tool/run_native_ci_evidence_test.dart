@@ -97,6 +97,7 @@ void main() {
       final runner = File('tool/run_native_ci_evidence.dart')
           .readAsStringSync();
       for (final marker in const <String>[
+        '--reporter=expanded',
         '_cleanupAndroidTestAssets',
         '_androidTestAssetsAreAbsent',
         '_applicationDataIsClean',

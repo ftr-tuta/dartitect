@@ -391,12 +391,13 @@ Future<void> _runAndroidIntegration(
     'integration_test/android_media_test.dart',
     '-d',
     deviceId,
+    '--reporter=expanded',
     '--dart-define=DARTITECT_ANDROID_API=$apiLevel',
     '--dart-define=DARTITECT_EXERCISE_LIFECYCLE=true',
   ], workingDirectory: consumer.path);
   stdout.writeln(
     '> flutter test integration_test/android_media_test.dart '
-    '-d <hosted-emulator>',
+    '-d <hosted-emulator> --reporter=expanded',
   );
   var lifecycleTriggered = false;
   final stdoutDone = process.stdout
