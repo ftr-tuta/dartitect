@@ -1,6 +1,6 @@
 name: dartitect_cli
 description: Semantic architecture scanner, diagnostics, and safe generators for Dartitect projects.
-version: 1.0.0-rc.2
+version: 1.0.0-rc.3
 repository: https://github.com/ftr-tuta/dartitect
 issue_tracker: https://github.com/ftr-tuta/dartitect/issues
 topics: [cli, architecture, code-generation, codex]

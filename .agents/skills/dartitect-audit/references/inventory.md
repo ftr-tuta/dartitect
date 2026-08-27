@@ -1,4 +1,4 @@
-# Brownfield inventory
+# Existing-codebase inventory
 
 Record:
 
@@ -12,5 +12,5 @@ Record:
 - logging, error capture, tracing, redaction, and duplicate provider hooks;
 - generated code and consumer-owned schemas that Dartitect must not replace.
 
-Keep an evidence table with current behavior, owner, proposed boundary, test,
-and rollback condition for each selected migration slice.
+Keep an evidence table with current behavior, owner, Native Strict boundary,
+test evidence, and conformance status. Do not add a proposed migration slice.

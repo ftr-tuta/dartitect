@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "diagnosticMap": {
+    "DARTITECT_DOMAIN_FLUTTER_IMPORT": "DT1001",
+    "DARTITECT_DOMAIN_INFRASTRUCTURE_IMPORT": "DT1002",
+    "DARTITECT_DATA_PRESENTATION_IMPORT": "DT1003",
+    "DARTITECT_BUILD_CONTEXT_BOUNDARY": "DT1004",
+    "DARTITECT_PRESENTATION_INFRASTRUCTURE_IMPORT": "DT1005",
+    "DARTITECT_FORBIDDEN_ARCHITECTURE_IMPORT": "DT1006",
+    "DARTITECT_PRIVATE_SRC_IMPORT": "DT1007",
+    "DARTITECT_IMPLEMENTATION_BOUNDARY": "DT1008",
+    "DARTITECT_PROVIDER_TYPE_BOUNDARY": "DT1009",
+    "DARTITECT_FLUTTER_TYPE_BOUNDARY": "DT1010",
+    "DARTITECT_ARCHITECTURE_CODEGEN": "DT1011",
+    "DARTITECT_PROVIDER_CODEGEN_BOUNDARY": "DT1012",
+    "DARTITECT_SERVICE_LOCATOR": "DT1013",
+    "DARTITECT_SCOPE_BOUNDARY": "DT1016"
+  },
+  "cases": [
+    {
+      "path": "lib/features/orders/data/order_repository_impl.dart",
+      "expected": []
+    },
+    {
+      "path": "lib/features/orders/domain/local_widget.dart",
+      "expected": []
+    },
+    {
+      "path": "lib/features/orders/domain/private_import_violation.dart",
+      "expected": ["DT1007"]
+    },
+    {
+      "path": "lib/features/orders/presentation/identity_false_positives.dart",
+      "expected": []
+    },
+    {
+      "path": "lib/features/orders/presentation/shared_violation.dart",
+      "expected": ["DT1008"]
+    }
+  ],
+  "performanceBudget": {
+    "scannerMilliseconds": 2000,
+    "analyzerMilliseconds": 75000
+  }
+}

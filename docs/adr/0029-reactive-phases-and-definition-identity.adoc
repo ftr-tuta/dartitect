@@ -1,0 +1,44 @@
+= ADR-0029: Reactive phases and definition identity
+
+Status:: ACCEPTED
+
+Context:: A computed or custom equality callback could start a nested outer
+transaction while the owner was preparing a pending snapshot. A listener
+failure after publication was rethrown to the mutation caller, making a
+committed write look unapplied. Typed keys identified only type and name, so a
+compatible-looking registration could retain an obsolete compute closure or
+silently reuse a semantically different definition after hot reload.
+
+Decision:: `ReactiveOwner` exposes one owner-local phase machine: `idle`,
+`write`, `compute`, `commit`, `notify`, `dispose`, and `disposed`. Nested writes
+join only `write`. Listener reentrancy during `notify` is deferred to a later
+logical commit. Writes and definition registration during `compute` or
+`commit` are rejected synchronously; Dartitect does not create an implicit
+nested flush. Disposal during a pre-commit transaction is likewise rejected;
+disposal during `notify` is terminal and stops remaining publication work.
+Compute failure preserves the prior snapshot and revision.
+
+Listener failures occur after commit. They are sent to the injected reporter,
+which is itself failure-isolated, while the mutation keeps its successful
+return value. Other listeners continue from the same stable snapshot.
+
+`ReactiveKey<T>` identity is the tuple of type, namespace, and name inside one
+owner. Every key also carries a positive definition revision and a non-empty
+fingerprint. Reuse requires matching definition metadata, node kind,
+dependencies, and equality. Compatible computed registration refreshes the
+closure while preserving the node and state. Any mismatch throws a
+`ReactiveKeyConflictException` containing both definitions; no obsolete
+definition is reused silently.
+
+`ViewModelHost.onReassemble` may rebind compatible definitions to the existing
+owned or borrowed value. A hot reload therefore preserves compatible
+owner-local state and refreshes closures. A conflict is reported through
+`FlutterError`. Hot restart constructs a new host, ViewModel, owner, and
+ephemeral graph; it does not promise state preservation.
+
+Consequences:: Definitions must use stable namespaces, revisions, and
+fingerprints and must bump metadata when semantics change. This is an explicit
+public API break from name-only keys, accepted before 1.0. Definition graphs
+remain append-only and acyclic by construction because dependencies must
+already belong to the active owner; the topological cycle check remains a
+defensive invariant.

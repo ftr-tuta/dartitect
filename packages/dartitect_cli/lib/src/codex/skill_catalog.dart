@@ -47,7 +47,7 @@ dartitectSkillCatalog = <DartitectSkillTemplate>[
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-design
-description: Select the smallest Dartitect package and skill stack for a new Dart or Flutter application or feature. Use for greenfield architecture choices; do not use for brownfield migration or detailed implementation.
+description: Select the smallest Dartitect package and skill stack for a new Dart or Flutter application or feature. Use for Native Strict greenfield architecture choices; do not use for conformance auditing or detailed implementation.
 ---
 
 # Design with Dartitect
@@ -59,9 +59,10 @@ or provider boundary when the required Dartitect packages are not yet clear.
 
 ## When not to use
 
-Use `$dartitect-adopt` for an existing codebase migration. Route detailed runtime,
-reactive, offline-first, telemetry, adapter, testing, CLI, or MCP work to the
-matching focused skill after the stack is selected.
+Use `$dartitect-audit` to inspect an existing codebase without changing it.
+Route detailed runtime, reactive, offline-first, telemetry, adapter, testing,
+CLI, or MCP work to the matching focused skill after the greenfield stack is
+selected.
 
 ## Invariants
 
@@ -121,59 +122,59 @@ domain, application, ViewModel, or presentation layers.
     },
   ),
   DartitectSkillTemplate(
-    name: 'dartitect-adopt',
-    displayName: 'Dartitect Adopt',
-    shortDescription: 'Migrate existing projects incrementally',
-    defaultPrompt:
-        r'Use $dartitect-adopt to plan a bounded Dartitect migration.',
+    name: 'dartitect-audit',
+    displayName: 'Dartitect Audit',
+    shortDescription: 'Audit Native Strict conformance read-only',
+    defaultPrompt: r'Use $dartitect-audit to audit Native Strict conformance.',
     files: <String, String>{
       'SKILL.md': r'''---
-name: dartitect-adopt
-description: Inventory and migrate an existing Dart or Flutter codebase to Dartitect incrementally with reviewed baselines and explicit boundaries. Use for brownfield adoption; do not use for greenfield stack selection or isolated implementation.
+name: dartitect-audit
+description: Audit an existing Dart or Flutter codebase for Native Strict conformance without changing it. Use for read-only evidence; Dartitect 1.0 is greenfield-only and provides no migration or coexistence workflow.
 ---
 
-# Adopt Dartitect
+# Audit Dartitect conformance
 
 ## When to use
 
 Use this skill when existing architecture, globals, providers, violations, or
-lifecycle assumptions must be discovered before Dartitect can be introduced.
+lifecycle assumptions must be assessed against Native Strict boundaries.
 
 ## When not to use
 
-Use `$dartitect-design` for a new application or feature. After the migration
-slice is defined, use the focused skill responsible for its implementation.
+Use `$dartitect-design` for a new application or feature. Do not use this skill
+to convert an existing runtime, plan staged migration, or authorize coexistence
+with another DI or application-state runtime.
 
 ## Invariants
 
-Inspect before changing code. Preserve behavior, migrate one explicit boundary
-at a time, and distinguish pre-existing debt from new violations. Never use a
-baseline to hide unreviewed findings, convert a generic catch into success, move
-live resources across isolates, edit generated files, or introduce global
-Store, Dio, telemetry, or runtime state.
+Inspection is read-only. Report evidence without modifying code, dependencies,
+configuration, baselines, or generated files. Treat `scan --no-baseline` as the
+canonical conformance gate. Existing projects may be audited, but Dartitect 1.0
+does not support runtime migration, compatibility shims, or coexistence with a
+competing DI/application-state architecture.
 
 ## Workflow
 
-1. Record tests, analyzer, `dartitect doctor`, and
-   `dartitect scan --no-baseline` before migration.
+1. Record tests, analyzer, `dartitect doctor`, and `dartitect scan --no-baseline`.
 2. Inventory composition roots, owners, disposal order, repositories,
    background entrypoints, provider SDKs, and telemetry paths.
-3. Select one vertical slice with explicit compatibility and rollback limits.
-4. Introduce constructor injection, typed failures, ownership, and tests before
-   moving to another slice.
-5. Create a baseline only for reviewed remaining debt and remove stale entries.
+3. Classify each boundary as conforming, non-conforming, or not evidenced.
+4. Record prohibited runtime packages separately from advisory alternatives and
+   approved consumer-owned infrastructure.
+5. Return a conformance report and the exact commands used; do not emit a
+   conversion plan.
 
-For discovery, read [references/inventory.md](references/inventory.md). For the
-migration sequence and CLI/MCP boundaries, read
-[references/incremental-migration.md](references/incremental-migration.md).
+Read [references/inventory.md](references/inventory.md) for evidence collection
+and [references/conformance-audit.md](references/conformance-audit.md) for the
+CLI/MCP boundary.
 
 ## Validate
 
-Compare the post-slice tests, analyzer, doctor, and unbaselined scan with the
-recorded baseline. Confirm the slice has one owner, reverse disposal, no new
-global/provider leakage, and a smaller or unchanged reviewed-debt set.
+Confirm the report is reproducible, contains no write or migration action, uses
+the unbaselined scan, and distinguishes unsupported architecture runtimes from
+consumer-owned infrastructure packages.
 ''',
-      'references/inventory.md': r'''# Brownfield inventory
+      'references/inventory.md': r'''# Existing-codebase inventory
 
 Record:
 
@@ -187,25 +188,24 @@ Record:
 - logging, error capture, tracing, redaction, and duplicate provider hooks;
 - generated code and consumer-owned schemas that Dartitect must not replace.
 
-Keep an evidence table with current behavior, owner, proposed boundary, test,
-and rollback condition for each selected migration slice.
+Keep an evidence table with current behavior, owner, Native Strict boundary,
+test evidence, and conformance status. Do not add a proposed migration slice.
 ''',
-      'references/incremental-migration.md': r'''# Incremental migration
+      'references/conformance-audit.md': r'''# Conformance audit
 
 Start with read-only CLI operations. `inspect`, `scan`, and `doctor` do not write.
-Run `scan --no-baseline` before deciding whether a baseline is warranted. Preview
-baselines, generators, and Codex sync before applying them. Stable config v1 is
-recreated and reviewed; experimental configs are never migrated.
+Run `scan --no-baseline` as the canonical gate. A reviewed baseline may describe
+known debt for other workflows, but it never changes conformance evidence.
 
 The local MCP may assist discovery with bounded inspect, scan, doctor, explain,
-adoption, and preview tools. It is read-only by default. A write requires server
-opt-in, a reviewed preview, an opaque unexpired single-use plan, explicit
-confirmation, client approval, full revalidation, serialization, and a lock.
+conformance, and preview tools. `dartitect_audit_conformance` reports only
+evidence and declares existing projects `audit_only`; it never returns migration
+steps. Preview/apply tools are separate capabilities and are outside a
+conformance audit.
 
-Migrate constructor boundaries before replacing behavior. Add one provider
-adapter at a time, with consumer ownership explicit. Reject duplicate Sentry or
-Dio instrumentation. Keep compatibility shims narrow, tested, and scheduled for
-removal. Never broaden the slice merely to make the migration look complete.
+Report constructor boundaries, ownership, provider leakage, runtime conflicts,
+and missing evidence. Do not recommend compatibility shims or coexistence with
+Riverpod, BLoC, Provider, GetIt, MobX, Signals, or another competing runtime.
 ''',
     },
   ),
@@ -327,7 +327,8 @@ description: Implement Dartitect ReactiveOwner, hot/warm/cold lifecycle, LiveRes
 
 Use this skill when a feature needs explicit dependency tracking, temperature,
 authoritative live sources, causal refresh, bounded keyed resources, incremental
-collections, selectors, debounce, or reactive Flutter builders.
+collections, explicit-dependency derived async resources, selectors, debounce,
+or reactive Flutter builders.
 
 ## When not to use
 
@@ -349,6 +350,10 @@ Choose owner and activation policy, model the authoritative source, select the
 required refresh completion type, then add bounded families/collections and the
 smallest builder entrypoint. State backpressure, retry, retention, and disposal
 semantics explicitly.
+For an experimental derived resource, also name every dependency, stale-data
+policy, equality rule, cancellation behavior, generation guard, and discard
+criterion. Reuse the existing family boundary rather than creating a parallel
+key cache.
 
 Read [references/lifecycle-and-resources.md](references/lifecycle-and-resources.md),
 [references/families-and-collections.md](references/families-and-collections.md),
@@ -375,6 +380,15 @@ cold temperature. A hot resource owns an active source session, warm retains
 last-known data without upstream activity, and cold discards both. Use an
 `AsyncLifecycleBarrier` so disposal closes admission, cancels cooperatively,
 drains admitted work, and rejects stale publication.
+
+`DerivedAsyncResource<T, F>` is experimental and accepts a non-empty,
+identity-unique list of explicit Flutter `Listenable` dependencies. It uses
+restart-latest cancellation plus dependency and lifecycle generation guards;
+an old non-cooperative result never publishes. Select preserve, discard, or
+stale-while-revalidate last-data policy and explicit equality. It wraps one
+`LiveResource`; return `.liveResource` from an existing `ResourceFamily`
+factory so typed key, leases, TTL, count/weight limits, and eviction remain
+family-owned. Do not add implicit read tracking or replace global hooks.
 
 Select `RemoteRefresh`, `LocalCommitRefresh`, or `ObservedLocalRefresh` according
 to the completion the caller needs. Observed refresh waits for the exact typed
@@ -503,13 +517,20 @@ The repository operation commits remote results into the authoritative local
 transaction before returning a confirmed checkpoint. A failed dependency blocks
 only downstream datasets; independent branches continue.
 
-Treat checkpoint and lease ports as borrowed. Persist the lease fencing token
-atomically with checkpoint writes and reject stale writers. Validate headless
-payloads before graph creation, create a fresh `OwnedGraph` per accepted request,
-deduplicate request IDs, and transfer data rather than provider objects. Retry,
-scheduling, authentication, conflicts, schemas, and durable cross-process
-deduplication remain consumer policy. Expected failure returns `Err`; an
-unexpected exception preserves its stack and is never retried automatically.
+Treat checkpoint, lease, and optional cleanup ports as borrowed. With a lease,
+call `context.authority.ensureAuthority()` immediately before the dataset commit
+and atomically compare/commit its fencing token in a capable consumer Store.
+Persist the same token with checkpoint writes. If storage cannot enforce the
+token, explicitly declare dataset fencing unsupported. Inspect application,
+checkpoint, journal, lease-release, and cleanup receipts before retrying a
+`SyncRunTerminalException`.
+
+Validate headless payloads before graph creation, create a fresh `OwnedGraph`
+per accepted request, deduplicate request IDs, and transfer data rather than
+provider objects. Retry, scheduling, authentication, conflicts, schemas, and
+durable cross-process deduplication remain consumer policy. Expected failure
+returns `Err`; an unexpected exception preserves its cause/stack and is never
+retried automatically.
 ''',
     },
   ),
@@ -530,7 +551,7 @@ description: Configure Dartitect provider-neutral logging, reporting, W3C tracin
 
 Use this skill for `ObservabilityRuntime`, redaction/sampling/dispatch policy,
 error reporting, W3C propagation, Flutter error capture, or reactive diagnostic
-events.
+events and the versioned payload-free topology/lifecycle protocol.
 
 ## When not to use
 
@@ -548,8 +569,9 @@ events. Errors/fatal are never sampled away. Destination failure stays isolated.
 ## Workflow
 
 Define the data policy first, then choose owned/borrowed sinks, reporter, tracer,
-propagator, Flutter binding, and reactive observers. End every span exactly once
-and define reverse flush/disposal.
+propagator, Flutter binding, reactive observers, and diagnostic detail. End every
+span exactly once and define reverse flush/disposal. Use only emitter-owned
+opaque IDs; keep buffers bounded and clear them on dispose.
 
 Read [references/telemetry-contract.md](references/telemetry-contract.md),
 [references/flutter-and-providers.md](references/flutter-and-providers.md), or
@@ -597,11 +619,24 @@ listener count. It never contains values, keys, idempotency IDs, error text,
 stack traces, or user identity. Reject reconstructed or dynamic causes before
 state changes begin.
 
+Diagnostics protocol v1 adds fixed owner/node/command/resource/family/effect/
+sync/isolate subjects and fixed lifecycle phases. An event has only its exact
+schema version, emitter sequence, opaque process-local IDs, generation, and
+revision. IDs come only from the emitter's injected generator and never from
+application identifiers. The decoder rejects unknown fields.
+
 Register observers as explicitly owned or borrowed. `ReactiveJournal` is a
 bounded memory-only local diagnostic ring and clears permanently on disposal.
 `ReactiveObserverLoggerAdapter` emits the fixed `reactive.change` message plus
 allowlisted facts; normal runtime redaction still runs. A failing observer is
 reported once, disabled, and cannot change runtime state or the caller's error.
+
+`DartitectDiagnosticBuffer` is bounded and clears every retained event on
+dispose. `SafeDartitectDiagnosticReporter` isolates reentrancy and destination
+failure. Off detail allocates no subject ID; lifecycle detail retains every
+failure/crash terminal; topology detail supports
+`DiagnosticsTopologyHarness`. Construction/reporting APIs remain experimental
+under ADR 0034 and install no remote destination or global Flutter hook.
 ''',
     },
   ),
@@ -769,6 +804,14 @@ staleness, selector equality, debounce cancellation, TickerMode pause,
 payload-free rebuild diagnostics, and localized Material semantics. End with no
 listeners, timers, effects, sessions, source sessions, family leases,
 projection workers, or graph edges.
+
+For `DerivedAsyncResource`, use an old loader that deliberately ignores
+cancellation and prove it cannot publish over a newer dependency generation.
+Verify activation-local dependency listener counts, each stale-data policy,
+deduplication, family key/eviction ownership, and terminal cleanup. For
+diagnostics, feed only protocol events to `DiagnosticsTopologyHarness`, cover
+all fixed subject categories, ordering violations, off semantics, reporter
+failure isolation, bounded overflow, and zero retained events after disposal.
 ''',
       'references/sync.md': r'''# Sync tests
 
@@ -779,11 +822,13 @@ deterministic DAG matrix.
 
 Cover missing/duplicate/cyclic dependencies, stable plan order, downstream-only
 blocking, independent branches, cancellation, deadlines, lease refusal/loss,
-stale fencing rejection, checkpoint write failure, progress bounds, unexpected
-rethrow with original stack, duplicate headless requests, protocol rejection,
-fresh graph per accepted request, and shutdown drain. Add one real generated
-storage fixture for checkpoint transactions without moving consumer schema or
-conflict policy into the adapter.
+authority expiry, atomic stale-token rejection at the dataset commit, checkpoint
+write failure, journal/release/cleanup fault injection, receipt boundaries,
+progress bounds, terminal exception with original cause/stack, duplicate
+headless requests, protocol rejection, fresh graph per accepted request, and
+shutdown drain. Add one real generated storage fixture for fencing-capable
+dataset/checkpoint transactions without moving consumer schema or conflict
+policy into the adapter.
 ''',
       'references/provider-fixtures.md': r'''# Provider fixtures
 
@@ -910,6 +955,9 @@ extension fields without interpreting them.
 Baselines cover reviewed existing debt only. Generators stage, validate, refuse
 conflicts, and recover transactionally. Codex sync replaces only valid
 manifest-owned skills and preserves consumer-owned files/directories.
+Every reviewed project change binds only its semantic inputs in a sorted
+SHA-256 manifest. Acquire the cross-process project lock before revalidation and
+hold it through commit, rollback, or recovery.
 
 ## Workflow
 
@@ -926,8 +974,8 @@ Read [references/cli-scan-and-lints.md](references/cli-scan-and-lints.md),
 
 Test idempotency, conflicts, stale state, interrupted recovery, path/symlink
 confinement, permissions, CRLF, Unicode/spaces, unknown-key preservation, stable
-JSON/exit codes, generated-consumer behavior, and unchanged tracked files after
-verification.
+JSON/exit codes, irrelevant-asset stability, real cross-process exclusion,
+generated-consumer behavior, and unchanged tracked files after verification.
 ''',
       'references/cli-scan-and-lints.md': r'''# CLI, scan, and lints
 
@@ -940,7 +988,12 @@ Scan only declared roots using real path segments; ignore nested caches and
 generated code. A baseline fingerprints code, path, and evidence without line
 number. New findings fail, obsolete entries warn, and local suppressions require
 a reason. Keep CLI and official analyzer-plugin diagnostics semantically aligned
-while respecting their different hosts and entrypoints.
+through the versioned true/false-positive corpus while respecting their
+different hosts and entrypoints. Prefer element/library identity when resolved.
+Sensitive metadata needs a recognized telemetry sink. Generated fallback needs
+both a reviewed header and configured suffix. Invalid analyzer config is an
+explicit diagnostic, never a silent strict-default outcome. Enforce scanner and
+analyzer performance budgets with stable machine-readable schemas.
 ''',
       'references/generation-and-native.md': r'''# Generation and native setup
 
@@ -948,6 +1001,8 @@ Stage generated content outside the destination, validate it, refuse
 consumer-owned collisions, record a journal, and replace only the declared
 target. Recover the old data on interruption. Generated-once files become
 consumer-owned; fully generated files need an ownership manifest before update.
+For project-service changes, the semantic manifest excludes unrelated assets;
+the OS lock spans revalidation through all journal cleanup.
 
 Native fixture setup accepts only reviewed host/artifact mappings, verifies a
 pinned hash before extracting one exact member, installs through same-directory
@@ -988,7 +1043,7 @@ description: Configure, use, or extend the local Dartitect MCP server, bounded t
 ## When to use
 
 Use this skill when a local MCP client needs typed Dartitect inspection,
-diagnostics, adoption context, public guide resources, reviewed previews, or the
+diagnostics, conformance context, public guide resources, reviewed previews, or the
 server's guarded write flow.
 
 ## When not to use
@@ -1008,7 +1063,7 @@ come from maintained repository sources.
 
 ## Workflow
 
-Configure a trusted root, use inspect/scan/doctor/explain/adoption/resource
+Configure a trusted root, use inspect/scan/doctor/explain/conformance/resource
 reads first, then request a preview. Enable server writes only for an intended,
 reviewed local change and retain client approval.
 
@@ -1030,7 +1085,7 @@ command in the MCP client. Multiple roots must already exist and are addressed
 by configured names. Do not put credentials in command arguments or environment.
 
 The closed read surface provides inspect, bounded scan, doctor, finding
-explanation, adoption planning, and change previews. Generated resources expose
+explanation, conformance auditing, and change previews. Generated resources expose
 package metadata, diagnostics, canonical English guides, and credential-free
 config v1. There is no free-form file resource. Results include structured
 content plus compatible JSON text. Read tools/previews are annotated read-only;

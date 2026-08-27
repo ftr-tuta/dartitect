@@ -49,9 +49,10 @@ remova entradas obsoletas com o tempo.
 
 ## Orientação para agentes
 
-`dartitect codex sync --dry-run` mostra preview de dez skills gerenciadas com
-invocação implícita. Greenfield e brownfield começam com `$dartitect-design` e
-`$dartitect-adopt`; implementação focada segue para runtime, reactive,
+`dartitect codex sync --dry-run` mostra preview de onze skills gerenciadas com
+invocação implícita. Trabalho greenfield começa com `$dartitect-design`; uma
+codebase existente pode ser inspecionada read-only com `$dartitect-audit`. A
+linha 1.0 não fornece migração nem coexistência. Implementação focada segue para runtime, reactive,
 offline-first, observability, adapters, testing, tooling ou MCP. O sync nunca
 gerencia a skill local `repository-contribution` deste repositório.
 

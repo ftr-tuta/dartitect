@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sdkVersion": "1.0.0-rc.2",
+  "sdkVersion": "1.0.0-rc.3",
   "entrypoints": {
     "packages/dartitect/lib/dartitect.dart": [
       {
@@ -100,6 +100,46 @@
         "declaration": "final class CyclicValueException implements Exception"
       },
       {
+        "name": "DartitectDiagnosticBuffer",
+        "declaration": "final class DartitectDiagnosticBuffer implements DartitectDiagnosticReporter, Disposable"
+      },
+      {
+        "name": "DartitectDiagnosticDetail",
+        "declaration": "enum DartitectDiagnosticDetail"
+      },
+      {
+        "name": "DartitectDiagnosticEvent",
+        "declaration": "final class DartitectDiagnosticEvent"
+      },
+      {
+        "name": "DartitectDiagnosticId",
+        "declaration": "final class DartitectDiagnosticId"
+      },
+      {
+        "name": "DartitectDiagnosticPhase",
+        "declaration": "enum DartitectDiagnosticPhase"
+      },
+      {
+        "name": "DartitectDiagnosticReporter",
+        "declaration": "abstract interface class DartitectDiagnosticReporter"
+      },
+      {
+        "name": "DartitectDiagnosticReporterRegistration",
+        "declaration": "final class DartitectDiagnosticReporterRegistration"
+      },
+      {
+        "name": "DartitectDiagnosticSubject",
+        "declaration": "final class DartitectDiagnosticSubject"
+      },
+      {
+        "name": "DartitectDiagnosticSubjectKind",
+        "declaration": "enum DartitectDiagnosticSubjectKind"
+      },
+      {
+        "name": "DartitectDiagnosticsEmitter",
+        "declaration": "final class DartitectDiagnosticsEmitter implements AsyncDisposable"
+      },
+      {
         "name": "DartitectValue",
         "declaration": "final class DartitectValue"
       },
@@ -110,6 +150,10 @@
       {
         "name": "Err",
         "declaration": "final class Err<F extends Object> extends Result<Never, F>"
+      },
+      {
+        "name": "ExperimentalDartitectApi",
+        "declaration": "final class ExperimentalDartitectApi"
       },
       {
         "name": "IdGenerator",
@@ -136,6 +180,10 @@
         "declaration": "final class NoOpCommandCrashReporter implements CommandCrashReporter"
       },
       {
+        "name": "NoOpDartitectDiagnosticReporter",
+        "declaration": "final class NoOpDartitectDiagnosticReporter implements DartitectDiagnosticReporter"
+      },
+      {
         "name": "NoOpReactiveObserver",
         "declaration": "final class NoOpReactiveObserver implements ReactiveObserver"
       },
@@ -146,6 +194,10 @@
       {
         "name": "OwnedGraph",
         "declaration": "final class OwnedGraph<T> implements AsyncDisposable"
+      },
+      {
+        "name": "OwnedRuntimeReplacementCleanupException",
+        "declaration": "final class OwnedRuntimeReplacementCleanupException implements Exception"
       },
       {
         "name": "OwnedRuntimeSlot",
@@ -228,6 +280,10 @@
         "declaration": "extension ResultOperations<T, F extends Object> on Result<T, F>"
       },
       {
+        "name": "SafeDartitectDiagnosticReporter",
+        "declaration": "final class SafeDartitectDiagnosticReporter implements DartitectDiagnosticReporter"
+      },
+      {
         "name": "SafeReactiveObserver",
         "declaration": "final class SafeReactiveObserver implements ReactiveObserver"
       },
@@ -246,6 +302,14 @@
       {
         "name": "ValueEquality",
         "declaration": "abstract class ValueEquality"
+      },
+      {
+        "name": "dartitectDiagnosticsProtocolVersion",
+        "declaration": "int get dartitectDiagnosticsProtocolVersion"
+      },
+      {
+        "name": "experimentalDartitectApi",
+        "declaration": "ExperimentalDartitectApi get experimentalDartitectApi"
       },
       {
         "name": "formatUuidV4RandomBytes",
@@ -326,6 +390,14 @@
         "declaration": "final class DartitectFinding"
       },
       {
+        "name": "DartitectFleetReport",
+        "declaration": "final class DartitectFleetReport"
+      },
+      {
+        "name": "DartitectFleetService",
+        "declaration": "final class DartitectFleetService"
+      },
+      {
         "name": "DartitectModelGenerator",
         "declaration": "final class DartitectModelGenerator"
       },
@@ -336,6 +408,18 @@
       {
         "name": "DartitectRuleCodes",
         "declaration": "abstract final class DartitectRuleCodes"
+      },
+      {
+        "name": "DartitectSarifReport",
+        "declaration": "final class DartitectSarifReport"
+      },
+      {
+        "name": "DartitectSemanticInput",
+        "declaration": "final class DartitectSemanticInput"
+      },
+      {
+        "name": "DartitectSemanticManifest",
+        "declaration": "final class DartitectSemanticManifest"
       },
       {
         "name": "DartitectSourceClassification",
@@ -468,6 +552,10 @@
       {
         "name": "dartitectGlobMatches",
         "declaration": "bool dartitectGlobMatches(String glob, String path)"
+      },
+      {
+        "name": "dartitectHasGeneratedHeader",
+        "declaration": "bool dartitectHasGeneratedHeader(String source)"
       },
       {
         "name": "fingerprintFinding",
@@ -798,6 +886,10 @@
         "declaration": "final class ViewModelHost<T extends Object> extends StatefulWidget"
       },
       {
+        "name": "ViewModelReassembler",
+        "declaration": "typedef ViewModelReassembler<in T extends Object> = void Function(T)"
+      },
+      {
         "name": "ViewModelStarter",
         "declaration": "typedef ViewModelStarter<in T extends Object> = FutureOr<void> Function(T)"
       },
@@ -854,6 +946,18 @@
       {
         "name": "DebouncedReactiveValue",
         "declaration": "final class DebouncedReactiveValue<T> implements ValueListenable<T>, Disposable"
+      },
+      {
+        "name": "DerivedAsyncLoader",
+        "declaration": "typedef DerivedAsyncLoader<out T, out F extends Object> = Future<Result<T, F>> Function(DerivedAsyncRead)"
+      },
+      {
+        "name": "DerivedAsyncRead",
+        "declaration": "final class DerivedAsyncRead"
+      },
+      {
+        "name": "DerivedAsyncResource",
+        "declaration": "final class DerivedAsyncResource<T, F extends Object> implements Listenable, AsyncDisposable"
       },
       {
         "name": "DuplicateCollectionKeyException",
@@ -930,6 +1034,10 @@
       {
         "name": "LiveResourceCrashReporter",
         "declaration": "abstract interface class LiveResourceCrashReporter"
+      },
+      {
+        "name": "LiveResourceStalePolicy",
+        "declaration": "enum LiveResourceStalePolicy"
       },
       {
         "name": "LiveResourceWidgetBuilder",
@@ -1062,6 +1170,10 @@
       {
         "name": "ReactiveOwnerDiagnostics",
         "declaration": "final class ReactiveOwnerDiagnostics"
+      },
+      {
+        "name": "ReactiveOwnerPhase",
+        "declaration": "enum ReactiveOwnerPhase"
       },
       {
         "name": "ReactiveRead",
@@ -1666,6 +1778,18 @@
         "declaration": "enum RetryKind"
       },
       {
+        "name": "SyncAuthority",
+        "declaration": "abstract interface class SyncAuthority"
+      },
+      {
+        "name": "SyncBoundaryReceipt",
+        "declaration": "final class SyncBoundaryReceipt"
+      },
+      {
+        "name": "SyncBoundaryStatus",
+        "declaration": "enum SyncBoundaryStatus"
+      },
+      {
         "name": "SyncCheckpointStore",
         "declaration": "abstract interface class SyncCheckpointStore<K, C>"
       },
@@ -1794,8 +1918,16 @@
         "declaration": "final class SyncRun<K, C, F extends Object> implements AsyncDisposable"
       },
       {
+        "name": "SyncRunCleanup",
+        "declaration": "abstract interface class SyncRunCleanup"
+      },
+      {
         "name": "SyncRunJournal",
         "declaration": "abstract interface class SyncRunJournal<K>"
+      },
+      {
+        "name": "SyncRunTerminalException",
+        "declaration": "final class SyncRunTerminalException<K, C, F extends Object> implements Exception"
       },
       {
         "name": "SystemSyncClock",
@@ -1834,6 +1966,14 @@
       {
         "name": "DeterministicTraceIdGenerator",
         "declaration": "final class DeterministicTraceIdGenerator implements TraceIdGenerator"
+      },
+      {
+        "name": "DiagnosticTopologyNode",
+        "declaration": "final class DiagnosticTopologyNode"
+      },
+      {
+        "name": "DiagnosticsTopologyHarness",
+        "declaration": "final class DiagnosticsTopologyHarness"
       },
       {
         "name": "DisposalProbe",

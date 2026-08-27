@@ -5,6 +5,8 @@ export 'src/cli/dartitect_cli_runner.dart';
 export 'src/codex/codex_skill_synchronizer.dart';
 export 'src/config/dartitect_config.dart';
 export 'src/diagnostics/models.dart';
+export 'src/diagnostics/sarif.dart';
+export 'src/fleet/fleet_service.dart';
 export 'src/generation/generation_engine.dart';
 export 'src/generation/scaffolds.dart';
 export 'src/model/model_generator.dart';

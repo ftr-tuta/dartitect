@@ -69,7 +69,7 @@ owned, limites de values, cópias imutáveis, validação numérica e determinis
 Builds native floor/current e evidência runtime de permissões/lifecycle
 permanecem no gate separado de hardening V1S-13.
 
-No RC.2, o comportamento runtime Android é verificado somente em aparelho físico
+No RC.3, o comportamento runtime Android é verificado somente em aparelho físico
 Android 14/API 34. A API 24 Android é coberta por compatibilidade de
 manifest/lint/build, não por emulador. iOS é coberto por builds com deployment
 floor iOS 14 para media e iOS 12 para privacy, além de integração real de

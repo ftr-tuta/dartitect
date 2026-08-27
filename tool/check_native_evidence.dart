@@ -222,7 +222,7 @@ Map<String, Map<String, Object?>> _validateContract(
             '${cell['id']}'.contains('emulator') ||
             cell['evidenceKind'] == 'emulator',
       )) {
-    errors.add('Native evidence matrix must contain exactly five RC.2 cells.');
+    errors.add('Native evidence matrix must contain exactly five RC.3 cells.');
   }
   return cells;
 }

@@ -6,7 +6,7 @@
 . A borrowed value is replaced under the same `ViewModelHost` State.
 . A selector source changes while the selected value remains equal.
 . A generator meets one conflict after several no-op candidates.
-. A symlink cycle or unreadable directory appears during a brownfield scan.
+. A symlink cycle or unreadable directory appears during a conformance scan.
 . An adapter's auth/tenant callback throws before transport.
 . Store watchers/timers survive unless drained before Store close.
 . A temporary database open fails before an owner can be returned.

@@ -35,7 +35,7 @@ e as [receitas de implementação](https://github.com/ftr-tuta/dartitect/blob/ma
 ## Instalação
 
 Este candidato não está publicado no pub.dev. Declare
-`dartitect_flutter: 1.0.0-rc.2` e use o
+`dartitect_flutter: 1.0.0-rc.3` e use o
 [guia de consumo do candidato Git](../../docs/guides/git-candidate-consumption.pt-BR.md)
 para fixá-lo junto com `dartitect` na tag protegida.
 
@@ -67,22 +67,39 @@ Veja `example/dartitect_flutter_example.dart` para um exemplo executável.
   a vida do inherited widget; ele não é service locator.
 - `EffectChannel<E>` é FIFO bounded de consumidor único, owned por uma geração
   explícita de aplicação/sessão/rota. Só `EffectListener` usa o contexto montado
-  atual. `SessionStateController<S>` mantém estado replayable de shell/logout
-  separado de efeitos one-shot.
+  atual, anexa post-frame e pausa entrega enquanto sua rota está offstage ou não
+  é a atual. Listeners headless preservam sua policy imediata.
+  `SessionStateController<S>` mantém estado replayable de shell/logout separado
+  de efeitos one-shot.
 - `FlutterBindingBuildEvent` relata somente tipo de binding, contagem, duração,
   handles locais e ticker; nunca carrega payload de domínio.
 - `FlutterErrorBinding` encadeia/restaura handlers com `ErrorReporter` injetado.
 - O entrypoint reativo opt-in expõe `ReactiveOwner`, transações `update`
   atômicas, values/computeds por chave tipada que implementam diretamente
   `ValueListenable<T>`, igualdade por node e diagnósticos determinísticos.
+  Sua phase machine explícita de write/compute/commit/notify/dispose rejeita
+  escrita durante compute; falhas pós-commit de listener/reporting nunca
+  transformam mutation aplicada em resultado de falha. `ReactiveKey` exige
+  namespace, revision e fingerprint da definição, com conflitos diagnosticáveis.
   Cada update externo pode emitir um `ReactiveChangeEvent` sanitizado por um
   observer explicitamente owned ou borrowed; causas customizadas precisam ser
   identidades static previamente registradas.
+- `ViewModelHost.onReassemble` pode religar definições compatíveis ao mesmo
+  estado local do owner após hot reload. Hot restart cria owner novo e não
+  preserva o grafo efêmero.
 - `ResourceLifecycle` separa dados da temperatura hot/warm/cold;
   `ReactiveObservation` e `AsyncLifecycleBarrier` limitam atividade e teardown.
 - `LiveResource<T, F>` abre uma sessão `ReactiveSource` local à ativação e
-  aplica backpressure explícito por emissão, microtask, frame ou
-  latest-while-busy. O padrão permite no máximo a leitura ativa e uma repetição.
+  aplica backpressure explícito por emissão, microtask, frame,
+  latest-while-busy ou restart-latest experimental. O padrão permite no máximo
+  a leitura ativa e uma repetição.
+- `DerivedAsyncResource<T, F>` experimental deriva de um conjunto explícito e
+  não vazio de listenables Flutter. Generations de dependência cancelam/drenam
+  leituras antigas e bloqueiam publicação tardia; policy de último dado e dedup
+  por igualdade são explícitos. Retorne seu `liveResource` de uma
+  `ResourceFamily` existente para manter key, lifetime e eviction owned pela
+  family. Um subject diagnóstico borrowed opcional emite somente fatos fixos e
+  sem payload do lifecycle do resource.
 - `FutureReactiveSource`, `StreamReactiveSource`, `ListenableReactiveSource` e
   `ValueListenableReactiveSource` adaptam primitivos async/nativos em sessões
   novas por ativação sem tomar ownership de listenables borrowed.
@@ -130,6 +147,9 @@ Mantenha `BuildContext` fora de ViewModels, services, repositories, domínio e
 data. Falhas esperadas de comandos são estado e não são reportadas automaticamente.
 Falhas esperadas de source preservam o último dado conhecido. Crashes de source
 são reportados uma vez, fecham o upstream e exigem `retry()` explícito.
+As APIs de resource derivado e construção diagnóstica continuam experimentais
+conforme ADR 0034 e serão descartadas antes do 1.0 estável sem evidência de uso
+real, lifecycle, performance e review de package/API.
 
 ## Extensão
 
@@ -146,5 +166,5 @@ reorder keyed e chain/restore dos handlers.
 ## Links
 
 Veja [comandos/resultados/efeitos](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/commands-results-effects.pt-BR.md),
-[migração do runtime reativo](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/reactive-runtime-migration.pt-BR.md),
+[guia do runtime reativo](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/reactive-runtime.pt-BR.md),
 [composição/lifecycle/isolate](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/composition-lifecycle-isolates.pt-BR.md) e o [issue tracker](https://github.com/ftr-tuta/dartitect/issues).

@@ -263,6 +263,17 @@ void main() {
     expect(decoded['decision'], 'advisory_alternative');
     expect(decoded['replacement'], contains('SecureUuidV4Generator'));
   });
+
+  test('policy dimensions keep listen approved but not adopted', () {
+    final listen = EcosystemPolicy.bundled.explain('listen');
+
+    expect(listen.decision, EcosystemDecision.approvedPrimitive);
+    expect(listen.boundary, 'pure_dart_primitive');
+    expect(listen.maturity, 'reviewed');
+    expect(listen.adoptionStatus, 'deferred_until_real_consumer');
+    expect(listen.compatibility, contains('nominal interoperability'));
+    expect(listen.toJson(), containsPair('decision', 'approved_primitive'));
+  });
 }
 
 Future<Directory> _graphFixture({
@@ -298,7 +309,7 @@ ${direct.map((package) => '  $package: any').join('\n')}
 
 EcosystemPolicy _policy(Map<String, Object?> decisions) =>
     EcosystemPolicy.fromJson(<String, Object?>{
-      'schemaVersion': 2,
+      'schemaVersion': 3,
       'profile': 'native_strict',
       'documentation': 'policy.md',
       'decisions': decisions,

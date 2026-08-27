@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 
 const _managedSkills = <String>[
   'dartitect-adapters',
-  'dartitect-adopt',
+  'dartitect-audit',
   'dartitect-design',
   'dartitect-mcp',
   'dartitect-modeling',
@@ -80,7 +80,7 @@ void main() {
       expect(metadata, contains('default_prompt: "Use \$$name '));
       expect(metadata, contains('allow_implicit_invocation: true'));
       expect(manifest['schemaVersion'], 1);
-      expect(manifest['sdkVersion'], '1.0.0-rc.2');
+      expect(manifest['sdkVersion'], '1.0.0-rc.3');
       expect(manifest['contentHash'], matches(RegExp(r'^[0-9a-f]{8}$')));
     }
   }, timeout: const Timeout(Duration(minutes: 2)));

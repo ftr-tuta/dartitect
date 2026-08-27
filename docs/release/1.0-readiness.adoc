@@ -1,9 +1,9 @@
 = Dartitect 1.0 readiness decision
 
 Status:: GIT CONSUMPTION CANDIDATE ASSEMBLED; NOT READY FOR FORMAL RELEASE
-Implementation status:: Code and the sixteen-package `1.0.0-rc.2` cohort are assembled; external root checks and native evidence remain pending
+Implementation status:: Code and the sixteen-package `1.0.0-rc.3` cohort are assembled; external root checks and native evidence remain pending
 Decision date:: 2026-08-26 UTC
-Current candidate cohort:: `1.0.0-rc.2`
+Current candidate cohort:: `1.0.0-rc.3`
 Decision authority:: maintainer-delegated automation recorded in `tool/goal_gates.json`
 
 == Decision
@@ -15,10 +15,11 @@ Dartitect package to the same repository/tag/commit. No package is authorized
 for pub.dev publication.
 
 This record does not claim formal `READY_FOR_1_0_RC` or `READY_FOR_1_0` status.
-RC.2 can close the external CI/native goals, but a known semantic defect in
-`OwnedRuntimeSlot.replaceGraph` remains a release blocker. It is deliberately
-not corrected in RC.2. RC.3 must correct it and repeat every SHA-bound gate
-before a formal readiness decision.
+The technical-hardening work corrects the previously recorded
+`OwnedRuntimeSlot.replaceGraph` ambiguity and its focused replacement/cleanup
+matrix passes. That removes the semantic blocker but does not authorize this
+cohort: the clean final candidate still needs same-SHA CI, Security, native,
+hosted/Git canary, benchmark, and release-audit receipts.
 
 == Root evidence boundary
 
@@ -47,10 +48,9 @@ ADB server; API 24 is build compatibility, not runtime evidence. iOS evidence
 uses deployment-floor builds plus a dynamically selected CI simulator. No
 Android emulator or physical iPhone is part of this candidate.
 
-The five receipts, CI and Security runs, dry-runs, and Git canaries must all
-refer to the same final `main` SHA. Even after those receipts close V1S-04 and
-V1S-13, `replaceGraph` keeps `rc_readiness_decision` at
-`NOT_READY_FOR_1_0_RC`.
+The five receipts, CI and Security runs, dry-runs, benchmarks, and Git canaries
+must all refer to the same final `main` SHA. Until those receipts close V1S-04
+and V1S-13, `rc_readiness_decision` remains `NOT_READY_FOR_1_0_RC`.
 
 The formal signed-bundle/pub.dev path remains `NOT_AUTHORIZED`. Stable promotion
 remains `NOT_ASSEMBLED` and its publication decision remains `NOT_AUTHORIZED`.

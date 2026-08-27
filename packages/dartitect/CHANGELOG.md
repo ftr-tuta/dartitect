@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.0.0-rc.3
+
+- Add experimental diagnostics protocol v1 with fixed payload-free subjects
+  and phases, opaque emitter-owned IDs, bounded buffers, explicit reporter
+  ownership, failure isolation, and off/lifecycle/topology detail.
+
+- Report old-generation cleanup failures after a successful
+  `OwnedRuntimeSlot` publication through
+  `OwnedRuntimeReplacementCleanupException`, including the authoritative
+  published generation.
+- Make command-lane transition callbacks safe to cancel or dispose the lane
+  reentrantly for every unkeyed and keyed scheduling policy.
+
 ## 1.0.0-rc.2
 
 - Promote the lockstep candidate cohort without public Dart API changes and

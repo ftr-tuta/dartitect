@@ -92,6 +92,8 @@ final class DartitectConfig {
         DartitectArchitectureRules.defaultCompositionRoots,
     List<String> generatedInfrastructure =
         DartitectArchitectureRules.defaultGeneratedInfrastructure,
+    List<String> generatedSuffixes =
+        DartitectArchitectureRules.defaultGeneratedSuffixes,
     List<DartitectSuppression> suppressions = const <DartitectSuppression>[],
     Map<String, Object?> scaffolds = const <String, Object?>{
       'layout': 'feature_first',
@@ -109,6 +111,7 @@ final class DartitectConfig {
        generatedInfrastructure = List<String>.unmodifiable(
          generatedInfrastructure,
        ),
+       generatedSuffixes = List<String>.unmodifiable(generatedSuffixes),
        suppressions = List<DartitectSuppression>.unmodifiable(suppressions),
        scaffolds = _copyScaffolds(scaffolds),
        unknown = Map<String, Object?>.unmodifiable(unknown) {
@@ -148,6 +151,7 @@ final class DartitectConfig {
       'layers',
       'compositionRoots',
       'generatedInfrastructure',
+      'generatedSuffixes',
       'suppressions',
       'scaffolds',
     };
@@ -178,6 +182,7 @@ final class DartitectConfig {
         json['generatedInfrastructure'],
         '/generatedInfrastructure',
       ),
+      generatedSuffixes: _suffixList(json['generatedSuffixes']),
       suppressions: _parseSuppressions(json['suppressions']),
       scaffolds: _parseScaffolds(json['scaffolds']),
       unknown: <String, Object?>{
@@ -202,6 +207,9 @@ final class DartitectConfig {
   /// Globs where provider-generated infrastructure may exist.
   final List<String> generatedInfrastructure;
 
+  /// Generated source suffixes accepted with a standard generated header.
+  final List<String> generatedSuffixes;
+
   /// Reviewed, narrow architecture suppressions.
   final List<DartitectSuppression> suppressions;
 
@@ -218,6 +226,7 @@ final class DartitectConfig {
     'layers': layers,
     'compositionRoots': compositionRoots,
     'generatedInfrastructure': generatedInfrastructure,
+    'generatedSuffixes': generatedSuffixes,
     'suppressions': suppressions.map((value) => value.toJson()).toList(),
     'scaffolds': scaffolds,
     ...unknown,
@@ -415,6 +424,36 @@ final class DartitectConfig {
             'expected a string',
           ),
     ];
+  }
+
+  static List<String> _suffixList(Object? value) {
+    if (value == null) {
+      return DartitectArchitectureRules.defaultGeneratedSuffixes;
+    }
+    if (value is! List<Object?> || value.isEmpty) {
+      throw const DartitectConfigException(
+        '/generatedSuffixes',
+        'expected a non-empty array',
+      );
+    }
+    final output = <String>[];
+    for (var index = 0; index < value.length; index += 1) {
+      final raw = value[index];
+      if (raw is! String ||
+          !RegExp(
+            r'^\.[a-z0-9_.-]+\.dart$',
+            caseSensitive: false,
+          ).hasMatch(raw) ||
+          raw.contains('/') ||
+          raw.contains('\\')) {
+        throw DartitectConfigException(
+          '/generatedSuffixes/$index',
+          'expected a safe suffix such as .freezed.dart',
+        );
+      }
+      if (!output.contains(raw)) output.add(raw);
+    }
+    return output;
   }
 
   static String _normalizeGlob(String value, String pointer) {

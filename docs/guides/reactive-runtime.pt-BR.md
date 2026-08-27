@@ -1,5 +1,8 @@
 # Adoção opt-in do runtime reativo
 
+Este é um guia greenfield de seleção de capability, não um workflow de migração
+ou coexistência com outro runtime de application state.
+
 O entrypoint `package:dartitect_flutter/dartitect_flutter.dart` é a superfície
 fina estável para `ViewModelHost`, `Command0`/`Command1`,
 `ListenableSelector`, scope e binding de erros.
@@ -24,9 +27,22 @@ continuam borrowed e são fechados pelo consumidor.
 `ReactiveOwner` cria values e computeds identificados por chave tipada. Faça
 toda escrita dentro de `owner.update`; updates aninhados participam da
 transação externa e listeners executam somente após todos os computeds afetados
-estabilizarem. Um crash de compute preserva o snapshot anterior, é reportado
-pelo `ReactiveComputeReporter` injetado e é relançado com o stack trace
-original.
+estabilizarem. A phase machine observável é
+`idle → write → compute → commit → notify`; o teardown terminal usa `dispose` e
+`disposed`. Escritas ou definições novas durante compute/commit são rejeitadas,
+nunca executadas por flush implícito. Um crash de compute preserva snapshot e
+revision anteriores, é reportado pelo `ReactiveComputeReporter` injetado e é
+relançado com o stack trace original. Falha de listener acontece depois do
+commit: é reportada e isolada, os demais listeners continuam e o caller mantém
+o retorno de sucesso da mutation.
+
+Todo `ReactiveKey<T>` exige namespace estável, revision positiva e fingerprint
+não vazio da definição. A identity é local ao owner e combina tipo, namespace e
+nome. Reuso também exige metadata, kind, dependencies e equality compatíveis;
+caso contrário, `ReactiveKeyConflictException` informa as definições existente
+e recebida. Registro compatível de computed atualiza a closure preservando o
+estado. Use `ViewModelHost.onReassemble` para religar definições após hot reload.
+Hot restart cria host/owner novo e reinicia o grafo efêmero.
 Cada node implementa diretamente o `ValueListenable<T>` do Flutter. A igualdade
 é local ao node e usa `==` por padrão; forneça callback explícito quando a regra
 de mudança significativa do domínio for diferente.
@@ -67,6 +83,42 @@ Use `FutureReactiveSource`, `StreamReactiveSource`,
 primitivos nativos. Cada ativação hot cria sessão/subscription nova. Streams
 carregam eventos `Result<T, F>` tipados; um erro real do stream continua crash
 inesperado com stack original em vez de ser convertido para `F`.
+
+## Resources async derivados experimentais
+
+Use `DerivedAsyncResource<T, F>` somente quando um valor assíncrono possuir um
+conjunto explícito e não vazio de dependências Flutter `Listenable`. O adapter
+assina durante uma geração hot, remove todos os listeners quando ela fecha e
+delega estado público e lifecycle de observação a um único `LiveResource`. Não
+há tracking implícito de leituras.
+
+Cada mudança de dependência avança uma generation e usa
+`SourceBackpressure.restartLatest`: o loader ativo recebe cancelamento
+cooperativo, drena e só então admite a leitura mais nova. Os guards da source e
+do resource rejeitam resultado tardio mesmo se o loader ignorar cancelamento.
+`LiveResourceStalePolicy` escolhe preservar o último dado, descartá-lo ou usar
+stale-while-revalidate. O adapter derivado deduplica dados ready iguais com `==`
+por padrão; injete a igualdade do domínio quando necessário.
+
+```dart
+final resource = DerivedAsyncResource<AccountView, LoadFailure>(
+  dependencies: <Listenable>[session, filters],
+  stalePolicy: LiveResourceStalePolicy.staleWhileRevalidate,
+  load: (read) => repository.loadAccountView(
+    session.value,
+    filters.value,
+    cancellation: read.cancellation,
+  ),
+);
+```
+
+Para compartilhamento keyed, retorne
+`DerivedAsyncResource(...).liveResource` de uma factory existente de
+`ResourceFamily<K, T, F>`. A family — não o valor de dependência nem o loader —
+possui igualdade de keys, leases, TTL idle, limites de quantidade/peso, prewarm
+e eviction. A API é experimental conforme ADR 0034 e será removida antes do
+1.0 estável se não houver consumidor real registrado, se os gates de
+generation/leak falharem ou se exigir tracking implícito ou hooks globais.
 
 ## Invalidation e refresh causal
 
@@ -222,6 +274,30 @@ Use o `ReactiveJournal` bounded e somente em memória para diagnóstico local ou
 observer é isolada e reportada uma vez; depois ele é desabilitado. Eventos e o
 journal nunca armazenam payload de domínio, keys, texto de erro ou identidade.
 
+Para topology e lifecycle entre runtimes, o protocolo versão 1 adiciona
+categorias fixas de subject para owner, node, command, resource, family, effect,
+sync e isolate. Um `DartitectDiagnosticEvent` contém somente schema version,
+sequência local ao emitter, categoria/phase fixas, IDs opacos locais ao
+processo, generation e revision. O decoder exato rejeita campos extras, então
+valores de domínio, keys, queries, mensagens de erro, stacks e identidades não
+possuem campo no protocolo.
+
+Crie `DartitectDiagnosticsEmitter` numa fronteira de composição com reporter
+explicitamente owned ou borrowed. `DartitectDiagnosticBuffer` é bounded,
+sobrescreve o evento mais antigo e limpa todas as referências no dispose.
+`SafeDartitectDiagnosticReporter` isola reentrância e falha de destino.
+Selecione `off`, `lifecycle` ou `topology`; off não aloca ID de subject e nenhum
+modo altera resultados do runtime. Fatos terminais de failure/crash nunca
+sofrem sampling num stream de lifecycle habilitado.
+
+`LiveResource` e `DerivedAsyncResource` aceitam subject diagnóstico borrowed do
+kind fixo `resource`. O resource emite fatos de estado/lifecycle, nunca seus
+dados ou failure. Use `DiagnosticsTopologyHarness` de `dartitect_testing` para
+reconstruir relações opacas e lifecycle terminal nos testes. IDs vêm do
+generator injetado no emitter e nunca podem ser IDs da aplicação. As APIs de
+construção/reporting continuam experimentais conforme ADR 0034 até aprovação
+de uso real, performance, ownership e contrato de descarte.
+
 ## Builders headless e apresentação do consumidor
 
 O entrypoint reativo fornece `ReactiveValueBuilder`, `LiveResourceBuilder`,
@@ -247,6 +323,6 @@ estáveis, controles acessíveis por teclado, text scaling e callbacks de
 retry/refresh/load-more pertencentes à rota. Os workloads de referência
 demonstram esse limite e descartam o paged resource antes da source local.
 
-Os entrypoints avançados são preparados em `1.0.0-rc.2`; mudanças são
+Os entrypoints avançados são preparados em `1.0.0-rc.3`; mudanças são
 adicionadas em incrementos revisados e permanecem opt-in durante toda a linha
 candidata.

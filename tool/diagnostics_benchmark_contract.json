@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "samples": 5,
+  "warmupIterations": 10000,
+  "measuredIterations": 200000,
+  "bufferCapacity": 256,
+  "budgets": {
+    "debug": {
+      "maxOffNanosecondsPerEvent": 5000,
+      "maxTopologyNanosecondsPerEvent": 50000
+    },
+    "profile": {
+      "maxOffNanosecondsPerEvent": 5000,
+      "maxTopologyNanosecondsPerEvent": 50000
+    }
+  }
+}

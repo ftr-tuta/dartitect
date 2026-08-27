@@ -22,6 +22,9 @@ typedef ViewModelDisposer<T extends Object> = FutureOr<void> Function(
   T viewModel,
 );
 
+/// Rebinds hot-reload-safe definitions without replacing owned state.
+typedef ViewModelReassembler<T extends Object> = void Function(T viewModel);
+
 /// Binds a view model to Flutter's existing [State] lifecycle.
 ///
 /// [ViewModelHost.create] owns, starts, and releases the value it creates.
@@ -36,6 +39,7 @@ final class ViewModelHost<T extends Object> extends StatefulWidget {
     required this.builder,
     this.start,
     this.dispose,
+    this.onReassemble,
     super.key,
   }) : _create = create,
        _value = null,
@@ -45,6 +49,7 @@ final class ViewModelHost<T extends Object> extends StatefulWidget {
   const ViewModelHost.value({
     required T value,
     required this.builder,
+    this.onReassemble,
     super.key,
   }) : _value = value,
        _create = null,
@@ -67,6 +72,12 @@ final class ViewModelHost<T extends Object> extends StatefulWidget {
   /// When omitted, [AsyncDisposable], [Disposable], and [ChangeNotifier] are
   /// recognized in that order.
   final ViewModelDisposer<T>? dispose;
+
+  /// Optional hot-reload callback for rebinding compatible definitions.
+  ///
+  /// The existing value remains authoritative. Incompatible definitions should
+  /// fail diagnostically instead of replacing owner-local state silently.
+  final ViewModelReassembler<T>? onReassemble;
 
   @override
   State<ViewModelHost<T>> createState() => _ViewModelHostState<T>();
@@ -103,6 +114,22 @@ final class _ViewModelHostState<T extends Object>
 
   @override
   Widget build(BuildContext context) => widget.builder(context, _viewModel);
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    final reassemble = widget.onReassemble;
+    if (reassemble == null) return;
+    try {
+      reassemble(_viewModel);
+    } catch (error, stackTrace) {
+      _reportLifecycleError(
+        error,
+        stackTrace,
+        context: 'while reassembling a ViewModelHost value',
+      );
+    }
+  }
 
   @override
   void dispose() {

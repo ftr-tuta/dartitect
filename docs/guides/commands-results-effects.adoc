@@ -63,7 +63,9 @@ explicit +resume()+ after running work settles. Late completion from a
 cancelled, superseded, older concurrent, or disposed generation cannot publish
 or notify. Disposal closes admission, rejects queued work, requests
 cancellation, drains actions, clears Flutter future mappings, and shares one
-idempotent completion.
+idempotent completion. Every transition callback observes a fully initialized
+scheduler entry, so cancelling or disposing an unkeyed or keyed lane from that
+callback is supported and drains without late-initialization failure.
 
 == 1.0 reactive resource matrix
 
@@ -160,7 +162,12 @@ explicit; accepted effects are FIFO exactly once. Consumer failure is reported
 without reinserting an effect. Disposal discards pending effects and drains an
 active callback.
 
-+EffectListener+ borrows the channel and uses only its current mounted context.
++EffectListener+ attaches post-frame and uses only its current mounted context.
+Delivery waits while +TickerMode+ is disabled or the enclosing route is not
+current, then resumes at most once if the same binding remains mounted. Detach,
+channel swap, or channel disposal discards an admitted but not yet invoked
+Flutter delivery. Headless +listen+ retains its consumer-defined immediate
+policy.
 Authentication truth instead uses replayable +SessionState+ so the shell removes
 routes before draining the old session graph. A new owner generation gets a new
 channel; Dartitect provides no global event bus or general async-state envelope.

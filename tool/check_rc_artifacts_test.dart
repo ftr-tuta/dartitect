@@ -170,7 +170,7 @@ final class _BundleFixture {
       await package.create(recursive: true);
       await File('${package.path}/pubspec.yaml').writeAsString('''
 name: $name
-version: 1.0.0-rc.2
+version: 1.0.0-rc.3
 environment:
   sdk: ^3.13.0
 ''');
@@ -184,7 +184,7 @@ environment:
     await File('${root.path}/tool/package_release_contract.json').writeAsString(
       jsonEncode(<String, Object?>{
         'schemaVersion': 1,
-        'cohortVersion': '1.0.0-rc.2',
+        'cohortVersion': '1.0.0-rc.3',
         'publicationOrder': names,
         'publicationLayers': layers,
       }),

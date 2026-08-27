@@ -1,0 +1,25 @@
+= ADR-0031: Post-frame Flutter effect delivery
+
+Status:: ACCEPTED
+
+Context:: `EffectListener` attached from `initState`. A queued effect could
+drain synchronously during attachment, invoking navigation or another
+context-dependent callback before the first frame had established a valid
+route context. Mounted but offstage/non-current routes also consumed effects
+immediately.
+
+Decision:: The Flutter listener attaches in a post-frame callback. Its binding
+caches `TickerMode` and current-route activity during build. An admitted effect
+waits while the binding is offstage or its route is non-current and invokes at
+most once when that same channel binding becomes active. Detach, channel swap,
+or channel disposal wakes and discards an admitted callback that has not been
+invoked. Disposal cannot hang on Dartitect's own inactive-route wait.
+
+The headless `EffectChannel.listen` API remains scheduler-independent and
+starts draining according to the consumer's own policy. Neither channel nor
+ViewModel stores `BuildContext`.
+
+Consequences:: A paused Flutter delivery consumes one capacity slot until it is
+invoked or discarded. Route ownership must still dispose the widget binding
+before its channel. This is an at-most-once local UI contract, not durable
+delivery, replay, navigation authority, or an event bus.

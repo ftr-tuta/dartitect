@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0-rc.3
+
+- Prefer resolved element/library identity over textual type and locator names.
+- Restrict sensitive-key diagnostics to recognized telemetry sinks, recognize
+  reviewed generated headers and configurable suffixes, and diagnose invalid
+  configuration explicitly.
+- Validate scanner/plugin true and false positives through one versioned corpus
+  with a bounded analyzer budget.
+
 ## 1.0.0-rc.2
 
 - Promote the lockstep candidate cohort without public Dart API changes and

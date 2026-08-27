@@ -1,5 +1,8 @@
 # Opting into the reactive runtime
 
+This is a greenfield feature-selection guide, not a migration or coexistence
+workflow for another application-state runtime.
+
 The `package:dartitect_flutter/dartitect_flutter.dart` entrypoint is the stable
 thin surface for `ViewModelHost`, `Command0`/`Command1`, `ListenableSelector`,
 scope, and error binding.
@@ -23,9 +26,23 @@ remain borrowed and are closed by the consumer.
 
 `ReactiveOwner` creates values and typed-key computeds. Perform every write
 inside `owner.update`; nested updates join the outer transaction and listeners
-run only after all affected computeds stabilize. A compute crash preserves the
-previous graph snapshot, reports through the injected
-`ReactiveComputeReporter`, and is rethrown with its original stack trace.
+run only after all affected computeds stabilize. The observable phase machine
+is `idle → write → compute → commit → notify`; terminal teardown uses `dispose`
+and `disposed`. Writes or new definitions during compute/commit are rejected,
+never flushed implicitly. A compute crash preserves the previous graph snapshot
+and revision, reports through the injected `ReactiveComputeReporter`, and is
+rethrown with its original stack trace. Listener failure occurs after commit:
+it is reported and isolated, every other listener continues, and the mutation
+caller retains its successful return value.
+
+Every `ReactiveKey<T>` requires a stable namespace, positive definition
+revision, and non-empty fingerprint. Identity is owner-local and consists of
+type, namespace, and name. Reuse also requires matching definition metadata,
+kind, dependencies, and equality; otherwise
+`ReactiveKeyConflictException` reports the existing and incoming definitions.
+Compatible computed registration refreshes its closure while preserving state.
+Use `ViewModelHost.onReassemble` to perform that rebinding after hot reload.
+Hot restart builds a new host/owner and resets ephemeral graph state.
 Every node directly implements Flutter's `ValueListenable<T>`. Equality is
 node-local and defaults to `==`; supply an explicit equality callback when the
 domain's meaningful-change rule differs.
@@ -64,6 +81,41 @@ Use `FutureReactiveSource`, `StreamReactiveSource`,
 native primitives. Each hot activation creates a fresh session/subscription.
 Streams carry typed `Result<T, F>` events; an actual stream error remains an
 unexpected crash with its original stack rather than being converted to `F`.
+
+## Experimental derived async resources
+
+Use `DerivedAsyncResource<T, F>` only when an asynchronous value has an
+explicit, non-empty set of Flutter `Listenable` dependencies. The adapter
+subscribes during a hot generation, removes every listener when that generation
+closes, and delegates its public state and observation lifecycle to one
+`LiveResource`. It performs no implicit read tracking.
+
+Each dependency change advances a generation and uses
+`SourceBackpressure.restartLatest`: the active loader receives cooperative
+cancellation, drains, and only then admits the newest read. The source and
+resource generation guards reject a late result even when the loader ignores
+cancellation. `LiveResourceStalePolicy` chooses preserved last data, discarded
+last data, or stale-while-revalidate. The derived adapter deduplicates equal
+ready data with `==` by default; inject the domain's equality when needed.
+
+```dart
+final resource = DerivedAsyncResource<AccountView, LoadFailure>(
+  dependencies: <Listenable>[session, filters],
+  stalePolicy: LiveResourceStalePolicy.staleWhileRevalidate,
+  load: (read) => repository.loadAccountView(
+    session.value,
+    filters.value,
+    cancellation: read.cancellation,
+  ),
+);
+```
+
+For keyed sharing, return `DerivedAsyncResource(...).liveResource` from an
+existing `ResourceFamily<K, T, F>` factory. The family—not the dependency value
+or loader—owns key equality, leases, idle TTL, count/weight limits, prewarm, and
+eviction. The API is experimental under ADR 0034 and is removed before stable
+1.0 if it has no recorded real consumer, fails generation/leak gates, or would
+require implicit tracking or global hooks.
 
 ## Invalidation and causal refresh
 
@@ -219,6 +271,30 @@ bounded, memory-only `ReactiveJournal` for local diagnostics or the
 is isolated and reported once, then that observer is disabled. Neither events
 nor the journal store domain payloads, keys, error text, or identity.
 
+For cross-runtime topology and lifecycle, protocol version 1 adds fixed subject
+categories for owner, node, command, resource, family, effect, sync, and
+isolate. A `DartitectDiagnosticEvent` contains only its schema version,
+emitter-local sequence, fixed category/phase, opaque process-local IDs,
+generation, and revision. The exact decoder rejects extra fields, so domain
+values, keys, queries, error messages, stacks, and identities have no protocol
+slot.
+
+Create `DartitectDiagnosticsEmitter` at a composition boundary with an
+explicitly owned or borrowed reporter. `DartitectDiagnosticBuffer` is bounded,
+overwrites its oldest event, and clears every event reference on dispose.
+`SafeDartitectDiagnosticReporter` isolates reentrancy and destination failure.
+Select `off`, `lifecycle`, or `topology`; off allocates no subject ID and none of
+the modes changes runtime outcomes. Failure and crash terminal facts are never
+sampled inside an enabled lifecycle stream.
+
+`LiveResource` and `DerivedAsyncResource` accept a borrowed diagnostic subject
+of fixed kind `resource`. The resource emits state/lifecycle facts, never its
+data or failure. Use `DiagnosticsTopologyHarness` from `dartitect_testing` to
+reconstruct opaque relationships and terminal lifecycle in tests. IDs must
+come from the emitter's injected generator and must never be application IDs.
+The construction/reporting APIs remain experimental under ADR 0034 until real
+consumer, performance, ownership, and discard reviews approve stabilization.
+
 ## Headless builders and consumer presentation
 
 The reactive entrypoint provides `ReactiveValueBuilder`,
@@ -244,5 +320,5 @@ live regions, keyboard-focusable controls, text scaling, and route-owned
 retry/refresh/load-more callbacks. The reference workloads demonstrate this
 consumer boundary while disposing the paged resource before its local source.
 
-The advanced entrypoints are prepared in `1.0.0-rc.2`; changes arrive in
+The advanced entrypoints are prepared in `1.0.0-rc.3`; changes arrive in
 reviewed increments and remain opt-in throughout the candidate line.

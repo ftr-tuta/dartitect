@@ -4,8 +4,8 @@
 
 ## Objetivo
 
-Acesso MCP local a inspeção, diagnósticos, adoção, previews revisados e
-documentação pública gerada na linha lockstep `1.0.0-rc.2`.
+Acesso MCP local a inspeção, diagnósticos, conformidade, previews revisados e
+documentação pública gerada na linha lockstep `1.0.0-rc.3`.
 
 ## Quando usar
 
@@ -29,7 +29,7 @@ e as [receitas de implementação](https://github.com/ftr-tuta/dartitect/blob/ma
 ## Instalação
 
 Este candidato não está publicado no pub.dev. Declare
-`dartitect_mcp: 1.0.0-rc.2` em `dev_dependencies`, aplique os overrides do
+`dartitect_mcp: 1.0.0-rc.3` em `dev_dependencies`, aplique os overrides do
 [guia de consumo do candidato Git](../../docs/guides/git-candidate-consumption.pt-BR.md)
 e execute `dart run dartitect_mcp:dartitect_mcp --root .`.
 
@@ -50,7 +50,7 @@ await server.done;
   resultados/tempo e injeta relógio/IDs.
 - `DartitectMcpException` representa falhas sanitizadas.
 
-Há nove tools fechadas: inspect, scan, doctor, explain, adoption, três previews
+Há nove tools fechadas: inspect, scan, doctor, explain, conformance, três previews
 e apply. Não há `create`, leitura arbitrária, argumentos de processo ou shell.
 Resources de pacotes/diagnósticos/guias/config são gerados e verificados; os
 guias incluem seleção do ecossistema e receitas de implementação.

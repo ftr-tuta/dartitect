@@ -21,7 +21,7 @@
       "packages/dartitect_mcp/lib/dartitect_mcp.dart",
       "tool/setup_objectbox_vm.dart"
     ],
-    "dartitect-adopt": [
+    "dartitect-audit": [
       "packages/dartitect/lib/dartitect.dart",
       "packages/dartitect_sync/lib/dartitect_sync.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter.dart",
@@ -85,7 +85,7 @@
   },
   "routingScenarios": {
     "greenfield": ["dartitect-design"],
-    "brownfield": ["dartitect-adopt"],
+    "conformanceAudit": ["dartitect-audit"],
     "simpleFlutterRuntime": ["dartitect-runtime"],
     "reactiveRuntime": ["dartitect-reactive"],
     "offlineOutbox": ["dartitect-offline-first"],

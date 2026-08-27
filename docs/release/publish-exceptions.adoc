@@ -16,7 +16,7 @@ other warning, a changed warning count, or the same warning in another package.
 
 == Experimental MCP protocol pin
 
-`dartitect_mcp 1.0.0-rc.2` intentionally pins `dart_mcp` exactly to `0.5.2`. The
+`dartitect_mcp 1.0.0-rc.3` intentionally pins `dart_mcp` exactly to `0.5.2`. The
 protocol package is experimental, and the reviewed server behavior, schemas,
 annotations and real-client tests cover that exact release. Pub validation
 recommends allowing multiple versions, which would silently admit an unreviewed

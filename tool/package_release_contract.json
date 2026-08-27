@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "series": "1.0.x",
-  "cohortVersion": "1.0.0-rc.2",
-  "internalConstraint": ">=1.0.0-rc.2 <1.0.0",
+  "cohortVersion": "1.0.0-rc.3",
+  "internalConstraint": ">=1.0.0-rc.3 <1.0.0",
   "publicationLayers": [
     [
       "dartitect",
@@ -55,7 +55,7 @@
   },
   "gitCandidate": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "tag": "v1.0.0-rc.2",
+    "tag": "v1.0.0-rc.3",
     "annotated": true,
     "signed": false,
     "protected": true,

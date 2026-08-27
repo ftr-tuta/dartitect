@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "recordedAt": "2026-08-25",
-  "generatorVersion": "1.0.0-rc.2",
+  "generatorVersion": "1.0.0-rc.3",
   "host": {
     "os": "linux",
     "dart": "3.13.1",
@@ -12,28 +12,28 @@
       "models": 100,
       "command": "sync",
       "runs": 5,
-      "medianMicros": 6350454,
-      "peakRssBytes": 738570240,
+      "medianMicros": 6367966,
+      "peakRssBytes": 730644480,
       "samples": [
         {
-          "elapsedMicros": 6350454,
-          "peakRssBytes": 735219712
+          "elapsedMicros": 6184678,
+          "peakRssBytes": 730644480
         },
         {
-          "elapsedMicros": 6140230,
-          "peakRssBytes": 732151808
+          "elapsedMicros": 6431037,
+          "peakRssBytes": 706850816
         },
         {
-          "elapsedMicros": 6373288,
-          "peakRssBytes": 738570240
+          "elapsedMicros": 6345227,
+          "peakRssBytes": 725442560
         },
         {
-          "elapsedMicros": 6024162,
-          "peakRssBytes": 725073920
+          "elapsedMicros": 6367966,
+          "peakRssBytes": 711622656
         },
         {
-          "elapsedMicros": 6554626,
-          "peakRssBytes": 707063808
+          "elapsedMicros": 6531611,
+          "peakRssBytes": 705085440
         }
       ]
     },
@@ -41,28 +41,28 @@
       "models": 100,
       "command": "check",
       "runs": 5,
-      "medianMicros": 4529342,
-      "peakRssBytes": 747474944,
+      "medianMicros": 3834284,
+      "peakRssBytes": 775012352,
       "samples": [
         {
-          "elapsedMicros": 3565487,
-          "peakRssBytes": 720838656
+          "elapsedMicros": 3908768,
+          "peakRssBytes": 753627136
         },
         {
-          "elapsedMicros": 4529342,
-          "peakRssBytes": 736518144
+          "elapsedMicros": 3834284,
+          "peakRssBytes": 775012352
         },
         {
-          "elapsedMicros": 4254025,
-          "peakRssBytes": 747474944
+          "elapsedMicros": 3761529,
+          "peakRssBytes": 762486784
         },
         {
-          "elapsedMicros": 4598861,
-          "peakRssBytes": 715694080
+          "elapsedMicros": 3770114,
+          "peakRssBytes": 727793664
         },
         {
-          "elapsedMicros": 4587166,
-          "peakRssBytes": 736641024
+          "elapsedMicros": 3907908,
+          "peakRssBytes": 766910464
         }
       ]
     },
@@ -70,28 +70,28 @@
       "models": 500,
       "command": "sync",
       "runs": 5,
-      "medianMicros": 14197058,
-      "peakRssBytes": 740724736,
+      "medianMicros": 12497291,
+      "peakRssBytes": 773722112,
       "samples": [
         {
-          "elapsedMicros": 15538662,
-          "peakRssBytes": 722681856
+          "elapsedMicros": 12488515,
+          "peakRssBytes": 773722112
         },
         {
-          "elapsedMicros": 14957853,
-          "peakRssBytes": 740724736
+          "elapsedMicros": 12455900,
+          "peakRssBytes": 739643392
         },
         {
-          "elapsedMicros": 14037973,
-          "peakRssBytes": 732545024
+          "elapsedMicros": 12568605,
+          "peakRssBytes": 735784960
         },
         {
-          "elapsedMicros": 14197058,
-          "peakRssBytes": 729972736
+          "elapsedMicros": 12497291,
+          "peakRssBytes": 773087232
         },
         {
-          "elapsedMicros": 13951453,
-          "peakRssBytes": 712273920
+          "elapsedMicros": 12525103,
+          "peakRssBytes": 761442304
         }
       ]
     },
@@ -99,28 +99,28 @@
       "models": 500,
       "command": "check",
       "runs": 5,
-      "medianMicros": 11519951,
-      "peakRssBytes": 786874368,
+      "medianMicros": 9694169,
+      "peakRssBytes": 773210112,
       "samples": [
         {
-          "elapsedMicros": 10902183,
-          "peakRssBytes": 742940672
+          "elapsedMicros": 9516593,
+          "peakRssBytes": 766685184
         },
         {
-          "elapsedMicros": 11519951,
-          "peakRssBytes": 760647680
+          "elapsedMicros": 10140571,
+          "peakRssBytes": 749719552
         },
         {
-          "elapsedMicros": 10206975,
-          "peakRssBytes": 743636992
+          "elapsedMicros": 9602354,
+          "peakRssBytes": 773210112
         },
         {
-          "elapsedMicros": 13863802,
-          "peakRssBytes": 756178944
+          "elapsedMicros": 9769171,
+          "peakRssBytes": 760762368
         },
         {
-          "elapsedMicros": 13246372,
-          "peakRssBytes": 786874368
+          "elapsedMicros": 9694169,
+          "peakRssBytes": 758657024
         }
       ]
     }

@@ -1,0 +1,28 @@
+= ADR-0036: Distribute tooling separately from application analysis
+
+Status:: ACCEPTED
+
+Context:: The CLI uses `analyzer`, `dart_style`, and filesystem/process APIs.
+Embedding that dependency graph in an application or loading it through the
+application's analyzer plugin can constrain the consumer's Analyzer version and
+couple read-only tooling to build execution. Goal 09 requires fleet reuse without
+implicit downloads during analyze or build.
+
+Decision:: `dartitect_cli` remains a separate executable package. CI may pin it
+as a dev dependency and invoke `dart run dartitect_cli:dartitect`; operators may
+activate the exact version with `dart pub global activate`. Neither path is an
+application runtime dependency. `dartitect_lints` remains the only editor
+Analyzer integration and never spawns or downloads the CLI. Fleet policy accepts
+only an explicit local bundle plus caller-supplied SHA-256 digest.
+
+Precompiled evaluation:: An AOT executable can reduce startup and isolate the
+tool's package graph, but Dartitect will not distribute one for 1.0. A supported
+binary channel would require signed artifacts for each host, an update policy,
+provenance, rollback, and the same release audit as packages. Operators may
+compile the pinned CLI locally with `dart compile exe` without changing the
+support or policy contract.
+
+Consequences:: Application analyze/build performs no fleet bootstrap, policy
+download, or CLI activation. CLI upgrades are explicit. The package remains
+reusable as a typed service for local tools, while its executable distribution
+does not force Analyzer constraints into the application runtime graph.

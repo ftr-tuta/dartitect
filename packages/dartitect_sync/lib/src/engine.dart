@@ -20,6 +20,7 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
     required this.checkpoints,
     this.leases,
     this.journal,
+    this.cleanup,
     SyncClock clock = const SystemSyncClock(),
     IdGenerator? ids,
     SyncObserver<K> observer = const NoOpSyncObserver(),
@@ -58,6 +59,9 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
 
   /// Optional borrowed durable payload-free journal.
   final SyncRunJournal<K>? journal;
+
+  /// Optional borrowed consumer cleanup invoked after lease release.
+  final SyncRunCleanup? cleanup;
 
   /// Lease duration; policy for scheduling/retry remains consumer-owned.
   final Duration leaseTtl;
@@ -118,22 +122,68 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
     final reports = <SyncDatasetReport<K, C, F>>[];
     final byKey = <K, SyncDatasetReport<K, C, F>>{};
     SyncLease? lease;
+    SyncAuthority? authority;
     final startedAt = _clock.now();
+    var journalReceipt = journal == null
+        ? const SyncBoundaryReceipt.notRequired()
+        : const SyncBoundaryReceipt.succeeded();
+    var leaseReleaseReceipt = const SyncBoundaryReceipt.notRequired();
+    var cleanupReceipt = const SyncBoundaryReceipt.succeeded();
+    Object? terminalError;
+    StackTrace? terminalStackTrace;
+    K? activeKey;
+    var activeApplication = const SyncBoundaryReceipt.notAttempted();
+    var activeCheckpoint = const SyncBoundaryReceipt.notAttempted();
     var journalSequence = 0;
-    Future<void> record(SyncJournalFact fact, {K? key, bool hasKey = false}) {
+    Future<void> record(
+      SyncJournalFact fact, {
+      K? key,
+      bool hasKey = false,
+    }) async {
       final durableJournal = journal;
-      if (durableJournal == null) return Future<void>.value();
+      if (durableJournal == null) return;
       journalSequence += 1;
-      return durableJournal.append(
-        SyncJournalEntry<K>(
-          attemptId: run.runId,
-          sequence: journalSequence,
-          timestamp: _clock.now(),
-          fact: fact,
-          datasetKey: key,
-          hasDatasetKey: hasKey,
-        ),
+      try {
+        await durableJournal.append(
+          SyncJournalEntry<K>(
+            attemptId: run.runId,
+            sequence: journalSequence,
+            timestamp: _clock.now(),
+            fact: fact,
+            datasetKey: key,
+            hasDatasetKey: hasKey,
+          ),
+        );
+      } catch (error, stackTrace) {
+        journalReceipt = SyncBoundaryReceipt.failed(error, stackTrace);
+        rethrow;
+      }
+    }
+
+    void retainTerminalError(Object error, StackTrace stackTrace) {
+      terminalError ??= error;
+      terminalStackTrace ??= stackTrace;
+    }
+
+    void addActiveReport({
+      SyncDatasetStopReason? stopReason,
+      bool cancelled = false,
+    }) {
+      final key = activeKey;
+      if (key == null || byKey.containsKey(key)) return;
+      final applied = activeApplication.status == SyncBoundaryStatus.succeeded;
+      final report = SyncDatasetReport<K, C, F>(
+        key: key,
+        status: applied || !cancelled
+            ? SyncDatasetStatus.incomplete
+            : SyncDatasetStatus.cancelled,
+        stopReason: stopReason,
+        application: activeApplication,
+        checkpoint: activeCheckpoint,
       );
+      reports.add(report);
+      byKey[key] = report;
+      activeKey = null;
     }
 
     run._emit(SyncProgressPhase.runStarted, startedAt);
@@ -161,6 +211,14 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
           }
           return;
         }
+        authority = _LeaseSyncAuthority(
+          lease: lease,
+          clock: _clock,
+          ttl: leaseTtl,
+          cancellation: run.cancellation,
+          deadline: run.deadline,
+        );
+        leaseReleaseReceipt = const SyncBoundaryReceipt.notAttempted();
       }
 
       for (final key in run.plan.order) {
@@ -194,7 +252,7 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
           _observe(() => _observer.datasetEnded(run.runId, key, 'skipped'));
           continue;
         }
-        if (lease != null && !await _ensureLease(lease)) {
+        if (authority != null && !await authority.ensureAuthority()) {
           final report = SyncDatasetReport<K, C, F>(
             key: key,
             status: SyncDatasetStatus.skipped,
@@ -210,28 +268,48 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
         run._emit(SyncProgressPhase.datasetStarted, _clock.now(), key: key);
         await record(SyncJournalFact.datasetStarted, key: key, hasKey: true);
         _observe(() => _observer.datasetStarted(run.runId, key));
-        final checkpoint = await checkpoints.read(key, run.cancellation);
+        activeKey = key;
+        activeApplication = const SyncBoundaryReceipt.notAttempted();
+        activeCheckpoint = const SyncBoundaryReceipt.notAttempted();
+        final C? checkpoint;
+        try {
+          checkpoint = await checkpoints.read(key, run.cancellation);
+        } catch (error, stackTrace) {
+          activeCheckpoint = SyncBoundaryReceipt.failed(error, stackTrace);
+          rethrow;
+        }
         run.cancellation.throwIfCancelled();
-        final result = await _datasets[key]!.synchronize(
-          SyncDatasetContext<K, C>(
-            key: key,
-            runId: run.runId,
-            checkpoint: checkpoint,
-            cancellation: run.cancellation,
-            deadline: run.deadline,
-          ),
-        );
+        final Result<SyncDatasetOutcome<C>, F> result;
+        try {
+          result = await _datasets[key]!.synchronize(
+            SyncDatasetContext<K, C>(
+              key: key,
+              runId: run.runId,
+              checkpoint: checkpoint,
+              cancellation: run.cancellation,
+              deadline: run.deadline,
+              authority: authority,
+            ),
+          );
+        } catch (error, stackTrace) {
+          activeApplication = SyncBoundaryReceipt.failed(error, stackTrace);
+          rethrow;
+        }
         switch (result) {
           case Ok<dynamic>(:final value):
             final outcome = value as SyncDatasetOutcome<C>;
-            if (lease != null && !await _ensureLease(lease)) {
+            activeApplication = const SyncBoundaryReceipt.succeeded();
+            if (authority != null && !await authority.ensureAuthority()) {
               final report = SyncDatasetReport<K, C, F>(
                 key: key,
-                status: SyncDatasetStatus.skipped,
+                status: SyncDatasetStatus.incomplete,
                 stopReason: SyncDatasetStopReason.leaseExpired,
+                application: activeApplication,
+                checkpoint: activeCheckpoint,
               );
               reports.add(report);
               byKey[key] = report;
+              activeKey = null;
               run._emit(
                 SyncProgressPhase.datasetSkipped,
                 _clock.now(),
@@ -246,21 +324,35 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
             }
             run.cancellation.throwIfCancelled();
             if (outcome.hasCheckpoint) {
-              await checkpoints.write(
-                key,
-                outcome.checkpoint as C,
-                run.cancellation,
-                fencingToken: lease?.fencingToken,
-              );
+              try {
+                await checkpoints.write(
+                  key,
+                  outcome.checkpoint as C,
+                  run.cancellation,
+                  fencingToken: authority?.fencingToken,
+                );
+                activeCheckpoint = const SyncBoundaryReceipt.succeeded();
+              } catch (error, stackTrace) {
+                activeCheckpoint = SyncBoundaryReceipt.failed(
+                  error,
+                  stackTrace,
+                );
+                rethrow;
+              }
+            } else {
+              activeCheckpoint = const SyncBoundaryReceipt.notRequired();
             }
             final report = SyncDatasetReport<K, C, F>(
               key: key,
               status: SyncDatasetStatus.succeeded,
               confirmedCheckpoint: outcome.checkpoint,
               hasConfirmedCheckpoint: outcome.hasCheckpoint,
+              application: activeApplication,
+              checkpoint: activeCheckpoint,
             );
             reports.add(report);
             byKey[key] = report;
+            activeKey = null;
             run._emit(
               SyncProgressPhase.datasetSucceeded,
               _clock.now(),
@@ -273,72 +365,134 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
             );
             _observe(() => _observer.datasetEnded(run.runId, key, 'succeeded'));
           case Err<Object>(:final failure, :final stackTrace):
+            activeApplication = SyncBoundaryReceipt.failed(failure, stackTrace);
             final report = SyncDatasetReport<K, C, F>(
               key: key,
               status: SyncDatasetStatus.failed,
               failure: failure as F,
               failureStackTrace: stackTrace,
+              application: activeApplication,
+              checkpoint: activeCheckpoint,
             );
             reports.add(report);
             byKey[key] = report;
+            activeKey = null;
             run._emit(SyncProgressPhase.datasetFailed, _clock.now(), key: key);
             await record(SyncJournalFact.datasetFailed, key: key, hasKey: true);
             _observe(() => _observer.datasetEnded(run.runId, key, 'failed'));
         }
       }
     } on CancellationException {
-      for (final key in run.plan.order.skip(reports.length)) {
-        reports.add(
-          SyncDatasetReport<K, C, F>(
+      addActiveReport(
+        stopReason: SyncDatasetStopReason.cancelled,
+        cancelled: true,
+      );
+      try {
+        for (final key in run.plan.order.where(
+          (key) => !byKey.containsKey(key),
+        )) {
+          final report = SyncDatasetReport<K, C, F>(
             key: key,
             status: SyncDatasetStatus.cancelled,
             stopReason: SyncDatasetStopReason.cancelled,
-          ),
-        );
-        await record(SyncJournalFact.datasetSkipped, key: key, hasKey: true);
+          );
+          reports.add(report);
+          byKey[key] = report;
+          await record(SyncJournalFact.datasetSkipped, key: key, hasKey: true);
+        }
+      } catch (error, stackTrace) {
+        retainTerminalError(error, stackTrace);
       }
     } catch (error, stackTrace) {
-      try {
-        await record(SyncJournalFact.attemptCrashed);
-      } on Object {
-        // Preserve the original crash; journal failure is independently fatal
-        // only when it is itself the original error.
-      }
-      run._emit(SyncProgressPhase.runCrashed, _clock.now());
-      _observe(() => _observer.runEnded(run.runId, 'crashed'));
-      run._completeError(error, stackTrace);
-      return;
+      retainTerminalError(error, stackTrace);
+      addActiveReport();
     } finally {
-      try {
-        await lease?.release();
-      } catch (error, stackTrace) {
-        if (!run._isCompleted) {
-          run._completeError(error, stackTrace);
+      final acquiredLease = lease;
+      if (acquiredLease != null) {
+        try {
+          await acquiredLease.release();
+          leaseReleaseReceipt = const SyncBoundaryReceipt.succeeded();
+        } catch (error, stackTrace) {
+          leaseReleaseReceipt = SyncBoundaryReceipt.failed(error, stackTrace);
+          retainTerminalError(error, stackTrace);
         }
       }
-      _runs.remove(run);
-      if (!run._isCompleted) {
+
+      final runCleanup = cleanup;
+      if (runCleanup != null) {
+        try {
+          await runCleanup.cleanup(run.runId);
+        } catch (error, stackTrace) {
+          cleanupReceipt = SyncBoundaryReceipt.failed(error, stackTrace);
+          retainTerminalError(error, stackTrace);
+        }
+      }
+
+      if (terminalError == null) {
         try {
           await record(SyncJournalFact.attemptCompleted);
-          final report = SyncReport<K, C, F>(
-            runId: run.runId,
-            startedAt: startedAt,
-            finishedAt: _clock.now(),
-            datasets: reports,
-          );
-          run._emit(SyncProgressPhase.runCompleted, _clock.now());
-          _observe(
-            () => _observer.runEnded(
-              run.runId,
-              report.succeeded ? 'succeeded' : 'completed',
-            ),
-          );
-          run._complete(report);
         } catch (error, stackTrace) {
-          run._completeError(error, stackTrace);
+          retainTerminalError(error, stackTrace);
+        }
+      } else if (journalReceipt.status != SyncBoundaryStatus.failed) {
+        try {
+          await record(SyncJournalFact.attemptCrashed);
+        } on Object {
+          // The first terminal error stays primary; [record] retains the
+          // independent journal failure in [journalReceipt].
         }
       }
-      await run._closeProgress();
+
+      for (final key in run.plan.order.where(
+        (key) => !byKey.containsKey(key),
+      )) {
+        final report = SyncDatasetReport<K, C, F>(
+          key: key,
+          status: SyncDatasetStatus.incomplete,
+        );
+        reports.add(report);
+        byKey[key] = report;
+      }
+
+      final crashed = terminalError != null;
+      run._emit(
+        crashed ? SyncProgressPhase.runCrashed : SyncProgressPhase.runCompleted,
+        _clock.now(),
+      );
+      _observe(
+        () => _observer.runEnded(run.runId, crashed ? 'crashed' : 'completed'),
+      );
+      _runs.remove(run);
+      try {
+        await run._closeProgress();
+      } catch (error, stackTrace) {
+        cleanupReceipt = SyncBoundaryReceipt.failed(error, stackTrace);
+        retainTerminalError(error, stackTrace);
+      }
+
+      final report = SyncReport<K, C, F>(
+        runId: run.runId,
+        startedAt: startedAt,
+        finishedAt: _clock.now(),
+        datasets: reports,
+        journal: journalReceipt,
+        leaseRelease: leaseReleaseReceipt,
+        cleanup: cleanupReceipt,
+      );
+      final error = terminalError;
+      if (error == null) {
+        run._complete(report);
+      } else {
+        final stackTrace = terminalStackTrace ?? StackTrace.current;
+        run._completeError(
+          SyncRunTerminalException<K, C, F>(
+            report: report,
+            cause: error,
+            causeStackTrace: stackTrace,
+          ),
+          stackTrace,
+        );
+      }
     }
   }
 
@@ -354,12 +508,6 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
       return SyncDatasetStopReason.deadlineExceeded;
     }
     return null;
-  }
-
-  Future<bool> _ensureLease(SyncLease lease) async {
-    final now = _clock.now();
-    if (lease.expiresAt.isAfter(now.add(leaseTtl ~/ 3))) return true;
-    return lease.renew(leaseTtl);
   }
 
   void _observe(void Function() action) {
@@ -384,6 +532,55 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
     await Future.wait<void>(
       runs.map((run) => run.done.then<void>((_) {}, onError: (_, _) {})),
     );
+  }
+}
+
+final class _LeaseSyncAuthority implements SyncAuthority {
+  const _LeaseSyncAuthority({
+    required SyncLease lease,
+    required SyncClock clock,
+    required Duration ttl,
+    required CancellationSignal cancellation,
+    required DateTime? deadline,
+  }) : _lease = lease,
+       _clock = clock,
+       _ttl = ttl,
+       _cancellation = cancellation,
+       _deadline = deadline;
+
+  final SyncLease _lease;
+  final SyncClock _clock;
+  final Duration _ttl;
+  final CancellationSignal _cancellation;
+  final DateTime? _deadline;
+
+  @override
+  String get ownerId => _lease.ownerId;
+
+  @override
+  int get fencingToken => _lease.fencingToken;
+
+  @override
+  DateTime get expiresAt => _lease.expiresAt;
+
+  @override
+  Future<bool> ensureAuthority() async {
+    _cancellation.throwIfCancelled();
+    final now = _clock.now();
+    final deadline = _deadline;
+    if (deadline != null && !now.isBefore(deadline)) return false;
+    if (expiresAt.isAfter(now.add(_ttl ~/ 3))) return true;
+    return renew();
+  }
+
+  @override
+  Future<bool> renew() async {
+    _cancellation.throwIfCancelled();
+    final now = _clock.now();
+    final deadline = _deadline;
+    if (deadline != null && !now.isBefore(deadline)) return false;
+    if (!await _lease.renew(_ttl)) return false;
+    return expiresAt.isAfter(_clock.now());
   }
 }
 
@@ -422,8 +619,6 @@ final class SyncRun<K, C, F extends Object> implements AsyncDisposable {
 
   /// Terminal report, or the original unexpected crash.
   Future<SyncReport<K, C, F>> get done => _completion.future;
-
-  bool get _isCompleted => _completion.isCompleted;
 
   /// Requests cooperative cancellation exactly once.
   void cancel([Object? reason]) => _cancellation.cancel(reason);

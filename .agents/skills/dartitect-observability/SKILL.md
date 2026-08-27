@@ -9,7 +9,7 @@ description: Configure Dartitect provider-neutral logging, reporting, W3C tracin
 
 Use this skill for `ObservabilityRuntime`, redaction/sampling/dispatch policy,
 error reporting, W3C propagation, Flutter error capture, or reactive diagnostic
-events.
+events and the versioned payload-free topology/lifecycle protocol.
 
 ## When not to use
 
@@ -27,8 +27,9 @@ events. Errors/fatal are never sampled away. Destination failure stays isolated.
 ## Workflow
 
 Define the data policy first, then choose owned/borrowed sinks, reporter, tracer,
-propagator, Flutter binding, and reactive observers. End every span exactly once
-and define reverse flush/disposal.
+propagator, Flutter binding, reactive observers, and diagnostic detail. End every
+span exactly once and define reverse flush/disposal. Use only emitter-owned
+opaque IDs; keep buffers bounded and clear them on dispose.
 
 Read [references/telemetry-contract.md](references/telemetry-contract.md),
 [references/flutter-and-providers.md](references/flutter-and-providers.md), or

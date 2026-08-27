@@ -28,7 +28,7 @@ base class DartitectMcpServer extends MCPServer
        super.fromStreamChannel(
          implementation: Implementation(
            name: 'dartitect_mcp',
-           version: '1.0.0-rc.2',
+           version: '1.0.0-rc.3',
          ),
          instructions: _instructions,
        ) {
@@ -45,7 +45,7 @@ base class DartitectMcpServer extends MCPServer
 
   static const String _instructions =
       'Dartitect inspects only configured local roots and is read-only by default. '
-      'Use inspect, scan, doctor, explain, adoption, or preview tools first. Never '
+      'Use inspect, scan, doctor, explain, conformance, or preview tools first. Never '
       'request secrets or arbitrary file content. A change may be applied only after '
       'the user reviews its preview, the client approves the mutating tool, and '
       '`confirmed` is true. Plans expire after ten minutes and are single-use. '
@@ -129,14 +129,14 @@ base class DartitectMcpServer extends MCPServer
       },
     );
     _registerReadTool(
-      name: 'dartitect_plan_adoption',
-      description: 'Build an incremental brownfield adoption plan from current project facts.',
+      name: 'dartitect_audit_conformance',
+      description: 'Audit Native Strict conformance without proposing migration or coexistence.',
       schema: _projectSchema(),
       handler: (arguments) async {
         final service = DartitectProjectService(
           await _resolveProject(arguments),
         );
-        return _ok(await service.planAdoption());
+        return _ok(await service.auditConformance());
       },
     );
     _registerPreviewTool(
@@ -368,21 +368,7 @@ base class DartitectMcpServer extends MCPServer
       );
     }
 
-    RandomAccessFile? lock;
     try {
-      final lockDirectory = Directory(_join(stored.root.path, '.dartitect'));
-      await lockDirectory.create(recursive: true);
-      lock = await File(_join(lockDirectory.path, 'mcp.lock'))
-          .open(mode: FileMode.append);
-      try {
-        await lock.lock(FileLock.exclusive);
-      } on FileSystemException {
-        throw const DartitectMcpException(
-          'filesystem_locked',
-          'Another process holds the Dartitect change lock.',
-          retryable: true,
-        );
-      }
       final receipt = await DartitectProjectService(stored.root)
           .applyChange(stored.plan);
       return _ok(<String, Object?>{
@@ -391,14 +377,6 @@ base class DartitectMcpServer extends MCPServer
         'receipt': receipt.toJson(),
       });
     } finally {
-      if (lock != null) {
-        try {
-          await lock.unlock();
-        } on FileSystemException {
-          // The descriptor is still closed below; no sensitive detail is sent.
-        }
-        await lock.close();
-      }
       _activeRoots.remove(stored.root.path);
     }
   }
@@ -635,9 +613,6 @@ base class DartitectMcpServer extends MCPServer
     required: <String>['ok'],
     additionalProperties: true,
   );
-
-  static String _join(String left, String right) =>
-      '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
 }
 
 final class _StoredPlan {

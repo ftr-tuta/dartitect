@@ -1,0 +1,38 @@
+= ADR-0032: Sync authority and terminal receipts
+
+Status:: ACCEPTED
+
+Context:: Lease checks before and after `SyncDataset.synchronize` protected the
+framework checkpoint but could not fence the consumer's real dataset commit.
+The dataset context had no token or renewal seam. After application/checkpoint,
+journal, lease-release, or cleanup failure completed `SyncRun.done` with a
+generic error, so callers could not tell what had already applied and could
+retry blindly.
+
+Decision:: A run with a lease exposes `SyncAuthority` in every
+`SyncDatasetContext`. It names owner, token, expiry, `ensureAuthority()`, and
+explicit `renew()`, all bound to the run cancellation/deadline. A capable
+consumer calls ensure immediately before its local commit and atomically
+compares/commits `fencingToken` in that same storage transaction. The engine
+also checks authority around dataset execution and passes the token to
+checkpoint persistence. No fencing is claimed when the consumer store cannot
+validate a token atomically.
+
+Every dataset report carries independent application and checkpoint receipts.
+Every run report carries journal, lease-release, and cleanup receipts. Boundary
+states are not-attempted, not-required, succeeded, or failed with the original
+error/stack. `incomplete` means an earlier boundary may have applied before a
+later one failed. Expected dataset failure remains `Err<F>`. Unexpected failure
+completes with `SyncRunTerminalException`, which preserves the primary
+cause/stack and contains the report assembled only after release and cleanup
+have been attempted. No terminal outcome authorizes automatic replay.
+
+`SyncRunCleanup` is an optional borrowed consumer port for idempotent run-local
+cleanup. Its failure has its own receipt and never erases application,
+checkpoint, journal, or lease outcomes. Persisted checkpoint and journal record
+formats are unchanged.
+
+Consequences:: The terminal API is intentionally source/behavior breaking
+before 1.0: unexpected errors are wrapped and `SyncDatasetStatus.incomplete` is
+new. Consumers must inspect receipts and retain their own idempotency, schema,
+transaction, conflict, scheduling, and recovery policy.

@@ -39,7 +39,10 @@ temporary, and persisted durability as defined below.
 `OwnedRuntimeSlot.replace()` builds a new transaction before publication. On a
 successful replacement it closes old admission, publishes the new committed
 graph, drains old work, and then tears down the old graph. Failed construction
-leaves the previous generation valid.
+leaves the previous generation valid. If old teardown fails after publication,
+the replacement throws `OwnedRuntimeReplacementCleanupException`; its
+`publishedGeneration` is already authoritative and its cleanup error describes
+only the previous graph. Do not retry the replacement blindly.
 
 ## Durability
 
@@ -78,6 +81,14 @@ during rollback is preserved separately from the original construction error.
 Transfer immutable configuration, messages, and validated W3C trace context.
 For ObjectBox, transfer reference bytes and attach a new Store wrapper in the
 receiving isolate; close it in `finally`.
+
+`IsolateWorker` protocol version 2 uses a monotonic correlation nonce local to
+one worker generation. The caller-facing request ID is never the wire identity,
+so reusing it after a terminal cannot let a stale envelope complete newer work.
+ACK and result Futures may be awaited independently. Payload/result/failure DTOs
+must be versioned and transferable; their isolate copy cost remains part of the
+consumer workload. Cooperative cancellation is preferred, while `safeStop`
+keeps a bounded force-kill deadline for non-cooperative handlers.
 
 Projection stays `ProjectionExecution.inline` unless composition explicitly
 injects a `ProjectionExecutor`. `IsolateProjectionExecutor` creates one worker

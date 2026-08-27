@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0-rc.3
+
+- Expose optional `SyncAuthority` in each dataset context so fencing-capable
+  consumer transactions can ensure/renew authority and atomically validate the
+  token at the real dataset commit.
+- Add application, checkpoint, journal, lease-release, and cleanup receipts;
+  unexpected terminals now throw `SyncRunTerminalException` with the complete
+  partial report and original cause/stack.
+
 ## 1.0.0-rc.2
 
 - Promote the lockstep candidate cohort without public Dart API changes and

@@ -31,7 +31,7 @@ and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/doc
 ## Install
 
 This candidate is not published on pub.dev. Declare
-`dartitect: 1.0.0-rc.2` and follow the
+`dartitect: 1.0.0-rc.3` and follow the
 [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md)
 to pin the package and its transitive Dartitect dependencies to the protected
 tag.
@@ -65,10 +65,15 @@ final class _Connection {
 - `Disposable` and `AsyncDisposable` define narrow lifecycle contracts.
 - `ResourceOwner` disposes owned resources in reverse registration order and
   reports all cleanup failures through `ResourceCleanupException`.
+- `OwnedRuntimeSlot` publishes complete graph generations atomically. If old
+  cleanup fails after publication, `OwnedRuntimeReplacementCleanupException`
+  carries the generation that is already authoritative, so callers must not
+  retry the replacement blindly.
 - `ArchitectureObserver`, `ArchitectureEvent`, and
   `NoOpArchitectureObserver` expose optional, non-fatal architecture signals.
 - `CancellationSource`/`CancellationSignal`, `CommandLane`, and
-  `KeyedCommandLane` provide typed, bounded scheduling without Flutter.
+  `KeyedCommandLane` provide typed, bounded scheduling without Flutter;
+  transition callbacks may cancel or dispose their lane reentrantly.
 - `ProjectionExecution` keeps projection inline by default.
   `IsolateProjectionExecutor<P, R>` is an explicit per-task background option
   for transferable requests/results; cancellation suppresses stale results and
@@ -85,6 +90,11 @@ final class _Connection {
   registered static causes, revisions, duration, and listener counts.
   `ReactiveJournal` is an opt-in, memory-only ring with a default capacity of
   200; `SafeReactiveObserver` isolates and disables a failing destination.
+- Experimental diagnostics protocol v1 uses fixed owner/node/command/resource/
+  family/effect/sync/isolate categories, fixed lifecycle phases, opaque
+  emitter-owned IDs, generation, and revision. `DartitectDiagnosticBuffer` is
+  bounded and clears on disposal; injected reporter failure is isolated and
+  detail can be off without allocating an ID or changing runtime behavior.
 
 ## Ownership
 
@@ -102,6 +112,9 @@ enforce their documented idempotency scope. Reactive events deliberately carry
 no domain payload, operation key, error text, identity, or persisted history.
 Background execution is never selected automatically and requires a platform
 with isolate spawning plus transferable callbacks and values.
+Diagnostics protocol IDs are process-local correlation only and must never be
+derived from application IDs. The construction/reporting surface is
+experimental under ADR 0034 and has no remote or global destination by default.
 
 ## Extending
 

@@ -71,7 +71,7 @@ value boundaries, immutable copies, numeric validation, and determinism. Native
 floor/current builds and runtime lifecycle/permission evidence remain the
 separate V1S-13 hardening gate.
 
-For RC.2, Android runtime behavior is verified on a physical Android 14/API 34
+For RC.3, Android runtime behavior is verified on a physical Android 14/API 34
 device only. Android API 24 is covered by manifest/lint/build compatibility,
 not an emulator. iOS is covered by iOS 14 media and iOS 12 privacy deployment-
 floor builds plus real method-channel integration on a dynamically selected

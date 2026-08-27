@@ -1,0 +1,44 @@
+= ADR 0028: Native Strict greenfield scope and `package:listen`
+:status: accepted
+:date: 2026-08-27
+
+== Context
+
+Dartitect 1.0 needs one unambiguous composition, ownership, and application-
+state lifecycle. An official migration or coexistence layer for Riverpod, BLoC,
+Provider, GetIt, MobX, Signals, or another competing runtime would create a
+second authority for dependency lookup, state publication, and disposal.
+
+`package:listen` provides pure-Dart implementations of familiar listenable
+primitives. The current Dartitect core is already pure Dart, Flutter integration
+uses Flutter Foundation's nominal types, and isolate communication transfers
+messages rather than live observable objects. No maintained pure-Dart Dartitect
+consumer currently needs a shared listenable surface.
+
+== Decision
+
+Dartitect 1.0 is Native Strict and greenfield-only. Existing projects may run a
+read-only conformance audit, but the project does not provide a runtime
+migration, compatibility shim, or coexistence workflow. Views receive
+ViewModels, dependencies use constructor injection, relevant writes use methods,
+Commands, or explicit transactions, and every state/resource boundary has one
+owner.
+
+The ecosystem ledger records `package:listen` as `approved_primitive` at the
+`pure_dart_primitive` boundary with
+`adoptionStatus = deferred_until_real_consumer`. It is not a production or
+development dependency, is not reexported, creates no bridge API, and does not
+justify a `dartitect_state` package.
+
+Reconsideration requires one maintained real pure-Dart consumer, evidence that
+adoption removes product duplication, nominally safe Flutter interoperability,
+an API/dependency diff, tests and equivalent-semantic benchmarks, plus a named
+maintenance owner. A future Flutter reexport is relevant evidence but is not
+sufficient by itself.
+
+== Consequences
+
+`scan --no-baseline` remains the canonical greenfield conformance gate.
+Advisory alternatives, approved consumer boundaries, approved primitives,
+review-required packages, and Native Strict prohibitions remain distinct.
+Infrastructure providers and durable data protocols stay consumer-owned.

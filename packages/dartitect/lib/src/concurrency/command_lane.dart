@@ -364,7 +364,7 @@ final class CommandLane<T, F extends Object> {
   void _start(_CommandEntry<T, F> entry) {
     _running.add(entry);
     _changed();
-    entry.work = _run(entry);
+    entry._attach(_run(entry));
   }
 
   Future<void> _run(_CommandEntry<T, F> entry) async {
@@ -725,7 +725,7 @@ final class KeyedCommandLane<K, A, T, F extends Object> {
   ) {
     state.running.add(entry);
     _changed();
-    entry.work = _run(state, entry);
+    entry._attach(_run(state, entry));
   }
 
   Future<void> _run(
@@ -878,7 +878,18 @@ final class _CommandEntry<T, F extends Object> {
   final Completer<CommandOutcome<T, F>> completer =
       Completer<CommandOutcome<T, F>>();
   late final Future<CommandOutcome<T, F>> future = completer.future;
-  late Future<void> work;
+  final Completer<void> _work = Completer<void>.sync();
+  Future<void> get work => _work.future;
+
+  void _attach(Future<void> operation) {
+    unawaited(
+      operation.then<void>(
+        (_) => _work.complete(),
+        onError: (Object error, StackTrace stackTrace) =>
+            _work.completeError(error, stackTrace),
+      ),
+    );
+  }
 }
 
 final class _KeyedCommandEntry<K, A, T, F extends Object> {
@@ -891,7 +902,18 @@ final class _KeyedCommandEntry<K, A, T, F extends Object> {
   final Completer<CommandOutcome<T, F>> completer =
       Completer<CommandOutcome<T, F>>();
   late final Future<CommandOutcome<T, F>> future = completer.future;
-  late Future<void> work;
+  final Completer<void> _work = Completer<void>.sync();
+  Future<void> get work => _work.future;
+
+  void _attach(Future<void> operation) {
+    unawaited(
+      operation.then<void>(
+        (_) => _work.complete(),
+        onError: (Object error, StackTrace stackTrace) =>
+            _work.completeError(error, stackTrace),
+      ),
+    );
+  }
 }
 
 final class _KeyState<K, A, T, F extends Object> {

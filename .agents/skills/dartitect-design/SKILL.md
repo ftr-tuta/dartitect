@@ -1,6 +1,6 @@
 ---
 name: dartitect-design
-description: Select the smallest Dartitect package and skill stack for a new Dart or Flutter application or feature. Use for greenfield architecture choices; do not use for brownfield migration or detailed implementation.
+description: Select the smallest Dartitect package and skill stack for a new Dart or Flutter application or feature. Use for Native Strict greenfield architecture choices; do not use for conformance auditing or detailed implementation.
 ---
 
 # Design with Dartitect
@@ -12,9 +12,10 @@ or provider boundary when the required Dartitect packages are not yet clear.
 
 ## When not to use
 
-Use `$dartitect-adopt` for an existing codebase migration. Route detailed runtime,
-reactive, offline-first, telemetry, adapter, testing, CLI, or MCP work to the
-matching focused skill after the stack is selected.
+Use `$dartitect-audit` to inspect an existing codebase without changing it.
+Route detailed runtime, reactive, offline-first, telemetry, adapter, testing,
+CLI, or MCP work to the matching focused skill after the greenfield stack is
+selected.
 
 ## Invariants
 

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "plan": "DARTITECT_PLANO_UNICO_DE_EVOLUCAO_CODEX",
+  "assessedOn": "2026-08-27",
+  "status": "NOT_READY",
+  "localImplementation": {
+    "goals": ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10"],
+    "selectedFindings": "FIXED",
+    "optionalSlices": "DEFERRED",
+    "gates": "PASS_LOCAL_MATRIX"
+  },
+  "candidateBinding": {
+    "status": "EXACT_SHA_RECEIPT_REQUIRED",
+    "sourceSha": null,
+    "sourceTree": null
+  },
+  "externalBlockers": [
+    "unique successful same-SHA CI workflow receipt",
+    "unique successful same-SHA Security workflow receipt",
+    "physical Android 14/API 34 native receipt",
+    "same-SHA iOS and native floor/current receipts",
+    "clean final-candidate canary and benchmark archive"
+  ],
+  "authority": {
+    "tagCreated": false,
+    "githubReleaseCreated": false,
+    "pubDevPublished": false,
+    "distributionAuthorized": false,
+    "humanDecisionRequired": true
+  }
+}

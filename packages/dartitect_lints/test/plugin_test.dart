@@ -43,6 +43,7 @@ void main() {
         'dartitect_sensitive_metadata_key',
         'dartitect_ecosystem_prohibited',
         'dartitect_ecosystem_exception',
+        'dartitect_invalid_configuration',
       ],
     );
   });
@@ -100,6 +101,49 @@ void main() {}
     );
   });
 
+  test('generated headers recognize reviewed generator suffixes', () {
+    final root = Directory.systemTemp.createTempSync('dartitect-generated-');
+    addTearDown(() => root.deleteSync(recursive: true));
+    File('${root.path}/dartitect.json').writeAsStringSync(
+      jsonEncode(_config(compositionRoots: <String>['lib/main.dart'])),
+    );
+    final generated = File('${root.path}/lib/models/order.freezed.dart')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''// GENERATED CODE - DO NOT MODIFY BY HAND
+class _OrderGenerated {}
+''');
+
+    expect(
+      DartitectLintBoundaryResolver.classify(generated.path)
+          .isGeneratedInfrastructure,
+      isTrue,
+    );
+  });
+
+  test('generated suffixes can be configured explicitly', () {
+    final root = Directory.systemTemp.createTempSync(
+      'dartitect-generated-config-',
+    );
+    addTearDown(() => root.deleteSync(recursive: true));
+    File('${root.path}/dartitect.json').writeAsStringSync(
+      jsonEncode(<String, Object?>{
+        ..._config(compositionRoots: <String>['lib/main.dart']),
+        'generatedSuffixes': <String>['.records.dart'],
+      }),
+    );
+    final generated = File('${root.path}/lib/models/order.records.dart')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('''// GENERATED CODE - DO NOT EDIT BY HAND.
+class OrderRecords {}
+''');
+
+    expect(
+      DartitectLintBoundaryResolver.classify(generated.path)
+          .isGeneratedInfrastructure,
+      isTrue,
+    );
+  });
+
   test('generated ecosystem policy honors scoped overlays and conflicts', () {
     final root = Directory.systemTemp.createTempSync('dartitect-policy-lint-');
     addTearDown(() => root.deleteSync(recursive: true));
@@ -146,6 +190,10 @@ dependencies:
       policy.explain('freezed', accepted.path).decision,
       DartitectEcosystemDecision.advisoryAlternative,
     );
+    expect(
+      policy.explain('listen', accepted.path).decision,
+      DartitectEcosystemDecision.approvedPrimitive,
+    );
   });
 
   test('lint resolver uses nearest config with project-relative paths', () {
@@ -181,6 +229,24 @@ dependencies:
       DartitectLintBoundaryResolver.classify(runtime.path).isCompositionRoot,
       isTrue,
     );
+  });
+
+  test('invalid config is explicit instead of a silent strict fallback', () {
+    final root = Directory.systemTemp.createTempSync(
+      'dartitect-invalid-lint-config-',
+    );
+    addTearDown(() => root.deleteSync(recursive: true));
+    File('${root.path}/dartitect.json')
+        .writeAsStringSync('{"configVersion": 2}');
+    final source = File('${root.path}/lib/domain/model.dart')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('class Model {}\n');
+
+    final resolution = DartitectLintBoundaryResolver.resolve(source.path);
+
+    expect(resolution.configurationError, isNotNull);
+    expect(resolution.configurationError, isNot(contains(root.path)));
+    expect(resolution.classification.isLayer('domain'), isTrue);
   });
 }
 

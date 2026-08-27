@@ -31,7 +31,7 @@ e as [receitas de implementação](https://github.com/ftr-tuta/dartitect/blob/ma
 ## Instalação
 
 Este candidato não está publicado no pub.dev. Declare
-`dartitect: 1.0.0-rc.2` e siga o
+`dartitect: 1.0.0-rc.3` e siga o
 [guia de consumo do candidato Git](../../docs/guides/git-candidate-consumption.pt-BR.md)
 para fixar o pacote e suas dependências Dartitect transitivas na tag protegida.
 
@@ -64,10 +64,15 @@ final class _Connection {
 - `Disposable` e `AsyncDisposable` definem contratos pequenos de lifecycle.
 - `ResourceOwner` descarta em ordem reversa e agrega falhas em
   `ResourceCleanupException`.
+- `OwnedRuntimeSlot` publica gerações completas de grafo atomicamente. Se o
+  cleanup antigo falhar depois da publicação,
+  `OwnedRuntimeReplacementCleanupException` carrega a geração que já é
+  autoritativa; o caller não deve repetir a troca cegamente.
 - `ArchitectureObserver`, `ArchitectureEvent` e `NoOpArchitectureObserver`
   expõem sinais opcionais e não fatais.
 - `CancellationSource`/`CancellationSignal`, `CommandLane` e
-  `KeyedCommandLane` oferecem scheduling tipado e bounded sem Flutter.
+  `KeyedCommandLane` oferecem scheduling tipado e bounded sem Flutter;
+  callbacks de transição podem cancelar ou descartar a lane reentrantemente.
 - `ProjectionExecution` mantém projection inline por padrão.
   `IsolateProjectionExecutor<P, R>` é uma opção background explícita por task
   para requests/results transferíveis; cancelamento descarta resultado stale e
@@ -84,6 +89,11 @@ final class _Connection {
   causas static registradas, revisões, duração e quantidade de listeners.
   `ReactiveJournal` é um ring opt-in somente em memória com capacidade padrão
   200; `SafeReactiveObserver` isola e desabilita um destino que falha.
+- O protocolo diagnóstico v1 experimental usa categorias fixas de owner/node/
+  command/resource/family/effect/sync/isolate, phases fixas de lifecycle, IDs
+  opacos owned pelo emitter, generation e revision. O
+  `DartitectDiagnosticBuffer` é bounded e limpa no dispose; falha do reporter
+  injetado é isolada e detail pode ficar off sem alocar ID nem mudar semântica.
 
 ## Ownership
 
@@ -101,6 +111,9 @@ idempotência. Eventos reativos nunca carregam payload de domínio, key da
 operação, texto de erro, identidade ou histórico persistido. Execução
 background nunca é selecionada automaticamente e requer plataforma com spawn
 de isolates, callbacks e valores transferíveis.
+IDs do protocolo diagnóstico servem somente para correlação local ao processo e
+nunca vêm de IDs da aplicação. A superfície de construção/reporting é
+experimental conforme ADR 0034 e não possui destino remoto/global por padrão.
 
 ## Extensão
 

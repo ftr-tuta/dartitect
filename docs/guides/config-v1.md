@@ -7,7 +7,8 @@
 `dartitect.json` accepts exactly `configVersion: 1` with the
 `native_strict` profile. It declares named layer globs, composition roots,
 generated infrastructure, reviewed suppressions, and the five generated-once
-blueprints. The CLI scanner and analyzer plugin share the `DT1001` through
+blueprints. It can also replace the reviewed generated suffix list. The CLI
+scanner and analyzer plugin share the `DT1001` through
 `DT1015` policy definitions.
 
 Experimental configuration versions are intentionally incompatible. There is
@@ -25,8 +26,10 @@ dartitect doctor
 
 The parser rejects missing or incorrectly typed fields and preserves unknown
 v1 extension keys without interpreting them. It does not store credentials.
-Layer globs and composition roots are repository-relative; generated
-infrastructure is excluded only through explicit patterns.
+Layer globs and composition roots are repository-relative. A generated source
+is classified either by an explicit infrastructure glob or by both a standard
+generated-code header and a configured suffix. Invalid analyzer configuration
+is reported explicitly; defaults never hide the invalid state.
 
 ## Suppress deliberately
 

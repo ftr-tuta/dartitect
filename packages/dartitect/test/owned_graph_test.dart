@@ -70,6 +70,45 @@ void main() {
     },
   );
 
+  test(
+    'replacement distinguishes publication from old cleanup failure',
+    () async {
+      final slot = OwnedRuntimeSlot<String>();
+      await slot.replace((transaction) {
+        transaction.own<String>(
+          'old cleanup',
+          (_) => throw StateError('old cleanup failed'),
+        );
+        return 'old';
+      });
+
+      OwnedRuntimeReplacementCleanupException? replacementError;
+      try {
+        await slot.replace((_) => 'new');
+      } on OwnedRuntimeReplacementCleanupException catch (error) {
+        replacementError = error;
+      }
+
+      expect(slot.generation, 2);
+      expect(await slot.use((root) => root), 'new');
+      expect(
+        replacementError,
+        isA<OwnedRuntimeReplacementCleanupException>()
+            .having(
+              (error) => error.publishedGeneration,
+              'publishedGeneration',
+              2,
+            )
+            .having(
+              (error) => error.cleanupError,
+              'cleanupError',
+              isA<ResourceCleanupException>(),
+            ),
+      );
+      await slot.disposeAsync();
+    },
+  );
+
   test('resource snapshot has value semantics without owning a source', () {
     final observedAt = DateTime.utc(2026, 8, 24);
     final first = ResourceSnapshot<List<int>, String>(

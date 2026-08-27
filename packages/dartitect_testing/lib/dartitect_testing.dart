@@ -3,6 +3,7 @@ library;
 
 export 'src/command_harness.dart';
 export 'src/deterministic_id_generator.dart';
+export 'src/diagnostics_topology_harness.dart';
 export 'src/disposal_probe.dart';
 export 'src/effect_harness.dart';
 export 'src/fake_architecture_observer.dart';

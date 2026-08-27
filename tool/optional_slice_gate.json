@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "goal": "08",
+  "blocksStable1": false,
+  "requiredEvidence": [
+    "dedicatedAdr",
+    "realConsumer",
+    "benchmark",
+    "packageBoundaryReview"
+  ],
+  "slices": [
+    {
+      "id": "explicit-lazy-computed",
+      "status": "DEFERRED",
+      "dedicatedAdr": "MISSING",
+      "realConsumer": "MISSING",
+      "benchmark": "MISSING",
+      "packageBoundaryReview": "MISSING",
+      "reason": "Existing explicit computed nodes do not establish a real need for a separate lazy memoization contract."
+    },
+    {
+      "id": "typed-command-progress",
+      "status": "DEFERRED",
+      "dedicatedAdr": "MISSING",
+      "realConsumer": "MISSING",
+      "benchmark": "MISSING",
+      "packageBoundaryReview": "MISSING",
+      "reason": "Commands already expose accepted and terminal execution IDs; no real bounded progress contract is evidenced."
+    },
+    {
+      "id": "versioned-ui-restoration",
+      "status": "DEFERRED",
+      "dedicatedAdr": "MISSING",
+      "realConsumer": "MISSING",
+      "benchmark": "MISSING",
+      "packageBoundaryReview": "MISSING",
+      "reason": "No consumer-owned storage schema or UI restoration use is recorded, and repositories remain durable authority."
+    },
+    {
+      "id": "bounded-local-history",
+      "status": "DEFERRED",
+      "dedicatedAdr": "MISSING",
+      "realConsumer": "MISSING",
+      "benchmark": "MISSING",
+      "packageBoundaryReview": "MISSING",
+      "reason": "No reversible local-only state use is recorded; external effects must never be represented as undoable."
+    },
+    {
+      "id": "readonly-devtools-diagnostics",
+      "status": "DEFERRED",
+      "dedicatedAdr": "MISSING",
+      "realConsumer": "MISSING",
+      "benchmark": "MISSING",
+      "packageBoundaryReview": "MISSING",
+      "reason": "Protocol v1 exists, but its construction API is experimental and no DevTools consumer or package review exists."
+    }
+  ],
+  "forbiddenPublicMarkers": [
+    "LazyComputed",
+    "CommandProgress",
+    "DartitectRestoration",
+    "UndoHistory",
+    "DartitectDevTools"
+  ]
+}

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dartitect_flutter/dartitect_flutter.dart';
+import 'package:dartitect_flutter/dartitect_flutter_reactive.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -148,6 +149,69 @@ void main() {
 
     expect(tester.takeException(), isA<StateError>());
   });
+
+  testWidgets(
+    'reassembly preserves the owner and refreshes compatible definitions',
+    (tester) async {
+      final viewModel = _ReactiveViewModel();
+      final originalOwner = viewModel.owner;
+      final originalComputed = viewModel.computed;
+      var reassemblies = 0;
+
+      await tester.pumpWidget(
+        ViewModelHost<_ReactiveViewModel>.create(
+          create: () => viewModel,
+          onReassemble: (value) {
+            reassemblies += 1;
+            value.bind(factor: 3);
+          },
+          dispose: (value) => value.owner.dispose(),
+          builder: (context, value) => const SizedBox(),
+        ),
+      );
+
+      unawaited(tester.binding.reassembleApplication());
+      await tester.pump();
+
+      expect(reassemblies, 1);
+      expect(viewModel.owner, same(originalOwner));
+      expect(viewModel.computed, same(originalComputed));
+      viewModel.owner.update<void>((write) => write.set(viewModel.input, 2));
+      expect(viewModel.computed.value, 6);
+
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump();
+      expect(viewModel.owner.isDisposed, isTrue);
+    },
+  );
+
+  testWidgets('reassembly reports an incompatible definition without reuse', (
+    tester,
+  ) async {
+    final viewModel = _ReactiveViewModel();
+    final originalComputed = viewModel.computed;
+
+    await tester.pumpWidget(
+      ViewModelHost<_ReactiveViewModel>.create(
+        create: () => viewModel,
+        onReassemble: (value) => value.bindIncompatible(),
+        dispose: (value) => value.owner.dispose(),
+        builder: (context, value) => const SizedBox(),
+      ),
+    );
+
+    unawaited(tester.binding.reassembleApplication());
+    await tester.pump();
+
+    expect(tester.takeException(), isA<ReactiveKeyConflictException>());
+    expect(viewModel.computed, same(originalComputed));
+    viewModel.owner.update<void>((write) => write.set(viewModel.input, 2));
+    expect(viewModel.computed.value, 4);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump();
+    expect(viewModel.owner.isDisposed, isTrue);
+  });
 }
 
 final class _ViewModel extends ChangeNotifier {
@@ -160,5 +224,41 @@ final class _ViewModel extends ChangeNotifier {
   void dispose() {
     disposeCalls += 1;
     super.dispose();
+  }
+}
+
+final class _ReactiveViewModel {
+  _ReactiveViewModel() {
+    bind(factor: 2);
+  }
+
+  final ReactiveOwner owner = ReactiveOwner();
+  late final ReactiveValue<int> input = owner.value(1);
+  late ReactiveComputed<int> computed;
+
+  void bind({required int factor}) {
+    computed = owner.computed<int>(
+      const ReactiveKey<int>(
+        'doubled',
+        namespace: 'test.view-model-host',
+        definitionRevision: 1,
+        definitionFingerprint: 'multiply-v1',
+      ),
+      <ReactiveNode<Object?>>[input],
+      (read) => read.read(input) * factor,
+    );
+  }
+
+  void bindIncompatible() {
+    owner.computed<int>(
+      const ReactiveKey<int>(
+        'doubled',
+        namespace: 'test.view-model-host',
+        definitionRevision: 2,
+        definitionFingerprint: 'multiply-v2',
+      ),
+      <ReactiveNode<Object?>>[input],
+      (read) => read.read(input) * 3,
+    );
   }
 }

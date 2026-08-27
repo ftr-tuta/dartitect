@@ -8,7 +8,7 @@ Map<String, String> nativeEvidenceEnvironment(Map<String, String> base) {
   final socket = base['ADB_SERVER_SOCKET'];
   if (socket == null || socket.trim().isEmpty) {
     throw StateError(
-      'ADB_SERVER_SOCKET is required and must target the isolated RC.2 server.',
+      'ADB_SERVER_SOCKET is required and must target the isolated RC.3 server.',
     );
   }
   if (socket != requiredAdbServerSocket) {
@@ -56,7 +56,7 @@ NativeDeviceSelection selectPhysicalAndroidDevice({
   }
   final flutterDevice = androidDevices.single;
   if (flutterDevice['emulator'] != false) {
-    throw StateError('Android emulators are forbidden for RC.2 evidence.');
+    throw StateError('Android emulators are forbidden for RC.3 evidence.');
   }
   return NativeDeviceSelection(
     id: requestedId,

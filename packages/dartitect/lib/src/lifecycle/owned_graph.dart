@@ -35,6 +35,35 @@ final class ResourceTransactionException implements Exception {
       'rollback: $rollbackError)';
 }
 
+/// A replacement that published successfully but could not clean up the
+/// previous graph completely.
+///
+/// [publishedGeneration] is authoritative: callers must not retry the
+/// replacement blindly. [cleanupError] and [cleanupStackTrace] describe only
+/// the secondary teardown outcome for the previous generation.
+final class OwnedRuntimeReplacementCleanupException implements Exception {
+  /// Creates a typed post-publication cleanup failure.
+  const OwnedRuntimeReplacementCleanupException({
+    required this.publishedGeneration,
+    required this.cleanupError,
+    required this.cleanupStackTrace,
+  });
+
+  /// Generation already installed before cleanup failed.
+  final int publishedGeneration;
+
+  /// Failure raised by disposal of the previous generation.
+  final Object cleanupError;
+
+  /// Original cleanup stack trace.
+  final StackTrace cleanupStackTrace;
+
+  @override
+  String toString() =>
+      'OwnedRuntimeReplacementCleanupException('
+      'publishedGeneration: $publishedGeneration; cleanup: $cleanupError)';
+}
+
 /// Transactionally acquires resources for one owned object graph.
 ///
 /// Owned resources are registered only after successful acquisition and are
@@ -284,8 +313,22 @@ final class OwnedRuntimeSlot<T> implements AsyncDisposable {
           previous?._closeAdmission();
           _current = next;
           _generation += 1;
-          if (previous != null) await previous.disposeAsync();
-          completer.complete(_generation);
+          final publishedGeneration = _generation;
+          if (previous != null) {
+            try {
+              await previous.disposeAsync();
+            } catch (cleanupError, cleanupStackTrace) {
+              Error.throwWithStackTrace(
+                OwnedRuntimeReplacementCleanupException(
+                  publishedGeneration: publishedGeneration,
+                  cleanupError: cleanupError,
+                  cleanupStackTrace: cleanupStackTrace,
+                ),
+                cleanupStackTrace,
+              );
+            }
+          }
+          completer.complete(publishedGeneration);
         })
         .catchError((Object error, StackTrace stackTrace) {
           if (!completer.isCompleted)

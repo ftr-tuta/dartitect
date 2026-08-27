@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.0-rc.3
+
+- Add experimental explicit-dependency `DerivedAsyncResource`, restart-latest
+  generation cancellation, last-known-data policies, ready-data deduplication,
+  existing-family integration, and optional payload-free resource diagnostics.
+
+- Add an explicit `ReactiveOwnerPhase` state machine; reject writes during
+  compute/commit, preserve failed snapshots, and isolate post-commit listener
+  and reporter failures from successful mutation outcomes.
+- Make `ReactiveKey` owner-local and namespaced with required definition
+  revision/fingerprint metadata, diagnosable conflicts, and compatible closure
+  rebinding through `ViewModelHost.onReassemble`.
+- Attach `EffectListener` after the first frame and defer context-dependent
+  delivery while its route is offstage or non-current, without changing the
+  headless channel policy.
+
 ## 1.0.0-rc.2
 
 - Promote the lockstep candidate cohort without public Dart API changes and

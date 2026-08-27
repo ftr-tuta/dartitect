@@ -56,7 +56,7 @@ void main() {
             'dartitect_scan_architecture',
             'dartitect_doctor_project',
             'dartitect_explain_finding',
-            'dartitect_plan_adoption',
+            'dartitect_audit_conformance',
             'dartitect_preview_init',
             'dartitect_preview_baseline',
             'dartitect_preview_codex_sync',
@@ -122,6 +122,17 @@ void main() {
         for (final violation in report.violations)
           <String, Object?>{'category': 'violation', ...violation.toJson()},
       ]);
+
+      final conformance = await environment.call('dartitect_audit_conformance');
+      expect(conformance.structuredContent?['command'], 'conformance audit');
+      expect(
+        conformance.structuredContent?['canonicalGate'],
+        'dartitect scan --no-baseline',
+      );
+      expect(
+        conformance.structuredContent?['support'],
+        containsPair('migration', false),
+      );
     });
 
     test('paginates scan results within policy limits', () async {
@@ -388,7 +399,7 @@ environment:
         final preview = await environment.call('dartitect_preview_init');
         final lockDirectory = Directory('${project.path}/.dartitect');
         await lockDirectory.create();
-        final lockPath = '${lockDirectory.path}/mcp.lock';
+        final lockPath = '${lockDirectory.path}/project-change.lock';
         final helper = File('${project.path}/hold_lock.dart');
         await helper.writeAsString(r'''
 import 'dart:io';
@@ -422,7 +433,7 @@ Future<void> main(List<String> arguments) async {
               'confirmed': true,
             },
           );
-          expect(_errorCode(result), 'filesystem_locked');
+          expect(_errorCode(result), 'change_locked');
           expect(File('${project.path}/dartitect.json').existsSync(), isFalse);
         } finally {
           holder.stdin.writeln('release');

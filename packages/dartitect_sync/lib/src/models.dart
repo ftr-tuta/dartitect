@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:dartitect/dartitect.dart';
 
+import 'ports.dart';
+
 /// Input supplied to one provider-neutral dataset operation.
 final class SyncDatasetContext<K, C> {
   /// Creates a dataset execution context.
@@ -11,6 +13,7 @@ final class SyncDatasetContext<K, C> {
     required this.checkpoint,
     required this.cancellation,
     required this.deadline,
+    this.authority,
   });
 
   /// Static dataset identifier.
@@ -27,6 +30,13 @@ final class SyncDatasetContext<K, C> {
 
   /// Optional run deadline.
   final DateTime? deadline;
+
+  /// Current typed lease authority, or `null` when fencing is not configured.
+  ///
+  /// A consumer whose storage supports fencing passes [SyncAuthority.fencingToken]
+  /// into the same atomic transaction as its dataset commit. Calling
+  /// [SyncAuthority.ensureAuthority] alone is not an atomic storage fence.
+  final SyncAuthority? authority;
 }
 
 /// Successful dataset outcome with an optional newly confirmed checkpoint.
@@ -74,6 +84,63 @@ enum SyncDatasetStatus {
 
   /// Dataset did not run or finish because the run was cancelled/deadlined.
   cancelled,
+
+  /// Some boundary may have applied, but a later required boundary failed.
+  incomplete,
+}
+
+/// Terminal state of one independently observable sync boundary.
+enum SyncBoundaryStatus {
+  /// This boundary was not reached.
+  notAttempted,
+
+  /// This boundary was not configured or required.
+  notRequired,
+
+  /// This boundary completed successfully.
+  succeeded,
+
+  /// This boundary failed and retains its original error and stack.
+  failed,
+}
+
+/// Immutable receipt for one application/checkpoint/journal/release boundary.
+final class SyncBoundaryReceipt {
+  /// Creates a boundary that was not reached.
+  const SyncBoundaryReceipt.notAttempted()
+    : status = SyncBoundaryStatus.notAttempted,
+      error = null,
+      stackTrace = null;
+
+  /// Creates a boundary that was not configured or required.
+  const SyncBoundaryReceipt.notRequired()
+    : status = SyncBoundaryStatus.notRequired,
+      error = null,
+      stackTrace = null;
+
+  /// Creates a successfully completed boundary.
+  const SyncBoundaryReceipt.succeeded()
+    : status = SyncBoundaryStatus.succeeded,
+      error = null,
+      stackTrace = null;
+
+  /// Creates a failed boundary preserving [error] and [stackTrace].
+  const SyncBoundaryReceipt.failed(this.error, this.stackTrace)
+    : status = SyncBoundaryStatus.failed;
+
+  /// Boundary terminal state.
+  final SyncBoundaryStatus status;
+
+  /// Original failure when [status] is [SyncBoundaryStatus.failed].
+  final Object? error;
+
+  /// Original failure stack.
+  final StackTrace? stackTrace;
+
+  /// Whether this boundary permits a successful run summary.
+  bool get isSuccessful =>
+      status == SyncBoundaryStatus.succeeded ||
+      status == SyncBoundaryStatus.notRequired;
 }
 
 /// Stable reason for a skipped or cancelled dataset.
@@ -105,6 +172,8 @@ final class SyncDatasetReport<K, C, F extends Object> {
     this.stopReason,
     this.confirmedCheckpoint,
     this.hasConfirmedCheckpoint = false,
+    this.application = const SyncBoundaryReceipt.notAttempted(),
+    this.checkpoint = const SyncBoundaryReceipt.notAttempted(),
   });
 
   /// Dataset identifier.
@@ -127,6 +196,12 @@ final class SyncDatasetReport<K, C, F extends Object> {
 
   /// Whether [confirmedCheckpoint] is present.
   final bool hasConfirmedCheckpoint;
+
+  /// Consumer dataset-application boundary.
+  final SyncBoundaryReceipt application;
+
+  /// Checkpoint confirmation boundary.
+  final SyncBoundaryReceipt checkpoint;
 }
 
 /// Immutable terminal report for one run.
@@ -137,6 +212,9 @@ final class SyncReport<K, C, F extends Object> {
     required this.startedAt,
     required this.finishedAt,
     required Iterable<SyncDatasetReport<K, C, F>> datasets,
+    this.journal = const SyncBoundaryReceipt.notRequired(),
+    this.leaseRelease = const SyncBoundaryReceipt.notRequired(),
+    this.cleanup = const SyncBoundaryReceipt.succeeded(),
   }) : datasets = List<SyncDatasetReport<K, C, F>>.unmodifiable(datasets);
 
   /// Consumer-safe run identifier.
@@ -151,14 +229,51 @@ final class SyncReport<K, C, F extends Object> {
   /// Stable plan-order dataset results.
   final List<SyncDatasetReport<K, C, F>> datasets;
 
+  /// Aggregate durable-journal boundary for this run.
+  final SyncBoundaryReceipt journal;
+
+  /// Lease-release boundary after all selected work.
+  final SyncBoundaryReceipt leaseRelease;
+
+  /// Consumer and engine terminal-cleanup boundary.
+  final SyncBoundaryReceipt cleanup;
+
   /// Whether every selected dataset succeeded.
-  bool get succeeded => datasets.every(
-    (dataset) => dataset.status == SyncDatasetStatus.succeeded,
-  );
+  bool get succeeded =>
+      datasets.every(
+        (dataset) => dataset.status == SyncDatasetStatus.succeeded,
+      ) &&
+      journal.isSuccessful &&
+      leaseRelease.isSuccessful &&
+      cleanup.isSuccessful;
 
   /// Whether cancellation or deadline stopped any dataset.
   bool get cancelled =>
       datasets.any((dataset) => dataset.status == SyncDatasetStatus.cancelled);
+}
+
+/// Unexpected terminal failure paired with an unambiguous partial receipt.
+final class SyncRunTerminalException<K, C, F extends Object>
+    implements Exception {
+  /// Creates a terminal failure preserving the original [cause].
+  const SyncRunTerminalException({
+    required this.report,
+    required this.cause,
+    required this.causeStackTrace,
+  });
+
+  /// Complete boundary receipt assembled after release and cleanup attempts.
+  final SyncReport<K, C, F> report;
+
+  /// Original unexpected failure.
+  final Object cause;
+
+  /// Original failure stack.
+  final StackTrace causeStackTrace;
+
+  @override
+  String toString() =>
+      'SyncRunTerminalException(runId: ${report.runId}; cause: $cause)';
 }
 
 /// Payload-free progress phase.

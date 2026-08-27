@@ -128,7 +128,7 @@
       "owner": "Dartitect maintainers", "affectedPackages": [],
       "coveredPaths": ["tool/git_dependency_overrides.dart", "tool/git_dependency_overrides_test.dart", "tool/run_git_canaries.dart", "tool/canaries/**", "examples/**", "docs/release/**"],
       "acceptance": ["Validate minimal, offline-first, and native-capability canaries from one annotated Git tag and remote URL with no local-path or hosted Dartitect resolution."],
-      "gateCommands": ["dart run tool/run_git_canaries.dart --repository=<url> --ref=v1.0.0-rc.2"],
+      "gateCommands": ["dart run tool/run_git_canaries.dart --repository=<url> --ref=v1.0.0-rc.3"],
       "evidence": ["tool/git_dependency_overrides.dart", "tool/run_git_canaries.dart", "tool/canaries/canary_contract.json", "docs/release/packaged-canaries.adoc", "examples/reference_app/test/native_objectbox_workload_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {

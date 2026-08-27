@@ -44,16 +44,17 @@ emulators are prohibited.
 
 | V1S-14
 | IN_PROGRESS
-| Code and the complete `1.0.0-rc.2` cohort are assembled. Changelogs preserve
-RC.1 and prepend RC.2; API snapshot, SBOM, license/advisory inventories, Dartdoc,
+| Code and the complete `1.0.0-rc.3` cohort are assembled. Changelogs preserve
+RC.1/RC.2 and prepend RC.3; API snapshot, SBOM, license/advisory inventories, Dartdoc,
 clean-clone audit, sixteen publish dry-runs, and generated builds are gates, not
 publication authorization.
 
 | V1S-15
 | IN_PROGRESS
 | Formal readiness and formal distribution authorization remain separate and
-fail closed. The known `replaceGraph` semantic defect is the intended root
-blocker after external RC.2 evidence closes; it is deferred to RC.3.
+fail closed. The technical-hardening matrix fixed the former `replaceGraph`
+semantic blocker; exact-candidate CI, Security, native, canary, benchmark, and
+release-audit receipts remain required.
 
 | V1S-16–V1S-17
 | IN_PROGRESS

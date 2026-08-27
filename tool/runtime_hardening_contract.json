@@ -148,6 +148,6 @@
       "store.closeCalls"
     ]
   },
-  "isolateProtocolVersion": 1,
+  "isolateProtocolVersion": 2,
   "nativeGate": "dart run tool/verify.dart --skip-get --native-objectbox"
 }

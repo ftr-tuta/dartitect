@@ -6,6 +6,9 @@ enum EcosystemDecision {
   /// Approved behind its documented boundary.
   approved,
 
+  /// A reviewed low-level primitive, without authorizing framework adoption.
+  approvedPrimitive,
+
   /// An equivalent Dartitect capability exists, without prohibiting this one.
   advisoryAlternative,
 
@@ -25,6 +28,9 @@ final class EcosystemPolicyRecord {
   const EcosystemPolicyRecord({
     required this.package,
     required this.decision,
+    required this.boundary,
+    required this.maturity,
+    required this.adoptionStatus,
     required this.owner,
     required this.documentation,
     this.replacement,
@@ -39,6 +45,15 @@ final class EcosystemPolicyRecord {
 
   /// Audited disposition.
   final EcosystemDecision decision;
+
+  /// Architectural boundary at which the package was reviewed.
+  final String boundary;
+
+  /// Review or release maturity, independent from architectural permission.
+  final String maturity;
+
+  /// Current Dartitect adoption status, independent from compatibility.
+  final String adoptionStatus;
 
   /// Accountable maintainer or upstream authority.
   final String owner;
@@ -65,6 +80,9 @@ final class EcosystemPolicyRecord {
   Map<String, Object?> toJson() => <String, Object?>{
     'package': package,
     'decision': _decisionName(decision),
+    'boundary': boundary,
+    'maturity': maturity,
+    'adoptionStatus': adoptionStatus,
     'owner': owner,
     'documentation': documentation,
     if (replacement != null) 'replacement': replacement,
@@ -134,9 +152,9 @@ final class EcosystemPolicy {
     required Map<String, List<_OverlayRecord>> overlays,
   }) : _overlays = overlays;
 
-  /// Parses the neutral schema-v2 global ledger.
+  /// Parses the neutral schema-v3 global ledger.
   factory EcosystemPolicy.fromJson(Map<String, Object?> json) {
-    if (json['schemaVersion'] != 2 ||
+    if (json['schemaVersion'] != 3 ||
         json['profile'] is! String ||
         json['documentation'] is! String ||
         json['decisions'] is! Map<String, Object?> ||
@@ -283,9 +301,14 @@ final class EcosystemPolicy {
     final records = <String, EcosystemPolicyRecord>{};
     for (final entry in _bundledDecisions.entries) {
       final pieces = entry.value.split('|');
+      final decision = _parseDecision(pieces[0]);
+      final dimensions = _defaultDimensions(entry.key, decision);
       records[entry.key] = EcosystemPolicyRecord(
         package: entry.key,
-        decision: _parseDecision(pieces[0]),
+        decision: decision,
+        boundary: dimensions.boundary,
+        maturity: dimensions.maturity,
+        adoptionStatus: dimensions.adoptionStatus,
         replacement: pieces.length > 1 && pieces[1].isNotEmpty
             ? pieces[1]
             : null,
@@ -294,6 +317,9 @@ final class EcosystemPolicy {
         conflictsWith: pieces.length > 2 && pieces[2].isNotEmpty
             ? pieces[2].split(',')
             : const <String>[],
+        compatibility: pieces.length > 3 && pieces[3].isNotEmpty
+            ? pieces[3]
+            : null,
       );
     }
     return EcosystemPolicy._(
@@ -333,6 +359,9 @@ final class EcosystemPolicy {
       EcosystemPolicyRecord(
         package: package,
         decision: EcosystemDecision.unreviewed,
+        boundary: 'unreviewed',
+        maturity: 'unreviewed',
+        adoptionStatus: 'unreviewed',
         owner: 'unassigned',
         documentation: documentation,
       );
@@ -543,6 +572,7 @@ final class EcosystemDependencyAuditor {
             );
           }
         case EcosystemDecision.approved:
+        case EcosystemDecision.approvedPrimitive:
           break;
       }
     }
@@ -572,6 +602,25 @@ EcosystemPolicyRecord _parseRecord(
     throw const FormatException('Incomplete ecosystem policy decision.');
   }
   final decision = _parseDecision(rawDecision);
+  final defaultDimensions = overlay
+      ? const (
+          boundary: 'consumer_scoped_boundary',
+          maturity: 'consumer_reviewed',
+          adoptionStatus: 'consumer_selected',
+        )
+      : _defaultDimensions(package, decision);
+  final boundary = value['boundary'] ?? defaultDimensions.boundary;
+  final maturity = value['maturity'] ?? defaultDimensions.maturity;
+  final adoptionStatus =
+      value['adoptionStatus'] ?? defaultDimensions.adoptionStatus;
+  if (boundary is! String ||
+      !_policyDimension.hasMatch(boundary) ||
+      maturity is! String ||
+      !_policyDimension.hasMatch(maturity) ||
+      adoptionStatus is! String ||
+      !_policyDimension.hasMatch(adoptionStatus)) {
+    throw const FormatException('Incomplete ecosystem policy decision.');
+  }
   if (overlay &&
       !const <EcosystemDecision>{
         EcosystemDecision.approved,
@@ -584,6 +633,9 @@ EcosystemPolicyRecord _parseRecord(
   return EcosystemPolicyRecord(
     package: package,
     decision: decision,
+    boundary: boundary,
+    maturity: maturity,
+    adoptionStatus: adoptionStatus,
     owner: owner,
     documentation: documentation,
     replacement: value['replacement'] as String?,
@@ -778,6 +830,7 @@ List<String> _packageList(Object? raw) {
 
 EcosystemDecision _parseDecision(String value) => switch (value) {
   'approved' => EcosystemDecision.approved,
+  'approved_primitive' => EcosystemDecision.approvedPrimitive,
   'advisory_alternative' => EcosystemDecision.advisoryAlternative,
   'reviewed_exception' => EcosystemDecision.reviewedException,
   'prohibited_native_strict' => EcosystemDecision.prohibitedNativeStrict,
@@ -786,6 +839,7 @@ EcosystemDecision _parseDecision(String value) => switch (value) {
 
 String _decisionName(EcosystemDecision value) => switch (value) {
   EcosystemDecision.approved => 'approved',
+  EcosystemDecision.approvedPrimitive => 'approved_primitive',
   EcosystemDecision.advisoryAlternative => 'advisory_alternative',
   EcosystemDecision.reviewedException => 'reviewed_exception',
   EcosystemDecision.prohibitedNativeStrict => 'prohibited_native_strict',
@@ -838,6 +892,7 @@ String _join(String left, String right) =>
     '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
 
 final _packageName = RegExp(r'^[a-z_][a-z0-9_]*$');
+final _policyDimension = RegExp(r'^[a-z][a-z0-9_]*$');
 
 bool _globMatches(String glob, String path) {
   final pattern = StringBuffer('^');
@@ -899,6 +954,7 @@ const _bundledDecisions = <String, String>{
   'json_annotation': 'approved||',
   'json_serializable': 'approved||',
   'lottie': 'reviewed_exception||',
+  'listen': 'approved_primitive|||nominal interoperability with Flutter listenables is not established',
   'mapbox_maps_flutter': 'approved||',
   'mobx':
       'prohibited_native_strict|constructor injection and Dartitect resources|',
@@ -934,6 +990,51 @@ const _bundledDecisions = <String, String>{
   'watch_it': 'prohibited_native_strict|constructor injection and explicit composition roots|',
   'workmanager': 'advisory_alternative|consumer-owned scheduling port around the native scheduler|',
 };
+
+({String boundary, String maturity, String adoptionStatus}) _defaultDimensions(
+  String package,
+  EcosystemDecision decision,
+) {
+  if (package == 'listen') {
+    return (
+      boundary: 'pure_dart_primitive',
+      maturity: 'reviewed',
+      adoptionStatus: 'deferred_until_real_consumer',
+    );
+  }
+  return switch (decision) {
+    EcosystemDecision.approved => (
+      boundary: 'approved_consumer_boundary',
+      maturity: 'reviewed',
+      adoptionStatus: 'available_at_boundary',
+    ),
+    EcosystemDecision.approvedPrimitive => (
+      boundary: 'approved_primitive',
+      maturity: 'reviewed',
+      adoptionStatus: 'available_at_boundary',
+    ),
+    EcosystemDecision.advisoryAlternative => (
+      boundary: 'consumer_choice_boundary',
+      maturity: 'reviewed',
+      adoptionStatus: 'optional_consumer_choice',
+    ),
+    EcosystemDecision.reviewedException => (
+      boundary: 'consumer_scoped_boundary',
+      maturity: 'review_required',
+      adoptionStatus: 'consumer_review_required',
+    ),
+    EcosystemDecision.prohibitedNativeStrict => (
+      boundary: 'application_architecture',
+      maturity: 'not_applicable',
+      adoptionStatus: 'not_supported_native_strict',
+    ),
+    EcosystemDecision.unreviewed => (
+      boundary: 'unreviewed',
+      maturity: 'unreviewed',
+      adoptionStatus: 'unreviewed',
+    ),
+  };
+}
 
 extension<T> on Iterable<T> {
   T? get firstOrNull {

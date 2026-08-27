@@ -74,6 +74,96 @@ void main() {
       throwsArgumentError,
     );
   });
+
+  test('late response cannot complete a reused public request ID', () async {
+    final worker =
+        await IsolateWorker.spawn<
+          ({int value, int delayMilliseconds}),
+          int,
+          _Failure
+        >(
+          handler: _delayedHandler,
+          heartbeatInterval: const Duration(milliseconds: 10),
+          heartbeatTimeout: const Duration(seconds: 1),
+        );
+
+    final first = worker.send(
+      (value: 1, delayMilliseconds: 80),
+      requestId: 'reused',
+      timeout: const Duration(milliseconds: 20),
+    );
+    await first.accepted;
+    _blockEventLoop(const Duration(milliseconds: 120));
+    await expectLater(
+      first.result,
+      throwsA(isA<IsolateRequestDeadlineException>()),
+    );
+
+    final second = worker.send(
+      (value: 2, delayMilliseconds: 160),
+      requestId: 'reused',
+      timeout: const Duration(seconds: 1),
+    );
+    await second.accepted;
+    final secondOutcome = await second.result;
+    expect(secondOutcome, isA<Ok<int>>());
+    expect((secondOutcome as Ok<int>).value, 2);
+    expect(worker.activeRequestCount, 0);
+    await worker.safeStop();
+  });
+
+  test(
+    'awaiting only result does not leave an unobserved acceptance error',
+    () async {
+      final worker = await IsolateWorker.spawn<Object, Object, _Failure>(
+        handler: _objectHandler,
+        heartbeatInterval: const Duration(milliseconds: 10),
+        heartbeatTimeout: const Duration(milliseconds: 100),
+      );
+      final unsendable = ReceivePort();
+      final unobserved = <Object>[];
+
+      await runZonedGuarded(() async {
+        await expectLater(worker.execute(unsendable), throwsArgumentError);
+        await Future<void>.delayed(Duration.zero);
+      }, (error, stackTrace) => unobserved.add(error));
+
+      expect(unobserved, isEmpty);
+      unsendable.close();
+      await worker.safeStop();
+    },
+  );
+
+  test('safeStop remains bounded for a non-cooperative handler', () async {
+    final worker =
+        await IsolateWorker.spawn<
+          ({int value, int delayMilliseconds}),
+          int,
+          _Failure
+        >(
+          handler: _delayedHandler,
+          heartbeatInterval: const Duration(milliseconds: 10),
+          heartbeatTimeout: const Duration(seconds: 1),
+        );
+    final receipt = worker.send(
+      (value: 3, delayMilliseconds: 5000),
+      requestId: 'non-cooperative',
+      timeout: const Duration(seconds: 10),
+    );
+    await receipt.accepted;
+    final stopwatch = Stopwatch()..start();
+
+    await worker.safeStop(deadline: const Duration(milliseconds: 30));
+
+    expect(stopwatch.elapsed, lessThan(const Duration(seconds: 1)));
+    await expectLater(
+      receipt.result,
+      throwsA(isA<IsolateUnexpectedExitException>()),
+    );
+    expect(worker.isDisposed, isTrue);
+    expect(worker.activeRequestCount, 0);
+    await worker.safeStop(deadline: const Duration(milliseconds: 30));
+  });
 }
 
 Future<Result<int, _Failure>> _handler(
@@ -88,6 +178,24 @@ Future<Result<int, _Failure>> _handler(
   if (value == 13) throw StateError('remote crash');
   if (value < 0) return Err<_Failure>(const _Failure(), StackTrace.current);
   return Ok<int>(value * 2);
+}
+
+Future<Result<int, _Failure>> _delayedHandler(
+  ({int value, int delayMilliseconds}) request,
+  CancellationSignal cancellation,
+) async {
+  await Future<void>.delayed(Duration(milliseconds: request.delayMilliseconds));
+  return Ok<int>(request.value);
+}
+
+Future<Result<Object, _Failure>> _objectHandler(
+  Object value,
+  CancellationSignal cancellation,
+) async => Ok<Object>(value);
+
+void _blockEventLoop(Duration duration) {
+  final stopwatch = Stopwatch()..start();
+  while (stopwatch.elapsed < duration) {}
 }
 
 final class _Failure implements Exception {

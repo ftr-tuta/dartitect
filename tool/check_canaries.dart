@@ -86,9 +86,14 @@ Future<void> main(List<String> arguments) async {
     sourceSha: sourceSha,
     packageNames: _strings(release['publicationOrder']),
     bundle: bundle,
+    workingTree: !treeClean && allowDirty && bundle == null,
   );
   try {
-    stdout.writeln('Materializing exact-HEAD package archives...');
+    stdout.writeln(
+      repository.workingTree
+          ? 'Materializing reproducible development working-tree archives...'
+          : 'Materializing exact-HEAD package archives...',
+    );
     await repository.materialize();
     await repository.start();
     final flutter = await _flutterVersion(workspace);
@@ -118,7 +123,9 @@ Future<void> main(List<String> arguments) async {
       'trackedTreeClean': treeClean,
       'cohortVersion': release['cohortVersion'],
       'artifactSource': bundle == null
-          ? contract['artifactSource']
+          ? repository.workingTree
+                ? 'working-tree-development'
+                : contract['artifactSource']
           : 'materialized-signed-bundle',
       'digestAlgorithm': 'sha256',
       'dartVersion': Platform.version,
@@ -227,6 +234,10 @@ Future<Map<String, Object?>> _runCanary({
             'DARTITECT_NATIVE_OBJECTBOX=1 flutter test '
             'test/native_objectbox_workload_test.dart',
       );
+      await run('flutter', <String>[
+        'build',
+        _hostDesktopTarget(),
+      ], receiptCommand: 'flutter build host-desktop');
       break;
     case 'native_capabilities':
       await run('flutter', const <String>['analyze']);
@@ -377,6 +388,45 @@ Future<void> _copyConsumer(
   await pubspec.copy('${destination.path}/pubspec.yaml');
 }
 
+Future<void> _copyPackageSource(Directory source, Directory destination) async {
+  await destination.create(recursive: true);
+  await for (final entity in source.list(recursive: true, followLinks: false)) {
+    final relative = entity.path.substring(source.path.length + 1);
+    final segments = relative.split(Platform.pathSeparator);
+    if (segments.any(
+      (segment) =>
+          segment == '.dart_tool' ||
+          segment == '.git' ||
+          segment == '.gradle' ||
+          segment == '.kotlin' ||
+          segment == '.symlinks' ||
+          segment == 'build' ||
+          segment == 'ephemeral' ||
+          segment == 'node_modules' ||
+          segment == 'Pods',
+    )) {
+      continue;
+    }
+    if (relative == 'pubspec.lock' ||
+        relative == '.flutter-plugins-dependencies') {
+      continue;
+    }
+    final target = File(
+      '${destination.path}${Platform.pathSeparator}$relative',
+    );
+    if (entity is Directory) {
+      await Directory(target.path).create(recursive: true);
+    } else if (entity is File) {
+      await target.parent.create(recursive: true);
+      await entity.copy(target.path);
+    } else if (entity is Link) {
+      throw StateError(
+        'Development package archives do not accept links: $relative.',
+      );
+    }
+  }
+}
+
 void _validateContract(
   Map<String, Object?> contract,
   Map<String, Object?> release,
@@ -405,6 +455,24 @@ void _validateContract(
       })) {
     throw StateError('All three formal canaries are required.');
   }
+  const requiredCoverage = <String>{
+    'flutter_simple',
+    'objectbox_local_first',
+    'outbox_sync',
+    'desktop',
+    'session_replacement',
+    'noncooperative_cancellation',
+    'large_assets',
+    'multipackage_workspace',
+    'consumer_owned_codegen',
+  };
+  final coverage = <String>{
+    for (final canary in _objects(contract['canaries']))
+      ..._strings(canary['coverage']),
+  };
+  if (!coverage.containsAll(requiredCoverage)) {
+    throw StateError('The Goal 09 canary coverage matrix is incomplete.');
+  }
   final releasePackages = _strings(release['publicationOrder']).toSet();
   for (final canary in _objects(contract['canaries'])) {
     final required = _strings(canary['requiredPackages']);
@@ -420,6 +488,13 @@ void _validateContract(
       throw StateError('${canary['id']} has an incomplete execution contract.');
     }
   }
+}
+
+String _hostDesktopTarget() {
+  if (Platform.isLinux) return 'linux';
+  if (Platform.isWindows) return 'windows';
+  if (Platform.isMacOS) return 'macos';
+  throw UnsupportedError('Packaged desktop canary requires a desktop host.');
 }
 
 Map<String, String> _nativeObjectBoxEnvironment(Directory workspace) {
@@ -510,6 +585,7 @@ final class _HostedRepository {
     required this.sourceSha,
     required this.packageNames,
     this.bundle,
+    this.workingTree = false,
   });
 
   final Directory workspace;
@@ -517,6 +593,7 @@ final class _HostedRepository {
   final String sourceSha;
   final List<String> packageNames;
   final Directory? bundle;
+  final bool workingTree;
   final Map<String, _Artifact> _artifacts = <String, _Artifact>{};
   final Map<String, int> _requests = <String, int>{};
   HttpServer? _server;
@@ -538,6 +615,7 @@ final class _HostedRepository {
         'reproducible': true,
         'archiveRequests': _requests[name] ?? 0,
         'sourceSha': sourceSha,
+        'workingTree': workingTree,
       },
   ];
 
@@ -560,12 +638,16 @@ final class _HostedRepository {
       final version = pubspec['version'] as String;
       final archive = File('${root.path}/$name-$version.tar.gz');
       final tar = File('${root.path}/$name-$version.tar');
-      await _run(workspace, 'git', <String>[
-        'archive',
-        '--format=tar',
-        '--output=${tar.path}',
-        '$sourceSha:packages/$name',
-      ]);
+      if (workingTree) {
+        await _archiveWorkingTreePackage(package, tar, name);
+      } else {
+        await _run(workspace, 'git', <String>[
+          'archive',
+          '--format=tar',
+          '--output=${tar.path}',
+          '$sourceSha:packages/$name',
+        ]);
+      }
       final tarBytes = await tar.readAsBytes();
       final firstEncoding = gzip.encode(tarBytes);
       final secondEncoding = gzip.encode(tarBytes);
@@ -585,6 +667,43 @@ final class _HostedRepository {
         sha256: digest,
       );
     }
+  }
+
+  Future<void> _archiveWorkingTreePackage(
+    Directory package,
+    File tar,
+    String name,
+  ) async {
+    final checkout = Directory('${root.path}/working-tree/$name');
+    await _copyPackageSource(package, checkout);
+    await _run(checkout, 'git', const <String>['init', '--quiet']);
+    await _run(checkout, 'git', const <String>['add', '--all']);
+    await _run(
+      checkout,
+      'git',
+      const <String>[
+        '-c',
+        'user.name=Dartitect Canary',
+        '-c',
+        'user.email=canary@invalid.example',
+        'commit',
+        '--quiet',
+        '--no-gpg-sign',
+        '-m',
+        'working-tree canary',
+      ],
+      environment: <String, String>{
+        ...Platform.environment,
+        'GIT_AUTHOR_DATE': '2000-01-01T00:00:00Z',
+        'GIT_COMMITTER_DATE': '2000-01-01T00:00:00Z',
+      },
+    );
+    await _run(checkout, 'git', <String>[
+      'archive',
+      '--format=tar',
+      '--output=${tar.path}',
+      'HEAD',
+    ]);
   }
 
   Future<void> _loadBundle() async {

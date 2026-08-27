@@ -15,6 +15,10 @@ request builds and drains a fresh `OwnedGraph`; messages contain transferable
 values only. Schedulers, payload schemas, retries, conflict resolution, and
 storage transactions remain consumer policy.
 
+ADR 0032 refines this contract with dataset-visible typed authority and
+boundary-specific terminal receipts. Unexpected crashes remain exceptional but
+carry the complete partial receipt and original cause/stack.
+
 Consequences:: Foreground and headless execution share one testable contract
 without Flutter, Dio, ObjectBox, platform channels, service locators, or
 mandatory global state.

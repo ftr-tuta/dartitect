@@ -39,6 +39,12 @@
   "defaultGeneratedInfrastructure": [
     "**/infrastructure/**/*.g.dart"
   ],
+  "defaultGeneratedSuffixes": [
+    ".g.dart",
+    ".freezed.dart",
+    ".gr.dart",
+    ".router.dart"
+  ],
   "forbiddenPackages": [
     "flutter_riverpod",
     "hooks_riverpod",

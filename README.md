@@ -7,25 +7,27 @@ Flutter. It gives applications explicit dependency injection, state ownership,
 typed failures, small observability contracts, architecture checks, safe
 tooling, and optional infrastructure adapters without a global container.
 
-All sixteen public packages share the `1.0.0-rc.2` candidate line. This cohort
+All sixteen public packages share the `1.0.0-rc.3` candidate line. This cohort
 targets the protected Git tag; pub.dev publication is not authorized. Android
 runtime evidence is physical Android 14/API 34, while API 24 is build
 compatibility. iOS evidence is CI build plus simulator, never a physical
-iPhone. Formal release readiness remains blocked by the known `replaceGraph`
-semantic defect pending RC.3 and a repeated same-SHA evidence set.
+iPhone. Formal release readiness remains fail-closed until this hardening work
+is assembled in the next candidate and every required gate is repeated against
+one authoritative SHA.
 
 ## Why it exists
 
 Large Flutter codebases often accumulate invisible global state, ambiguous
 resource ownership, infrastructure imports in UI/domain code, provider-specific
-telemetry, and migrations that cannot be previewed safely. Dartitect makes those
+telemetry, and filesystem changes that cannot be previewed safely. Dartitect makes those
 boundaries explicit while retaining Dart and Flutter primitives.
 
 Use it when you want constructor injection, deterministic disposal, feature-first
 boundaries, typed expected failures, native listenables, owned reactive state,
-privacy-first telemetry, or machine-checkable adoption. Within a Dartitect
-application it can replace external DI and state-management frameworks by
-capability, while deliberately not copying their APIs or global lookup models.
+privacy-first telemetry, or machine-checkable conformance. The supported 1.0
+architecture is Native Strict and greenfield-only: one explicit composition,
+ownership, and application-state runtime, without migration or coexistence
+with competing DI/state runtimes.
 It is not an ORM, HTTP client, router, backend, model generator, or promise of
 support for every vendor.
 
@@ -50,22 +52,22 @@ support for every vendor.
 
 | Package | Purpose | Platforms | Stability |
 | --- | --- | --- | --- |
-| [`dartitect`](packages/dartitect/) | Result, lifecycle, resource ownership, architecture events | Dart, Flutter, web | `1.0.0-rc.2` |
-| [`dartitect_sync`](packages/dartitect_sync/) | Provider-neutral sync DAG, checkpoints, leases, progress, headless protocol | Dart, Flutter, web | `1.0.0-rc.2` |
-| [`dartitect_isolates`](packages/dartitect_isolates/) | Versioned typed isolate workers, ACKs, heartbeats, deadlines, safe-stop | Dart VM, Flutter native | `1.0.0-rc.2` |
-| [`dartitect_flutter`](packages/dartitect_flutter/) | ViewModel ownership, async commands, selectors, scope, Flutter error binding | Flutter | `1.0.0-rc.2` |
-| [`dartitect_observability`](packages/dartitect_observability/) | Logs, redaction, reporting, W3C tracing, bounded runtime | Dart, Flutter, web | `1.0.0-rc.2` |
-| [`dartitect_dio`](packages/dartitect_dio/) | Dio ownership, typed failures, cancellation, minimal telemetry | Dio platforms | `1.0.0-rc.2` |
-| [`dartitect_objectbox`](packages/dartitect_objectbox/) | Store/query/watcher ownership around generated consumer models | Android, iOS, Linux, macOS, Windows | `1.0.0-rc.2` |
-| [`dartitect_sentry`](packages/dartitect_sentry/) | Adapters for a borrowed, consumer-initialized Sentry Hub | Dart, Flutter | `1.0.0-rc.2` |
-| [`dartitect_privacy`](packages/dartitect_privacy/) | Explicit ATT status/request without automatic prompts | iOS; typed not-supported elsewhere | `1.0.0-rc.2` |
-| [`dartitect_media`](packages/dartitect_media/) | Typed gallery permission and image-save boundary | Android, iOS | `1.0.0-rc.2` |
-| [`dartitect_locale_br`](packages/dartitect_locale_br/) | Immutable Brazilian postal-code values | Dart, Flutter, web | `1.0.0-rc.2` |
-| [`dartitect_geometry`](packages/dartitect_geometry/) | Deterministic polygon pole-of-inaccessibility geometry | Dart, Flutter, web | `1.0.0-rc.2` |
-| [`dartitect_testing`](packages/dartitect_testing/) | Deterministic clocks, probes, recording telemetry, contract harnesses | Dart, Flutter, web | `1.0.0-rc.2` |
-| [`dartitect_cli`](packages/dartitect_cli/) | Inspect, scan, doctor, config, baseline, generators, Codex sync | Dart VM | `1.0.0-rc.2` |
-| [`dartitect_lints`](packages/dartitect_lints/) | Official analyzer-plugin architecture diagnostics | Dart analyzer | `1.0.0-rc.2` |
-| [`dartitect_mcp`](packages/dartitect_mcp/) | Local MCP tools/resources for reviewed architecture work | Dart VM, STDIO | `1.0.0-rc.2` |
+| [`dartitect`](packages/dartitect/) | Result, lifecycle, resource ownership, architecture events | Dart, Flutter, web | `1.0.0-rc.3` |
+| [`dartitect_sync`](packages/dartitect_sync/) | Provider-neutral sync DAG, checkpoints, leases, progress, headless protocol | Dart, Flutter, web | `1.0.0-rc.3` |
+| [`dartitect_isolates`](packages/dartitect_isolates/) | Versioned typed isolate workers, ACKs, heartbeats, deadlines, safe-stop | Dart VM, Flutter native | `1.0.0-rc.3` |
+| [`dartitect_flutter`](packages/dartitect_flutter/) | ViewModel ownership, async commands, selectors, scope, Flutter error binding | Flutter | `1.0.0-rc.3` |
+| [`dartitect_observability`](packages/dartitect_observability/) | Logs, redaction, reporting, W3C tracing, bounded runtime | Dart, Flutter, web | `1.0.0-rc.3` |
+| [`dartitect_dio`](packages/dartitect_dio/) | Dio ownership, typed failures, cancellation, minimal telemetry | Dio platforms | `1.0.0-rc.3` |
+| [`dartitect_objectbox`](packages/dartitect_objectbox/) | Store/query/watcher ownership around generated consumer models | Android, iOS, Linux, macOS, Windows | `1.0.0-rc.3` |
+| [`dartitect_sentry`](packages/dartitect_sentry/) | Adapters for a borrowed, consumer-initialized Sentry Hub | Dart, Flutter | `1.0.0-rc.3` |
+| [`dartitect_privacy`](packages/dartitect_privacy/) | Explicit ATT status/request without automatic prompts | iOS; typed not-supported elsewhere | `1.0.0-rc.3` |
+| [`dartitect_media`](packages/dartitect_media/) | Typed gallery permission and image-save boundary | Android, iOS | `1.0.0-rc.3` |
+| [`dartitect_locale_br`](packages/dartitect_locale_br/) | Immutable Brazilian postal-code values | Dart, Flutter, web | `1.0.0-rc.3` |
+| [`dartitect_geometry`](packages/dartitect_geometry/) | Deterministic polygon pole-of-inaccessibility geometry | Dart, Flutter, web | `1.0.0-rc.3` |
+| [`dartitect_testing`](packages/dartitect_testing/) | Deterministic clocks, probes, recording telemetry, contract harnesses | Dart, Flutter, web | `1.0.0-rc.3` |
+| [`dartitect_cli`](packages/dartitect_cli/) | Inspect, scan, doctor, config, baseline, generators, Codex sync | Dart VM | `1.0.0-rc.3` |
+| [`dartitect_lints`](packages/dartitect_lints/) | Official analyzer-plugin architecture diagnostics | Dart analyzer | `1.0.0-rc.3` |
+| [`dartitect_mcp`](packages/dartitect_mcp/) | Local MCP tools/resources for reviewed architecture work | Dart VM, STDIO | `1.0.0-rc.3` |
 
 ## Ecosystem selection
 
@@ -77,6 +79,9 @@ feature, reactive runtime, local-first pagination, mutation/outbox,
 observability, and adapter composition using existing tested APIs.
 See also [model generation](docs/guides/model-generation.md) and the
 [offline ecosystem policy](docs/guides/ecosystem-policy.md).
+The [Native Strict matrix](docs/guides/native-strict-matrix.md) maps common
+Flutter responsibilities to their Dartitect boundaries and records what stays
+consumer-owned.
 
 ## Quickstart
 
@@ -86,18 +91,18 @@ Git tag. For `dartitect_flutter`:
 
 ```yaml
 dependencies:
-  dartitect_flutter: 1.0.0-rc.2
+  dartitect_flutter: 1.0.0-rc.3
 
 dependency_overrides:
   dartitect:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
-      ref: v1.0.0-rc.2
+      ref: v1.0.0-rc.3
       path: packages/dartitect
   dartitect_flutter:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
-      ref: v1.0.0-rc.2
+      ref: v1.0.0-rc.3
       path: packages/dartitect_flutter
 ```
 
@@ -160,13 +165,18 @@ dart run dartitect_cli:dartitect doctor
 dart run dartitect_cli:dartitect init --dry-run
 dart run dartitect_cli:dartitect baseline create --dry-run
 dart run dartitect_cli:dartitect codex sync --dry-run
+dart run dartitect_cli:dartitect fleet versions apps/a apps/b --root . --json
+dart run dartitect_cli:dartitect fleet check apps/a apps/b --root . --json
 ```
+
+Fleet roots are explicit and confined. Pinned offline policy and preview-only
+cohort upgrades are documented in the [fleet tooling guide](docs/guides/fleet-tooling.md).
 
 Install the analyzer plugin in the consuming package:
 
 ```yaml
 dev_dependencies:
-  dartitect_lints: 1.0.0-rc.2
+  dartitect_lints: 1.0.0-rc.3
 ```
 
 ```yaml
@@ -189,9 +199,9 @@ Use `dartitect scan` in CI or when an editor cannot host analyzer plugins.
 
 ## Codex skills
 
-`dartitect codex sync --dry-run` previews ten focused, managed skills; running
+`dartitect codex sync --dry-run` previews eleven focused, managed skills; running
 without `--dry-run` updates only manifest-owned `dartitect-*` directories and
-preserves an existing `AGENTS.md`. The suite covers design, adoption, core
+preserves an existing `AGENTS.md`. The suite covers design, conformance audit, core
 runtime, reactive runtime, offline-first, observability, adapters, testing,
 tooling, and local MCP. Every skill permits implicit invocation and supplies a
 focused `$dartitect-*` prompt. Consumer-owned skills—including this repository's
@@ -201,14 +211,14 @@ they do not grant write authority.
 ## Local MCP server
 
 `dartitect_mcp` is experimental, local, STDIO-only, and read-only by default.
-It exposes bounded inspect/scan/doctor/explain/adoption/preview tools plus
+It exposes bounded inspect/scan/doctor/explain/conformance/preview tools plus
 generated package, diagnostic, guide, and config resources. It exposes no
 `create`, shell, arbitrary file read, HTTP server, OAuth, or remote application
 access.
 
 ```yaml
 dev_dependencies:
-  dartitect_mcp: 1.0.0-rc.2
+  dartitect_mcp: 1.0.0-rc.3
 ```
 
 ```console
@@ -249,6 +259,8 @@ Public API changes are checked against a reviewed snapshot.
 
 Dartitect does not validate business logic, make provider SDKs safe, hide
 isolate constraints, or guarantee rollback against hostile concurrent programs.
+Existing projects may run the read-only conformance audit, but 1.0 supplies no
+official runtime migration, compatibility shim, or coexistence workflow.
 Generated-once application files become consumer-owned. Only fully generated,
 manifest-marked artifacts may be replaced by tooling.
 

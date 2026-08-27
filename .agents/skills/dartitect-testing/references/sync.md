@@ -7,8 +7,10 @@ deterministic DAG matrix.
 
 Cover missing/duplicate/cyclic dependencies, stable plan order, downstream-only
 blocking, independent branches, cancellation, deadlines, lease refusal/loss,
-stale fencing rejection, checkpoint write failure, progress bounds, unexpected
-rethrow with original stack, duplicate headless requests, protocol rejection,
-fresh graph per accepted request, and shutdown drain. Add one real generated
-storage fixture for checkpoint transactions without moving consumer schema or
-conflict policy into the adapter.
+authority expiry, atomic stale-token rejection at the dataset commit, checkpoint
+write failure, journal/release/cleanup fault injection, receipt boundaries,
+progress bounds, terminal exception with original cause/stack, duplicate
+headless requests, protocol rejection, fresh graph per accepted request, and
+shutdown drain. Add one real generated storage fixture for fencing-capable
+dataset/checkpoint transactions without moving consumer schema or conflict
+policy into the adapter.

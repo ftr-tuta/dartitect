@@ -267,6 +267,59 @@ void main() {
     );
   });
 
+  test('onChanged may dispose during the first unkeyed transition', () async {
+    late final CommandLane<int, String> lane;
+    Future<void>? reentrantDisposal;
+    var requested = false;
+    lane = CommandLane<int, String>(
+      action: (signal) async {
+        await signal.whenCancelled;
+        signal.throwIfCancelled();
+        return const Ok<int>(0);
+      },
+      onChanged: () {
+        if (!requested && lane.runningCount == 1) {
+          requested = true;
+          reentrantDisposal = lane.dispose();
+        }
+      },
+    );
+
+    final outcome = lane.execute();
+
+    await expectLater(reentrantDisposal, completes);
+    expect(await outcome, isA<CommandCancelled<int, String>>());
+    expect(lane.runningCount, 0);
+    expect(lane.queuedCount, 0);
+  });
+
+  test('onChanged may dispose during the first keyed transition', () async {
+    late final KeyedCommandLane<String, int, int, String> lane;
+    Future<void>? reentrantDisposal;
+    var requested = false;
+    lane = KeyedCommandLane<String, int, int, String>(
+      action: (key, argument, signal) async {
+        await signal.whenCancelled;
+        signal.throwIfCancelled();
+        return const Ok<int>(0);
+      },
+      onChanged: () {
+        if (!requested && lane.runningCount == 1) {
+          requested = true;
+          reentrantDisposal = lane.dispose();
+        }
+      },
+    );
+
+    final outcome = lane.execute('key', 1);
+
+    await expectLater(reentrantDisposal, completes);
+    expect(await outcome, isA<CommandCancelled<int, String>>());
+    expect(lane.runningCount, 0);
+    expect(lane.queuedCount, 0);
+    expect(lane.activeKeyCount, 0);
+  });
+
   test('keyed lanes bound keys and keep FIFO independently', () async {
     final pending = <String, List<Completer<Result<int, String>>>>{};
     final starts = <String>[];

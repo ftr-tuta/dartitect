@@ -1,0 +1,27 @@
+= ADR-0030: Isolate worker correlation protocol version 2
+
+Status:: ACCEPTED
+
+Context:: Protocol version 1 used the caller-facing request ID as the pending
+map and wire identity. After a timeout, that ID could be reused. If the
+supervisor event loop processed the deadline before an already queued old
+result, the stale result completed the new request. Completing both the ACK and
+result Futures with an early send error also produced an unobserved error when
+the caller awaited only one Future.
+
+Decision:: Protocol version 2 assigns every admitted request a positive,
+monotonic correlation nonce scoped to one worker generation. Only that nonce
+crosses the wire and indexes pending/active work. The public request ID remains
+unique only among active requests and may be reused after terminal removal.
+Unknown generation/nonce envelopes are discarded. Both public Futures install
+an internal observation branch immediately, while their original Futures keep
+the same success/error behavior for direct callers.
+
+Payloads, expected failures, and results remain typed but must be transferable,
+versioned consumer DTOs. Transfer copy cost is explicit. Cancellation remains
+cooperative; `safeStop` cancels first, drains cooperative work, and force-kills
+only at its bounded deadline. Every receiver owns and tears down its own graph.
+
+Consequences:: Version 1 peers are intentionally rejected. Public IDs are
+diagnostic/caller correlation only and are not a security or wire identity.
+The monotonic nonce is not persisted or reused across worker generations.

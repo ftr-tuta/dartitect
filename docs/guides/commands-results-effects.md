@@ -48,7 +48,10 @@ generation cannot publish state or notify listeners. `reset()` clears a
 retained terminal only while the command is fully idle. Disposal is idempotent:
 it closes admission, rejects queued work as disposed, requests cancellation,
 drains running actions, clears Flutter future mappings, and sends no
-post-disposal notification.
+post-disposal notification. Every transition callback observes a fully
+initialized scheduler entry, so cancelling or disposing the unkeyed or keyed
+lane from that callback is supported and drains without a late-initialization
+failure.
 
 ## 1.0 reactive resource matrix
 
@@ -99,8 +102,12 @@ Use an owned `EffectChannel<E>` only for typed, immutable, transient UI
 reactions. Its positive capacity is bounded; overflow and post-disposal emits
 return explicit results. One logical consumer receives accepted effects once
 in FIFO order. `EffectListener` borrows the channel and invokes the callback
-with its current mounted context; the channel and ViewModel never retain
-`BuildContext`.
+with its current mounted context only after post-frame attachment. Delivery
+waits while `TickerMode` is disabled or the enclosing route is non-current,
+then resumes at most once if the same binding is still mounted. Detach, channel
+swap, or channel disposal discards an already admitted but not invoked Flutter
+delivery. The channel and ViewModel never retain `BuildContext`; headless
+`listen` keeps its consumer-defined immediate policy.
 
 Authentication/session truth is not an effect. Drive the application shell
 from replayable `SessionStateController<S>`, remove authenticated routes on

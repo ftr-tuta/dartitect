@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "samples": 5,
+  "warmupIterations": 100,
+  "measuredIterations": 2000,
+  "budgets": {
+    "debug": {"maxNanosecondsPerCreateDispose": 250000},
+    "profile": {"maxNanosecondsPerCreateDispose": 250000}
+  }
+}

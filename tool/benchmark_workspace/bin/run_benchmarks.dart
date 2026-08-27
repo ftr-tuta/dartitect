@@ -122,6 +122,8 @@ Future<Map<String, Object?>> _environment(
       'canonicalCommit': revisions[0],
       'tree': revisions[1],
     },
+    'publicClaimEligible': false,
+    'claimPolicy': 'INTERNAL_GATE_ONLY',
     'operatingSystem': Platform.operatingSystem,
     'operatingSystemVersion': Platform.operatingSystemVersion,
     'processors': Platform.numberOfProcessors,
@@ -153,12 +155,19 @@ String _report(
     ..writeln('Recorded source:: `${source['recordedCommit']}`')
     ..writeln('Canonical source:: `${source['canonicalCommit']}`')
     ..writeln('Source tree:: `${source['tree']}`')
+    ..writeln('Public claim eligible:: `NO`')
+    ..writeln('Claim policy:: `INTERNAL_GATE_ONLY`')
     ..writeln('Seed:: ${result['seed']}')
     ..writeln(
       'Warm-up / measured samples:: ${result['warmupSamples']} / '
       '${result['repetitions']}',
     )
     ..writeln('Gate:: ${errors.isEmpty ? 'PASS' : 'FAIL'}')
+    ..writeln()
+    ..writeln(
+      'These measurements are internal compatibility gates. They are not '
+      'authorized for public performance claims.',
+    )
     ..writeln()
     ..writeln('== Fan-out comparison')
     ..writeln()

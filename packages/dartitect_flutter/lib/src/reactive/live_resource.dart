@@ -23,6 +23,27 @@ enum SourceBackpressure {
 
   /// Runs one read and remembers at most one dirty rerun while busy.
   latestWhileBusy,
+
+  /// Cancels the active read and runs only the newest invalidation generation.
+  ///
+  /// The next read begins after the cancelled operation drains. A provider that
+  /// ignores cooperative cancellation is still generation-guarded and cannot
+  /// publish its late result.
+  @experimentalDartitectApi
+  restartLatest,
+}
+
+/// Last-known-data presentation while a live resource refreshes.
+@experimentalDartitectApi
+enum LiveResourceStalePolicy {
+  /// Publishes waiting/failure/crash states with the last known data attached.
+  preserveLastData,
+
+  /// Clears last known data as soon as a new read starts.
+  discardLastData,
+
+  /// Keeps a ready state visible while a newer generation is in flight.
+  staleWhileRevalidate,
 }
 
 /// One activation-local source session owned by a [LiveResource].
@@ -211,7 +232,20 @@ final class LiveResource<T, F extends Object> implements Listenable {
     SourceFrameScheduler frameScheduler = const FlutterSourceFrameScheduler(),
     ReactiveTimerFactory timerFactory = const SystemReactiveTimerFactory(),
     LiveResourceCrashReporter reporter = const NoOpLiveResourceCrashReporter(),
+    @experimentalDartitectApi
+    LiveResourceStalePolicy stalePolicy =
+        LiveResourceStalePolicy.preserveLastData,
+    @experimentalDartitectApi bool Function(T previous, T next)? dataEquals,
+    @experimentalDartitectApi DartitectDiagnosticSubject? diagnostics,
   }) {
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.resource) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'LiveResource requires a resource diagnostic subject.',
+      );
+    }
     late final LiveResource<T, F> resource;
     final lifecycle = ResourceLifecycle<T, F>(
       policy: policy,
@@ -226,6 +260,9 @@ final class LiveResource<T, F extends Object> implements Listenable {
       backpressure,
       frameScheduler,
       reporter,
+      stalePolicy,
+      dataEquals,
+      diagnostics,
     );
     return resource;
   }
@@ -236,12 +273,17 @@ final class LiveResource<T, F extends Object> implements Listenable {
     this.backpressure,
     this._frameScheduler,
     this._reporter,
+    this.stalePolicy,
+    this._dataEquals,
+    this._diagnostics,
   );
 
   final ReactiveSource<T, F> _source;
   final ResourceLifecycle<T, F> _lifecycle;
   final SourceFrameScheduler _frameScheduler;
   final LiveResourceCrashReporter _reporter;
+  final bool Function(T previous, T next)? _dataEquals;
+  final DartitectDiagnosticSubject? _diagnostics;
   ReactiveSourceSession<T, F>? _session;
   Future<void> Function()? _cancelSubscription;
   _SourceCoordinator<T, F>? _coordinator;
@@ -254,10 +296,15 @@ final class LiveResource<T, F extends Object> implements Listenable {
   var _observedInvalidationRevision = 0;
   var _activeReadInvalidationRevision = 0;
   var _stale = false;
+  var _hasSucceeded = false;
   Future<void>? _disposeFuture;
 
   /// Configured backpressure policy.
   final SourceBackpressure backpressure;
+
+  /// Configured last-known-data behavior during refresh.
+  @experimentalDartitectApi
+  final LiveResourceStalePolicy stalePolicy;
 
   /// Current data state.
   ResourceDataState<T, F> get state => _lifecycle.state;
@@ -331,6 +378,8 @@ final class LiveResource<T, F extends Object> implements Listenable {
         temperature != ResourceTemperature.hot) {
       return false;
     }
+    _invalidationRevision += 1;
+    _stale = true;
     coordinator.signal();
     return true;
   }
@@ -349,6 +398,11 @@ final class LiveResource<T, F extends Object> implements Listenable {
     }
     _invalidationBindings.clear();
     await _lifecycle.dispose();
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.disposed,
+      generation: generation,
+      revision: _invalidationRevision,
+    );
     _lifecycleListeners.clear();
   }
 
@@ -389,11 +443,16 @@ final class LiveResource<T, F extends Object> implements Listenable {
       onCrash: (error, stackTrace) {
         if (_publishCrash(error, stackTrace, generation)) _suspendLater();
       },
+      onCancelled: () => _diagnostics?.emit(
+        DartitectDiagnosticPhase.cancelled,
+        generation: generation,
+        revision: _invalidationRevision,
+      ),
     );
     _coordinator = coordinator;
     _cancelSubscription = session.signals
         .listen(
-          (_) => coordinator.signal(),
+          (_) => _onSourceInvalidation(coordinator),
           onError: (Object error, StackTrace stackTrace) {
             if (_publishCrash(error, stackTrace, generation)) _suspendLater();
           },
@@ -464,10 +523,18 @@ final class LiveResource<T, F extends Object> implements Listenable {
 
   void _publishWaiting(int generation) {
     final previous = state;
+    if (stalePolicy == LiveResourceStalePolicy.staleWhileRevalidate &&
+        previous is ResourceReady<T, F>) {
+      return;
+    }
     _lifecycle.publish(
       ResourceWaiting<T, F>(
-        lastData: previous.lastData,
-        hasData: previous.hasData,
+        lastData: stalePolicy == LiveResourceStalePolicy.discardLastData
+            ? null
+            : previous.lastData,
+        hasData:
+            stalePolicy != LiveResourceStalePolicy.discardLastData &&
+            previous.hasData,
       ),
       generation: generation,
     );
@@ -480,10 +547,19 @@ final class LiveResource<T, F extends Object> implements Listenable {
   ) {
     switch (result) {
       case Ok<dynamic>(:final value):
-        final published = _lifecycle.publish(
-          ResourceReady<T, F>(value as T),
-          generation: generation,
-        );
+        final typedValue = value as T;
+        final previous = state;
+        final equals = _dataEquals;
+        final deduplicated =
+            equals != null &&
+            previous is ResourceReady<T, F> &&
+            equals(previous.data, typedValue);
+        final published =
+            deduplicated ||
+            _lifecycle.publish(
+              ResourceReady<T, F>(typedValue),
+              generation: generation,
+            );
         if (published) {
           if (readInvalidationRevision > _observedInvalidationRevision) {
             _observedInvalidationRevision = readInvalidationRevision;
@@ -504,6 +580,13 @@ final class LiveResource<T, F extends Object> implements Listenable {
     }
   }
 
+  void _onSourceInvalidation(_SourceCoordinator<T, F> coordinator) {
+    if (_disposed || temperature == ResourceTemperature.cold) return;
+    _invalidationRevision += 1;
+    _stale = true;
+    coordinator.signal();
+  }
+
   void _attachInvalidationBinding(Disposable binding) {
     if (_disposed) {
       binding.dispose();
@@ -521,8 +604,12 @@ final class LiveResource<T, F extends Object> implements Listenable {
     _lifecycle.publish(
       ResourceFailed<T, F>(
         failure,
-        lastData: previous.lastData,
-        hasData: previous.hasData,
+        lastData: stalePolicy == LiveResourceStalePolicy.discardLastData
+            ? null
+            : previous.lastData,
+        hasData:
+            stalePolicy != LiveResourceStalePolicy.discardLastData &&
+            previous.hasData,
       ),
       generation: generation,
     );
@@ -541,8 +628,12 @@ final class LiveResource<T, F extends Object> implements Listenable {
       ResourceCrashed<T, F>(
         error,
         stackTrace,
-        lastData: previous.lastData,
-        hasData: previous.hasData,
+        lastData: stalePolicy == LiveResourceStalePolicy.discardLastData
+            ? null
+            : previous.lastData,
+        hasData:
+            stalePolicy != LiveResourceStalePolicy.discardLastData &&
+            previous.hasData,
       ),
       generation: generation,
     );
@@ -573,6 +664,7 @@ final class LiveResource<T, F extends Object> implements Listenable {
 
   void _notifyLifecycleListeners() {
     if (_disposed) return;
+    _emitStateDiagnostic();
     final snapshot = List<VoidCallback>.of(_lifecycleListeners);
     for (final listener in snapshot) {
       if (_disposed || !_lifecycleListeners.contains(listener)) continue;
@@ -582,6 +674,26 @@ final class LiveResource<T, F extends Object> implements Listenable {
         continue;
       }
     }
+  }
+
+  void _emitStateDiagnostic() {
+    final subject = _diagnostics;
+    if (subject == null) return;
+    final phase = switch (state) {
+      ResourceWaiting<T, F>() => DartitectDiagnosticPhase.waiting,
+      ResourceReady<T, F>() =>
+        _hasSucceeded
+            ? DartitectDiagnosticPhase.updated
+            : DartitectDiagnosticPhase.succeeded,
+      ResourceFailed<T, F>() => DartitectDiagnosticPhase.failed,
+      ResourceCrashed<T, F>() => DartitectDiagnosticPhase.crashed,
+    };
+    if (state is ResourceReady<T, F>) _hasSucceeded = true;
+    subject.emit(
+      phase,
+      generation: generation,
+      revision: _invalidationRevision,
+    );
   }
 }
 
@@ -594,6 +706,7 @@ final class _SourceCoordinator<T, F extends Object> {
     required this.beforeRead,
     required this.onResult,
     required this.onCrash,
+    required this.onCancelled,
   });
 
   final ReactiveSourceSession<T, F> session;
@@ -603,6 +716,7 @@ final class _SourceCoordinator<T, F extends Object> {
   final VoidCallback beforeRead;
   final void Function(Result<T, F> result) onResult;
   final void Function(Object error, StackTrace stackTrace) onCrash;
+  final VoidCallback onCancelled;
   CancellationSource? _cancellation;
   Future<void>? _active;
   var _busy = false;
@@ -620,6 +734,13 @@ final class _SourceCoordinator<T, F extends Object> {
       case SourceBackpressure.latestWhileBusy:
         if (_busy) {
           _dirty = true;
+        } else {
+          _startRead();
+        }
+      case SourceBackpressure.restartLatest:
+        if (_busy) {
+          _dirty = true;
+          _cancellation?.cancel('Superseded reactive source generation');
         } else {
           _startRead();
         }
@@ -701,8 +822,13 @@ final class _SourceCoordinator<T, F extends Object> {
         () => session.read(cancellation.signal),
         cancel: () => cancellation.cancel('Lifecycle barrier closed'),
       );
-      if (!_closed && !cancellation.signal.isCancelled) onResult(result);
+      if (!_closed && !cancellation.signal.isCancelled) {
+        onResult(result);
+      } else if (cancellation.signal.isCancelled) {
+        onCancelled();
+      }
     } on CancellationException {
+      onCancelled();
       return;
     } catch (error, stackTrace) {
       if (!_closed && !cancellation.signal.isCancelled) {

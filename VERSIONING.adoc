@@ -53,14 +53,14 @@ publication.
 
 == Protected Git candidate
 
-+v1.0.0-rc.2+ is annotated, unsigned, and protected against update/deletion.
++v1.0.0-rc.3+ is annotated, unsigned, and protected against update/deletion.
 It exposes only the repository tree; it has no GitHub Release and no pub.dev
 publication. +tool/git_dependency_overrides.dart+ computes the internal closure
 for any package combination, while +tool/run_git_canaries.dart+ validates the
 minimal, offline-first, and native consumers against a supplied remote/tag.
 
 The prior +v1.0.0-rc.1+ tag remains an immutable protected historical
-candidate. RC.2 never moves, deletes, or reuses that ref.
+candidate. RC.3 never moves, deletes, or reuses that ref.
 
 This consumption tag is distinct from the future formal signed channel. Formal
 readiness, signatures, hosted archives, and package publication retain their

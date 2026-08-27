@@ -4,8 +4,8 @@
 
 ## Purpose
 
-Local MCP access to Dartitect inspection, diagnostics, adoption, reviewed
-previews, and generated public documentation on the lockstep `1.0.0-rc.2`
+Local MCP access to Dartitect inspection, diagnostics, conformance, reviewed
+previews, and generated public documentation on the lockstep `1.0.0-rc.3`
 candidate line.
 
 ## When to use it
@@ -31,7 +31,7 @@ and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/doc
 ## Install
 
 This candidate is not published on pub.dev. Declare
-`dartitect_mcp: 1.0.0-rc.2` under `dev_dependencies`, apply the overrides from
+`dartitect_mcp: 1.0.0-rc.3` under `dev_dependencies`, apply the overrides from
 the [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md),
 then run `dart run dartitect_mcp:dartitect_mcp --root .`.
 
@@ -54,7 +54,7 @@ await server.done;
 
 Tools: `dartitect_inspect_project`, `dartitect_scan_architecture`,
 `dartitect_doctor_project`, `dartitect_explain_finding`,
-`dartitect_plan_adoption`, three `dartitect_preview_*` tools, and
+`dartitect_audit_conformance`, three `dartitect_preview_*` tools, and
 `dartitect_apply_change`. There is no `create`, arbitrary file read, process
 argument, or shell tool.
 

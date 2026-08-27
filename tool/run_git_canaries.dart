@@ -164,6 +164,10 @@ Future<Map<String, Object?>> _runCanary({
             'DARTITECT_NATIVE_OBJECTBOX=1 flutter test '
             'test/native_objectbox_workload_test.dart',
       );
+      await run('flutter', <String>[
+        'build',
+        _hostDesktopTarget(),
+      ], receiptCommand: 'flutter build host-desktop');
     case 'native_capabilities':
       await run('flutter', const <String>['analyze']);
       await run('flutter', const <String>['test']);
@@ -196,6 +200,13 @@ Future<Map<String, Object?>> _runCanary({
     'residualResourceCensus': contract['residualResourceCensus'],
     'result': 'PASS',
   };
+}
+
+String _hostDesktopTarget() {
+  if (Platform.isLinux) return 'linux';
+  if (Platform.isWindows) return 'windows';
+  if (Platform.isMacOS) return 'macos';
+  throw UnsupportedError('Git desktop canary requires a desktop host.');
 }
 
 Future<List<Map<String, Object?>>> _validateResolvedGraph({
@@ -431,7 +442,7 @@ final class _Options {
 
   factory _Options.parse(List<String> arguments) {
     String? repository;
-    var ref = 'v1.0.0-rc.2';
+    var ref = 'v1.0.0-rc.3';
     var keepArtifacts = false;
     for (final argument in arguments) {
       if (argument.startsWith('--repository=')) {
