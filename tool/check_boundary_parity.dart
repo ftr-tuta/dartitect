@@ -153,7 +153,7 @@ String _normalizedBoundaryPath(String path) {
       (normalized.startsWith('//?/') || normalized.startsWith('//./'))) {
     normalized = normalized.substring(4);
   }
-  return normalized;
+  return normalized.replaceAll(RegExp('/+'), '/');
 }
 
 bool _same(List<String> left, List<String> right) {

@@ -24,6 +24,16 @@ void main() {
     expect(
       boundaryParityRelativePath(
         root,
+        source.absolute.path.replaceAll(
+          Platform.pathSeparator,
+          '${Platform.pathSeparator}${Platform.pathSeparator}',
+        ),
+      ),
+      'lib/feature.dart',
+    );
+    expect(
+      boundaryParityRelativePath(
+        root,
         'lib${Platform.pathSeparator}feature.dart',
       ),
       'lib/feature.dart',
