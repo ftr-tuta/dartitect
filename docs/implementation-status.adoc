@@ -36,23 +36,24 @@ resolution for this candidate.
 
 | V1S-13
 | EXTERNAL_REQUIRED
-| The fail-closed nine-cell Android/iOS matrix and portable device harness are
-implemented. One current Android emulator cell is locally runnable; the other
-eight platform/device cells remain explicitly pending and all receipts must be
-bound externally to the root candidate.
+| The fail-closed five-cell schema-v2 matrix is implemented. Android API 24 is
+covered by build compatibility; Android 14/API 34 runtime is physical-only
+through the isolated port 5038. iOS is covered by two deployment-floor builds
+and one dynamically selected CI simulator, never a physical iPhone. Android
+emulators are prohibited.
 
 | V1S-14
 | IN_PROGRESS
-| Code and the complete `1.0.0-rc.1` cohort are assembled. Changelogs expose a
-single RC section; API snapshot, SBOM, license/advisory inventories, Dartdoc,
+| Code and the complete `1.0.0-rc.2` cohort are assembled. Changelogs preserve
+RC.1 and prepend RC.2; API snapshot, SBOM, license/advisory inventories, Dartdoc,
 clean-clone audit, sixteen publish dry-runs, and generated builds are gates, not
 publication authorization.
 
 | V1S-15
 | IN_PROGRESS
 | Formal readiness and formal distribution authorization remain separate and
-fail closed. The protected, annotated, unsigned Git-consumption tag is outside
-those future signed/pub.dev channels and grants neither authorization.
+fail closed. The known `replaceGraph` semantic defect is the intended root
+blocker after external RC.2 evidence closes; it is deferred to RC.3.
 
 | V1S-16–V1S-17
 | IN_PROGRESS

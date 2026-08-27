@@ -81,7 +81,7 @@ final class _Fixture {
       '--format=%T',
       sha,
     ])).stdout.toString().trim();
-    const cohort = '1.0.0-rc.1';
+    const cohort = '1.0.0-rc.2';
     const authority = 'Codex';
     const required = <String>[
       'V1S-00',

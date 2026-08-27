@@ -1,7 +1,7 @@
 = Public API review for the 1.0 release candidate
 
 Review date:: 2026-08-25
-Reviewed version:: lockstep `1.0.0-rc.1` cohort
+Reviewed version:: lockstep `1.0.0-rc.2` cohort
 Snapshot gate:: `dart run tool/check_api_snapshot.dart`
 
 == Result

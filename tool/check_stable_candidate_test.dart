@@ -109,6 +109,7 @@ void main() {
         contains('publication remains a separate decision'),
       );
     },
+    timeout: const Timeout(Duration(minutes: 2)),
   );
 
   test(

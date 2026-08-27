@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "cohortVersion": "1.0.0-rc.1",
+  "cohortVersion": "1.0.0-rc.2",
   "artifactSource": "git-archive-exact-head",
   "digestAlgorithm": "sha256",
   "installation": {
@@ -12,7 +12,7 @@
   },
   "gitInstallation": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "ref": "v1.0.0-rc.1",
+    "ref": "v1.0.0-rc.2",
     "annotatedTagRequired": true,
     "dependencyOverrides": true,
     "transitiveClosureRequired": true,
@@ -94,9 +94,9 @@
     }
   ],
   "deferredToV1S13": [
-    "physical Android floor/current device execution",
-    "physical iOS floor/current device execution",
-    "background/foreground and permission transitions on real devices",
-    "main-thread callback and native tree-cleanliness receipts"
+    "physical Android 14/API 34 execution through tcp:127.0.0.1:5038",
+    "Android API 24 build compatibility without an emulator",
+    "iOS deployment-floor builds and current simulator execution without a physical iPhone",
+    "same-SHA lifecycle, callback, cleanup, and source-tree receipts"
   ]
 }

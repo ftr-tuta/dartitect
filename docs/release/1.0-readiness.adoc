@@ -1,9 +1,9 @@
 = Dartitect 1.0 readiness decision
 
 Status:: GIT CONSUMPTION CANDIDATE ASSEMBLED; NOT READY FOR FORMAL RELEASE
-Implementation status:: Code and the sixteen-package `1.0.0-rc.1` cohort are assembled; external root checks and native evidence remain pending
+Implementation status:: Code and the sixteen-package `1.0.0-rc.2` cohort are assembled; external root checks and native evidence remain pending
 Decision date:: 2026-08-26 UTC
-Current candidate cohort:: `1.0.0-rc.1`
+Current candidate cohort:: `1.0.0-rc.2`
 Decision authority:: maintainer-delegated automation recorded in `tool/goal_gates.json`
 
 == Decision
@@ -15,8 +15,10 @@ Dartitect package to the same repository/tag/commit. No package is authorized
 for pub.dev publication.
 
 This record does not claim formal `READY_FOR_1_0_RC` or `READY_FOR_1_0` status.
-Those decisions remain fail closed until physical/external evidence, the future
-formal channel, upgrade evidence, and delegated review receipts exist.
+RC.2 can close the external CI/native goals, but a known semantic defect in
+`OwnedRuntimeSlot.replaceGraph` remains a release blocker. It is deliberately
+not corrected in RC.2. RC.3 must correct it and repeat every SHA-bound gate
+before a formal readiness decision.
 
 == Root evidence boundary
 
@@ -39,10 +41,16 @@ must be repeated against `https://github.com/ftr-tuta/dartitect.git`.
 
 == Remaining evidence
 
-The native harness defines nine candidate-bound cells. The current Android
-emulator cell can be rerun locally against the root; eight additional Android/
-iOS platform and device cells remain explicitly pending. Missing Apple hosts or
-physical devices stay missing evidence and are never converted into a pass.
+The native harness defines five candidate-bound cells. Android runtime behavior
+is verified only on a physical Android 14/API 34 device through the isolated
+ADB server; API 24 is build compatibility, not runtime evidence. iOS evidence
+uses deployment-floor builds plus a dynamically selected CI simulator. No
+Android emulator or physical iPhone is part of this candidate.
+
+The five receipts, CI and Security runs, dry-runs, and Git canaries must all
+refer to the same final `main` SHA. Even after those receipts close V1S-04 and
+V1S-13, `replaceGraph` keeps `rc_readiness_decision` at
+`NOT_READY_FOR_1_0_RC`.
 
 The formal signed-bundle/pub.dev path remains `NOT_AUTHORIZED`. Stable promotion
 remains `NOT_ASSEMBLED` and its publication decision remains `NOT_AUTHORIZED`.

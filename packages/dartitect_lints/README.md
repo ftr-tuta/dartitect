@@ -28,7 +28,7 @@ and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/doc
 ## Install
 
 This candidate is not published on pub.dev. Declare
-`dartitect_lints: 1.0.0-rc.1` under `dev_dependencies` and use the
+`dartitect_lints: 1.0.0-rc.2` under `dev_dependencies` and use the
 [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md)
 to pin it to the protected tag.
 

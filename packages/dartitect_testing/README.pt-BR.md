@@ -29,7 +29,7 @@ e as [receitas de implementação](https://github.com/ftr-tuta/dartitect/blob/ma
 ## Instalação
 
 Este candidato não está publicado no pub.dev. Declare
-`dartitect_testing: 1.0.0-rc.1` em `dev_dependencies` e use o
+`dartitect_testing: 1.0.0-rc.2` em `dev_dependencies` e use o
 [guia de consumo do candidato Git](../../docs/guides/git-candidate-consumption.pt-BR.md)
 para gerar o fechamento completo de overrides.
 

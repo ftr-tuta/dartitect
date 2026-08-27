@@ -5,7 +5,7 @@
 ## Purpose
 
 Local MCP access to Dartitect inspection, diagnostics, adoption, reviewed
-previews, and generated public documentation on the lockstep `1.0.0-rc.1`
+previews, and generated public documentation on the lockstep `1.0.0-rc.2`
 candidate line.
 
 ## When to use it
@@ -31,7 +31,7 @@ and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/doc
 ## Install
 
 This candidate is not published on pub.dev. Declare
-`dartitect_mcp: 1.0.0-rc.1` under `dev_dependencies`, apply the overrides from
+`dartitect_mcp: 1.0.0-rc.2` under `dev_dependencies`, apply the overrides from
 the [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md),
 then run `dart run dartitect_mcp:dartitect_mcp --root .`.
 

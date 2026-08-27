@@ -16,7 +16,7 @@ void main() {
           .readAsStringSync(),
     ),
   );
-  const cohort = '1.0.0-rc.1';
+  const cohort = '1.0.0-rc.2';
   if (candidate['schemaVersion'] != 1 ||
       candidate['cohortVersion'] != cohort ||
       candidate['candidateState'] != 'GIT_CANDIDATE_ASSEMBLED' ||
@@ -51,7 +51,7 @@ void main() {
   }
   final git = _object(candidate['gitConsumption']);
   if (git['repository'] != 'https://github.com/ftr-tuta/dartitect.git' ||
-      git['tag'] != 'v1.0.0-rc.1' ||
+      git['tag'] != 'v1.0.0-rc.2' ||
       git['annotated'] != true ||
       git['signed'] != false ||
       git['protectedAgainstUpdateAndDeletion'] != true ||

@@ -6,40 +6,82 @@ Structural gate:: `dart run tool/check_native_evidence.dart --contract-only`
 Formal gate:: `dart run tool/check_native_evidence.dart`
 Candidate-bound receipts:: Recorded outside the tracked root tree
 
-V1S-13 uses a fail-closed nine-cell matrix. An exact candidate needs Android
-media on floor/current emulators and a current physical device, iOS media on
-floor/current simulators and a current physical device, and iOS privacy on its
-floor/current simulators and a current physical device. Generic `floor` or
-`current` labels are not receipts: every run records exact OS/API, SDK, Flutter,
-Dart, device model, source SHA, UTC interval, scenarios, and a hashed device ID.
+V1S-13 uses a fail-closed five-cell matrix. Android emulators and physical
+iPhones are prohibited:
 
-The current Android emulator cell is the locally runnable ninth cell. The other
-eight platform/device cells remain pending and begin producing evidence against
-this root candidate. Prior repository-history receipts are not candidate
-evidence and are not exposed in the public tree.
+[cols="2,2,5",options="header"]
+|===
+| Cell | Environment | Evidence
+
+| `android-media-floor-build`
+| Linux CI
+| API/minSdk 24 compatibility, manifest contract, Android lint, and APK build;
+no emulator runtime.
+
+| `android-media-current-physical`
+| Connected physical Android
+| Android 14/API 34 media/privacy behavior, files, callbacks, lifecycle,
+rotation restoration, cleanup, and a clean reinstalled QA harness.
+
+| `ios-media-floor-build`
+| macOS CI
+| Media plugin compilation and simulator link with an iOS 14 deployment target.
+
+| `ios-privacy-floor-build`
+| macOS CI
+| Privacy plugin compilation and simulator link with an iOS 12 deployment
+target.
+
+| `ios-current-simulator`
+| macOS CI
+| Real Photos/ATT method channels on a dynamically selected installed
+simulator, deterministic native status contracts, lifecycle, and cleanup.
+|===
+
+Generic `floor`, `current`, or `latest` labels are not versions. Schema-v2
+receipts record the exact source commit and tree, toolchain/OS versions,
+scenario set, ordered UTC interval, and clean source state. CI receipts also
+record the GitHub workflow/run; runtime receipts store only SHA-256 of the
+device identifier, never a serial or UDID.
 
 == Automated harness
 
-`tool/run_native_evidence.dart` creates a disposable Flutter host outside the
-repository, injects candidate packages, executes the selected integration test
-on a connected device, drives the Android external-Activity and exact
-instrumented-task background/foreground cycle, removes its test gallery asset,
-and writes an ignored receipt below `build/native-evidence/`.
+`tool/run_native_evidence.dart` accepts only
+`android-media-current-physical`. Before any device query it requires
+`ADB_SERVER_SOCKET=tcp:127.0.0.1:5038`; it rejects missing/other sockets,
+offline or unauthorized devices, multiple Android devices, every emulator, and
+any API other than 34. Commands inherit the isolated socket and redact the
+selected identifier from logs.
 
-Portable `adb` discovery checks `ANDROID_SDK_ROOT`, `ANDROID_HOME`, and then
-`PATH`, using `adb.exe` on Windows. The harness refuses a dirty tracked tree;
-the receipt checker rejects cross-SHA, duplicate, partial, generic-version,
-wrong-device-kind, or dirty-tree evidence.
+The runner creates a disposable host, drives rotation and a real
+background/resume transition, removes the identified gallery asset, clears
+owned preferences idempotently, restores rotation/lifecycle, and reinstalls the
+QA harness with clean app data. The app intentionally remains installed for
+future manual QA; the physical receipt records the APK digest and authorized
+clean retention.
+
+`tool/run_native_ci_evidence.dart` owns the three build cells and the iOS
+simulator cell. The macOS job chooses from installed, available simulators at
+runtime and fails when none exists. It never downloads a runtime silently and
+does not hardcode a runtime, model, or UDID. Photos full access is prepared by
+the host-side AppleSimulatorUtils 0.9.12 binary downloaded from its official
+release and accepted only after its pinned SHA-256 and exact version pass. The
+receipt records that tool version; the real package channel must still report
+authorized status, complete its request, and save the identified image. The
+hosted inventory is explicitly variable; see the
+https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md[official macOS 15 runner inventory].
 
 == Required scenarios
 
-The matrix covers initial-versus-denied legacy Android state, granted/denied
-permissions, no legacy request on Android 29+, explicit ATT request, limited
-iOS Photos access, save with album, borrowed source preservation, missing and
-invalid files, cancellation during detach, rotation/configuration changes,
-background/foreground, cleanup after failure, main-thread callbacks, and a
-clean tracked native project after every run.
+The matrix covers build compatibility at the declared floors, no legacy storage
+permission on Android 29+, Android `privacy.notSupported`, real Photos/ATT
+channels, deterministic native mappings for TCC-controlled states, save with
+album, borrowed source preservation, missing/invalid files, liveness and
+main-thread callbacks, rotation, background/resume, idempotent cleanup, and a
+clean source tree.
 
-The goal remains external until all nine receipts exist for the same exact
-candidate SHA. Missing physical hardware or an unavailable Apple host remains
-missing evidence, never a pass.
+The formal checker requires exactly five non-duplicate receipts for one source
+SHA/tree. A cross-SHA receipt, missing scenario, invalid workflow run, raw
+device identifier, dirty tree, or unauthorized residue invalidates the matrix.
+Receipts and their checksums remain external artifacts; a dated private backup
+is retained separately.

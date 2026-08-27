@@ -74,7 +74,7 @@ final class _Fixture {
       },
     });
     await fixture.write('package_release_contract.json', <String, Object?>{
-      'cohortVersion': '1.0.0-rc.1',
+      'cohortVersion': '1.0.0-rc.2',
     });
     await fixture.write('rc_bundle_contract.json', <String, Object?>{
       'outputDirectory': 'build/rc-bundles',

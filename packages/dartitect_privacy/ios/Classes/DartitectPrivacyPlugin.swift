@@ -22,7 +22,7 @@ public final class DartitectPrivacyPlugin: NSObject, FlutterPlugin {
       }
       DispatchQueue.main.async {
         ATTrackingManager.requestTrackingAuthorization { status in
-          DispatchQueue.main.async { result(self.map(status)) }
+          DispatchQueue.main.async { result(Self.statusValue(status)) }
         }
       }
     default:
@@ -32,11 +32,11 @@ public final class DartitectPrivacyPlugin: NSObject, FlutterPlugin {
 
   private func currentStatus() -> String {
     guard #available(iOS 14, *) else { return "notSupported" }
-    return map(ATTrackingManager.trackingAuthorizationStatus)
+    return Self.statusValue(ATTrackingManager.trackingAuthorizationStatus)
   }
 
   @available(iOS 14, *)
-  private func map(_ status: ATTrackingManager.AuthorizationStatus) -> String {
+  static func statusValue(_ status: ATTrackingManager.AuthorizationStatus) -> String {
     switch status {
     case .notDetermined: return "notDetermined"
     case .restricted: return "restricted"

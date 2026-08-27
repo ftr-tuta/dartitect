@@ -3,7 +3,7 @@
 Install `dartitect_cli`, run read-only discovery first, and review every preview:
 
 ```console
-dart pub global activate dartitect_cli 1.0.0-rc.1
+dart pub global activate dartitect_cli 1.0.0-rc.2
 dartitect inspect --json
 dartitect scan --no-baseline
 dartitect doctor
