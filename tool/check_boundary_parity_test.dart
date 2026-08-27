@@ -21,6 +21,18 @@ void main() {
       boundaryParityRelativePath(root, source.absolute.uri.toString()),
       'lib/feature.dart',
     );
+    if (Platform.isWindows) {
+      final uriWithLowercaseDrive = source.absolute.uri
+          .toString()
+          .replaceFirstMapped(
+            RegExp(r'^file:///([A-Z]):'),
+            (match) => 'file:///${match.group(1)!.toLowerCase()}:',
+          );
+      expect(
+        boundaryParityRelativePath(root, uriWithLowercaseDrive),
+        'lib/feature.dart',
+      );
+    }
   });
 
   test('rejects analyzer paths outside the fixture', () async {

@@ -133,7 +133,11 @@ String boundaryParityRelativePath(Directory root, String path) {
       ? rootPath
       : '$rootPath${Platform.pathSeparator}';
   final filePath = file.absolute.path;
-  if (!filePath.startsWith(prefix)) {
+  final comparedPrefix = Platform.isWindows ? prefix.toLowerCase() : prefix;
+  final comparedFilePath = Platform.isWindows
+      ? filePath.toLowerCase()
+      : filePath;
+  if (!comparedFilePath.startsWith(comparedPrefix)) {
     throw FormatException('Analyzer path is outside the parity fixture.');
   }
   return filePath.substring(prefix.length).replaceAll('\\', '/');
