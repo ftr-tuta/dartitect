@@ -64,12 +64,7 @@ void main() {
     () {
       expect(
         androidLifecycleOperations.expand((operation) => operation),
-        containsAll(<String>[
-          'settings',
-          'android.settings.SETTINGS',
-          'lock',
-          'stop',
-        ]),
+        containsAll(<String>['settings', 'android.settings.SETTINGS', 'focus']),
       );
       expect(
         androidCleanupOperations.expand((operation) => operation),

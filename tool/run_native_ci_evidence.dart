@@ -385,7 +385,7 @@ Future<void> _runAndroidIntegration(
   String deviceId,
   int apiLevel,
 ) async {
-  final lifecycle = Completer<void>();
+  final lifecycle = Completer<({Object? error, StackTrace? stackTrace})>();
   final process = await Process.start('flutter', <String>[
     'test',
     'integration_test/android_media_test.dart',
@@ -408,9 +408,12 @@ Future<void> _runAndroidIntegration(
         if (!lifecycleTriggered && line.contains('DARTITECT_LIFECYCLE_READY')) {
           lifecycleTriggered = true;
           unawaited(
-            _exerciseAndroidLifecycle(root, deviceId).then(
-              (_) => lifecycle.complete(),
-              onError: lifecycle.completeError,
+            _exerciseAndroidLifecycle(root, deviceId).then<void>(
+              (_) => lifecycle.complete((error: null, stackTrace: null)),
+              onError: (Object error, StackTrace stackTrace) {
+                lifecycle.complete((error: error, stackTrace: stackTrace));
+                process.kill(ProcessSignal.sigterm);
+              },
             ),
           );
         }
@@ -427,7 +430,10 @@ Future<void> _runAndroidIntegration(
   if (!lifecycleTriggered) {
     throw StateError('Android integration did not request lifecycle exercise.');
   }
-  await lifecycle.future;
+  final lifecycleResult = await lifecycle.future;
+  if (lifecycleResult.error case final error?) {
+    Error.throwWithStackTrace(error, lifecycleResult.stackTrace!);
+  }
   if (exit != 0) throw StateError('Android emulator integration test failed.');
 }
 
@@ -482,7 +488,7 @@ Future<void> _exerciseAndroidLifecycle(Directory root, String deviceId) async {
       'shell',
       'am',
       'task',
-      'lock',
+      'focus',
       '$task',
     ]);
     await Future<void>.delayed(const Duration(seconds: 2));
@@ -502,13 +508,6 @@ Future<void> _exerciseAndroidLifecycle(Directory root, String deviceId) async {
       throw StateError('Instrumented Android task did not resume.');
     }
   } finally {
-    await _adb(root, deviceId, const <String>[
-      'shell',
-      'am',
-      'task',
-      'lock',
-      'stop',
-    ], allowFailure: true);
     await _adb(root, deviceId, <String>[
       'shell',
       'settings',
@@ -526,23 +525,28 @@ Future<void> _exerciseAndroidLifecycle(Directory root, String deviceId) async {
       accelerometer,
     ], allowFailure: true);
   }
-  final restoredAccelerometer = (await _adb(root, deviceId, const <String>[
-    'shell',
-    'settings',
-    'get',
-    'system',
-    'accelerometer_rotation',
-  ])).trim();
-  final restoredRotation = (await _adb(root, deviceId, const <String>[
-    'shell',
-    'settings',
-    'get',
-    'system',
-    'user_rotation',
-  ])).trim();
-  if (restoredAccelerometer != accelerometer || restoredRotation != rotation) {
-    throw StateError('Android rotation state was not restored.');
+  for (var attempt = 0; attempt < 20; attempt += 1) {
+    final restoredAccelerometer = (await _adb(root, deviceId, const <String>[
+      'shell',
+      'settings',
+      'get',
+      'system',
+      'accelerometer_rotation',
+    ])).trim();
+    final restoredRotation = (await _adb(root, deviceId, const <String>[
+      'shell',
+      'settings',
+      'get',
+      'system',
+      'user_rotation',
+    ])).trim();
+    if (restoredAccelerometer == accelerometer &&
+        restoredRotation == rotation) {
+      return;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 250));
   }
+  throw StateError('Android rotation state was not restored.');
 }
 
 Future<int> _resumedTaskId(Directory root, String deviceId) async {

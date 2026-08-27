@@ -62,8 +62,7 @@ const androidLifecycleOperations = <List<String>>[
   <String>['shell', 'settings', 'get', 'system', 'accelerometer_rotation'],
   <String>['shell', 'settings', 'get', 'system', 'user_rotation'],
   <String>['shell', 'am', 'start', '-a', 'android.settings.SETTINGS'],
-  <String>['shell', 'am', 'task', 'lock'],
-  <String>['shell', 'am', 'task', 'lock', 'stop'],
+  <String>['shell', 'am', 'task', 'focus'],
 ];
 
 const androidCleanupOperations = <List<String>>[
