@@ -216,7 +216,9 @@ jobs:
         run: |
           set -euo pipefail
           diagnostic_root="${RUNNER_TEMP:?}/android-emulator-diagnostics"
+          export ANDROID_AVD_HOME="${RUNNER_TEMP:?}/android-avd"
           mkdir -p "$diagnostic_root"
+          mkdir -p "$ANDROID_AVD_HOME"
           booted=false
           for attempt in 1 2; do
             adb kill-server || true
@@ -226,6 +228,13 @@ jobs:
               --name "$DARTITECT_ANDROID_AVD" \
               --package "$DARTITECT_ANDROID_SYSTEM_IMAGE" \
               -d pixel_6
+            emulator -list-avds >"$diagnostic_root/avds-attempt-${attempt}.txt"
+            if ! grep -qx "$DARTITECT_ANDROID_AVD" \
+              "$diagnostic_root/avds-attempt-${attempt}.txt"; then
+              echo "The newly created AVD is not visible to the emulator." >&2
+              find "$ANDROID_AVD_HOME" -maxdepth 2 -type f -print >&2
+              exit 1
+            fi
             nohup emulator "@${DARTITECT_ANDROID_AVD}" \
               -port 5554 \
               -no-window \
