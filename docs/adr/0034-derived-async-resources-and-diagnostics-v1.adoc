@@ -1,0 +1,82 @@
+= ADR-0034: Derived async resources and diagnostics protocol v1
+
+Status:: ACCEPTED; public construction APIs remain EXPERIMENTAL
+
+Context:: Features that derive asynchronous data from multiple Flutter
+listenables otherwise repeat subscription, cancellation, stale-result, and
+last-known-data wiring. Existing `LiveResource` already owns the authoritative
+waiting/ready/failed/crashed and hot/warm/cold lifecycle, while
+`ResourceFamily` already owns explicit keyed retention and eviction. Runtime
+components also expose several local diagnostic seams, but there was no single
+versioned topology/lifecycle protocol spanning owners, nodes, commands,
+resources, families, effects, sync, and isolates.
+
+Decision:: `DerivedAsyncResource<T, F>` is an opt-in adapter over
+`LiveResource<T, F>`, not a second reactive graph. Its dependencies are an
+explicit, non-empty, identity-unique list of Flutter `Listenable` values. Each
+hot activation owns and removes those listeners. A dependency change advances
+one generation, requests cooperative cancellation, drains the admitted read,
+and starts only the newest generation. Both the source generation and the
+`LiveResource` lifecycle generation guard publication, including when a loader
+ignores cancellation.
+
+Decision:: The standard data states remain waiting, ready, expected failure,
+and unexpected crash. `LiveResourceStalePolicy` selects last-known-data
+preservation, discard, or stale-while-revalidate. An injected equality callback
+deduplicates equal ready data; the derived adapter defaults to `==`.
+Observation, leases, retry, and teardown remain the existing `LiveResource`
+contracts. Family integration returns `DerivedAsyncResource.liveResource` from
+an existing `ResourceFamily<K, T, F>` factory, so the family retains authority
+over typed keys, TTL, entry/weight bounds, prewarm, and deterministic eviction.
+
+Decision:: Diagnostics wire schema 1 is an exact payload-free event shape:
+protocol version, monotonic emitter sequence, fixed subject kind, fixed phase,
+opaque process-local subject/related IDs, generation, and revision. The fixed
+subject categories are owner, node, command, resource, family, effect, sync,
+and isolate. No event type accepts arbitrary metadata, domain values, keys,
+queries, identity, error text, or stacks. UUID-shaped IDs are allocated only by
+an emitter through an injected `IdGenerator`; callers cannot construct IDs from
+domain identifiers.
+
+Decision:: Reporters are injected as explicitly owned or borrowed. The safe
+wrapper prevents reentrancy, isolates the first destination failure, and can
+disable the destination. `DartitectDiagnosticBuffer` is a bounded in-memory
+ring and clears all event references on terminal disposal. Detail is `off`,
+`lifecycle`, or `topology`; there is no sampling of failure/crash terminals.
+Off mode allocates no identifier, and all modes are observational only.
+`DiagnosticsTopologyHarness` reconstructs lifecycle and opaque relationships
+without accepting application payload.
+
+Decision:: No Flutter or `listen` global hook is installed or replaced. The
+pure protocol remains in `dartitect`, the Flutter adapter remains in the
+existing opt-in reactive entrypoint, and the harness remains in
+`dartitect_testing`; no package boundary is added.
+
+Evidence:: `diagnostics_protocol_test.dart` covers exact schema, category
+coverage, redaction by construction, disabled behavior, bounded retention, and
+reporter isolation. `diagnostics_topology_harness_test.dart` reconstructs and
+validates topology/lifecycle ordering. `derived_async_resource_test.dart`
+covers a non-cooperative old generation, activation-local dependency
+listeners, stale/dedup/failure/crash states, existing-family integration, and
+payload-free diagnostics. `benchmark_diagnostics.dart` executes five debug and
+profile samples, enforces off/topology budgets, fills the bounded ring, and
+requires zero retained events after disposal.
+
+Experimental and discard contract:: `DerivedAsyncResource`, the new stale and
+restart policies, and diagnostics construction/reporting APIs carry
+`experimentalDartitectApi`. Protocol schema 1 is versioned and must not be
+silently reinterpreted, but public construction APIs are not stable until a
+real application use and package/API review are recorded. Before stable 1.0,
+remove the experimental surface without compatibility migration if no real use
+exists, the generation/leak gates fail, diagnostics require domain payload, or
+the capability requires implicit dependency tracking/global hooks. Promotion
+requires preserving this discard decision, benchmark budgets, and ownership
+tests in a dedicated review.
+
+Consequences:: Derived asynchronous wiring reuses one authoritative resource
+lifecycle and one bounded family implementation. Restart-latest deliberately
+waits for non-cooperative work to drain, so a provider that never completes can
+delay teardown but still cannot publish stale data. Diagnostics can be absent,
+reduced, buffered locally, or routed to an injected destination without
+changing application outcomes. There is no DevTools mutation surface or remote
+destination in this decision.

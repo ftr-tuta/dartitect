@@ -2,6 +2,24 @@ import 'dart:async';
 
 import 'package:dartitect/dartitect.dart';
 
+/// Typed lease authority available at a consumer-owned dataset commit.
+abstract interface class SyncAuthority {
+  /// Consumer-safe lease owner/run identifier.
+  String get ownerId;
+
+  /// Monotonic token to validate atomically in a fencing-capable store.
+  int get fencingToken;
+
+  /// Current lease expiry.
+  DateTime get expiresAt;
+
+  /// Ensures this authority is live, renewing near expiry when possible.
+  Future<bool> ensureAuthority();
+
+  /// Explicitly renews this authority according to the engine TTL.
+  Future<bool> renew();
+}
+
 /// Consumer-owned persistence port for opaque dataset checkpoints.
 abstract interface class SyncCheckpointStore<K, C> {
   /// Reads the latest confirmed checkpoint, or `null` when none exists.
@@ -44,6 +62,12 @@ abstract interface class SyncLease {
 abstract interface class SyncLeaseStore {
   /// Acquires a lease, or returns `null` when another live owner holds it.
   Future<SyncLease?> acquire({required String ownerId, required Duration ttl});
+}
+
+/// Optional consumer-owned terminal cleanup invoked for every admitted run.
+abstract interface class SyncRunCleanup {
+  /// Releases run-local consumer resources idempotently.
+  Future<void> cleanup(String runId);
 }
 
 /// Injectable UTC clock used by deadlines, leases, reports, and tests.

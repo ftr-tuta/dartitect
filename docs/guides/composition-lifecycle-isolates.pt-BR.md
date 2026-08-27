@@ -38,7 +38,10 @@ efêmera, temporária e persistida, definidas abaixo.
 `OwnedRuntimeSlot.replace()` monta uma nova transação antes da publicação. Em
 uma troca bem-sucedida, fecha a admissão antiga, publica o novo grafo commitado,
 drena o trabalho antigo e então encerra o grafo anterior. Falha de construção
-mantém válida a geração anterior.
+mantém válida a geração anterior. Se o teardown antigo falhar depois da
+publicação, a troca lança `OwnedRuntimeReplacementCleanupException`;
+`publishedGeneration` já é autoritativa e o erro de cleanup descreve somente o
+grafo anterior. Não repita a troca cegamente.
 
 ## Durabilidade
 
@@ -76,6 +79,15 @@ rollback é preservada separadamente do erro original de construção.
 
 Transfira configuração imutável, mensagens e contexto W3C validado. Para
 ObjectBox, envie bytes de referência, anexe outro Store e feche em `finally`.
+
+O protocolo versão 2 de `IsolateWorker` usa nonce de correlação monotônico e
+local a uma geração do worker. O request ID visível ao caller nunca é a identity
+do wire; reutilizá-lo após um terminal não permite que envelope stale conclua
+trabalho novo. Futures de ACK e result podem ser aguardados independentemente.
+DTOs de payload/result/failure precisam ser versionados e transferíveis; o custo
+de cópia entre isolates permanece parte do workload do consumidor. Prefira
+cancelamento cooperativo; `safeStop` mantém deadline bounded com force-kill para
+handler não cooperativo.
 
 Projection permanece `ProjectionExecution.inline` a menos que a composição
 injete explicitamente um `ProjectionExecutor`. `IsolateProjectionExecutor` cria

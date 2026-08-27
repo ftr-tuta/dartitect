@@ -1,69 +1,19 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "goal": "V1-18",
-  "toolingState": "PREPARATION_READY",
+  "authority": "github-actions",
   "stableVersion": "1.0.0",
-  "stableInternalConstraint": ">=1.0.0 <1.1.0",
-  "finalRcVersionPattern": "^1\\.0\\.0-rc\\.[1-9][0-9]*$",
-  "requiresNewSourceSha": true,
   "requiresExactMainSha": true,
-  "requiredPackageCount": 16,
-  "requiredPublicEntrypointCount": 17,
-  "preparation": {
-    "script": "tool/prepare_stable_candidate.dart",
-    "requiresFormalStableReadiness": true,
-    "requiresMainBranch": true,
-    "requiresCleanTrackedTree": true,
-    "externalWrites": false,
-    "historicalRcPaths": [
-      "tool/rc_candidate_contract.json",
-      "tool/rc_readiness_decision.json",
-      "tool/rc_distribution_authorization.json",
-      "tool/check_rc_candidate.dart",
-      "tool/check_rc_readiness_test.dart",
-      "tool/check_rc_artifacts_test.dart",
-      "tool/check_rc_validation_test.dart",
-      "tool/check_package_release_contract_test.dart"
-    ]
-  },
-  "diffPolicy": {
-    "addedFiles": false,
-    "deletedFiles": false,
-    "renamedFiles": false,
-    "versionLiteralReplacementOnly": true,
-    "changelogStablePrefixOnly": true,
-    "releaseRecordPaths": [
-      "tool/package_release_contract.json",
-      "tool/rc_candidate_contract.json",
-      "tool/sdk_inventory.json",
-      "tool/api_surface.snapshot.json",
-      "tool/goal_gates.json",
-      "tool/stable_candidate_record.json",
-      "docs/implementation-status.adoc",
-      "docs/release/1.0-readiness.adoc",
-      "docs/release/sbom.spdx.json",
-      "docs/release/dependency-licenses.json",
-      "docs/release/advisory-audit.adoc",
-      "docs/release/pub-dev-identity-audit.adoc",
-      "docs/release/publication-runbook.adoc"
-    ]
-  },
-  "repeatedEvidence": [
-    "CI",
-    "Security",
-    "clean-clone",
-    "release-audit",
-    "sbom",
-    "licenses",
-    "publish-dry-runs"
+  "requiresReadinessArtifact": "actions-readiness-v1",
+  "requiredCheck": "CI / Required",
+  "requiredNativeCells": [
+    "android-media-floor-build",
+    "android-media-current-emulator",
+    "ios-media-floor-build",
+    "ios-privacy-floor-build",
+    "ios-current-simulator"
   ],
-  "publication": {
-    "authorizationRecord": "tool/stable_publication_authorization.json",
-    "tag": "v1.0.0",
-    "signedTag": true,
-    "channel": "pub.dev",
-    "manualTopologicalOrder": true,
-    "automaticRetry": false,
-    "overwritePublishedVersion": false
-  }
+  "publicationWorkflow": ".github/workflows/publish.yaml",
+  "manualTriggerOnly": true,
+  "externalAuthorizationRecordsAccepted": false
 }

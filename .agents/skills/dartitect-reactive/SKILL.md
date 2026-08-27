@@ -9,7 +9,8 @@ description: Implement Dartitect ReactiveOwner, hot/warm/cold lifecycle, LiveRes
 
 Use this skill when a feature needs explicit dependency tracking, temperature,
 authoritative live sources, causal refresh, bounded keyed resources, incremental
-collections, selectors, debounce, or reactive Flutter builders.
+collections, explicit-dependency derived async resources, selectors, debounce,
+or reactive Flutter builders.
 
 ## When not to use
 
@@ -31,6 +32,10 @@ Choose owner and activation policy, model the authoritative source, select the
 required refresh completion type, then add bounded families/collections and the
 smallest builder entrypoint. State backpressure, retry, retention, and disposal
 semantics explicitly.
+For an experimental derived resource, also name every dependency, stale-data
+policy, equality rule, cancellation behavior, generation guard, and discard
+criterion. Reuse the existing family boundary rather than creating a parallel
+key cache.
 
 Read [references/lifecycle-and-resources.md](references/lifecycle-and-resources.md),
 [references/families-and-collections.md](references/families-and-collections.md),

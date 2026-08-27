@@ -35,7 +35,7 @@ and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/doc
 ## Install
 
 This candidate is not published on pub.dev. Declare
-`dartitect_flutter: 1.0.0-rc.2` and use the
+`dartitect_flutter: 1.0.0-rc.3` and use the
 [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md)
 to pin it and `dartitect` to the protected tag.
 
@@ -67,8 +67,10 @@ See `example/dartitect_flutter_example.dart` for an executable widget example.
   the lifetime of the inherited widget; it is not a service locator.
 - `EffectChannel<E>` is a bounded, single-consumer FIFO owned by an explicit
   application/session/route generation. `EffectListener` alone uses the
-  currently mounted context. `SessionStateController<S>` carries replayable
-  shell/logout state separately from one-shot effects.
+  currently mounted context, attaches post-frame, and pauses delivery while
+  its route is offstage or non-current. Headless listeners retain their own
+  immediate policy. `SessionStateController<S>` carries replayable shell/logout
+  state separately from one-shot effects.
 - `FlutterBindingBuildEvent` reports only binding kind, count, duration,
   local-handle count, and ticker status; it never carries domain payloads.
 - `FlutterErrorBinding` chains and restores handlers through an injected
@@ -76,14 +78,28 @@ See `example/dartitect_flutter_example.dart` for an executable widget example.
 - The opt-in reactive entrypoint exposes `ReactiveOwner`, atomic `update`
   transactions, typed-key values/computeds that directly implement
   `ValueListenable<T>`, per-node equality, and deterministic diagnostics.
+  Its explicit write/compute/commit/notify/dispose phase machine rejects writes
+  during computation; post-commit listener/reporting failures never turn an
+  applied mutation into a failed outcome. `ReactiveKey` requires a namespace,
+  definition revision, and fingerprint, and conflicts are diagnosable.
   Each outer update can emit one sanitized `ReactiveChangeEvent` through an
   explicitly owned or borrowed observer; custom causes must be pre-registered
   static identities.
+- `ViewModelHost.onReassemble` can rebind compatible definitions to the same
+  owner-local state after hot reload. Hot restart constructs a new owner and
+  does not preserve ephemeral graph state.
 - `ResourceLifecycle` separates data from hot/warm/cold temperature;
   `ReactiveObservation` and `AsyncLifecycleBarrier` bound activity and teardown.
 - `LiveResource<T, F>` opens one activation-local `ReactiveSource` session and
-  applies explicit `everyEmission`, microtask, frame, or latest-while-busy
-  backpressure. The default permits at most the active read plus one rerun.
+  applies explicit `everyEmission`, microtask, frame, latest-while-busy, or
+  experimental restart-latest backpressure. The default permits at most the
+  active read plus one rerun.
+- Experimental `DerivedAsyncResource<T, F>` derives from a non-empty explicit
+  set of Flutter listenables. Dependency generations cancel/drain old reads and
+  guard late publication; last-data policy and equality deduplication are
+  explicit. Return its `liveResource` from an existing `ResourceFamily` so key,
+  lifetime, and eviction remain family-owned. An optional borrowed diagnostic
+  subject emits only fixed payload-free resource lifecycle facts.
 - `FutureReactiveSource`, `StreamReactiveSource`, `ListenableReactiveSource`,
   and `ValueListenableReactiveSource` adapt existing async/native primitives
   into fresh activation-local sessions without taking ownership of borrowed
@@ -132,6 +148,9 @@ Keep `BuildContext` out of ViewModels, services, repositories, domain, and data.
 Expected command failures are state and are not automatically reported.
 Expected source failures retain last-known data. Unexpected source crashes are
 reported once, close the upstream, and require an explicit `retry()`.
+Derived-resource and diagnostic construction APIs remain experimental under
+ADR 0034 and are discarded before stable 1.0 without real-use, lifecycle,
+performance, and package/API review evidence.
 
 ## Extending
 
@@ -148,5 +167,5 @@ scaling, keyed reorder, and handler chain/restore.
 ## Links
 
 See [commands/results/effects](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/commands-results-effects.md),
-[reactive runtime migration](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/reactive-runtime-migration.md),
+[reactive runtime guide](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/reactive-runtime.md),
 [lifecycle/isolate composition](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/composition-lifecycle-isolates.md), and the [issue tracker](https://github.com/ftr-tuta/dartitect/issues).

@@ -1,0 +1,38 @@
+= ADR-0033: Semantic project plans and analyzer parity
+
+Status:: ACCEPTED
+
+Context:: Project-change tokens previously hashed nearly every file with a
+32-bit non-cryptographic fingerprint. Unrelated assets invalidated reviewed
+plans, while revalidation occurred before the existing MCP-only filesystem
+lock. Analyzer rules also treated several textual names as semantic identity,
+reported sensitive keys in arbitrary maps, and silently used defaults for an
+invalid `dartitect.json`.
+
+Decision:: Every supported `DartitectProjectService` change carries schema-v1
+semantic inputs sorted by project-relative path. Inputs and canonical manifest
+state use SHA-256. Apply acquires `.dartitect/project-change.lock` before
+revalidation and holds its descriptor through generator/synchronizer recovery,
+commit, or rollback. The same service boundary is used by CLI and MCP.
+
+Decision:: Analyzer rules prefer resolved element/library identity. When a
+unit cannot be resolved, the documented textual fallback remains conservative;
+declarations proven local are not provider, Flutter, or locator identities.
+Sensitive metadata requires a recognized telemetry sink. Generated fallback
+requires a standard generated-code header and a configured suffix. Invalid
+config emits `dartitect_invalid_configuration` while defaults keep other
+diagnostics available.
+
+Evidence:: `project_service_test.dart` covers SHA-256 manifests, irrelevant and
+relevant inputs, in-process and real cross-process races, abrupt process death,
+baseline journal recovery, stable JSON, and residue. Generation fault tests
+exercise every journal transition. `boundary_parity_corpus.json` is the single
+scanner/plugin true/false-positive contract; `check_boundary_parity.dart`
+enforces exact codes plus scanner/analyzer budgets. The repository runs these
+tests on Linux, Windows, and macOS.
+
+Consequences:: A plan is stale only when an input capable of changing that plan
+changes. Lock contention is a typed `change_locked` outcome and requires a new
+preview. The empty lock file is durable coordination state, not transaction
+residue. Config v1 gains the optional additive `generatedSuffixes` field; its
+absence retains the reviewed defaults.

@@ -6,5 +6,13 @@ Decision:: Critical rules exist in a zero-dependency, read-only structural
 scanner. Semantic IDE diagnostics use only the official
 analysis_server_plugin, isolated in dartitect_lints.
 
-Consequences:: Analyzer churn cannot disable brownfield inspection. Version
+Refinement:: Scanner and plugin consume one versioned true/false-positive
+corpus. The plugin uses resolved element/library identity where available,
+while the structural scanner excludes declarations proven local in the same
+unit. Generated fallback requires both a reviewed header and suffix. Invalid
+configuration is always a diagnostic.
+
+Consequences:: Analyzer churn cannot disable existing-codebase inspection. Version
 0.3.18 is pinned until Flutter's official test graph accepts Analyzer 14.1.
+The analyzer fixture has an explicit time budget and runs on the Linux,
+Windows, and macOS verification matrix.

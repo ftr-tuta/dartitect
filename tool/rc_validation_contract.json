@@ -1,26 +1,19 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "goal": "V1S-17",
-  "supportedChannel": "signed-bundle",
-  "toolingState": "PRE_VALIDATION_READY",
-  "requiresMaterializedArtifacts": true,
-  "remoteInstall": {
-    "provider": "github-release-download",
-    "monorepoPathResolution": false,
-    "dependencyOverrides": false,
-    "archiveDigestVerification": true
-  },
+  "authority": "github-actions",
+  "toolingState": "ACTIONS_POLICY_READY",
+  "readinessArtifact": "actions-readiness-v1",
+  "requiredCheck": "CI / Required",
   "requiredCanaries": ["minimal", "offline_first", "native_capabilities"],
-  "requiredNativeCells": 9,
-  "upgrade": {
-    "realRcToRc": true,
-    "twoCandidateBundlesWhenNoSecondRc": true,
-    "persistedStores": ["objectbox", "outbox", "journal", "checkpoint", "generator-manifest"]
-  },
+  "requiredNativeCells": [
+    "android-media-floor-build",
+    "android-media-current-emulator",
+    "ios-media-floor-build",
+    "ios-privacy-floor-build",
+    "ios-current-simulator"
+  ],
   "requiredResidualCensus": 0,
-  "stableDecision": {
-    "record": "tool/stable_readiness_decision.json",
-    "state": "READY_FOR_1_0",
-    "separateFromRcReadiness": true
-  }
+  "hostedRuntimeKinds": ["emulator", "simulator"],
+  "externalArtifactsAccepted": false
 }

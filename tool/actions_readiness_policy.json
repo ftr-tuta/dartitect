@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "authority": "github-actions",
+  "workflow": "CI",
+  "workflowPath": ".github/workflows/ci.yaml",
+  "events": ["pull_request", "merge_group", "push-main"],
+  "requiredCheck": "CI / Required",
+  "releaseBranch": "refs/heads/main",
+  "formalEvent": "push",
+  "artifact": {
+    "name": "actions-readiness-v1",
+    "manifest": "actions-readiness-v1.json",
+    "retentionDays": 90
+  },
+  "requiredJobs": [
+    "linux",
+    "windows",
+    "macos",
+    "android-emulator",
+    "clean-clone",
+    "git-consumption",
+    "osv"
+  ],
+  "nativeCells": [
+    "android-media-floor-build",
+    "android-media-current-emulator",
+    "ios-media-floor-build",
+    "ios-privacy-floor-build",
+    "ios-current-simulator"
+  ],
+  "repositoryArtifacts": [
+    "docs/release/sbom.spdx.json",
+    "docs/release/dependency-licenses.json",
+    "tool/api_surface.snapshot.json",
+    "tool/package_release_contract.json"
+  ],
+  "publication": {
+    "workflowPath": ".github/workflows/publish.yaml",
+    "manualOnly": true,
+    "requiredInputs": ["source_sha", "ci_run_id", "channel"],
+    "channels": ["github-release", "pub-dev-prerelease", "pub-dev-stable"]
+  },
+  "localValidationCanDeclareReadiness": false,
+  "hostedRunnersOnly": true
+}

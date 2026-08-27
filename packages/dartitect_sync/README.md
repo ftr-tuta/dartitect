@@ -17,7 +17,9 @@ Only validated command data crosses isolate boundaries.
 Define a `SyncDataset` per local-authority dataset, validate dependencies with
 `SyncDependencyGraph`, inject checkpoint and optional lease ports, then await
 `engine.start().done`. Expected failures return `Err`; unexpected exceptions
-keep their stack and are rethrown. See the
+keep their stack in `SyncRunTerminalException`, whose report distinguishes
+dataset application, checkpoint, journal, lease release, and cleanup. Inspect
+that receipt before any retry. See the
 [runnable example](example/dartitect_sync_example.dart).
 
 ## Consumer policy
@@ -25,4 +27,8 @@ keep their stack and are rethrown. See the
 The application owns local transactions, remote mapping, idempotency, retry,
 conflict resolution, authentication, scheduling, payload validation, durable
 cross-process deduplication, and provider resources. Checkpoint stores must use
-the supplied fencing token to reject a stale lease holder.
+the supplied fencing token to reject a stale lease holder. When a lease is
+configured, each `SyncDatasetContext` carries `SyncAuthority`: call
+`ensureAuthority()` immediately before the local commit and pass
+`fencingToken` into the same atomic storage transaction. A store that cannot
+compare-and-commit the token does not gain a fencing guarantee from the engine.

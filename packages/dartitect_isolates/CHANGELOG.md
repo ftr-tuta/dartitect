@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.0-rc.3
+
+- Upgrade the worker protocol to version 2 and correlate wire envelopes with a
+  generation-local, monotonic internal nonce instead of the reusable public
+  request ID.
+- Make acceptance and result Futures safe to await independently while
+  preserving their original terminal errors for direct callers.
+
 ## 1.0.0-rc.2
 
 - Promote the lockstep candidate cohort without public Dart API changes and

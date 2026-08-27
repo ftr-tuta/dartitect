@@ -1,3 +1,8 @@
+## 1.0.0-rc.3
+
+- Promote the lockstep hardening candidate without package-specific public API
+  changes.
+
 ## 1.0.0-rc.2
 
 - Promote the lockstep candidate cohort without public Dart API changes and

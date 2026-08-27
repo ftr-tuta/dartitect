@@ -1,14 +1,18 @@
 = Competitive performance and lifecycle report
 
 Generated:: 2026-08-26T15:05:13.176963Z
-Candidate cohort:: `1.0.0-rc.2`
+Candidate cohort:: `1.0.0-rc.3`
 Evidence status:: `REFERENCE_ONLY_REPRODUCTION_REQUIRED`
+Public claim eligible:: `NO`
+Claim policy:: `INTERNAL_GATE_ONLY`
 Seed:: 140013
 Warm-up / measured samples:: 3 / 15
 Gate:: PASS
 
 This tracked dataset preserves the reviewed workload thresholds but is not
 root-candidate evidence. CI reproduces the matrix externally on the exact root.
+These measurements are internal compatibility gates. They are not authorized
+for public performance claims.
 
 == Fan-out comparison
 

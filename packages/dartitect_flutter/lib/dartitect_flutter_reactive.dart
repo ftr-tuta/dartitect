@@ -8,6 +8,7 @@ library;
 export 'src/binding_diagnostics.dart';
 export 'src/reactive/causal_refresh.dart';
 export 'src/reactive/debounced_reactive_value.dart';
+export 'src/reactive/derived_async_resource.dart';
 export 'src/reactive/lifecycle_barrier.dart';
 export 'src/reactive/live_collection.dart';
 export 'src/reactive/live_resource.dart';

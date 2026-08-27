@@ -3,6 +3,8 @@ import 'dart:io';
 
 import '../config/dartitect_config.dart';
 import '../diagnostics/models.dart';
+import '../diagnostics/sarif.dart';
+import '../fleet/fleet_service.dart';
 import '../generation/generation_engine.dart';
 import '../generation/scaffolds.dart';
 import '../model/model_generator.dart';
@@ -74,6 +76,7 @@ final class DartitectCliRunner {
         'codex' => await _codex(root, parsed),
         'model' => await _model(root, parsed),
         'dependencies' => await _dependencies(root, parsed),
+        'fleet' => await _fleet(root, parsed),
         _ => _usageError('Unknown command "$command".'),
       };
     } on _UsageException catch (error) {
@@ -97,6 +100,9 @@ final class DartitectCliRunner {
         GenerationFailureKind.recovery ||
         GenerationFailureKind.io => DartitectExitCode.internal.code,
       };
+    } on DartitectChangeException catch (error) {
+      _stderr.writeln('${error.code}: ${error.message}');
+      return DartitectExitCode.findings.code;
     } on FileSystemException catch (error) {
       _stderr.writeln('IO failure: ${error.message}');
       return DartitectExitCode.internal.code;
@@ -117,10 +123,14 @@ final class DartitectCliRunner {
     arguments.requireNoPositionals();
     arguments.requireOnlyFlags(<String>{
       'json',
+      if (command == 'scan') 'sarif',
       'deep',
       'verbose',
       if (command == 'scan') 'no-baseline',
     });
+    if (arguments.flags.contains('json') && arguments.flags.contains('sarif')) {
+      throw const _UsageException('--json and --sarif are mutually exclusive.');
+    }
     final service = DartitectProjectService(root);
     final envelope = switch (command) {
       'scan' => await service.scanArchitecture(
@@ -131,7 +141,11 @@ final class DartitectCliRunner {
       ),
       _ => await service.inspectProject(),
     };
-    _writeEnvelope(envelope, json: arguments.flags.contains('json'));
+    if (arguments.flags.contains('sarif')) {
+      _stdout.writeln(jsonEncode(DartitectSarifReport.fromEnvelope(envelope)));
+    } else {
+      _writeEnvelope(envelope, json: arguments.flags.contains('json'));
+    }
     return envelope.exitCode;
   }
 
@@ -307,7 +321,7 @@ final class DartitectCliRunner {
     }.toList()..sort();
     final localOverridePackages = _localSdkPackageClosure(sdkPackages);
     final dependencyBlock = localSdk == null
-        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.2\n').join()
+        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.3\n').join()
         : sdkPackages
               .map(
                 (package) =>
@@ -591,6 +605,97 @@ final class ${name.pascal}App extends StatelessWidget {
     }
   }
 
+  Future<int> _fleet(Directory root, _CliArguments arguments) async {
+    if (arguments.positionals.length < 2) {
+      throw const _UsageException(
+        'Usage: dartitect fleet <versions|check|policy|upgrade> <project-root...>.',
+      );
+    }
+    final command = arguments.positionals.first;
+    final roots = arguments.positionals.skip(1).toList();
+    final service = DartitectFleetService(root);
+    late final DartitectFleetReport report;
+    switch (command) {
+      case 'versions':
+        arguments.requireOnlyFlags(<String>{'json', 'verbose'});
+        report = await service.versions(roots);
+      case 'check':
+        arguments.requireOnlyFlags(<String>{'json', 'verbose'});
+        report = await service.check(roots);
+      case 'policy':
+        arguments.requireOnlyFlags(<String>{
+          'json',
+          'verbose',
+          'bundle',
+          'sha256',
+        });
+        final bundle = arguments.options['bundle'];
+        final digest = arguments.options['sha256'];
+        if (bundle == null || digest == null) {
+          throw const _UsageException(
+            'fleet policy requires --bundle=PATH and --sha256=DIGEST.',
+          );
+        }
+        report = await service.policy(
+          roots,
+          bundlePath: bundle,
+          expectedSha256: digest,
+        );
+      case 'upgrade':
+        arguments.requireOnlyFlags(<String>{
+          'json',
+          'verbose',
+          'dry-run',
+          'to',
+        });
+        if (!arguments.flags.contains('dry-run') ||
+            arguments.options['to'] == null) {
+          throw const _UsageException(
+            'fleet upgrade requires --dry-run and --to=1.0.0-rc.N.',
+          );
+        }
+        report = await service.previewUpgrade(
+          roots,
+          targetCohort: arguments.options['to']!,
+        );
+      default:
+        throw _UsageException('Unknown fleet command "$command".');
+    }
+    if (arguments.flags.contains('json')) {
+      _stdout.writeln(jsonEncode(report.toJson()));
+    } else {
+      _stdout.writeln(
+        '${report.command}: ${report.exitCode == 0 ? 'healthy' : 'findings'}',
+      );
+      for (final project in report.projects) {
+        _stdout.writeln('${project['root']}: ${_fleetProjectSummary(project)}');
+      }
+      if (command == 'upgrade') {
+        _stdout.writeln('DRY-RUN no files written.');
+      }
+    }
+    return report.exitCode;
+  }
+
+  static String _fleetProjectSummary(Map<String, Object?> project) {
+    if (project['plan'] case final Map<String, Object?> plan) {
+      return (plan['operations']! as List<Object?>).join(', ');
+    }
+    if (project['dependencies'] case final List<Object?> dependencies) {
+      return '${dependencies.length} Dartitect dependencies';
+    }
+    if (project['diagnostics'] case final List<Object?> diagnostics) {
+      return diagnostics.isEmpty
+          ? 'policy healthy'
+          : '${diagnostics.length} policy findings';
+    }
+    final findings = (project['findings'] as List<Object?>?)?.length ?? 0;
+    final violations = (project['violations'] as List<Object?>?)?.length ?? 0;
+    return findings + violations == 0
+        ? 'architecture healthy'
+        : '${findings + violations} architecture findings';
+  }
+
   static List<String> _parseAdapters(String? value) {
     if (value == null || value.trim().isEmpty) return <String>[];
     return value
@@ -710,7 +815,8 @@ final class ${name.pascal}App extends StatelessWidget {
 Usage: dartitect <command> [arguments]
 
 Read-only commands:
-  scan [--json] [--root PATH]       Scan files and architecture boundaries.
+  scan [--json|--sarif] [--root PATH]
+                                    Scan files and architecture boundaries.
   baseline create [--dry-run]      Record existing violations by fingerprint.
   codex sync [--dry-run] [--overwrite-managed]
                                     Install managed, focused Codex skills.
@@ -719,6 +825,12 @@ Read-only commands:
   model check [--json]              Validate generated model freshness.
   dependencies audit [--json]      Audit direct/transitive packages offline.
   dependencies explain <package>   Explain the ledger decision/replacement.
+  fleet versions <root...>         Report declared and locked SDK versions.
+  fleet check <root...>            Scan explicit fleet roots without writes.
+  fleet policy <root...> --bundle=PATH --sha256=DIGEST
+                                    Audit with a pinned local policy bundle.
+  fleet upgrade <root...> --dry-run --to=1.0.0-rc.N
+                                    Preview revalidatable cohort upgrades only.
 
 Convergent synchronizers (preview by default):
   model sync [--dry-run|--apply] [--json]

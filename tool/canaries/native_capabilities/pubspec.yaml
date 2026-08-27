@@ -8,11 +8,11 @@ environment:
   flutter: '>=3.47.1'
 
 dependencies:
-  dartitect: 1.0.0-rc.2
-  dartitect_geometry: 1.0.0-rc.2
-  dartitect_locale_br: 1.0.0-rc.2
-  dartitect_media: 1.0.0-rc.2
-  dartitect_privacy: 1.0.0-rc.2
+  dartitect: 1.0.0-rc.3
+  dartitect_geometry: 1.0.0-rc.3
+  dartitect_locale_br: 1.0.0-rc.3
+  dartitect_media: 1.0.0-rc.3
+  dartitect_privacy: 1.0.0-rc.3
   flutter:
     sdk: flutter
 

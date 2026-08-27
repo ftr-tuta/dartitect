@@ -4,7 +4,7 @@ import 'dart:isolate';
 import 'package:dartitect/dartitect.dart';
 
 /// Current stable worker protocol version.
-const int currentIsolateWorkerProtocolVersion = 1;
+const int currentIsolateWorkerProtocolVersion = 2;
 
 /// Isolate-local request handler built by the receiving composition root.
 typedef IsolateRequestHandler<P, R, F extends Object> =
@@ -138,8 +138,9 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
   final ReceivePort _exit = ReceivePort();
   final Completer<void> _ready = Completer<void>();
   final Completer<void> _stopped = Completer<void>();
-  final Map<String, _PendingRequest<R, F>> _pending =
-      <String, _PendingRequest<R, F>>{};
+  final Map<int, _PendingRequest<R, F>> _pending =
+      <int, _PendingRequest<R, F>>{};
+  final Set<String> _activePublicRequestIds = <String>{};
   final IdGenerator _ids;
   Isolate? _isolate;
   SendPort? _commands;
@@ -150,6 +151,7 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
   DateTime? _lastHeartbeat;
   var _closing = false;
   var _disposed = false;
+  var _lastCorrelationId = 0;
   Future<void>? _stopFuture;
 
   /// Completes after the matching generation and protocol are ready.
@@ -220,23 +222,25 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
       throw ArgumentError.value(timeout, 'timeout', 'must be positive');
     }
     final id = requestId ?? _ids.nextId();
-    if (id.trim().isEmpty || _pending.containsKey(id)) {
+    if (id.trim().isEmpty || _activePublicRequestIds.contains(id)) {
       throw ArgumentError.value(
         requestId,
         'requestId',
         'must be non-empty and unique among active requests',
       );
     }
-    final pending = _PendingRequest<R, F>();
-    _pending[id] = pending;
+    final correlationId = ++_lastCorrelationId;
+    final pending = _PendingRequest<R, F>(id);
+    _pending[correlationId] = pending;
+    _activePublicRequestIds.add(id);
     pending.deadline = Timer(timeout, () {
       _commands?.send(<String, Object?>{
         'kind': 'cancel',
         'generation': generation,
-        'requestId': id,
+        'correlationId': correlationId,
       });
       _completeRequestError(
-        id,
+        correlationId,
         const IsolateRequestDeadlineException('Request deadline elapsed.'),
         StackTrace.current,
       );
@@ -246,11 +250,11 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
         'kind': 'request',
         'protocolVersion': protocolVersion,
         'generation': generation,
-        'requestId': id,
+        'correlationId': correlationId,
         'payload': payload,
       });
     } catch (error, stackTrace) {
-      _completeRequestError(id, error, stackTrace);
+      _completeRequestError(correlationId, error, stackTrace);
     }
     return IsolateRequestReceipt<R, F>(
       requestId: id,
@@ -315,14 +319,16 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
       case 'heartbeat':
         _lastHeartbeat = DateTime.now().toUtc();
       case 'accepted':
-        final pending = _pending[message['requestId']];
+        final correlationId = message['correlationId'];
+        if (correlationId is! int) return;
+        final pending = _pending[correlationId];
         if (pending != null && !pending.accepted.isCompleted) {
           pending.accepted.complete();
         }
       case 'result':
-        final id = message['requestId'];
-        if (id is! String) return;
-        final pending = _pending.remove(id);
+        final correlationId = message['correlationId'];
+        if (correlationId is! int) return;
+        final pending = _removePending(correlationId);
         if (pending == null) return;
         pending.deadline?.cancel();
         if (!pending.accepted.isCompleted) pending.accepted.complete();
@@ -337,10 +343,10 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
           );
         }
       case 'crash':
-        final id = message['requestId'];
-        if (id is! String) return;
+        final correlationId = message['correlationId'];
+        if (correlationId is! int) return;
         _completeRequestError(
-          id,
+          correlationId,
           RemoteIsolateCrash(
             message['errorType'] is String
                 ? 'Remote handler crashed as ${message['errorType']}.'
@@ -393,11 +399,11 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
   }
 
   void _completeRequestError(
-    String requestId,
+    int correlationId,
     Object error,
     StackTrace stackTrace,
   ) {
-    final pending = _pending.remove(requestId);
+    final pending = _removePending(correlationId);
     if (pending == null) return;
     pending.deadline?.cancel();
     if (!pending.accepted.isCompleted) {
@@ -408,12 +414,18 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
     }
   }
 
+  _PendingRequest<R, F>? _removePending(int correlationId) {
+    final pending = _pending.remove(correlationId);
+    if (pending != null) _activePublicRequestIds.remove(pending.requestId);
+    return pending;
+  }
+
   Future<void> _failAndClose(Object error, {required bool forceKill}) async {
     if (_disposed) return;
     _closing = true;
     if (!_ready.isCompleted) _ready.completeError(error, StackTrace.current);
-    for (final id in _pending.keys.toList(growable: false)) {
-      _completeRequestError(id, error, StackTrace.current);
+    for (final correlationId in _pending.keys.toList(growable: false)) {
+      _completeRequestError(correlationId, error, StackTrace.current);
     }
     if (!_stopped.isCompleted) _stopped.complete();
     await _closeSupervisor(forceKill: forceKill);
@@ -426,9 +438,9 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
     _heartbeatMonitor?.cancel();
     _heartbeatMonitor = null;
     if (forceKill) _isolate?.kill(priority: Isolate.immediate);
-    for (final id in _pending.keys.toList(growable: false)) {
+    for (final correlationId in _pending.keys.toList(growable: false)) {
       _completeRequestError(
-        id,
+        correlationId,
         const IsolateUnexpectedExitException('Worker supervisor closed.'),
         StackTrace.current,
       );
@@ -441,6 +453,7 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
     _exit.close();
     _commands = null;
     _isolate = null;
+    _activePublicRequestIds.clear();
   }
 
   @override
@@ -448,6 +461,12 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
 }
 
 final class _PendingRequest<R, F extends Object> {
+  _PendingRequest(this.requestId) {
+    accepted.future.ignore();
+    result.future.ignore();
+  }
+
+  final String requestId;
   final Completer<void> accepted = Completer<void>();
   final Completer<Result<R, F>> result = Completer<Result<R, F>>();
   Timer? deadline;
@@ -471,7 +490,7 @@ final class _WorkerBootstrap<P, R, F extends Object> {
 
 void _workerMain<P, R, F extends Object>(_WorkerBootstrap<P, R, F> bootstrap) {
   final commands = ReceivePort();
-  final active = <String, CancellationSource>{};
+  final active = <int, CancellationSource>{};
   final work = <Future<void>>{};
   var closing = false;
   final heartbeat = Timer.periodic(
@@ -483,13 +502,13 @@ void _workerMain<P, R, F extends Object>(_WorkerBootstrap<P, R, F> bootstrap) {
   );
 
   Future<void> runRequest(Map<Object?, Object?> message) async {
-    final id = message['requestId']! as String;
+    final correlationId = message['correlationId']! as int;
     final cancellation = CancellationSource();
-    active[id] = cancellation;
+    active[correlationId] = cancellation;
     bootstrap.supervisor.send(<String, Object?>{
       'kind': 'accepted',
       'generation': bootstrap.generation,
-      'requestId': id,
+      'correlationId': correlationId,
     });
     try {
       final result = await bootstrap.handler(
@@ -502,7 +521,7 @@ void _workerMain<P, R, F extends Object>(_WorkerBootstrap<P, R, F> bootstrap) {
           bootstrap.supervisor.send(<String, Object?>{
             'kind': 'result',
             'generation': bootstrap.generation,
-            'requestId': id,
+            'correlationId': correlationId,
             'success': true,
             'value': value,
           });
@@ -510,7 +529,7 @@ void _workerMain<P, R, F extends Object>(_WorkerBootstrap<P, R, F> bootstrap) {
           bootstrap.supervisor.send(<String, Object?>{
             'kind': 'result',
             'generation': bootstrap.generation,
-            'requestId': id,
+            'correlationId': correlationId,
             'success': false,
             'failure': failure,
             'stack': stackTrace.toString(),
@@ -520,13 +539,13 @@ void _workerMain<P, R, F extends Object>(_WorkerBootstrap<P, R, F> bootstrap) {
       bootstrap.supervisor.send(<String, Object?>{
         'kind': 'crash',
         'generation': bootstrap.generation,
-        'requestId': id,
+        'correlationId': correlationId,
         'errorType': error.runtimeType.toString(),
         'stack': stackTrace.toString(),
       });
     } finally {
       cancellation.dispose();
-      active.remove(id);
+      active.remove(correlationId);
     }
   }
 
@@ -539,7 +558,7 @@ void _workerMain<P, R, F extends Object>(_WorkerBootstrap<P, R, F> bootstrap) {
       case 'request':
         if (closing ||
             raw['protocolVersion'] != bootstrap.protocolVersion ||
-            raw['requestId'] is! String) {
+            raw['correlationId'] is! int) {
           return;
         }
         late final Future<void> requestWork;
@@ -547,7 +566,7 @@ void _workerMain<P, R, F extends Object>(_WorkerBootstrap<P, R, F> bootstrap) {
             .whenComplete(() => work.remove(requestWork));
         work.add(requestWork);
       case 'cancel':
-        active[raw['requestId']]?.cancel('Request cancelled by supervisor');
+        active[raw['correlationId']]?.cancel('Request cancelled by supervisor');
       case 'stop':
         if (closing) return;
         closing = true;

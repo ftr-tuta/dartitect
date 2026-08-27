@@ -47,7 +47,10 @@ Conclusão tardia de generation cancelada, superseded, concorrente mais antiga
 ou disposed não publica state nem notifica listeners. `reset()` limpa terminal
 retido somente com command totalmente idle. Disposal é idempotente: fecha
 admissão, rejeita fila como disposed, pede cancelamento, drena actions running,
-limpa mappings de futures Flutter e não notifica após disposal.
+limpa mappings de futures Flutter e não notifica após disposal. Todo callback
+de transição observa uma entrada de scheduler completamente inicializada; é
+suportado cancelar ou descartar a lane normal ou keyed dentro desse callback,
+com drenagem sem falha de inicialização tardia.
 
 ## Matriz de recursos reativos 1.0
 
@@ -97,7 +100,12 @@ Use `EffectChannel<E>` owned somente para reações transitórias de UI tipadas 
 imutáveis. Sua capacity positiva é bounded; overflow e emit após disposal
 retornam resultados explícitos. Um consumidor lógico recebe cada efeito aceito
 uma vez em FIFO. `EffectListener` toma o channel borrowed e chama o callback com
-seu contexto montado atual; channel e ViewModel nunca retêm `BuildContext`.
+seu contexto montado atual somente após attach post-frame. A entrega espera com
+`TickerMode` desabilitado ou rota não atual e retoma no máximo uma vez se o mesmo
+binding ainda estiver mounted. Detach, troca de channel ou disposal do channel
+descarta uma entrega Flutter já admitida mas ainda não invocada. Channel e
+ViewModel nunca retêm `BuildContext`; `listen` headless mantém a policy imediata
+definida pelo consumidor.
 
 Verdade de autenticação/sessão não é efeito. Dirija o shell pelo
 `SessionStateController<S>` replayable, remova rotas autenticadas em

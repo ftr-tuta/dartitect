@@ -38,7 +38,7 @@ create a short-lived branch from `origin/main` using `feat/`, `fix/`, `ci/`,
 authored as `ftr <ftr@tuta.com>`.
 
 Do not bypass branch protections. Preserve unrelated local work, keep the
-branch focused, and fix failed checks on that same branch.
+branch focused, and fix a failed `CI / Required` result on that same branch.
 
 ## Change requirements
 
@@ -66,9 +66,9 @@ branch focused, and fix failed checks on that same branch.
 ## Pull requests
 
 Explain the outcome, tests, platform impact, compatibility risk, and any
-remaining external validation. Complete every applicable item in the PR
-template and run checks proportional to the change before pushing. Required CI
-and Security checks must pass against the merge candidate; authorship auditing
+remaining GitHub-hosted validation. Complete every applicable item in the PR
+template and run checks proportional to the change before pushing. The required
+`CI / Required` check must pass against the merge candidate; authorship auditing
 uses the PR head because GitHub creates a synthetic merge commit.
 
 Use squash merge only, with the PR title as the final Conventional Commit title.

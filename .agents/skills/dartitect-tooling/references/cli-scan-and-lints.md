@@ -9,4 +9,9 @@ Scan only declared roots using real path segments; ignore nested caches and
 generated code. A baseline fingerprints code, path, and evidence without line
 number. New findings fail, obsolete entries warn, and local suppressions require
 a reason. Keep CLI and official analyzer-plugin diagnostics semantically aligned
-while respecting their different hosts and entrypoints.
+through the versioned true/false-positive corpus while respecting their
+different hosts and entrypoints. Prefer element/library identity when resolved.
+Sensitive metadata needs a recognized telemetry sink. Generated fallback needs
+both a reviewed header and configured suffix. Invalid analyzer config is an
+explicit diagnostic, never a silent strict-default outcome. Enforce scanner and
+analyzer performance budgets with stable machine-readable schemas.

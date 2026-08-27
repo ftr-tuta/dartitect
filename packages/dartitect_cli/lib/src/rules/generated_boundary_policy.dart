@@ -81,6 +81,14 @@ abstract final class DartitectArchitectureRules {
     '**/infrastructure/**/*.g.dart',
   ];
 
+  /// Reviewed suffixes recognized only with a standard generated-code header.
+  static const List<String> defaultGeneratedSuffixes = <String>[
+    '.g.dart',
+    '.freezed.dart',
+    '.gr.dart',
+    '.router.dart',
+  ];
+
   /// Architecture/state frameworks excluded by the native-first profile.
   static const Set<String> forbiddenPackages = <String>{
     'flutter_riverpod',
@@ -180,6 +188,8 @@ final class DartitectBoundaryClassifier {
     required this.layers,
     required this.compositionRoots,
     required this.generatedInfrastructure,
+    this.generatedSuffixes =
+        DartitectArchitectureRules.defaultGeneratedSuffixes,
   });
 
   /// Creates the native MVVM default classifier.
@@ -188,6 +198,7 @@ final class DartitectBoundaryClassifier {
     compositionRoots: DartitectArchitectureRules.defaultCompositionRoots,
     generatedInfrastructure:
         DartitectArchitectureRules.defaultGeneratedInfrastructure,
+    generatedSuffixes: DartitectArchitectureRules.defaultGeneratedSuffixes,
   );
 
   /// Configured layer and composition-root globs.
@@ -199,8 +210,11 @@ final class DartitectBoundaryClassifier {
   /// Configured generated-infrastructure globs.
   final List<String> generatedInfrastructure;
 
+  /// Generated source suffixes accepted together with a reviewed header.
+  final List<String> generatedSuffixes;
+
   /// Classifies a POSIX or platform path.
-  DartitectSourceClassification classify(String path) {
+  DartitectSourceClassification classify(String path, {String? source}) {
     final normalized = path.replaceAll('\\', '/');
     final matchedLayers = <String>{
       for (final entry in layers.entries)
@@ -212,11 +226,25 @@ final class DartitectBoundaryClassifier {
       isCompositionRoot: compositionRoots.any(
         (glob) => dartitectGlobMatches(glob, normalized),
       ),
-      isGeneratedInfrastructure: generatedInfrastructure.any(
-        (glob) => dartitectGlobMatches(glob, normalized),
-      ),
+      isGeneratedInfrastructure:
+          generatedInfrastructure.any(
+            (glob) => dartitectGlobMatches(glob, normalized),
+          ) ||
+          source != null &&
+              generatedSuffixes.any(normalized.endsWith) &&
+              dartitectHasGeneratedHeader(source),
     );
   }
+}
+
+/// Whether the first eight lines contain a reviewed generated-code header.
+bool dartitectHasGeneratedHeader(String source) {
+  final lines = source.split(RegExp(r'\r?\n')).take(8);
+  final header = RegExp(
+    r'^\s*//\s*GENERATED CODE\s*-\s*DO NOT (?:MODIFY|EDIT) BY HAND\.?\s*$',
+    caseSensitive: false,
+  );
+  return lines.any(header.hasMatch);
 }
 
 /// Matches a normalized path against `*`, `?`, and recursive `**` globs.

@@ -176,6 +176,7 @@ final class ProjectScanner {
             layers: config.layers,
             compositionRoots: config.compositionRoots,
             generatedInfrastructure: config.generatedInfrastructure,
+            generatedSuffixes: config.generatedSuffixes,
           );
     final rootPolicy = _BoundaryPolicy(
       rootPath: root.path,
@@ -229,7 +230,10 @@ final class ProjectScanner {
             parsed.lineInfo.getLocation(offset).lineNumber,
         path: relativePath,
         packageName: owner.packageName,
-        classification: owner.policy.classifier.classify(policyPath),
+        classification: owner.policy.classifier.classify(
+          policyPath,
+          source: source,
+        ),
         nativeStrict: sourceConfig?.profile == nativeStrictProfile,
         isSuppressed: (code, line) {
           final inline = <String>{
@@ -305,6 +309,23 @@ final class ProjectScanner {
         ) ||
         fileName.endsWith('_repository.dart') ||
         fileName.endsWith('_service.dart');
+    final declaredTypes = <String>{
+      for (final declaration in unit.declarations)
+        if (declaration is ClassDeclaration)
+          declaration.namePart.typeName.lexeme
+        else if (declaration is EnumDeclaration)
+          declaration.namePart.typeName.lexeme
+        else if (declaration is MixinDeclaration)
+          declaration.name.lexeme
+        else if (declaration is ExtensionTypeDeclaration)
+          declaration.namePart.typeName.lexeme
+        else if (declaration is GenericTypeAlias)
+          declaration.name.lexeme,
+    };
+    final topLevelFunctions = <String>{
+      for (final declaration in unit.declarations)
+        if (declaration is FunctionDeclaration) declaration.name.lexeme,
+    };
 
     final visitor = _SemanticBoundaryVisitor(
       path: path,
@@ -313,6 +334,8 @@ final class ProjectScanner {
       nativeStrict: nativeStrict,
       isViewModel: isViewModel,
       isRepositoryOrService: isRepositoryOrService,
+      declaredTypes: declaredTypes,
+      topLevelFunctions: topLevelFunctions,
       lineNumberAt: lineNumberAt,
       isSuppressed: isSuppressed,
       addViolation: violations.add,
@@ -436,6 +459,7 @@ final class ProjectScanner {
                 layers: parsed.layers,
                 compositionRoots: parsed.compositionRoots,
                 generatedInfrastructure: parsed.generatedInfrastructure,
+                generatedSuffixes: parsed.generatedSuffixes,
               ),
             );
           } on DartitectConfigException catch (error) {
@@ -660,6 +684,8 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
     required this.nativeStrict,
     required this.isViewModel,
     required this.isRepositoryOrService,
+    required this.declaredTypes,
+    required this.topLevelFunctions,
     required this.lineNumberAt,
     required this.isSuppressed,
     required this.addViolation,
@@ -672,6 +698,8 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
   final bool nativeStrict;
   final bool isViewModel;
   final bool isRepositoryOrService;
+  final Set<String> declaredTypes;
+  final Set<String> topLevelFunctions;
   final int Function(int offset) lineNumberAt;
   final bool Function(String code, int line) isSuppressed;
   final void Function(DartitectFinding finding) addViolation;
@@ -714,6 +742,10 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
   void visitNamedType(NamedType node) {
     if (classification.isGeneratedInfrastructure) return;
     final name = node.name.lexeme;
+    if (declaredTypes.contains(name)) {
+      super.visitNamedType(node);
+      return;
+    }
     if (name == 'CompositionRoot' || name == 'ResourceOwner') {
       hasComposition = true;
     }
@@ -838,7 +870,9 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
           'getByType',
           'lookupByType',
         }.contains(method);
-    if (nativeStrict && (locatorTarget && locatorCall || topLevelLocatorCall)) {
+    if (nativeStrict &&
+        !topLevelFunctions.contains(method) &&
+        (locatorTarget && locatorCall || topLevelLocatorCall)) {
       _report(
         DartitectRuleCodes.serviceLocator,
         'Service locator and lookup-by-type access are forbidden.',

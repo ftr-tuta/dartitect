@@ -21,7 +21,7 @@ final class FileGenerationOperation {
     required this.content,
     this.ownership = GeneratedOwnership.generatedOnce,
     this.sourcePath,
-    this.generatorVersion = '1.0.0-rc.2',
+    this.generatorVersion = '1.0.0-rc.3',
     this.inputSchemaVersion = 1,
     this.inputSignature,
   });

@@ -1,0 +1,36 @@
+= ADR-0035: Optional slices require independent evidence
+
+Status:: ACCEPTED
+
+Context:: Goal 08 lists five possible capabilities but explicitly defines the
+list as a gated backlog, not sequential implementation authority. Each slice
+needs its own ADR, real application consumer, benchmark, and package-boundary
+review. Adding speculative APIs would contradict Native Strict scope and make
+the candidate carry unproven ownership, lifecycle, persistence, or tooling
+contracts.
+
+Decision:: All five slices are `DEFERRED`: explicit lazy computed memoization,
+typed command progress, versioned UI restoration, bounded local undo/redo, and
+a read-only DevTools diagnostics extension. `optional_slice_gate.json` is the
+machine-readable classification and `check_optional_slices.dart` requires all
+four evidence fields to remain missing while a slice is deferred.
+
+Evidence audit:: Existing computed nodes already use explicit dependencies but
+do not prove a separate lazy lifecycle. Commands expose accepted and terminal
+`executionId` values but there is no bounded progress consumer. No consumer
+storage/restoration schema or reversible local-only history use exists. The
+diagnostics v1 protocol exists, but its construction APIs remain experimental
+and no DevTools consumer, performance workload, SDK integration, or package
+review exists.
+
+Restrictions:: A future lazy computed cannot add implicit dynamic dependency
+tracking. Progress cannot become an event bus. Restoration cannot replace a
+repository or database. Undo cannot claim to reverse HTTP, upload, sync,
+printing, or any external effect. A first DevTools slice must be read-only.
+Changing one slice to active requires a dedicated decision/evidence change; it
+does not authorize any sibling slice.
+
+Consequences:: These deferrals do not block stable 1.0 and add no public API,
+package, dependency, persistence format, or DevTools integration. The release
+candidate remains honest about missing evidence instead of silently presenting
+the backlog as implemented scope.

@@ -1,0 +1,425 @@
+= Dartitect hardening goal state
+:revdate: 2026-08-27
+
+NOTE: This is a historical execution journal. References to separate Security
+runs, manual receipts, or connected hardware were superseded by `CI / Required`
+and `actions-readiness-v1` on 2026-08-27.
+
+== Active checkpoint
+
+Goal:: `10 — Readiness final`
+Status:: `DONE`
+Baseline:: `eb2693fa92ccf30546568ade6133c253776d5cab` on fetched `origin/main`
+Branch:: `feat/technical-hardening-plan`
+Last gate:: The complete aggregate matrix passed with native ObjectBox; all
+seven generated-project scenarios passed tests plus web/Linux builds; Dartdoc
+passed for all sixteen packages without warnings. Clean publish dry-runs are
+deliberately delegated to the exact-commit clean-clone receipt.
+Files in edit:: Cumulative Goals 00–10 implementation, RC.3 lockstep cohort,
+readiness contract, evidence ledger, release docs, and generated artifacts
+Findings:: `DRT-P0-001` through `DRT-P0-010` and `DRT-P1-001` are `FIXED`
+Decisions:: Fleet versions/check/policy are confined read-only operations;
+policy is local and doubly pinned. Fleet upgrade has CLI preview only; typed
+application remains stale-checked, locked, journaled, and recoverable. CLI stays
+separately activated, and four validation cohorts retain one publication
+version. Reproduction-pending benchmarks are internal-only.
+Next step:: Commit the exact RC.3 candidate, reproduce clean-clone/canary/
+benchmark receipts outside the source tree, then retain the `NOT READY`
+recommendation until same-SHA CI, Security, and required physical/native
+receipts are supplied by authorized infrastructure and humans
+
+== Resume protocol
+
+. Run `git status --short --branch` and confirm all diffs are accounted for.
+. Read `docs/work/technical-hardening-ledger.adoc` and this checkpoint.
+. Re-run the last focused or aggregate gate affected by any intervening change.
+. Update every finding transition with the exact test and contract evidence.
+
+== Goal 00 handoff
+
+STATUS:: DONE
+GOAL:: 00 — Baseline and ledger
+BASELINE:: `eb2693fa92ccf30546568ade6133c253776d5cab`
+FINAL SHA:: Not committed; documentation working tree only
+FILES:: `docs/work/technical-hardening-ledger.adoc`,
+`docs/work/goal-state.adoc`
+TESTS ADDED:: None; Goal 00 does not alter runtime
+COMMANDS:: `dart format --output=none --set-exit-if-changed .`; `dart analyze`;
+`dart run tool/verify.dart --skip-get --native-objectbox`
+RESULTS:: All baseline gates passed
+PRE-EXISTING FAILURES:: No gate failure. Four intentional analyzer-fixture
+diagnostics; one native test skipped in the ordinary pass and passed in the
+native ObjectBox pass; repository release state already fail-closed
+FINDINGS STATUS:: All selected findings `UNREPRODUCED`
+API CHANGES:: None
+DOC CHANGES:: Reproducible baseline, dependency/ownership map, ledger, and
+checkpoint
+ADRS/DECISIONS:: Active baseline is fetched RC.2 `origin/main`, not the plan's
+historical RC.1 reference
+REMAINING RISKS:: All selected findings still require finding-specific
+reproduction; physical/multi-host release evidence is external to this Linux
+workspace
+NEXT UNBLOCKED GOAL:: 01 — Direction, documentation, and ecosystem policy
+
+== Goal 01 handoff
+
+STATUS:: DONE
+GOAL:: 01 — Direction, documentation, and ecosystem policy
+BASELINE:: `eb2693fa92ccf30546568ade6133c253776d5cab`
+FINAL SHA:: Not committed; cumulative working tree
+FILES:: Public EN/pt-BR docs, ADR 0028, managed skill catalog/snapshots, ecosystem
+policy schema v3, CLI project service, lints policy snapshot, MCP tool/catalog,
+and focused tests
+TESTS ADDED:: Policy dimensions/listen status; conformance service; MCP
+conformance surface; lint approved-primitive parity
+COMMANDS:: Focused `dart test` for CLI/lints/MCP; `check_ecosystem_policy.dart`;
+`check_skill_coverage.dart`; `check_public_docs.dart`; MCP catalog generation and
+check; API snapshot check; `dart analyze`
+RESULTS:: All passed
+PRE-EXISTING FAILURES:: None in focused gates
+FINDINGS STATUS:: Runtime findings remain `UNREPRODUCED`; Goal 01 has no DRT ID
+API CHANGES:: `planAdoption()` replaced by `auditConformance()`;
+`dartitect_plan_adoption` replaced by `dartitect_audit_conformance`;
+`EcosystemDecision.approvedPrimitive` and policy dimensions added
+DOC CHANGES:: Greenfield-only contract, Native Strict matrix, conformance audit,
+`package:listen` deferral, reactive guide rename, EN/pt-BR and MCP parity
+ADRS/DECISIONS:: ADR 0028 accepted in-tree
+REMAINING RISKS:: RC candidate API compatibility needs final Goal 10 review;
+runtime findings remain to reproduce
+NEXT UNBLOCKED GOAL:: 02 — Lifecycle replacement and CommandLane hardening
+
+== Goal 02 handoff
+
+STATUS:: DONE
+GOAL:: 02 — Lifecycle replacement and CommandLane hardening
+BASELINE:: `eb2693fa92ccf30546568ade6133c253776d5cab`
+FINAL SHA:: Not committed; cumulative working tree
+FILES:: Core owned-graph and command-lane implementations, focused/race tests,
+public API snapshot, package changelog/READMEs, lifecycle/command guides, ADR
+0019, MCP catalog, and work ledger
+TESTS ADDED:: Minimal old-cleanup ambiguity; unkeyed/keyed first-transition
+dispose; all-policy reentrant cancel/dispose race matrix
+COMMANDS:: Focused `dart test`; API snapshot update/check; public-doc and MCP
+catalog checks; `dart analyze packages/dartitect`
+RESULTS:: 21 tests and every focused gate passed
+PRE-EXISTING FAILURES:: The two finding-specific tests were intentionally RED
+before production edits: generic post-publication cleanup error and uninitialized
+command-entry work future
+FINDINGS STATUS:: `DRT-P0-001 FIXED`; `DRT-P0-002 FIXED`
+API CHANGES:: Added `OwnedRuntimeReplacementCleanupException` with authoritative
+generation, cleanup error, and cleanup stack
+DOC CHANGES:: Documented no-blind-retry replacement semantics and supported
+transition-callback reentrancy in EN/pt-BR/AsciiDoc surfaces
+ADRS/DECISIONS:: ADR 0019 now distinguishes committed publication from old-graph
+cleanup
+REMAINING RISKS:: Other selected runtime/tooling findings remain unreproduced;
+formal same-SHA/native release evidence remains external
+NEXT UNBLOCKED GOAL:: 03 — Reactive transactions, listener isolation, and
+definition identity
+
+== Goal 03 handoff
+
+STATUS:: DONE
+GOAL:: 03 — ReactiveOwner atomicity and definition lifecycle
+BASELINE:: `eb2693fa92ccf30546568ade6133c253776d5cab`
+FINAL SHA:: Not committed; cumulative working tree
+FILES:: ReactiveOwner, ViewModelHost, reactive/host tests and benchmarks,
+Flutter changelog/READMEs, reactive guides, ADRs 0016/0029, API snapshot, MCP
+catalog, and work ledger
+TESTS ADDED:: Write/equality during compute; listener/reporter failure;
+phase/dispose matrix; namespaced/owner-local/conflicting definitions; compatible
+and incompatible reassembly; attempted cycle
+COMMANDS:: Focused and complete Flutter tests; package/root analysis; API
+snapshot update/check; public-doc and MCP catalog checks
+RESULTS:: 25 focused tests and 105 full-package tests passed; all other listed
+gates passed
+PRE-EXISTING FAILURES:: The three finding-specific tests were intentionally RED:
+implicit nested compute flush, post-commit listener throw, and obsolete closure
+reuse
+FINDINGS STATUS:: `DRT-P0-003 FIXED`; `DRT-P0-004 FIXED`; `DRT-P1-001 FIXED`
+API CHANGES:: Added `ReactiveOwnerPhase`; made `ReactiveKey` namespace/revision/
+fingerprint explicit; expanded key conflicts; added `ViewModelHost.onReassemble`
+and `ViewModelReassembler`. The key constructor change is intentionally source
+breaking before 1.0 and is recorded in ADR 0029/changelog.
+DOC CHANGES:: EN/pt-BR phase, listener outcome, definition, hot reload/restart,
+package, skill-aligned runtime, and API documentation
+ADRS/DECISIONS:: ADR 0029 rejects implicit compute writes and defines owner-local
+definition/reassembly semantics; ADR 0016 links the refinement
+REMAINING RISKS:: Goals 04–06 findings remain unreproduced; all candidate-wide
+and external native/same-SHA evidence remains pending
+NEXT UNBLOCKED GOAL:: 04 — IsolateWorker and EffectListener
+
+== Goal 04 handoff
+
+STATUS:: DONE
+GOAL:: 04 — IsolateWorker and EffectListener
+BASELINE:: `eb2693fa92ccf30546568ade6133c253776d5cab`
+FINAL SHA:: Not committed; cumulative working tree
+FILES:: Isolate worker/protocol tests and package docs; effect channel/listener
+and widget tests; ADRs 0030/0031; lifecycle/effect guides; changelogs; MCP
+catalog; work ledger
+TESTS ADDED:: Deterministic late-result/public-ID reuse; unobserved ACK sibling;
+non-cooperative bounded stop; first-frame, offstage, non-current-route, swap and
+dispose effect delivery
+COMMANDS:: Focused and complete isolate/Flutter tests; root/package analysis;
+API snapshot, public-doc, and MCP catalog checks
+RESULTS:: 7 isolate-real tests, 109 Flutter tests, and all listed gates passed
+PRE-EXISTING FAILURES:: Finding tests were intentionally RED: stale request
+returned value 1 instead of 2; one ACK error was unobserved; effect timeline ran
+before frame
+FINDINGS STATUS:: `DRT-P0-005 FIXED`; `DRT-P0-006 FIXED`
+API CHANGES:: Worker protocol constant advanced from 1 to 2; no new public
+effect API. Version 1 peers are intentionally incompatible and documented.
+DOC CHANGES:: Typed/versioned isolate DTO and copy-cost contract; post-frame,
+active-route, headless, detach/discard effect contracts in EN/pt-BR/AsciiDoc
+ADRS/DECISIONS:: ADR 0030 chooses internal nonce correlation; ADR 0031 chooses
+post-frame Flutter delivery while leaving headless policy independent
+REMAINING RISKS:: Sync and tooling findings remain unreproduced; full candidate
+and external native/same-SHA evidence remain pending
+NEXT UNBLOCKED GOAL:: 05 — Sync authority and terminal receipts
+
+== Goal 05 handoff
+
+STATUS:: DONE
+GOAL:: 05 — Sync authority and terminal receipts
+BASELINE:: `eb2693fa92ccf30546568ade6133c253776d5cab`
+FINAL SHA:: Not committed; cumulative working tree
+FILES:: Sync engine/models/ports and tests; package changelog/READMEs; sync
+recipes and threat models; ADRs 0022/0023/0032; API snapshot; MCP catalog;
+managed offline-first/testing skills; work ledger
+TESTS ADDED:: Expired authority before consumer commit; transactional stale
+fencing token; unexpected application/checkpoint/journal/release/cleanup fault
+receipts and typed terminal cause/stack
+COMMANDS:: Focused and complete sync tests; root/package analysis; API snapshot
+update/check; public-doc, MCP catalog, and managed-skill coverage checks
+RESULTS:: 27 complete package tests and every listed gate passed
+PRE-EXISTING FAILURES:: Finding tests were intentionally RED: application
+continued after lease expiry; journal and release failures escaped as raw
+`StateError`s after application/checkpoint
+FINDINGS STATUS:: `DRT-P0-007 FIXED`; `DRT-P0-008 FIXED`
+API CHANGES:: Added `SyncAuthority`, `SyncRunCleanup`, boundary receipt/status
+types, `SyncDatasetStatus.incomplete`, dataset application/checkpoint receipts,
+run journal/release/cleanup receipts, and `SyncRunTerminalException`. These are
+intentional pre-1.0 source/behavior refinements.
+DOC CHANGES:: EN/pt-BR authority, atomic consumer commit, terminal outcome,
+cleanup, persistence-compatibility, and recovery contracts
+ADRS/DECISIONS:: ADR 0032 requires consumer-owned atomic fencing and preserves
+independent terminal receipts; persisted journal format v1 is unchanged
+REMAINING RISKS:: CLI/lint findings remain unreproduced; candidate-wide,
+cross-process interruption, performance, and external native/same-SHA evidence
+remain pending
+NEXT UNBLOCKED GOAL:: 06 — Transactional CLI and precise lints
+
+== Goal 06 handoff
+
+STATUS:: DONE
+GOAL:: 06 — Transactional CLI and precise lints
+BASELINE:: `eb2693fa92ccf30546568ade6133c253776d5cab`
+FINAL SHA:: Not committed; cumulative working tree
+FILES:: Project service/CLI/MCP lock boundary; config/scanner/lint policy;
+generated policy source/copies; process helpers; analyzer fixture and parity
+corpus/checker; CI verify; changelogs/READMEs/config/MCP docs; ADRs 0012/0033;
+API snapshot; managed tooling skill; work ledger
+TESTS ADDED:: SHA-256 semantic manifest; irrelevant/relevant inputs;
+in-process/two-process application; killed lock holder; stable plan/receipt JSON;
+generated headers/default/custom suffixes; invalid config; local identity and
+telemetry context; five-case scanner/plugin parity and performance budgets
+COMMANDS:: Complete CLI/lints/MCP suites; live analyzer fixture/corpus; root
+analysis; pure-Dart hardening; API snapshot; docs/MCP/generated-policy/skills
+checks; repository formatting
+RESULTS:: 71 CLI, 9 lints, 17 MCP tests passed; parity 5 cases, scanner 177 ms,
+analyzer 3413 ms; every listed gate passed
+PRE-EXISTING FAILURES:: Finding tests were intentionally RED: token
+`96e1523b`; irrelevant asset was stale; concurrent apply returned no receipt;
+Freezed/custom suffixes were not generated; local Store/getIt/config map were
+false positives
+FINDINGS STATUS:: `DRT-P0-009 FIXED`; `DRT-P0-010 FIXED`
+API CHANGES:: Added semantic input/manifest types and required plan manifest;
+plan/receipt JSON schema fields; additive config-v1 `generatedSuffixes`;
+`change_locked` replaces MCP-only `filesystem_locked`. These are intentional
+pre-1.0 source/behavior refinements.
+DOC CHANGES:: EN/pt-BR semantic plan/lock, identity, telemetry, generated,
+invalid-config, parity, performance, and MCP recovery contracts
+ADRS/DECISIONS:: ADR 0033 makes the service lock authoritative for CLI/MCP and
+the parity corpus authoritative for shared scanner/plugin outcomes
+REMAINING RISKS:: Async resource/diagnostics experiments, optional-slice gate,
+SARIF/fleet/canaries, candidate-wide evidence, and external native/same-SHA
+evidence remain pending
+NEXT UNBLOCKED GOAL:: 07 — Async derived resources and diagnostics
+
+== Goal 07 handoff
+
+STATUS:: DONE
+GOAL:: 07 — Async derived resources and diagnostics
+BASELINE:: `eb2693fa92ccf30546568ade6133c253776d5cab`
+FINAL SHA:: Not committed; cumulative working tree
+FILES:: Core diagnostics protocol and tests; Flutter restart-latest/live-resource
+integration and derived resource tests; testing topology harness; debug/profile
+benchmark gate; EN/pt-BR guides and package docs; ADR 0034; API/SDK/MCP/skills;
+runtime hardening contract; work ledger
+TESTS ADDED:: Exact protocol schema/privacy/off/bounds/failure isolation; all
+eight fixed subject categories and topology ordering; non-cooperative old
+dependency generation; activation-local listeners; stale/dedup/failure/crash;
+existing-family key/eviction; payload-free resource diagnostics
+COMMANDS:: Complete `dartitect`, `dartitect_testing`, and `dartitect_flutter`
+suites; focused analysis; debug/profile diagnostics benchmark; root format and
+analysis; runtime/pure-Dart hardening; topology; API/SDK snapshot; docs/MCP and
+managed-skill checks
+RESULTS:: 67 core, 24 testing, and 123 Flutter tests passed. Five-sample median
+diagnostic topology cost was 22 ns/event debug and 21 ns/event profile on this
+host, inside the 50,000 ns budget; the 256-event buffer retained zero events
+after disposal. All listed contract gates passed.
+PRE-EXISTING FAILURES:: The full cross-package gate exposed two prior-goal
+contract drifts: the testing harness still expected raw sync `StateError`, and
+the runtime hardening gate still pinned isolate protocol v1 after Goal 04 moved
+the implementation to v2. Both contracts were corrected and revalidated.
+FINDINGS STATUS:: No separate DRT finding is assigned to Goal 07; all selected
+DRT findings remain `FIXED`.
+API CHANGES:: Added experimental diagnostics protocol v1 types/emitter/reporter/
+buffer and topology harness; added experimental derived async read/resource,
+restart-latest backpressure, stale policies, equality deduplication, and optional
+resource diagnostic subject. No package or public entrypoint was added.
+DOC CHANGES:: Documented explicit dependency/cancellation/generation, stale and
+family ownership, exact payload-free protocol, privacy, overhead, no-global-hook
+rule, experimental status, and discard criteria in EN/pt-BR and managed skills.
+ADRS/DECISIONS:: ADR 0034 reuses one authoritative resource/family lifecycle,
+freezes protocol schema 1, and requires real use plus review before promotion.
+REMAINING RISKS:: The new construction APIs deliberately remain experimental
+because no real application adoption is recorded. Every Goal 08 optional slice
+lacks its own full evidence gate and must remain deferred. Candidate-wide and
+external same-SHA/native evidence remain pending Goals 09–10.
+NEXT UNBLOCKED GOAL:: 08 — Classify optional slices independently
+
+== Goal 08 handoff
+
+STATUS:: DONE
+GOAL:: 08 — Optional capability slices
+BASELINE:: `eb2693fa92ccf30546568ade6133c253776d5cab`
+FINAL SHA:: Not committed; cumulative working tree
+FILES:: `tool/optional_slice_gate.json`,
+`tool/check_optional_slices.dart`, `tool/verify.dart`, ADR 0035, goal state, and
+ledger
+TESTS ADDED:: Machine validation of the exact five slice IDs, four required
+evidence dimensions, deferred status, explicit reasons, no `dartitect_state`,
+and absence of reserved public API markers
+COMMANDS:: Repository search for existing use/evidence; `dart run
+tool/check_optional_slices.dart`; focused analysis and formatting
+RESULTS:: All five slices remain `DEFERRED`; checker passed; no runtime, public
+API, dependency, package, persisted schema, or DevTools integration was added.
+PRE-EXISTING FAILURES:: None.
+FINDINGS STATUS:: No DRT finding is assigned to Goal 08; selected findings
+remain `FIXED`.
+API CHANGES:: None.
+DOC CHANGES:: ADR 0035 records the independent evidence gate, exact deferral
+reasons, restrictions, and non-blocking release status.
+ADRS/DECISIONS:: A slice requires its own ADR, real application consumer,
+benchmark, and package-boundary review. Evidence for one slice cannot authorize
+another.
+REMAINING RISKS:: The five capabilities are intentionally unavailable. This is
+an explicit plan-compliant deferral, not hidden implementation debt or a 1.0
+blocker.
+NEXT UNBLOCKED GOAL:: 09 — SARIF, fleet, canaries, and release cohorts
+
+== Goal 09 handoff
+
+STATUS:: DONE
+GOAL:: 09 — SARIF, fleet, canaries, and release cohorts
+BASELINE:: `eb2693fa92ccf30546568ade6133c253776d5cab`
+FINAL SHA:: Not committed; cumulative working tree. Dirty canary evidence is
+development evidence and deliberately not exact-candidate release evidence.
+FILES:: CLI SARIF/fleet/project service and tests; local policy bundle; packaged
+canary contract/runner/minimal hardening test; competitive/diagnostics/lifecycle
+benchmark gates; fleet EN/pt-BR guide; ADRs 0036/0037; API/SDK/MCP artifacts;
+Goal 09 checker and verifier
+TESTS ADDED:: SARIF schema/path/redaction; fleet sorting/root/symlink/digest and
+preview-only CLI; dependency upgrade stale/structured/recovery/CR-safe commit;
+packaged non-cooperative cancellation, 8 MiB assets, multipackage roots; exact
+nine-lane canary and four-area benchmark contracts
+COMMANDS:: Complete `dartitect_cli` suite; focused Flutter hardening canary;
+`flutter analyze`; repository format; Goal 09/docs/API/SDK/MCP checkers;
+debug/profile diagnostics and lifecycle churn; `check_canaries.dart
+--allow-dirty` with hosted package repository and Linux desktop build
+RESULTS:: 81 CLI tests and 2 direct hardening canary tests passed. Three
+isolated hosted consumers passed model codegen, architecture analysis, Flutter
+tests, session/outbox/sync, native ObjectBox, Linux build, and native-capability
+tests. Diagnostics medians were 23/24 ns/event; lifecycle create/dispose medians
+were about 10 microseconds, all within budgets and with zero residual census.
+PRE-EXISTING FAILURES:: The first dirty canary attempt exposed that
+`--allow-dirty` still archived exact `HEAD`, excluding new entrypoints. The
+development mode now creates deterministic ephemeral package commits from the
+working tree and marks receipts `working-tree-development`; clean release mode
+still requires and archives the exact SHA. The rerun passed.
+FINDINGS STATUS:: No separate DRT finding is assigned to Goal 09; all selected
+DRT findings remain `FIXED`.
+API CHANGES:: Added `DartitectSarifReport`, `DartitectFleetReport`,
+`DartitectFleetService`, `DartitectChangeKind.dependencyUpgrade`, optional plan
+target cohort, and typed dependency-upgrade preview/application. Stable JSON is
+unchanged; SARIF is a separate output.
+DOC CHANGES:: Fleet distribution, confined roots, local pinned policy,
+preview-only upgrade, SARIF privacy, benchmark claim policy, and release cohort
+ownership in EN/pt-BR and ADRs.
+ADRS/DECISIONS:: ADR 0036 keeps CLI activation/AOT compilation separate from
+application Analyzer/build and defers shipped binaries. ADR 0037 uses runtime,
+Flutter, tooling, and adapter validation cohorts while retaining one lockstep
+publication version.
+REMAINING RISKS:: The cumulative tree has no final candidate commit, so the
+passing dirty hosted receipt cannot authorize release. Goal 10 must bind every
+artifact/canary/benchmark to one exact candidate SHA, run release and native
+evidence gates, and classify any unavailable external evidence. Human authority
+alone may publish.
+NEXT UNBLOCKED GOAL:: 10 — Final readiness and evidence bundle
+
+== Goal 10 handoff
+
+STATUS:: DONE
+GOAL:: 10 — Final readiness and evidence bundle
+BASELINE:: `eb2693fa92ccf30546568ade6133c253776d5cab`
+FINAL SHA:: The candidate commit cannot self-identify. Its exact SHA/tree and
+clean receipts are emitted under ignored `build/` paths after commit and must
+be matched by the final human handoff.
+CANDIDATE COHORT:: `1.0.0-rc.3`. The public API and isolate protocol changes
+made by this plan are intentionally not folded into the already established
+RC.2 baseline.
+FILES:: Cumulative Goals 00–10 source, tests, contracts, ADRs, public EN/pt-BR
+documentation, RC.3 changelogs/pubspecs, API/SDK/MCP and supply-chain artifacts,
+readiness contract/checker, goal state, and evidence ledger.
+TESTS ADDED:: Finding-specific red/green suites, deterministic race and
+interruption tests, parity corpus, diagnostics/topology/resource harnesses,
+fleet/SARIF/transaction tests, hosted canaries, benchmark gates, and fail-closed
+readiness validation described by the preceding handoffs.
+COMMANDS:: Complete `tool/verify.dart --skip-get --native-objectbox`; seven-case
+`generated_project_matrix.dart --builds`; all-package Dartdoc; publish dry-run
+through the exact clean-clone audit; exact packaged canaries and benchmark
+archive after candidate commit.
+RESULTS:: The continuous aggregate verifier passed, including all package and
+Flutter suites, native ObjectBox restart/workload, snapshots, contracts,
+five-sample debug/profile diagnostics and create/dispose gates, and zero
+residual censuses. Seven generated apps passed tests plus fourteen web/Linux
+builds and applicable native ObjectBox workloads. Dartdoc passed all sixteen
+packages with zero warnings/errors. Dirty publish validation rejected the
+working tree as designed; only the later clean-clone receipt is authoritative.
+PRE-EXISTING FAILURES:: The first RC.3 aggregate run exposed two mechanically
+bumped upgrade fixtures that no longer represented RC.2-to-RC.3 changes. Their
+historical inputs were restored; the complete CLI suite and continuous
+aggregate matrix then passed.
+FINDINGS STATUS:: `DRT-P0-001` through `DRT-P0-010` and `DRT-P1-001` are
+`FIXED`, each with implementation and focused/aggregate evidence in the ledger.
+No selected finding is silently deferred.
+API CHANGES:: Reviewed in `docs/release/public-api-review.adoc`; intentional
+pre-1.0 source changes include definition identity, terminal sync receipts,
+experimental diagnostics/derived-resource APIs, CLI fleet/SARIF/upgrade
+surface, and isolate wire protocol v2. Every package changelog starts at RC.3.
+DOC CHANGES:: Public API/SemVer/changelog, ownership, native, security,
+licenses/notices, benchmark-claim, optional-slice, and distribution decisions
+are current in generated and bilingual surfaces.
+ADRS/DECISIONS:: Optional Goal 08 slices remain explicitly `DEFERRED`; Goal 07
+construction APIs remain experimental under discard criteria; no benchmark
+marked reproduction-pending authorizes a public performance claim.
+RELEASE RECOMMENDATION:: `NOT READY`. Local implementation is complete, but
+formal release authority still requires unique successful same-SHA CI and
+Security receipts, physical Android 14/API 34 evidence, required iOS/native
+floor/current receipts, and human approval. No tag, GitHub Release, pub.dev
+publication, or distribution authorization was created.
+NEXT UNBLOCKED GOAL:: None in this implementation plan. Authorized humans and
+external infrastructure must supply the remaining same-SHA evidence and make
+the release decision.

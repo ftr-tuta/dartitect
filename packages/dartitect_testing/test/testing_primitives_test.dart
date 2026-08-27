@@ -270,7 +270,15 @@ void main() {
         engine,
       ).run();
 
-      expect(result.error, isA<StateError>());
+      expect(
+        result.error,
+        isA<SyncRunTerminalException<String, int, _SyncFailure>>(),
+      );
+      expect(
+        (result.error! as SyncRunTerminalException<String, int, _SyncFailure>)
+            .cause,
+        isA<StateError>(),
+      );
       expect(result.activeRunsAfterDispose, 0);
       expect(checkpoints.values, isEmpty);
       expect(leases.liveLeaseCount, 0);

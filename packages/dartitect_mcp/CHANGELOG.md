@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-rc.3
+
+- Promote the lockstep hardening candidate and refresh its reviewed local
+  catalog without package-specific public API changes.
+
 ## 1.0.0-rc.2
 
 - Promote the lockstep candidate cohort without public Dart API changes and

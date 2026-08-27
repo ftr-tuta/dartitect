@@ -24,6 +24,9 @@ extension fields without interpreting them.
 Baselines cover reviewed existing debt only. Generators stage, validate, refuse
 conflicts, and recover transactionally. Codex sync replaces only valid
 manifest-owned skills and preserves consumer-owned files/directories.
+Every reviewed project change binds only its semantic inputs in a sorted
+SHA-256 manifest. Acquire the cross-process project lock before revalidation and
+hold it through commit, rollback, or recovery.
 
 ## Workflow
 
@@ -40,5 +43,5 @@ Read [references/cli-scan-and-lints.md](references/cli-scan-and-lints.md),
 
 Test idempotency, conflicts, stale state, interrupted recovery, path/symlink
 confinement, permissions, CRLF, Unicode/spaces, unknown-key preservation, stable
-JSON/exit codes, generated-consumer behavior, and unchanged tracked files after
-verification.
+JSON/exit codes, irrelevant-asset stability, real cross-process exclusion,
+generated-consumer behavior, and unchanged tracked files after verification.

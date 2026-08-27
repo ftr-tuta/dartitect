@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 2,
+  "plan": "DARTITECT_PLANO_UNICO_DE_EVOLUCAO_CODEX",
+  "assessedOn": "2026-08-27",
+  "status": "ACTIONS_READINESS_PENDING",
+  "formalAuthority": {
+    "workflow": "CI",
+    "requiredCheck": "CI / Required",
+    "branch": "main",
+    "artifact": "actions-readiness-v1",
+    "retentionDays": 90
+  },
+  "nativeMatrix": [
+    "android-media-floor-build",
+    "android-media-current-emulator",
+    "ios-media-floor-build",
+    "ios-privacy-floor-build",
+    "ios-current-simulator"
+  ],
+  "humanRole": {
+    "technicalEvidence": false,
+    "publicationTrigger": true
+  },
+  "localValidationCanDeclareReadiness": false
+}

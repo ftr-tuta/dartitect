@@ -8,7 +8,7 @@ description: Configure, use, or extend the local Dartitect MCP server, bounded t
 ## When to use
 
 Use this skill when a local MCP client needs typed Dartitect inspection,
-diagnostics, adoption context, public guide resources, reviewed previews, or the
+diagnostics, conformance context, public guide resources, reviewed previews, or the
 server's guarded write flow.
 
 ## When not to use
@@ -28,7 +28,7 @@ come from maintained repository sources.
 
 ## Workflow
 
-Configure a trusted root, use inspect/scan/doctor/explain/adoption/resource
+Configure a trusted root, use inspect/scan/doctor/explain/conformance/resource
 reads first, then request a preview. Enable server writes only for an intended,
 reviewed local change and retain client approval.
 

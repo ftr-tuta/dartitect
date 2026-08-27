@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT EDIT BY HAND.
-// Source: tool/ecosystem_policy.json (schema 2).
+// Source: tool/ecosystem_policy.json (schema 3).
 // ignore_for_file: public_member_api_docs
 
 import 'dart:convert';
@@ -7,6 +7,7 @@ import 'dart:io';
 
 enum DartitectEcosystemDecision {
   approved,
+  approvedPrimitive,
   advisoryAlternative,
   reviewedException,
   prohibitedNativeStrict,
@@ -230,6 +231,9 @@ final _packageName = RegExp(r'^[a-z_][a-z0-9_]*$');
 const _approved = DartitectLintEcosystemRecord(
   DartitectEcosystemDecision.approved,
 );
+const _approvedPrimitive = DartitectLintEcosystemRecord(
+  DartitectEcosystemDecision.approvedPrimitive,
+);
 const _reviewed = DartitectLintEcosystemRecord(
   DartitectEcosystemDecision.reviewedException,
 );
@@ -332,6 +336,7 @@ const _records = <String, DartitectLintEcosystemRecord>{
   'json_annotation': _approved,
   'json_serializable': _approved,
   'lottie': _reviewed,
+  'listen': _approvedPrimitive,
   'mapbox_maps_flutter': _approved,
   'mobx': DartitectLintEcosystemRecord(
     DartitectEcosystemDecision.prohibitedNativeStrict,

@@ -28,7 +28,7 @@ and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/doc
 ## Install
 
 This candidate is not published on pub.dev. Declare
-`dartitect_lints: 1.0.0-rc.2` under `dev_dependencies` and use the
+`dartitect_lints: 1.0.0-rc.3` under `dev_dependencies` and use the
 [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md)
 to pin it to the protected tag.
 
@@ -61,6 +61,13 @@ architecture warning rule. Application code should not import either.
 The analyzer owns plugin lifecycle. The plugin reads source analysis only and
 does not edit the project.
 
+When resolution is available, type, annotation, locator, and telemetry rules
+use element/library identity. A local class named `Store` or `Widget` is not a
+provider/Flutter type. Sensitive map keys are reported only at a recognized
+telemetry sink. Invalid `dartitect.json` emits
+`dartitect_invalid_configuration` instead of silently behaving as strict
+defaults.
+
 ## Limitations
 
 Diagnostics are warnings: `DT1001` domain imports Flutter; `DT1002` domain
@@ -68,6 +75,11 @@ imports data/infrastructure; `DT1003` data imports presentation; `DT1004`
 `BuildContext` crosses ViewModel/domain/data/service/repository boundaries;
 `DT1005` presentation imports infrastructure; `DT1006` forbidden architecture
 framework; `DT1007` private cross-package `src` import.
+
+Generated sources outside an explicit `generatedInfrastructure` glob are
+recognized only when a standard generated-code header and a reviewed suffix
+both match. Defaults cover `.g.dart`, `.freezed.dart`, `.gr.dart`, and
+`.router.dart`; `generatedSuffixes` can replace that list in stable config v1.
 
 Suppress a single finding only with a justification:
 
@@ -82,8 +94,9 @@ code/remediation, and add analyzer-host plus scanner fixtures.
 
 ## Testing
 
-Run `dart test` and analyze `tool/analyzer_plugin_fixture`. Compatibility pins
-and their rationale live in the root dependency ledger.
+Run `dart test` and `dart run tool/check_boundary_parity.dart`. The versioned
+corpus enforces scanner/plugin parity and analyzer performance. Compatibility
+pins and their rationale live in the root dependency ledger.
 
 ## Links
 

@@ -28,7 +28,7 @@ e as [receitas de implementação](https://github.com/ftr-tuta/dartitect/blob/ma
 ## Instalação
 
 Este candidato não está publicado no pub.dev. Declare
-`dartitect_lints: 1.0.0-rc.2` em `dev_dependencies` e use o
+`dartitect_lints: 1.0.0-rc.3` em `dev_dependencies` e use o
 [guia de consumo do candidato Git](../../docs/guides/git-candidate-consumption.pt-BR.md)
 para fixá-lo na tag protegida.
 
@@ -60,12 +60,23 @@ da aplicação não deve importar nenhum dos dois.
 
 O analyzer possui o lifecycle do plugin. Ele somente lê a análise e não edita.
 
+Quando há resolução, regras de tipo, annotation, locator e telemetry usam
+identidade de element/library. Classes locais chamadas `Store` ou `Widget` não
+são tipos de provider/Flutter. Chaves sensíveis só são reportadas em sink de
+telemetry reconhecido. `dartitect.json` inválido emite
+`dartitect_invalid_configuration` em vez de aplicar defaults silenciosamente.
+
 ## Limitações
 
 Warnings: `DT1001` domínio/Flutter; `DT1002` domínio/data; `DT1003`
 data/presentation; `DT1004` `BuildContext` em limites internos; `DT1005`
 presentation/infrastructure; `DT1006` framework proibido; `DT1007` import
 privado cross-package.
+
+Fonte fora de glob `generatedInfrastructure` só é tratada como gerada quando
+header padrão e suffix revisado coincidem. Os defaults cobrem `.g.dart`,
+`.freezed.dart`, `.gr.dart` e `.router.dart`; `generatedSuffixes` pode substituir
+a lista na config v1 estável.
 
 Suprima apenas com justificativa:
 
@@ -80,7 +91,8 @@ do analyzer/scanner.
 
 ## Testes
 
-Execute `dart test` e analise `tool/analyzer_plugin_fixture`. Pins estão no
+Execute `dart test` e `dart run tool/check_boundary_parity.dart`. O corpus
+versionado exige paridade scanner/plugin e budget do analyzer. Pins estão no
 ledger de dependências.
 
 ## Links

@@ -3,110 +3,91 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 
+const _requiredCellIds = <String>{
+  'android-media-floor-build',
+  'android-media-current-emulator',
+  'ios-media-floor-build',
+  'ios-privacy-floor-build',
+  'ios-current-simulator',
+};
+const _allowedKinds = <String>{'build', 'emulator', 'simulator'};
+final _gitSha = RegExp(r'^[0-9a-f]{40}$');
+
 Future<void> main(List<String> arguments) async {
   try {
     await _main(arguments);
   } on FormatException catch (error) {
     stderr.writeln(error.message);
     exitCode = 64;
+  } on Object catch (error) {
+    stderr.writeln('Native evidence could not be validated: $error');
+    exitCode = 1;
   }
 }
 
 Future<void> _main(List<String> arguments) async {
-  final rootArgument = _singleArgument(arguments, '--root=');
-  final root = rootArgument == null
-      ? File.fromUri(Platform.script).parent.parent.absolute
-      : Directory(rootArgument).absolute;
+  final options = _Options.parse(arguments);
+  final root = options.root ?? File.fromUri(Platform.script).parent.parent;
   final errors = <String>[];
-  final contractOnly = arguments.contains('--contract-only');
-  final unknown = arguments.where(
-    (argument) =>
-        argument != '--contract-only' &&
-        !argument.startsWith('--root=') &&
-        !argument.startsWith('--source-sha=') &&
-        !argument.startsWith('--source-tree=') &&
-        !argument.startsWith('--receipt='),
+  final contract = _readObject(
+    File('${root.path}/tool/native_evidence_contract.json'),
   );
-  if (unknown.isNotEmpty) {
-    throw FormatException('Unknown arguments: ${unknown.join(', ')}');
-  }
-
-  final contractFile = File('${root.path}/tool/native_evidence_contract.json');
-  if (!contractFile.existsSync()) {
-    _finish(<String>['Native evidence contract is missing.'], '');
-    return;
-  }
-  final contract = _object(jsonDecode(contractFile.readAsStringSync()));
   final cells = _validateContract(root, contract, errors);
-  if (contractOnly) {
+  if (options.contractOnly) {
     _finish(
       errors,
-      'Native evidence v2 contract passed exactly ${cells.length} '
-      'fail-closed build/simulator/physical cells; receipts were not '
-      'evaluated.',
+      'Native evidence schema v3 passed exactly five hosted '
+      'build/emulator/simulator cells; local validation cannot declare '
+      'formal evidence.',
     );
     return;
   }
 
-  final sourceSha =
-      _singleArgument(arguments, '--source-sha=') ??
-      (await _git(root, const <String>['rev-parse', 'HEAD'])).trim();
-  if (!_shaPattern.hasMatch(sourceSha)) {
-    errors.add('Native evidence source SHA is invalid.');
-  }
-  final expectedTree = _shaPattern.hasMatch(sourceSha)
-      ? (await _git(root, <String>[
-          'show',
-          '-s',
-          '--format=%T',
-          sourceSha,
-        ])).trim()
-      : '';
-  final requestedTree = _singleArgument(arguments, '--source-tree=');
-  if (requestedTree != null && requestedTree != expectedTree) {
-    errors.add('Native evidence source tree does not match the source SHA.');
+  final context = _ActionsContext.fromEnvironment(Platform.environment);
+  final head = (await _git(root, const <String>['rev-parse', 'HEAD'])).trim();
+  final tree = (await _git(root, const <String>[
+    'show',
+    '-s',
+    '--format=%T',
+    'HEAD',
+  ])).trim();
+  if (head != context.sourceSha) {
+    errors.add('GITHUB_SHA does not match the checked-out source SHA.');
   }
 
-  final receiptFiles = await _receiptFiles(root, contract, arguments, errors);
-  final receiptsByCell = <String, Map<String, Object?>>{};
-  for (final file in receiptFiles) {
+  final files = _manifestFiles(root, contract, options.manifests, errors);
+  final byCell = <String, Map<String, Object?>>{};
+  for (final file in files) {
     try {
-      final receipt = _object(jsonDecode(await file.readAsString()));
-      final id = receipt['cellId'];
+      final manifest = _readObject(file);
+      final id = manifest['cellId'];
       if (id is! String || !cells.containsKey(id)) {
         errors.add('${_relative(root, file)} names an unknown native cell.');
         continue;
       }
-      if (receiptsByCell.containsKey(id)) {
-        errors.add('Duplicate native receipt for $id.');
+      if (byCell.containsKey(id)) {
+        errors.add('Duplicate native manifest for $id.');
         continue;
       }
-      _validateReceipt(
-        receipt,
-        cells[id]!,
-        contract,
-        sourceSha,
-        expectedTree,
-        errors,
-      );
-      receiptsByCell[id] = receipt;
+      _validateManifest(manifest, cells[id]!, context, tree, errors);
+      byCell[id] = manifest;
       stdout.writeln(
-        '$id receipt sha256 '
-        '${(await sha256.bind(file.openRead()).first).toString()}',
+        '$id manifest sha256 '
+        '${(await sha256.bind(file.openRead()).first)}',
       );
     } on FormatException catch (error) {
-      errors.add('${_relative(root, file)} is invalid: $error.');
+      errors.add('${_relative(root, file)} is invalid: ${error.message}');
     }
   }
-  for (final id in cells.keys) {
-    if (!receiptsByCell.containsKey(id)) {
-      errors.add('Missing native evidence receipt for $id at $sourceSha.');
+  for (final id in _requiredCellIds) {
+    if (!byCell.containsKey(id)) {
+      errors.add('Missing native evidence manifest for $id.');
     }
   }
-  if (receiptFiles.length != cells.length) {
+  if (files.length != _requiredCellIds.length) {
     errors.add(
-      'Native receipt set is not exact: expected ${cells.length}, '
-      'found ${receiptFiles.length}.',
+      'Native manifest set is not exact: expected '
+      '${_requiredCellIds.length}, found ${files.length}.',
     );
   }
 
@@ -116,12 +97,12 @@ Future<void> _main(List<String> arguments) async {
     '--untracked-files=all',
   ]);
   if (dirty.trim().isNotEmpty) {
-    errors.add('Source tree is dirty while validating native receipts.');
+    errors.add('Source tree is dirty while validating native manifests.');
   }
   _finish(
     errors,
-    'Native evidence passed all five build/simulator/physical cells at '
-    '$sourceSha with source tree $expectedTree.',
+    'Native evidence passed all five hosted cells for ${context.sourceSha}, '
+    'tree $tree, run ${context.runId}/${context.runAttempt}.',
   );
 }
 
@@ -130,51 +111,49 @@ Map<String, Map<String, Object?>> _validateContract(
   Map<String, Object?> contract,
   List<String> errors,
 ) {
-  if (contract['schemaVersion'] != 2 ||
-      contract['receiptSchemaVersion'] != 2 ||
-      contract['goal'] != 'V1S-13') {
-    errors.add('Unsupported native evidence contract.');
+  if (contract['schemaVersion'] != 3 ||
+      contract['manifestSchemaVersion'] != 3 ||
+      contract['goal'] != 'V1S-13' ||
+      contract['authority'] != 'github-actions-current-run' ||
+      contract['manifestDirectory'] != 'build/native-evidence' ||
+      contract['manifestDigest'] != 'sha256' ||
+      contract['trackedTreeMustRemainClean'] != true ||
+      contract['hostedRunnersOnly'] != true ||
+      !_sameStrings(
+        _strings(contract['allowedEvidenceKinds'], errors),
+        const <String>['build', 'emulator', 'simulator'],
+      )) {
+    errors.add('Unsupported or weakened native evidence contract.');
   }
+  final encoded = jsonEncode(contract).toLowerCase();
+  for (final forbidden in const <String>[
+    'physical',
+    'self-hosted',
+    'adb_server_socket',
+    'installed-app',
+  ]) {
+    if (encoded.contains(forbidden)) {
+      errors.add(
+        'Native evidence contract contains forbidden policy: $forbidden.',
+      );
+    }
+  }
+
   final harness = contract['harness'];
   if (harness is! String ||
       !File('${root.path}/$harness/lib/main.dart').existsSync() ||
       !File('${root.path}/$harness/integration_test/android_media_test.dart')
           .existsSync() ||
       !File('${root.path}/$harness/lib/ios_ci_harness.dart').existsSync() ||
-      !File('${root.path}/$harness/test/native_qa_panel_test.dart')
-          .existsSync() ||
-      !File('${root.path}/$harness/ios/RunnerTests/RunnerTests.swift')
-          .existsSync() ||
-      !File('${root.path}/tool/run_native_evidence.dart').existsSync() ||
       !File('${root.path}/tool/run_native_ci_evidence.dart').existsSync()) {
-    errors.add('Native capability integration harness is incomplete.');
+    errors.add('Native capability Actions harness is incomplete.');
   }
   _validateAndroid(root, contract['android'], errors);
   _validateIos(root, contract['ios'], errors);
-  if (contract['receiptDirectory'] != 'build/native-evidence' ||
-      contract['receiptDigest'] != 'sha256' ||
-      contract['trackedTreeMustRemainClean'] != true ||
-      contract['rawDeviceIdentifiersForbidden'] != true ||
-      !_sameStrings(
-        _strings(contract['ciEvidenceKinds'], errors),
-        const <String>['build', 'simulator'],
-      )) {
-    errors.add('Native receipt, identifier, or cleanliness policy changed.');
-  }
-  final retention = _map(contract['physicalRetention'], errors);
-  if (retention['kind'] != 'installed-app' ||
-      retention['applicationId'] !=
-          'dev.dartitect.dartitect_native_capabilities_harness' ||
-      retention['dataClean'] != true ||
-      retention['mediaClean'] != true ||
-      retention['apkDigest'] != 'sha256') {
-    errors.add('Physical Android retention policy is invalid.');
-  }
 
   final cells = <String, Map<String, Object?>>{};
   for (final cell in _objects(contract['requiredCells'], errors)) {
     final id = cell['id'];
-    final platform = cell['platform'];
     final kind = cell['evidenceKind'];
     final capabilities = _strings(cell['capabilities'], errors);
     final versions = _strings(cell['requiredVersionKeys'], errors);
@@ -182,8 +161,9 @@ Map<String, Map<String, Object?>> _validateContract(
     if (id is! String ||
         id.isEmpty ||
         cells.containsKey(id) ||
-        platform != 'android' && platform != 'ios' ||
-        kind != 'build' && kind != 'simulator' && kind != 'physical' ||
+        (cell['platform'] != 'android' && cell['platform'] != 'ios') ||
+        kind is! String ||
+        !_allowedKinds.contains(kind) ||
         cell['floor'] is! bool ||
         capabilities.isEmpty ||
         capabilities.any(
@@ -200,29 +180,16 @@ Map<String, Map<String, Object?>> _validateContract(
     }
     cells[id] = cell;
   }
-  const requiredIds = <String>{
-    'android-media-floor-build',
-    'android-media-current-physical',
-    'ios-media-floor-build',
-    'ios-privacy-floor-build',
-    'ios-current-simulator',
-  };
-  if (cells.length != requiredIds.length ||
-      !_sameSets(cells.keys.toSet(), requiredIds) ||
-      cells.values.where((cell) => cell['evidenceKind'] == 'physical').length !=
+  if (!_sameSets(cells.keys.toSet(), _requiredCellIds) ||
+      cells.values.where((cell) => cell['evidenceKind'] == 'build').length !=
+          3 ||
+      cells.values.where((cell) => cell['evidenceKind'] == 'emulator').length !=
           1 ||
       cells.values
               .where((cell) => cell['evidenceKind'] == 'simulator')
               .length !=
-          1 ||
-      cells.values.where((cell) => cell['evidenceKind'] == 'build').length !=
-          3 ||
-      cells.values.any(
-        (cell) =>
-            '${cell['id']}'.contains('emulator') ||
-            cell['evidenceKind'] == 'emulator',
-      )) {
-    errors.add('Native evidence matrix must contain exactly five RC.2 cells.');
+          1) {
+    errors.add('Native evidence matrix must contain the exact five v3 cells.');
   }
   return cells;
 }
@@ -230,21 +197,23 @@ Map<String, Map<String, Object?>> _validateContract(
 void _validateAndroid(Directory root, Object? value, List<String> errors) {
   final android = _map(value, errors);
   if (android['floorApi'] != 24 ||
-      android['physicalApi'] != 34 ||
-      android['requiredAdbServerSocket'] != 'tcp:127.0.0.1:5038' ||
+      android['emulatorApi'] != 34 ||
+      android['systemImage'] != 'system-images;android-34;google_apis;x86_64' ||
+      android['avdName'] != 'dartitect-api-34' ||
       android['applicationId'] !=
           'dev.dartitect.dartitect_native_capabilities_harness') {
-    errors.add('Android floor, physical runtime, socket, or app changed.');
+    errors.add('Android floor or hosted emulator policy changed.');
   }
-  final manifest = android['manifest'];
-  final plugin = android['plugin'];
-  if (manifest is! String || plugin is! String) {
-    errors.add('Android native source paths are invalid.');
-    return;
+  final paths = <String>[];
+  for (final key in const <String>['manifest', 'plugin']) {
+    final path = android[key];
+    if (path is String) {
+      paths.add(path);
+    } else {
+      errors.add('Android source path $key is invalid.');
+    }
   }
-  final source =
-      '${_source(root, manifest, errors)}\n'
-      '${_source(root, plugin, errors)}';
+  final source = paths.map((path) => _source(root, path, errors)).join('\n');
   for (final marker in _strings(android['requiredSourceMarkers'], errors)) {
     if (!source.contains(marker)) {
       errors.add('Android native contract is missing: $marker.');
@@ -265,10 +234,10 @@ void _validateIos(Directory root, Object? value, List<String> errors) {
     'privacyPlugin',
   ]) {
     final path = ios[key];
-    if (path is! String) {
-      errors.add('iOS source path $key is invalid.');
-    } else {
+    if (path is String) {
       paths.add(path);
+    } else {
+      errors.add('iOS source path $key is invalid.');
     }
   }
   final source = paths.map((path) => _source(root, path, errors)).join('\n');
@@ -281,23 +250,20 @@ void _validateIos(Directory root, Object? value, List<String> errors) {
     "s.platform = :ios, '14.0'",
     "s.platform = :ios, '12.0'",
   ]) {
-    if (!source.contains(marker)) {
-      errors.add('iOS podspec is missing $marker.');
-    }
+    if (!source.contains(marker)) errors.add('iOS podspec is missing $marker.');
   }
 }
 
-void _validateReceipt(
-  Map<String, Object?> receipt,
+void _validateManifest(
+  Map<String, Object?> manifest,
   Map<String, Object?> cell,
-  Map<String, Object?> contract,
-  String sourceSha,
+  _ActionsContext context,
   String sourceTree,
   List<String> errors,
 ) {
   final id = cell['id']! as String;
   final kind = cell['evidenceKind']! as String;
-  final expectedTopLevel = <String>{
+  if (!_sameSets(manifest.keys.toSet(), const <String>{
     'schemaVersion',
     'goal',
     'cellId',
@@ -311,226 +277,179 @@ void _validateReceipt(
     'environment',
     'startedAt',
     'completedAt',
-    'sourceDirty',
     'treeClean',
     'scenarios',
-    if (kind == 'physical') 'retention' else 'workflow',
-  };
-  if (!_sameSets(receipt.keys.toSet(), expectedTopLevel)) {
-    errors.add('$id receipt fields do not match schema v2.');
+    'workflow',
+  })) {
+    errors.add('$id manifest fields do not match schema v3.');
   }
-  if (receipt['schemaVersion'] != 2 ||
-      receipt['goal'] != 'V1S-13' ||
-      receipt['cellId'] != id ||
-      receipt['sourceSha'] != sourceSha ||
-      receipt['sourceTree'] != sourceTree ||
-      receipt['result'] != 'passed' ||
-      receipt['platform'] != cell['platform'] ||
-      receipt['evidenceKind'] != kind ||
-      receipt['treeClean'] != true ||
-      receipt['sourceDirty'] != false) {
-    errors.add('$id receipt identity/result/cleanliness is invalid.');
+  if (manifest['schemaVersion'] != 3 ||
+      manifest['goal'] != 'V1S-13' ||
+      manifest['cellId'] != id ||
+      manifest['sourceSha'] != context.sourceSha ||
+      manifest['sourceTree'] != sourceTree ||
+      manifest['result'] != 'success' ||
+      manifest['platform'] != cell['platform'] ||
+      manifest['evidenceKind'] != kind ||
+      manifest['treeClean'] != true) {
+    errors.add('$id identity, conclusion, or tree binding is invalid.');
   }
   if (!_sameStrings(
-    _strings(receipt['capabilities'], errors),
+    _strings(manifest['capabilities'], errors),
     _strings(cell['capabilities'], errors),
   )) {
-    errors.add('$id receipt capabilities changed.');
-  }
-
-  final versions = _map(receipt['versions'], errors);
-  final requiredVersions = _strings(cell['requiredVersionKeys'], errors);
-  if (!_sameSets(versions.keys.toSet(), requiredVersions.toSet())) {
-    errors.add('$id exact version set is invalid.');
-  }
-  for (final key in requiredVersions) {
-    final value = versions[key];
-    if (value is! String ||
-        value.trim().isEmpty ||
-        const <String>{
-          'current',
-          'floor',
-          'latest',
-        }.contains(value.trim().toLowerCase())) {
-      errors.add('$id version $key must be exact.');
-    }
-  }
-
-  final environment = _map(receipt['environment'], errors);
-  if (environment['kind'] != kind) {
-    errors.add('$id environment kind is invalid.');
-  }
-  if (kind == 'build') {
-    if (!_sameSets(environment.keys.toSet(), const <String>{
-          'kind',
-          'runnerOs',
-          'runnerImage',
-        }) ||
-        !_nonEmpty(environment['runnerOs']) ||
-        !_nonEmpty(environment['runnerImage'])) {
-      errors.add('$id build environment is incomplete.');
-    }
-  } else if (kind == 'simulator') {
-    if (!_sameSets(environment.keys.toSet(), const <String>{
-          'kind',
-          'runnerOs',
-          'runnerImage',
-          'deviceModel',
-          'deviceIdSha256',
-        }) ||
-        !_nonEmpty(environment['runnerOs']) ||
-        !_nonEmpty(environment['runnerImage']) ||
-        !_nonEmpty(environment['deviceModel']) ||
-        !_digest(environment['deviceIdSha256'])) {
-      errors.add('$id simulator environment is incomplete.');
-    }
-  } else {
-    if (!_sameSets(environment.keys.toSet(), const <String>{
-          'kind',
-          'osVersion',
-          'apiLevel',
-          'deviceModel',
-          'deviceIdSha256',
-          'bootCompleted',
-          'availableDataKb',
-          'batteryLevel',
-          'batteryStatus',
-        }) ||
-        environment['apiLevel'] != 34 ||
-        environment['bootCompleted'] != true ||
-        !_nonEmpty(environment['osVersion']) ||
-        !_nonEmpty(environment['deviceModel']) ||
-        !_digest(environment['deviceIdSha256']) ||
-        environment['availableDataKb'] is! int ||
-        (environment['availableDataKb']! as int) <= 0 ||
-        environment['batteryLevel'] is! int ||
-        (environment['batteryLevel']! as int) < 0 ||
-        (environment['batteryLevel']! as int) > 100 ||
-        !_nonEmpty(environment['batteryStatus'])) {
-      errors.add('$id physical environment/preflight is incomplete.');
-    }
-  }
-
-  final startedAt = _utc(receipt['startedAt']);
-  final completedAt = _utc(receipt['completedAt']);
-  if (startedAt == null ||
-      completedAt == null ||
-      completedAt.isBefore(startedAt)) {
-    errors.add('$id must record an ordered UTC interval.');
+    errors.add('$id capabilities changed.');
   }
   if (!_sameStrings(
-    _strings(receipt['scenarios'], errors),
+    _strings(manifest['scenarios'], errors),
     _strings(cell['requiredScenarios'], errors),
   )) {
-    errors.add('$id does not cover the exact required scenario set.');
+    errors.add('$id does not cover the exact required scenarios.');
   }
 
-  if (kind == 'physical') {
-    if (receipt.containsKey('workflow')) {
-      errors.add('$id physical receipt must not claim a CI workflow.');
-    }
-    final retention = _map(receipt['retention'], errors);
-    final policy = _map(contract['physicalRetention'], errors);
-    if (!_sameSets(retention.keys.toSet(), const <String>{
-          'kind',
-          'applicationId',
-          'dataClean',
-          'mediaClean',
-          'apkSha256',
-        }) ||
-        retention['kind'] != policy['kind'] ||
-        retention['applicationId'] != policy['applicationId'] ||
-        retention['dataClean'] != true ||
-        retention['mediaClean'] != true ||
-        !_digest(retention['apkSha256'])) {
-      errors.add('$id authorized installed-app retention is invalid.');
-    }
-  } else {
-    final workflow = _map(receipt['workflow'], errors);
-    if (!_sameSets(workflow.keys.toSet(), const <String>{
-          'workflow',
-          'runId',
-          'runAttempt',
-          'repository',
-          'event',
-          'url',
-          'sourceSha',
-        }) ||
-        !_nonEmpty(workflow['workflow']) ||
-        workflow['runId'] is! int ||
-        (workflow['runId']! as int) <= 0 ||
-        workflow['runAttempt'] is! int ||
-        (workflow['runAttempt']! as int) <= 0 ||
-        !_nonEmpty(workflow['repository']) ||
-        !_nonEmpty(workflow['event']) ||
-        workflow['sourceSha'] != sourceSha ||
-        !_workflowUrl(
-          workflow['url'],
-          workflow['repository'],
-          workflow['runId'],
-        )) {
-      errors.add('$id CI workflow/run receipt is invalid.');
-    }
+  final versions = _map(manifest['versions'], errors);
+  final versionKeys = _strings(cell['requiredVersionKeys'], errors);
+  if (!_sameSets(versions.keys.toSet(), versionKeys.toSet()) ||
+      versionKeys.any((key) => !_exactVersion(versions[key]))) {
+    errors.add('$id exact version set is invalid.');
   }
+  _validateEnvironment(id, kind, manifest['environment'], errors);
 
-  final forbiddenPath = _forbiddenIdentifierPath(receipt);
-  if (forbiddenPath != null) {
-    errors.add('$id contains a raw device identifier field at $forbiddenPath.');
+  final started = _utc(manifest['startedAt']);
+  final completed = _utc(manifest['completedAt']);
+  if (started == null || completed == null || completed.isBefore(started)) {
+    errors.add('$id must record an ordered UTC interval.');
+  }
+  final workflow = _map(manifest['workflow'], errors);
+  if (!_sameSets(workflow.keys.toSet(), const <String>{
+        'name',
+        'runId',
+        'runAttempt',
+        'repository',
+        'event',
+        'url',
+        'sourceSha',
+        'sourceTree',
+      }) ||
+      workflow['name'] != 'CI' ||
+      workflow['runId'] != context.runId ||
+      workflow['runAttempt'] != context.runAttempt ||
+      workflow['repository'] != context.repository ||
+      workflow['sourceSha'] != context.sourceSha ||
+      workflow['sourceTree'] != sourceTree ||
+      !_nonEmpty(workflow['event']) ||
+      workflow['url'] !=
+          'https://github.com/${context.repository}/actions/runs/${context.runId}') {
+    errors.add('$id is not from the current GitHub Actions run.');
+  }
+  final forbidden = _forbiddenField(manifest);
+  if (forbidden != null) errors.add('$id contains forbidden field $forbidden.');
+}
+
+void _validateEnvironment(
+  String id,
+  String kind,
+  Object? value,
+  List<String> errors,
+) {
+  final environment = _map(value, errors);
+  final common = const <String>{
+    'kind',
+    'provider',
+    'runnerName',
+    'runnerOs',
+    'runnerImage',
+  };
+  final expected = switch (kind) {
+    'build' => common,
+    'emulator' => <String>{
+      ...common,
+      'apiLevel',
+      'systemImage',
+      'avdName',
+      'osVersion',
+      'model',
+      'bootCompleted',
+      'cleanShutdown',
+    },
+    'simulator' => <String>{...common, 'runtime', 'model', 'cleanupCompleted'},
+    _ => const <String>{},
+  };
+  if (!_sameSets(environment.keys.toSet(), expected) ||
+      environment['kind'] != kind ||
+      environment['provider'] != 'github-hosted' ||
+      !_nonEmpty(environment['runnerName']) ||
+      !_nonEmpty(environment['runnerOs']) ||
+      !_nonEmpty(environment['runnerImage'])) {
+    errors.add('$id hosted runner environment is incomplete.');
+    return;
+  }
+  if (kind == 'emulator' &&
+      (environment['apiLevel'] != 34 ||
+          environment['systemImage'] !=
+              'system-images;android-34;google_apis;x86_64' ||
+          environment['avdName'] != 'dartitect-api-34' ||
+          !_nonEmpty(environment['osVersion']) ||
+          !_nonEmpty(environment['model']) ||
+          environment['bootCompleted'] != true ||
+          environment['cleanShutdown'] != true)) {
+    errors.add('$id Android emulator environment is invalid.');
+  }
+  if (kind == 'simulator' &&
+      (!_nonEmpty(environment['runtime']) ||
+          !_nonEmpty(environment['model']) ||
+          environment['cleanupCompleted'] != true)) {
+    errors.add('$id iOS simulator environment is invalid.');
   }
 }
 
-String? _forbiddenIdentifierPath(Object? value, [String path = r'$']) {
+String? _forbiddenField(Object? value, [String path = r'$']) {
   if (value is Map<String, Object?>) {
     for (final entry in value.entries) {
-      final lower = entry.key.toLowerCase();
-      if (lower.contains('serial') ||
-          lower == 'udid' ||
-          lower == 'deviceid' ||
-          lower == 'deviceidentifier' ||
-          lower == 'identifier') {
+      final key = entry.key.toLowerCase();
+      if (key.contains('serial') ||
+          key == 'udid' ||
+          key == 'deviceid' ||
+          key == 'deviceidentifier' ||
+          key == 'identifier' ||
+          key == 'retention' ||
+          key == 'receipt') {
         return '$path.${entry.key}';
       }
-      final nested = _forbiddenIdentifierPath(
-        entry.value,
-        '$path.${entry.key}',
-      );
+      final nested = _forbiddenField(entry.value, '$path.${entry.key}');
       if (nested != null) return nested;
     }
   } else if (value is List<Object?>) {
     for (var index = 0; index < value.length; index += 1) {
-      final nested = _forbiddenIdentifierPath(value[index], '$path[$index]');
+      final nested = _forbiddenField(value[index], '$path[$index]');
       if (nested != null) return nested;
     }
   }
   return null;
 }
 
-Future<List<File>> _receiptFiles(
+List<File> _manifestFiles(
   Directory root,
   Map<String, Object?> contract,
-  List<String> arguments,
+  List<String> explicit,
   List<String> errors,
-) async {
-  final explicit = arguments
-      .where((argument) => argument.startsWith('--receipt='))
-      .map((argument) => argument.substring('--receipt='.length))
-      .toList();
+) {
   if (explicit.isNotEmpty) {
     final files = <File>[];
     for (final path in explicit) {
       final file = File(path).absolute;
-      if (!file.existsSync()) {
-        errors.add('Native receipt is missing: $path.');
-      } else {
+      if (file.existsSync()) {
         files.add(file);
+      } else {
+        errors.add('Native manifest is missing: $path.');
       }
     }
     return files;
   }
-  final path = contract['receiptDirectory'];
-  if (path is! String) return <File>[];
+  final path = contract['manifestDirectory'];
+  if (path is! String) return const <File>[];
   final directory = Directory('${root.path}/$path');
-  if (!directory.existsSync()) return <File>[];
+  if (!directory.existsSync()) return const <File>[];
   return directory
       .listSync(followLinks: false)
       .whereType<File>()
@@ -539,18 +458,13 @@ Future<List<File>> _receiptFiles(
     ..sort((left, right) => left.path.compareTo(right.path));
 }
 
-String? _singleArgument(List<String> arguments, String prefix) {
-  final values = arguments
-      .where((argument) => argument.startsWith(prefix))
-      .map((argument) => argument.substring(prefix.length))
-      .toList();
-  if (values.length > 1) {
-    throw FormatException('Argument $prefix may appear only once.');
+Map<String, Object?> _readObject(File file) {
+  if (!file.existsSync()) throw FormatException('${file.path} is missing.');
+  final value = jsonDecode(file.readAsStringSync());
+  if (value is! Map<String, Object?>) {
+    throw const FormatException('Expected one JSON object.');
   }
-  if (values case [final value] when value.trim().isEmpty) {
-    throw FormatException('Argument $prefix must not be empty.');
-  }
-  return values.isEmpty ? null : values.single;
+  return value;
 }
 
 Future<String> _git(Directory root, List<String> arguments) async {
@@ -565,15 +479,6 @@ Future<String> _git(Directory root, List<String> arguments) async {
   return result.stdout as String;
 }
 
-void _finish(List<String> errors, String success) {
-  if (errors.isNotEmpty) {
-    stderr.writeln(errors.join('\n'));
-    exitCode = 1;
-    return;
-  }
-  stdout.writeln(success);
-}
-
 String _source(Directory root, String path, List<String> errors) {
   final file = File('${root.path}/$path');
   if (!file.existsSync()) {
@@ -583,17 +488,10 @@ String _source(Directory root, String path, List<String> errors) {
   return file.readAsStringSync();
 }
 
-Map<String, Object?> _object(Object? value) {
-  if (value is! Map<String, Object?>) {
-    throw const FormatException('Expected a JSON object.');
-  }
-  return value;
-}
-
 Map<String, Object?> _map(Object? value, List<String> errors) {
   if (value is! Map<String, Object?>) {
     errors.add('Expected a JSON object field.');
-    return <String, Object?>{};
+    return const <String, Object?>{};
   }
   return value;
 }
@@ -602,7 +500,7 @@ List<Map<String, Object?>> _objects(Object? value, List<String> errors) {
   if (value is! List<Object?> ||
       value.any((item) => item is! Map<String, Object?>)) {
     errors.add('Expected a JSON object list.');
-    return <Map<String, Object?>>[];
+    return const <Map<String, Object?>>[];
   }
   return value.cast<Map<String, Object?>>();
 }
@@ -610,40 +508,138 @@ List<Map<String, Object?>> _objects(Object? value, List<String> errors) {
 List<String> _strings(Object? value, List<String> errors) {
   if (value is! List<Object?> || value.any((item) => item is! String)) {
     errors.add('Expected a JSON string list.');
-    return <String>[];
+    return const <String>[];
   }
   return value.cast<String>();
 }
 
 bool _sameStrings(List<String> left, List<String> right) =>
-    left.length == right.length &&
-    left.toSet().length == left.length &&
-    right.toSet().length == right.length &&
-    _sameSets(left.toSet(), right.toSet());
+    left.length == right.length && _sameSets(left.toSet(), right.toSet());
 
 bool _sameSets(Set<Object?> left, Set<Object?> right) =>
     left.length == right.length && left.containsAll(right);
 
 bool _nonEmpty(Object? value) => value is String && value.trim().isNotEmpty;
 
-bool _digest(Object? value) =>
-    value is String && _sha256Pattern.hasMatch(value);
+bool _exactVersion(Object? value) =>
+    value is String &&
+    value.trim().isNotEmpty &&
+    !const <String>{
+      'current',
+      'floor',
+      'latest',
+    }.contains(value.trim().toLowerCase());
 
 DateTime? _utc(Object? value) {
-  if (value is! String) return null;
+  if (value is! String || !value.endsWith('Z')) return null;
   final parsed = DateTime.tryParse(value);
-  if (parsed == null || !parsed.isUtc || !value.endsWith('Z')) return null;
-  return parsed;
-}
-
-bool _workflowUrl(Object? value, Object? repository, Object? runId) {
-  if (value is! String || repository is! String || runId is! int) return false;
-  return value == 'https://github.com/$repository/actions/runs/$runId';
+  return parsed != null && parsed.isUtc ? parsed : null;
 }
 
 String _relative(Directory root, File file) => file.path.startsWith(root.path)
     ? file.path.substring(root.path.length + 1)
     : file.path;
 
-final _shaPattern = RegExp(r'^[0-9a-f]{40}$');
-final _sha256Pattern = RegExp(r'^[0-9a-f]{64}$');
+void _finish(List<String> errors, String success) {
+  if (errors.isNotEmpty) {
+    stderr.writeln(errors.join('\n'));
+    exitCode = 1;
+  } else {
+    stdout.writeln(success);
+  }
+}
+
+final class _ActionsContext {
+  const _ActionsContext({
+    required this.sourceSha,
+    required this.runId,
+    required this.runAttempt,
+    required this.repository,
+  });
+
+  factory _ActionsContext.fromEnvironment(Map<String, String> environment) {
+    String required(String key) {
+      final value = environment[key];
+      if (value == null || value.trim().isEmpty) {
+        throw StateError('Required GitHub Actions environment $key is absent.');
+      }
+      return value;
+    }
+
+    if (environment['GITHUB_ACTIONS'] != 'true' ||
+        environment['RUNNER_ENVIRONMENT'] != 'github-hosted') {
+      throw StateError(
+        'Formal native evidence is restricted to GitHub-hosted Actions.',
+      );
+    }
+    final sha = required('GITHUB_SHA');
+    final runId = int.tryParse(required('GITHUB_RUN_ID'));
+    final attempt = int.tryParse(required('GITHUB_RUN_ATTEMPT'));
+    if (!_gitSha.hasMatch(sha) ||
+        runId == null ||
+        runId <= 0 ||
+        attempt == null ||
+        attempt <= 0) {
+      throw StateError('GitHub Actions run identity is invalid.');
+    }
+    return _ActionsContext(
+      sourceSha: sha,
+      runId: runId,
+      runAttempt: attempt,
+      repository: required('GITHUB_REPOSITORY'),
+    );
+  }
+
+  final String sourceSha;
+  final int runId;
+  final int runAttempt;
+  final String repository;
+}
+
+final class _Options {
+  const _Options({
+    required this.contractOnly,
+    required this.manifests,
+    this.root,
+  });
+
+  factory _Options.parse(List<String> arguments) {
+    var contractOnly = false;
+    Directory? root;
+    final manifests = <String>[];
+    for (final argument in arguments) {
+      if (argument == '--contract-only') {
+        if (contractOnly)
+          throw const FormatException('Duplicate --contract-only.');
+        contractOnly = true;
+      } else if (argument.startsWith('--root=')) {
+        if (root != null || argument.substring(7).trim().isEmpty) {
+          throw const FormatException('Invalid or duplicate --root=.');
+        }
+        root = Directory(argument.substring(7)).absolute;
+      } else if (argument.startsWith('--manifest=')) {
+        final value = argument.substring('--manifest='.length);
+        if (value.trim().isEmpty) {
+          throw const FormatException('--manifest= must not be empty.');
+        }
+        manifests.add(value);
+      } else {
+        throw FormatException('Unknown argument: $argument');
+      }
+    }
+    if (contractOnly && manifests.isNotEmpty) {
+      throw const FormatException(
+        '--contract-only cannot consume formal manifests.',
+      );
+    }
+    return _Options(
+      contractOnly: contractOnly,
+      manifests: manifests,
+      root: root,
+    );
+  }
+
+  final bool contractOnly;
+  final List<String> manifests;
+  final Directory? root;
+}

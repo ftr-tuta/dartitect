@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-rc.3
+
+- Add `DiagnosticsTopologyHarness` for reconstructing protocol-v1 topology and
+  lifecycle from opaque payload-free events.
+
 ## 1.0.0-rc.2
 
 - Promote the lockstep candidate cohort without public Dart API changes and

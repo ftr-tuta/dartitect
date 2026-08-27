@@ -9,9 +9,9 @@ para falhas tipadas, concorrência, ownership e contratos de mutation offline.
 Todos os outros pacotes são opcionais. SDKs de provider, entidades, modelos
 gerados, credenciais e configuração de fornecedor pertencem ao consumidor.
 
-Para aplicação ou feature nova, use `$dartitect-design`. Em uma codebase
-existente, faça o inventário com `$dartitect-adopt` antes de escolher um slice de
-migração incremental.
+Para aplicação ou feature nova, use `$dartitect-design`. Uma codebase existente
+pode usar `$dartitect-audit` para evidência read-only de conformidade. Isso não é
+um caminho para migrar ou coexistir com outro runtime de DI/application state.
 
 ## Matriz de capacidades
 
@@ -42,7 +42,7 @@ a `$dartitect-tooling`; não é entrypoint da aplicação.
 | Cenário | Comece com | Combine quando necessário |
 | --- | --- | --- |
 | Aplicação ou feature nova | `$dartitect-design` | Encaminhe o limite selecionado para uma ou mais skills focadas |
-| Migração de codebase existente | `$dartitect-adopt` | Adicione skills focadas apenas para o slice atual |
+| Auditoria de conformidade de codebase existente | `$dartitect-audit` | Evidência read-only; nenhum plano de conversão é emitido |
 | Values imutáveis gerados | `$dartitect-modeling` | `$dartitect-tooling` para integração de CI/release |
 | Runtime Flutter simples | `$dartitect-runtime` | `$dartitect-testing` |
 | Lifecycle e UI reativos | `$dartitect-reactive` | `$dartitect-runtime`, `$dartitect-testing` |

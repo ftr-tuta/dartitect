@@ -4,14 +4,14 @@
 
 ## Purpose
 
-Local Dart VM inspection, architecture scanning, diagnostics, config migration,
+Local Dart VM inspection, architecture scanning, diagnostics, config validation,
 reviewed baselines, managed Codex skills, and transactional generators. The CLI
 has no runtime dependency outside the Dart SDK.
 
 ## When to use it
 
 Use it in local development and CI. Read-only commands are safe for discovery;
-preview every generator or migration before writing. It does not run arbitrary
+preview every supported filesystem change before writing. It does not run arbitrary
 shell supplied by a model and is not a build system.
 
 ## When not to use it
@@ -31,7 +31,7 @@ and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/doc
 ## Install
 
 ```console
-dart pub global activate dartitect_cli 1.0.0-rc.2
+dart pub global activate dartitect_cli 1.0.0-rc.3
 ```
 
 ## Minimal example
@@ -42,6 +42,8 @@ dartitect scan --no-baseline
 dartitect doctor
 dartitect model check
 dartitect dependencies audit
+dartitect fleet versions apps/a apps/b --root . --json
+dartitect fleet check apps/a apps/b --root . --json
 ```
 
 See `example/README.md` for all commands and exit codes.
@@ -49,6 +51,11 @@ See `example/README.md` for all commands and exit codes.
 ## Public API tour
 
 - `DartitectProjectService` is the typed shared inspect/scan/doctor/change layer.
+- `DartitectFleetService` confines explicit project roots and provides offline
+  versions/check/pinned-policy reports plus upgrade previews.
+- `DartitectChangePlan` exposes a sorted semantic-input manifest. Its SHA-256
+  digest is revalidated while an OS-level project lock is held through commit
+  or rollback; unrelated assets do not invalidate a plan.
 - `ProjectScanner`, `DartitectFinding`, and `CommandEnvelope` provide results.
 - `DartitectConfig`/`ConfigMigrator` preserve unknown keys and originals.
 - `DartitectBaseline` fingerprints code/path/evidence without line numbers.
@@ -66,6 +73,11 @@ Generated-once files become consumer-owned. Fully generated model outputs and
 skill directories remain tool-owned only while their strong manifest digest
 matches. Existing `AGENTS.md` is preserved. `model sync` previews by default;
 only `--apply` writes or recovers.
+Fleet CLI commands are read-only; `fleet upgrade` requires `--dry-run`. Policy
+bundles are local and pinned by caller-supplied bundle and policy SHA-256
+digests. See the [fleet tooling guide](../../docs/guides/fleet-tooling.md).
+Ignore `.dartitect/project-change.lock`; its stable pathname is required so
+concurrent processes always coordinate on the same OS lock inode.
 
 ## Limitations
 
@@ -81,6 +93,8 @@ features by subprocessing Dartitect or parsing its human output.
 
 Run `dart test`. Cover paths with spaces/Unicode, symlinks, traversal, conflicts,
 partial I/O, recovery, rollback, deterministic JSON, and generated consumers.
+The cross-process race and interrupted-lock tests run on Linux, Windows, and
+macOS through the repository verification matrix.
 
 ## Links
 

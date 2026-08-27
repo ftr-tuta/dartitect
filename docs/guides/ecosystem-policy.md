@@ -4,11 +4,14 @@
 
 ## Neutral global ledger
 
-`tool/ecosystem_policy.json` is the versioned Native Strict authority. It
+`tool/ecosystem_policy.json` schema v3 is the versioned Native Strict authority. It
 contains project-wide decisions only; application paths, exceptions, metrics,
-and adoption choices are forbidden there. The dispositions are:
+and consumer-specific choices are forbidden there. Every record separates
+architectural decision, reviewed boundary, maturity, compatibility, and current
+Dartitect adoption status. The architectural dispositions are:
 
 - `approved`: reviewed for its documented boundary;
+- `approved_primitive`: a reviewed low-level primitive without implied adoption;
 - `advisory_alternative`: Dartitect offers a bounded alternative, but use of
   the external package is informational by default;
 - `reviewed_exception`: use requires a consumer-owned scoped overlay;
@@ -19,6 +22,10 @@ and adoption choices are forbidden there. The dispositions are:
 Unknown packages remain advisory in a consumer audit. They block Dartitect's
 own release audit until the exact resolved package appears in the reviewed
 workspace inventory.
+
+`package:listen` is `approved_primitive` at the pure-Dart primitive boundary,
+but its adoption is `deferred_until_real_consumer`. It is not a dependency,
+reexport, bridge requirement, or reason to create `dartitect_state`.
 
 ## Consumer overlay
 

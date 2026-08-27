@@ -226,7 +226,13 @@ de crashes e suas stacks originais.
 Modele datasets e pré-requisitos com `SyncDependencyGraph`. Um `SyncEngine` lê
 checkpoints confirmados, executa a ordem estável do plano, persiste um novo
 checkpoint com o fencing token ativo e deixa branches independentes continuarem
-quando outro branch falha. Agendamento, retry, conflitos, transações de provider
+quando outro branch falha. Com lease configurado, o dataset recebe
+`SyncAuthority`; valide-a imediatamente antes da transação local e compare/
+commite atomicamente o fencing token em um Store capaz. O engine não promete
+fencing do dataset quando o storage não aplica essa transação. Falha terminal
+inesperada carrega report de `SyncRunTerminalException` com receipts separados
+de application, checkpoint, journal, release do lease e cleanup; inspecione-o
+antes de retry. Agendamento, retry, conflitos, transações de provider
 e autenticação continuam políticas da aplicação. Para entrega em background,
 valide um `SyncCommandEnvelope` versionado, crie um `OwnedGraph` novo dentro de
 `HeadlessSyncEndpoint`, confirme a aceitação, deduplique request IDs e aguarde o

@@ -20,6 +20,8 @@ Future<void> main(List<String> arguments) async {
   final generatedInfrastructure =
       (source['defaultGeneratedInfrastructure']! as List<Object?>)
           .cast<String>();
+  final generatedSuffixes =
+      (source['defaultGeneratedSuffixes']! as List<Object?>).cast<String>();
   final forbidden = (source['forbiddenPackages']! as List<Object?>)
       .cast<String>();
   final infrastructure = (source['infrastructurePackages']! as List<Object?>)
@@ -39,6 +41,7 @@ Future<void> main(List<String> arguments) async {
       layers,
       roots,
       generatedInfrastructure,
+      generatedSuffixes,
       forbidden,
       infrastructure,
       providerTypes,
@@ -90,7 +93,9 @@ Future<String> _formatDart(String source) async {
       file.path,
     ]);
     if (result.exitCode != 0) {
-      throw StateError('Could not format generated boundary policy.');
+      throw StateError(
+        'Could not format generated boundary policy: ${result.stderr}',
+      );
     }
     return await file.readAsString();
   } finally {
@@ -103,6 +108,7 @@ String _render(
   Map<String, List<String>> layers,
   List<String> roots,
   List<String> generatedInfrastructure,
+  List<String> generatedSuffixes,
   List<String> forbidden,
   List<String> infrastructure,
   List<String> providerTypes,
@@ -145,6 +151,11 @@ ${strings(roots)}
   /// Default generated provider-infrastructure locations.
   static const List<String> defaultGeneratedInfrastructure = <String>[
 ${strings(generatedInfrastructure)}
+  ];
+
+  /// Reviewed suffixes recognized only with a standard generated-code header.
+  static const List<String> defaultGeneratedSuffixes = <String>[
+${strings(generatedSuffixes)}
   ];
 
   /// Architecture/state frameworks excluded by the native-first profile.
@@ -207,6 +218,7 @@ final class DartitectBoundaryClassifier {
     required this.layers,
     required this.compositionRoots,
     required this.generatedInfrastructure,
+    this.generatedSuffixes = DartitectArchitectureRules.defaultGeneratedSuffixes,
   });
 
   /// Creates the native MVVM default classifier.
@@ -215,6 +227,7 @@ final class DartitectBoundaryClassifier {
     compositionRoots: DartitectArchitectureRules.defaultCompositionRoots,
     generatedInfrastructure:
         DartitectArchitectureRules.defaultGeneratedInfrastructure,
+    generatedSuffixes: DartitectArchitectureRules.defaultGeneratedSuffixes,
   );
 
   /// Configured layer and composition-root globs.
@@ -226,8 +239,11 @@ final class DartitectBoundaryClassifier {
   /// Configured generated-infrastructure globs.
   final List<String> generatedInfrastructure;
 
+  /// Generated source suffixes accepted together with a reviewed header.
+  final List<String> generatedSuffixes;
+
   /// Classifies a POSIX or platform path.
-  DartitectSourceClassification classify(String path) {
+  DartitectSourceClassification classify(String path, {String? source}) {
     final normalized = path.replaceAll('\\\\', '/');
     final matchedLayers = <String>{
       for (final entry in layers.entries)
@@ -239,11 +255,25 @@ final class DartitectBoundaryClassifier {
       isCompositionRoot: compositionRoots.any(
         (glob) => dartitectGlobMatches(glob, normalized),
       ),
-      isGeneratedInfrastructure: generatedInfrastructure.any(
-        (glob) => dartitectGlobMatches(glob, normalized),
-      ),
+      isGeneratedInfrastructure:
+          generatedInfrastructure.any(
+            (glob) => dartitectGlobMatches(glob, normalized),
+          ) ||
+          source != null &&
+              generatedSuffixes.any(normalized.endsWith) &&
+              dartitectHasGeneratedHeader(source),
     );
   }
+}
+
+/// Whether the first eight lines contain a reviewed generated-code header.
+bool dartitectHasGeneratedHeader(String source) {
+  final lines = source.split(RegExp(r'\\r?\\n')).take(8);
+  final header = RegExp(
+    r'^\\s*//\\s*GENERATED CODE\\s*-\\s*DO NOT (?:MODIFY|EDIT) BY HAND\\.?\\s*\$',
+    caseSensitive: false,
+  );
+  return lines.any(header.hasMatch);
 }
 
 /// Matches a normalized path against `*`, `?`, and recursive `**` globs.

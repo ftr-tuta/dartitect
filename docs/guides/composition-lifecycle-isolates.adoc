@@ -79,7 +79,10 @@ temporary, and persisted durability.
 +OwnedRuntimeSlot.replace()+ builds before publication. A successful replacement
 closes old admission, publishes the new committed graph, drains old work, and
 then tears down the old graph. Failed construction preserves the previous
-generation.
+generation. If old teardown fails after publication, replacement throws
++OwnedRuntimeReplacementCleanupException+. Its +publishedGeneration+ is already
+authoritative and its cleanup error describes only the previous graph; callers
+must not retry the replacement blindly.
 
 Ephemeral data (+E+) exists only in the graph and is discarded at teardown.
 Temporary data (+T+) is replaceable; its creator registers handle closure and
@@ -125,6 +128,14 @@ Future<OwnedGraph<SessionRuntime>> openSession(SessionId id) {
 
 Each isolate creates a distinct graph. Only serializable values cross the
 boundary; a Store, client, controller, owner, or mutable repository never does.
+
++IsolateWorker+ protocol version 2 correlates envelopes with a monotonic nonce
+local to one worker generation. The public request ID is not the wire identity,
+so reuse after a terminal cannot allow a stale envelope to complete newer work.
+ACK and result Futures may be awaited independently. Payload, result, and
+failure DTOs must be versioned and transferable, and copy cost remains part of
+the consumer workload. Cooperative cancellation is preferred; +safeStop+ keeps
+a bounded force-kill deadline for non-cooperative handlers.
 
 [source,dart]
 ----

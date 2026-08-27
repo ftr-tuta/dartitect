@@ -101,6 +101,7 @@ final class EffectChannel<E extends Object> implements AsyncDisposable {
 
   final EffectErrorReporter _reporter;
   final Queue<E> _pending = Queue<E>();
+  final Completer<void> _disposalStarted = Completer<void>();
   late final EffectSink<E> _sink;
   FutureOr<void> Function(E effect)? _consumer;
   Object? _consumerToken;
@@ -194,6 +195,7 @@ final class EffectChannel<E extends Object> implements AsyncDisposable {
   Future<void> _dispose() async {
     if (_disposed) return;
     _disposed = true;
+    _disposalStarted.complete();
     _consumer = null;
     _consumerToken = null;
     _pending.clear();
@@ -236,36 +238,97 @@ final class EffectListener<E extends Object> extends StatefulWidget {
 final class _EffectListenerState<E extends Object>
     extends State<EffectListener<E>> {
   EffectSubscription? _subscription;
+  Completer<void>? _activityChanged;
+  var _attachmentGeneration = 0;
+  var _contextIsActive = false;
 
   @override
   void initState() {
     super.initState();
-    _attach();
+    _scheduleAttach();
   }
 
   @override
   void didUpdateWidget(covariant EffectListener<E> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!identical(oldWidget.channel, widget.channel)) {
-      _subscription?.dispose();
-      _attach();
+      _invalidateAttachment();
+      _scheduleAttach();
     }
   }
 
   @override
-  Widget build(BuildContext context) => widget.child;
+  Widget build(BuildContext context) {
+    final route = ModalRoute.of(context);
+    final isActive =
+        TickerMode.valuesOf(context).enabled && (route?.isCurrent ?? true);
+    if (_contextIsActive != isActive) {
+      _contextIsActive = isActive;
+      _signalActivityChanged();
+    }
+    return widget.child;
+  }
 
   @override
   void dispose() {
-    _subscription?.dispose();
-    _subscription = null;
+    _invalidateAttachment();
     super.dispose();
   }
 
-  void _attach() {
-    _subscription = widget.channel.listen((effect) {
-      if (!mounted) return;
-      widget.onEffect(context, effect);
+  void _scheduleAttach() {
+    final generation = ++_attachmentGeneration;
+    final channel = widget.channel;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          generation != _attachmentGeneration ||
+          !identical(channel, widget.channel)) {
+        return;
+      }
+      _subscription = channel.listen(
+        (effect) => _deliver(generation, channel, effect),
+      );
     });
+  }
+
+  Future<void> _deliver(
+    int generation,
+    EffectChannel<E> channel,
+    E effect,
+  ) async {
+    while (_isCurrent(generation, channel)) {
+      if (_contextIsActive) {
+        widget.onEffect(context, effect);
+        return;
+      }
+      final changed = Completer<void>();
+      _activityChanged = changed;
+      if (_contextIsActive || !_isCurrent(generation, channel)) {
+        _signalActivityChanged();
+      }
+      await Future.any<void>(<Future<void>>[
+        changed.future,
+        channel._disposalStarted.future,
+      ]);
+      if (identical(_activityChanged, changed)) _activityChanged = null;
+    }
+  }
+
+  bool _isCurrent(int generation, EffectChannel<E> channel) =>
+      mounted &&
+      !channel.isDisposed &&
+      generation == _attachmentGeneration &&
+      identical(channel, widget.channel);
+
+  void _invalidateAttachment() {
+    _attachmentGeneration += 1;
+    _subscription?.dispose();
+    _subscription = null;
+    _signalActivityChanged();
+  }
+
+  void _signalActivityChanged() {
+    final changed = _activityChanged;
+    _activityChanged = null;
+    if (changed != null && !changed.isCompleted) changed.complete();
   }
 }

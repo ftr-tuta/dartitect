@@ -46,7 +46,7 @@ Future<void> main() async {
   }
 
   _validateZeroResidual(root, contract['zeroResidual'], errors);
-  if (contract['isolateProtocolVersion'] != 1 ||
+  if (contract['isolateProtocolVersion'] != 2 ||
       contract['nativeGate'] !=
           'dart run tool/verify.dart --skip-get --native-objectbox') {
     errors.add('Runtime protocol or native gate changed unexpectedly.');
@@ -57,7 +57,7 @@ Future<void> main() async {
     errors,
   );
   if (!isolateSource.contains(
-    'const int currentIsolateWorkerProtocolVersion = 1;',
+    'const int currentIsolateWorkerProtocolVersion = 2;',
   )) {
     errors.add('Isolate worker protocol does not match the contract.');
   }

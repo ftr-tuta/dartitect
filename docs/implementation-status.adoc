@@ -1,16 +1,15 @@
 = Dartitect 1.0 Git candidate implementation status
 :toc:
 
-Snapshot:: 2026-08-26
-Release status:: *GIT RC CANDIDATE ASSEMBLED; FORMAL RELEASE NOT AUTHORIZED*
+Snapshot:: 2026-08-27
+Release status:: *ACTIONS READINESS PENDING*
 Feature policy:: *FEATURE FREEZE*
-Toolchain target:: Dart 3.13.1 / Flutter 3.47.1 stable
+Toolchain floor:: Dart 3.13 / Flutter 3.47.1 stable
 Target topology:: 16 packages / 17 public entrypoints
 
-+tool/goal_gates.json+ is the machine-readable roadmap authority. The public
-tree contains one active roadmap and no discarded-history baseline. Exact root
-SHA, CI, Security, Git-consumption, and native receipts are external facts that
-cannot be embedded in their own root commit.
+`tool/goal_gates.json` is the machine-readable roadmap authority. GitHub
+Actions is the only technical evidence authority. Local commands are optional
+feedback and cannot declare an RC or stable candidate ready.
 
 [cols="1,2,5",options="header"]
 |===
@@ -18,62 +17,50 @@ cannot be embedded in their own root commit.
 
 | V1S-00–V1S-03
 | IMPLEMENTED_LOCAL
-| The fail-closed roadmap, privacy/consumer-neutrality policy, ecosystem ledger,
-generator recovery, media semantics, geometry tolerance, and public API guards
-are implemented for the sixteen-package topology.
+| Roadmap, privacy/consumer-neutrality, ecosystem, generator recovery, media,
+geometry, and public API guards are implemented for the sixteen-package
+topology.
 
 | V1S-04
-| EXTERNAL_REQUIRED
-| The recreated one-commit root must receive all required CI and Security
-checks. No pull-request history is manufactured for that root.
+| IN_PROGRESS
+| Pull requests, merge queue candidates, and `main` run the coordinated CI
+graph. Branch protection requires only `CI / Required`; OSV is inside that graph.
 
 | V1S-05–V1S-12
 | IMPLEMENTED_LOCAL
-| Lifecycle, command/reactive, model, capability, release, runtime, persistence,
-restart, race, and zero-residual contracts are implemented. Git override
-generation and three remote-tag canaries replace local-path or pub.dev
-resolution for this candidate.
+| Lifecycle, reactive, model, capability, release, runtime, persistence, race,
+benchmark, clean-clone, and canary gates are implemented.
 
 | V1S-13
-| EXTERNAL_REQUIRED
-| The fail-closed five-cell schema-v2 matrix is implemented. Android API 24 is
-covered by build compatibility; Android 14/API 34 runtime is physical-only
-through the isolated port 5038. iOS is covered by two deployment-floor builds
-and one dynamically selected CI simulator, never a physical iPhone. Android
-emulators are prohibited.
-
-| V1S-14
 | IN_PROGRESS
-| Code and the complete `1.0.0-rc.2` cohort are assembled. Changelogs preserve
-RC.1 and prepend RC.2; API snapshot, SBOM, license/advisory inventories, Dartdoc,
-clean-clone audit, sixteen publish dry-runs, and generated builds are gates, not
-publication authorization.
+| Schema v3 defines exactly five cells: Android API 24 build, Android API 34
+hosted emulator, iOS 14 build, iOS 12 build, and the current hosted iOS
+simulator. Every manifest binds SHA, tree, run ID, attempt, and hosted runner.
 
-| V1S-15
+| V1S-14–V1S-17
 | IN_PROGRESS
-| Formal readiness and formal distribution authorization remain separate and
-fail closed. The known `replaceGraph` semantic defect is the intended root
-blocker after external RC.2 evidence closes; it is deferred to RC.3.
-
-| V1S-16–V1S-17
-| IN_PROGRESS
-| Signed-bundle materialization, installed-byte validation, upgrade evidence,
-complete native evidence, and the stable-readiness decision remain future
-formal-channel work. No GitHub Release exists for the Git candidate.
+| A successful push to `main` produces one `actions-readiness-v1` artifact for
+90 days with job conclusions and artifact hashes. RC validation consumes the
+same nominal five native cells.
 
 | V1-18
 | IN_PROGRESS
-| Stable promotion tooling remains fail closed. No stable SHA, signed stable
-tag, GitHub Release, or pub.dev publication is authorized.
+| Manual publication accepts `source_sha`, `ci_run_id`, and `channel`, verifies
+the successful main run and readiness hashes, records the actor, then performs
+only the selected tag, GitHub Release, or pub.dev action.
 |===
 
-== Permanent invariants
+== Hosted-only invariant
+
+No gate requires a phone, tablet, iPhone, USB connection, private ADB socket, or
+privately managed runner. Android runtime uses a clean API 34 Google APIs AVD on
+`ubuntu-24.04`; iOS runtime uses an installed simulator on `macos-15`. A boot or
+simulator availability failure makes `CI / Required` fail.
+
+== Permanent architecture invariants
 
 * constructor injection and explicit owned/borrowed lifetime;
 * local persistence remains presentation authority;
-* retry, auth, schema, transactions, compensation, and conflict policy remain
-  consumer-owned;
-* core stays dependency-free and optional capabilities stay isolated;
-* every isolate builds and tears down a fresh graph;
-* Git consumption, formal readiness, signed distribution, stable readiness,
-  and publication remain distinct decisions.
+* consumer-owned retry, auth, schema, transaction, and conflict policy;
+* dependency-free core and isolated optional capabilities;
+* fresh graph construction and reverse teardown in every isolate.

@@ -1,6 +1,0 @@
-interface:
-  display_name: "Dartitect Adopt"
-  short_description: "Migrate existing projects incrementally"
-  default_prompt: "Use $dartitect-adopt to plan a bounded Dartitect migration."
-policy:
-  allow_implicit_invocation: true

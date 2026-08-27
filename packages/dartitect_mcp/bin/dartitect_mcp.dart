@@ -45,7 +45,7 @@ Future<void> main(List<String> arguments) async {
   }
 }
 
-const String _help = '''Dartitect MCP 1.0.0-rc.2
+const String _help = '''Dartitect MCP 1.0.0-rc.3
 
 Usage: dart run dartitect_mcp:dartitect_mcp [--root PATH] [--allow-writes]
 

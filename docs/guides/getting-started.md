@@ -48,9 +48,10 @@ remove obsolete entries over time.
 
 ## Agent guidance
 
-`dartitect codex sync --dry-run` previews ten managed, implicitly invocable
-skills. Greenfield and brownfield work start with `$dartitect-design` and
-`$dartitect-adopt`; focused implementation routes to runtime, reactive,
+`dartitect codex sync --dry-run` previews eleven managed, implicitly invocable
+skills. Greenfield work starts with `$dartitect-design`; an existing codebase
+may be inspected read-only with `$dartitect-audit`. The 1.0 line provides no
+migration or coexistence workflow. Focused implementation routes to runtime, reactive,
 offline-first, observability, adapters, testing, tooling, or MCP. The sync never
 manages the repository-local `repository-contribution` skill.
 

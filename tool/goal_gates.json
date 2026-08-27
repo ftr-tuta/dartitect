@@ -10,13 +10,13 @@
       "V1S-15", "V1S-16", "V1S-17", "V1-18"
     ]
   },
-  "releaseStatus": "GIT_RC_CANDIDATE_ASSEMBLED_EXTERNAL_EVIDENCE_PENDING",
+  "releaseStatus": "ACTIONS_READINESS_PENDING",
   "featurePolicy": "FEATURE_FREEZE",
   "target": {"packageCount": 16, "entrypointCount": 17},
   "statusPolicy": {
     "allowed": [
       "PLANNED", "IN_PROGRESS", "BLOCKED", "IMPLEMENTED_LOCAL",
-      "EXTERNAL_REQUIRED", "COMPLETE", "CANCELLED"
+      "COMPLETE", "CANCELLED"
     ],
     "localEvidenceMaximum": "IMPLEMENTED_LOCAL",
     "receiptOnlyPaths": [
@@ -76,10 +76,10 @@
       "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
-      "id": "V1S-04", "required": true, "status": "EXTERNAL_REQUIRED", "dependsOn": ["V1S-03"],
+      "id": "V1S-04", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-03"],
       "owner": "Dartitect maintainers", "affectedPackages": [],
       "coveredPaths": [".github/**", "tool/**", "docs/release/**"],
-      "acceptance": ["Obtain all required CI and Security checks on the one-commit root, then record the exact candidate baseline without manufacturing pull-request history."],
+      "acceptance": ["Require the coordinated CI / Required result on pull requests, merge queue candidates, and main, with OSV inside the same graph and actions-readiness-v1 on main."],
       "gateCommands": ["dart run tool/verify.dart --skip-get", "dart run tool/release_audit.dart"],
       "evidence": [], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
@@ -128,7 +128,7 @@
       "owner": "Dartitect maintainers", "affectedPackages": [],
       "coveredPaths": ["tool/git_dependency_overrides.dart", "tool/git_dependency_overrides_test.dart", "tool/run_git_canaries.dart", "tool/canaries/**", "examples/**", "docs/release/**"],
       "acceptance": ["Validate minimal, offline-first, and native-capability canaries from one annotated Git tag and remote URL with no local-path or hosted Dartitect resolution."],
-      "gateCommands": ["dart run tool/run_git_canaries.dart --repository=<url> --ref=v1.0.0-rc.2"],
+      "gateCommands": ["dart run tool/run_git_canaries.dart --repository=<url> --ref=v1.0.0-rc.3"],
       "evidence": ["tool/git_dependency_overrides.dart", "tool/run_git_canaries.dart", "tool/canaries/canary_contract.json", "docs/release/packaged-canaries.adoc", "examples/reference_app/test/native_objectbox_workload_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
@@ -148,12 +148,12 @@
       "evidence": ["tool/runtime_hardening_contract.json", "packages/dartitect/test/command_lane_race_test.dart", "packages/dartitect_sync/test/persisted_compatibility_test.dart", "packages/dartitect_sync/test/fixtures/persisted_v1.json", "packages/dartitect_isolates/test/isolate_worker_test.dart", "packages/dartitect_objectbox/test/objectbox_owner_test.dart", "examples/reference_app/test/native_objectbox_workload_test.dart", "docs/release/runtime-hardening.adoc"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
-      "id": "V1S-13", "required": true, "status": "EXTERNAL_REQUIRED", "dependsOn": ["V1S-08", "V1S-09", "V1S-10"],
+      "id": "V1S-13", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-08", "V1S-09", "V1S-10"],
       "owner": "Dartitect maintainers", "affectedPackages": ["dartitect_privacy", "dartitect_media"],
-      "coveredPaths": [".github/workflows/ci.yaml", "packages/dartitect_privacy/**", "packages/dartitect_media/**", "examples/**/android/**", "examples/**/ios/**", "examples/**/macos/**", "tool/canaries/native_capabilities/**", "tool/native_evidence_contract.json", "tool/check_native_evidence.dart", "tool/check_native_evidence_test.dart", "tool/run_native_evidence.dart", "tool/run_native_evidence_test.dart", "tool/run_native_ci_evidence.dart", "tool/src/native_evidence_*.dart", "tool/verify.dart", "docs/release/native-device-evidence.adoc", "docs/implementation-status.adoc", "docs/release/1.0-readiness.adoc"],
-      "acceptance": ["Complete the exact five-cell Android build/physical and iOS build/simulator matrix with same-SHA receipts, lifecycle, main-thread, album, file, cleanup, and clean-tree hardening; prohibit Android emulators and physical iPhones."],
-      "gateCommands": ["dart run tool/check_native_evidence.dart"],
-      "evidence": ["tool/native_evidence_contract.json", "tool/check_native_evidence.dart", "tool/check_native_evidence_test.dart", "tool/run_native_evidence.dart", "tool/run_native_evidence_test.dart", "tool/run_native_ci_evidence.dart", "tool/canaries/native_capabilities/integration_test/android_media_test.dart", "tool/canaries/native_capabilities/lib/ios_ci_harness.dart", "tool/canaries/native_capabilities/test/native_qa_panel_test.dart", "docs/release/native-device-evidence.adoc"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "coveredPaths": [".github/workflows/ci.yaml", "packages/dartitect_privacy/**", "packages/dartitect_media/**", "examples/**/android/**", "examples/**/ios/**", "examples/**/macos/**", "tool/canaries/native_capabilities/**", "tool/native_evidence_contract.json", "tool/check_native_evidence.dart", "tool/check_native_evidence_test.dart", "tool/run_native_ci_evidence.dart", "tool/run_native_ci_evidence_test.dart", "tool/src/native_evidence_*.dart", "tool/verify.dart", "docs/release/native-device-evidence.adoc", "docs/implementation-status.adoc", "docs/release/1.0-readiness.adoc"],
+      "acceptance": ["Complete the exact five-cell Android/iOS build plus hosted emulator/simulator matrix with current-run manifests, lifecycle, main-thread, album, invalid-file, cleanup, shutdown, and clean-tree hardening."],
+      "gateCommands": ["dart run tool/check_native_evidence.dart --contract-only"],
+      "evidence": ["tool/native_evidence_contract.json", "tool/check_native_evidence.dart", "tool/check_native_evidence_test.dart", "tool/run_native_ci_evidence.dart", "tool/run_native_ci_evidence_test.dart", "tool/canaries/native_capabilities/integration_test/android_media_test.dart", "tool/canaries/native_capabilities/lib/ios_ci_harness.dart", "tool/canaries/native_capabilities/test/native_qa_panel_test.dart", "docs/release/native-device-evidence.adoc"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-14", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-11", "V1S-12", "V1S-13"],
@@ -166,34 +166,34 @@
     {
       "id": "V1S-15", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-14"],
       "owner": "Dartitect maintainers", "affectedPackages": [],
-      "coveredPaths": ["docs/release/**", "tool/goal_gates.json", "tool/rc_readiness_decision.json", "tool/rc_distribution_authorization.json", "tool/check_rc_readiness.dart", "tool/check_rc_readiness_test.dart", "tool/release_audit.dart", "tool/verify.dart"],
-      "acceptance": ["Record the delegated review authority READY_FOR_1_0_RC decision for one exact main SHA and separately choose and authorize one RC distribution mode."],
-      "gateCommands": ["dart run tool/check_rc_readiness.dart"],
-      "evidence": ["tool/rc_readiness_decision.json", "tool/rc_distribution_authorization.json", "tool/check_rc_readiness.dart", "tool/check_rc_readiness_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "coveredPaths": [".github/workflows/**", "docs/release/**", "tool/goal_gates.json", "tool/actions_readiness_policy.json", "tool/create_actions_readiness.dart", "tool/check_rc_readiness.dart", "tool/check_rc_readiness_test.dart", "tool/release_audit.dart", "tool/verify.dart"],
+      "acceptance": ["Generate one immutable actions-readiness-v1 artifact for an exact successful main CI run; local structural checks cannot declare readiness."],
+      "gateCommands": ["dart run tool/check_rc_readiness.dart --contract-only"],
+      "evidence": ["tool/actions_readiness_policy.json", "tool/create_actions_readiness.dart", "tool/check_rc_readiness.dart", "tool/check_rc_readiness_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-16", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-15"],
       "owner": "Dartitect maintainers", "affectedPackages": [],
-      "coveredPaths": ["docs/release/**", "tool/goal_gates.json", "tool/rc_bundle_contract.json", "tool/prepare_rc_bundle.dart", "tool/materialize_rc_bundle.dart", "tool/check_rc_artifacts.dart", "tool/check_rc_artifacts_test.dart", "tool/release_audit.dart", "tool/verify.dart"],
-      "acceptance": ["Materialize the authorized RC channel manually in topological order and record package hashes, SBOM, provenance, and resumable receipts."],
-      "gateCommands": ["dart run tool/check_rc_artifacts.dart"],
-      "evidence": ["tool/rc_bundle_contract.json", "tool/prepare_rc_bundle.dart", "tool/materialize_rc_bundle.dart", "tool/check_rc_artifacts.dart", "tool/check_rc_artifacts_test.dart", "docs/release/signed-bundle-channel.adoc"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "coveredPaths": [".github/workflows/publish.yaml", "docs/release/**", "tool/goal_gates.json", "tool/actions_readiness_policy.json", "tool/check_publication_readiness.dart", "tool/release_audit.dart", "tool/verify.dart"],
+      "acceptance": ["Allow a human to trigger only tag, GitHub Release, or topological publication after source_sha, ci_run_id, main CI conclusion, and artifact hashes pass."],
+      "gateCommands": ["dart run tool/check_rc_readiness.dart --contract-only"],
+      "evidence": [".github/workflows/publish.yaml", "tool/actions_readiness_policy.json", "tool/check_publication_readiness.dart", "docs/release/publication-runbook.adoc"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-17", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-16"],
       "owner": "Dartitect maintainers", "affectedPackages": [],
-      "coveredPaths": ["docs/release/**", "tool/canaries/**", "tool/goal_gates.json", "tool/check_canaries.dart", "tool/rc_validation_contract.json", "tool/stable_readiness_decision.json", "tool/run_rc_channel_canaries.dart", "tool/check_rc_validation.dart", "tool/check_rc_validation_test.dart", "tool/release_audit.dart", "tool/verify.dart"],
-      "acceptance": ["Install the materialized RC, validate canaries, real devices, candidate upgrade, zero residuals, and record the delegated review authority READY_FOR_1_0 decision."],
-      "gateCommands": ["dart run tool/check_rc_validation.dart"],
-      "evidence": ["tool/rc_validation_contract.json", "tool/stable_readiness_decision.json", "tool/run_rc_channel_canaries.dart", "tool/check_rc_validation.dart", "tool/check_rc_validation_test.dart", "docs/release/installed-rc-validation.adoc"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "coveredPaths": [".github/workflows/ci.yaml", "docs/release/**", "tool/canaries/**", "tool/goal_gates.json", "tool/check_canaries.dart", "tool/rc_validation_contract.json", "tool/check_rc_validation.dart", "tool/check_rc_validation_test.dart", "tool/release_audit.dart", "tool/verify.dart"],
+      "acceptance": ["Validate RC canaries, the nominal five native cells, and zero residuals on GitHub-hosted emulator/simulator jobs within the coordinated Actions run."],
+      "gateCommands": ["dart run tool/check_rc_validation.dart --contract-only"],
+      "evidence": ["tool/rc_validation_contract.json", "tool/check_rc_validation.dart", "tool/check_rc_validation_test.dart", "docs/release/installed-rc-validation.adoc"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1-18", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-17"],
       "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_dio", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_sentry", "dartitect_sync", "dartitect_testing"],
-      "coveredPaths": ["packages/**/pubspec.yaml", "packages/**/CHANGELOG.md", "docs/release/**", "tool/goal_gates.json", "tool/stable_candidate_contract.json", "tool/stable_candidate_record.json", "tool/stable_publication_authorization.json", "tool/check_stable_candidate.dart", "tool/check_stable_candidate_test.dart", "tool/prepare_stable_candidate.dart", "tool/prepare_stable_candidate_test.dart", "tool/check_public_docs.dart", "tool/check_api_snapshot.dart", "tool/check_sdk_inventory.dart", "tool/check_skill_coverage.dart", "tool/generate_supply_chain.dart", "tool/release_audit.dart", "tool/verify.dart"],
-      "acceptance": ["Create and fully validate the 1.0.0 stable candidate, enforce the RC diff allowlist, and require separate delegated review-authority authorization before tag or publication."],
-      "gateCommands": ["dart run tool/check_stable_candidate.dart", "dart run tool/release_audit.dart --docs --publish-dry-run"],
-      "evidence": ["tool/stable_candidate_contract.json", "tool/stable_candidate_record.json", "tool/stable_publication_authorization.json", "tool/check_stable_candidate.dart", "tool/check_stable_candidate_test.dart", "tool/prepare_stable_candidate.dart", "tool/prepare_stable_candidate_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "coveredPaths": ["packages/**/pubspec.yaml", "packages/**/CHANGELOG.md", ".github/workflows/**", "docs/release/**", "tool/goal_gates.json", "tool/stable_candidate_contract.json", "tool/check_stable_candidate.dart", "tool/check_stable_candidate_test.dart", "tool/check_public_docs.dart", "tool/check_api_snapshot.dart", "tool/check_sdk_inventory.dart", "tool/check_skill_coverage.dart", "tool/generate_supply_chain.dart", "tool/release_audit.dart", "tool/verify.dart"],
+      "acceptance": ["Validate the stable candidate through CI / Required and actions-readiness-v1, then leave the human role limited to selecting the manual publication channel."],
+      "gateCommands": ["dart run tool/check_stable_candidate.dart --contract-only", "dart run tool/release_audit.dart --docs --publish-dry-run"],
+      "evidence": ["tool/stable_candidate_contract.json", "tool/check_stable_candidate.dart", "tool/check_stable_candidate_test.dart", ".github/workflows/publish.yaml"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     }
   ]
 }

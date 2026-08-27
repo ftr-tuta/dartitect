@@ -225,7 +225,13 @@ separately from crashes and their original stacks.
 Model datasets and their prerequisites with `SyncDependencyGraph`. A
 `SyncEngine` reads confirmed checkpoints, executes stable plan order, persists a
 new checkpoint with the active fencing token, and lets independent branches
-continue when another branch fails. Scheduling, retry, conflict, provider
+continue when another branch fails. With a configured lease, the dataset
+receives `SyncAuthority`; ensure it immediately before the local transaction and
+atomically compare/commit its fencing token in a capable store. The engine does
+not promise dataset fencing when storage cannot enforce that transaction.
+Unexpected terminal failure carries a `SyncRunTerminalException` report with
+separate application, checkpoint, journal, lease-release, and cleanup receipts;
+inspect it before retry. Scheduling, retry, conflict, provider
 transactions, and authentication remain application policy. For background
 delivery, validate a versioned `SyncCommandEnvelope`, build a fresh `OwnedGraph`
 inside `HeadlessSyncEndpoint`, acknowledge acceptance, deduplicate request IDs,

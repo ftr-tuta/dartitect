@@ -1,7 +1,7 @@
 = Offline, sync, isolate, and telemetry threat model
 :toc:
 
-Status:: Locally reviewed for `1.0.0-rc.2`; remote Security evidence required
+Status:: Locally reviewed for `1.0.0-rc.3`; `CI / Required` evidence pending
 Review date:: 2026-08-24
 
 == Offline mutation and outbox
@@ -36,8 +36,11 @@ the confirmed checkpoint.
 | Persist facts and checkpoints durably and reject corrupt/unknown records.
 
 | Stale writer confirmation
-| Active lease fencing tokens are passed to checkpoint writes.
-| Compare and commit fencing tokens inside the storage transaction.
+| Typed authority is available to the dataset and its token is passed to
+checkpoint writes.
+| Ensure authority immediately before commit and compare/commit its token in
+the same dataset/checkpoint storage transaction; otherwise declare fencing
+unsupported.
 
 | Unbounded or replayed work
 | DAGs reject invalid topology; deadlines, cancellation, bounded progress, and
@@ -136,7 +139,6 @@ and own deletion/retention of the source file.
 
 Local negative tests, fault injection, generated ObjectBox fixtures, two
 independent workloads, zero-residual census, and the checked SBOM/license
-inventory are necessary but not sufficient. A stable release also requires the
-Security workflow and CI to pass on the exact final candidate SHA plus an
-explicit delegated review-authority decision. No exception silently weakens
-this model.
+inventory are necessary but not sufficient. A stable release also requires
+`CI / Required` on the exact final candidate SHA and its unaltered
+`actions-readiness-v1` artifact. No exception silently weakens this model.

@@ -92,6 +92,104 @@ void main() {
       }
     },
   );
+
+  test(
+    'reentrant callbacks cancel or dispose every unkeyed policy safely',
+    () async {
+      for (final policy in _policies) {
+        for (final dispose in <bool>[false, true]) {
+          await _exerciseReentrantUnkeyed(policy, dispose: dispose);
+        }
+      }
+    },
+  );
+
+  test(
+    'reentrant callbacks cancel or dispose every keyed policy safely',
+    () async {
+      for (final policy in _policies) {
+        for (final dispose in <bool>[false, true]) {
+          await _exerciseReentrantKeyed(policy, dispose: dispose);
+        }
+      }
+    },
+  );
+}
+
+const _policies = <CommandConcurrency>[
+  CommandConcurrency.reject(),
+  CommandConcurrency.join(),
+  CommandConcurrency.drop(),
+  CommandConcurrency.sequential(maxQueue: 3),
+  CommandConcurrency.restartLatest(),
+  CommandConcurrency.concurrent(maxConcurrent: 3),
+];
+
+Future<void> _exerciseReentrantUnkeyed(
+  CommandConcurrency policy, {
+  required bool dispose,
+}) async {
+  late final CommandLane<int, String> lane;
+  Future<void>? disposal;
+  var requested = false;
+  lane = CommandLane<int, String>(
+    concurrency: policy,
+    action: (signal) async {
+      await signal.whenCancelled;
+      signal.throwIfCancelled();
+      return const Ok<int>(0);
+    },
+    onChanged: () {
+      if (requested || lane.runningCount != 1) return;
+      requested = true;
+      if (dispose) {
+        disposal = lane.dispose();
+      } else {
+        lane.cancel('reentrant cancel');
+      }
+    },
+  );
+
+  final outcome = lane.execute();
+  if (disposal case final future?) await future;
+  expect(await outcome, isA<CommandCancelled<int, String>>());
+  await Future.wait<void>(<Future<void>>[lane.dispose(), lane.dispose()]);
+  expect(lane.runningCount, 0, reason: '${policy.kind}/dispose=$dispose');
+  expect(lane.queuedCount, 0, reason: '${policy.kind}/dispose=$dispose');
+}
+
+Future<void> _exerciseReentrantKeyed(
+  CommandConcurrency policy, {
+  required bool dispose,
+}) async {
+  late final KeyedCommandLane<String, int, int, String> lane;
+  Future<void>? disposal;
+  var requested = false;
+  lane = KeyedCommandLane<String, int, int, String>(
+    concurrency: CommandConcurrency.keyed(perKey: policy),
+    action: (key, argument, signal) async {
+      await signal.whenCancelled;
+      signal.throwIfCancelled();
+      return const Ok<int>(0);
+    },
+    onChanged: () {
+      if (requested || lane.runningCount != 1) return;
+      requested = true;
+      if (dispose) {
+        disposal = lane.dispose();
+      } else {
+        lane.cancelAll('reentrant cancel');
+      }
+    },
+  );
+
+  final outcome = lane.execute('key', 1);
+  if (disposal case final future?) await future;
+  expect(await outcome, isA<CommandCancelled<int, String>>());
+  await Future.wait<void>(<Future<void>>[lane.dispose(), lane.dispose()]);
+  expect(lane.runningCount, 0, reason: '${policy.kind}/dispose=$dispose');
+  expect(lane.queuedCount, 0, reason: '${policy.kind}/dispose=$dispose');
+  expect(lane.activeKeyCount, 0, reason: '${policy.kind}/dispose=$dispose');
 }
 
 extension<T> on Iterable<T> {

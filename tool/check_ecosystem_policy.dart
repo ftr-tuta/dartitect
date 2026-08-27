@@ -67,6 +67,17 @@ Future<void> main() async {
       errors.add('$package must remain an informational alternative.');
     }
   }
+  final listen = policy.records['listen'];
+  if (listen?.decision != EcosystemDecision.approvedPrimitive ||
+      listen?.boundary != 'pure_dart_primitive' ||
+      listen?.maturity != 'reviewed' ||
+      listen?.compatibility == null ||
+      listen?.adoptionStatus != 'deferred_until_real_consumer') {
+    errors.add(
+      'listen must remain an approved primitive deferred until a real '
+      'pure-Dart consumer exists.',
+    );
+  }
   for (final record in policy.records.values) {
     if ((record.decision == EcosystemDecision.advisoryAlternative ||
             record.decision == EcosystemDecision.prohibitedNativeStrict) &&
@@ -75,6 +86,9 @@ Future<void> main() async {
     }
     final bundled = EcosystemPolicy.bundled.explain(record.package);
     if (bundled.decision != record.decision ||
+        bundled.boundary != record.boundary ||
+        bundled.maturity != record.maturity ||
+        bundled.adoptionStatus != record.adoptionStatus ||
         bundled.replacement != record.replacement ||
         !_sameStrings(bundled.conflictsWith, record.conflictsWith)) {
       errors.add('${record.package} is stale in the bundled CLI policy.');
@@ -112,7 +126,7 @@ Future<void> main() async {
   final snapshot = await File(
     '${root.path}/packages/dartitect_lints/lib/src/ecosystem_policy.g.dart',
   ).readAsString();
-  if (!snapshot.contains('// Source: tool/ecosystem_policy.json (schema 2).')) {
+  if (!snapshot.contains('// Source: tool/ecosystem_policy.json (schema 3).')) {
     errors.add('Analyzer ecosystem snapshot has an obsolete schema marker.');
   }
   for (final record in policy.records.values) {
@@ -129,6 +143,8 @@ Future<void> main() async {
     final acceptedAlias =
         record.decision == EcosystemDecision.approved &&
             block.contains('_approved') ||
+        record.decision == EcosystemDecision.approvedPrimitive &&
+            block.contains('_approvedPrimitive') ||
         record.decision == EcosystemDecision.reviewedException &&
             block.contains('_reviewed');
     if (!block.contains(decision) && !acceptedAlias) {

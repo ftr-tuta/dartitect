@@ -141,6 +141,140 @@ void main() {
     await effects.disposeAsync();
   });
 
+  testWidgets('pending Flutter effect waits for the first post-frame context', (
+    tester,
+  ) async {
+    final effects = channel();
+    final timeline = <String>[];
+    var firstFrameCompleted = false;
+    tester.binding.addPostFrameCallback((_) {
+      firstFrameCompleted = true;
+      timeline.add('frame');
+    });
+    expect(effects.sink.emit(const _Effect(9)), EffectPublishResult.accepted);
+
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: EffectListener<_Effect>(
+          channel: effects,
+          onEffect: (context, effect) {
+            timeline.add('effect:$firstFrameCompleted:${effect.id}');
+          },
+          child: const SizedBox(),
+        ),
+      ),
+    );
+
+    expect(timeline, <String>['frame', 'effect:true:9']);
+    await tester.pumpWidget(const SizedBox());
+    await effects.disposeAsync();
+  });
+
+  testWidgets('offstage delivery waits until TickerMode is active', (
+    tester,
+  ) async {
+    final effects = channel();
+    final delivered = <int>[];
+
+    Widget listener({required bool active}) => Directionality(
+      textDirection: TextDirection.ltr,
+      child: TickerMode(
+        enabled: active,
+        child: EffectListener<_Effect>(
+          channel: effects,
+          onEffect: (_, effect) => delivered.add(effect.id),
+          child: const SizedBox(),
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(listener(active: false));
+    expect(effects.sink.emit(const _Effect(10)), EffectPublishResult.accepted);
+    await tester.pump();
+    expect(delivered, isEmpty);
+    expect(effects.pendingCount, 1);
+
+    await tester.pumpWidget(listener(active: true));
+    expect(delivered, <int>[10]);
+    expect(effects.pendingCount, 0);
+
+    await tester.pumpWidget(const SizedBox());
+    await effects.disposeAsync();
+  });
+
+  testWidgets('channel disposal releases an offstage Flutter delivery', (
+    tester,
+  ) async {
+    final effects = channel();
+    var delivered = false;
+    await tester.pumpWidget(
+      TickerMode(
+        enabled: false,
+        child: EffectListener<_Effect>(
+          channel: effects,
+          onEffect: (_, effect) => delivered = true,
+          child: const SizedBox(),
+        ),
+      ),
+    );
+    effects.sink.emit(const _Effect(12));
+    await tester.pump();
+
+    await effects.disposeAsync();
+
+    expect(delivered, isFalse);
+    expect(effects.pendingCount, 0);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('non-current route defers effect until it becomes current', (
+    tester,
+  ) async {
+    final effects = channel();
+    final delivered = <int>[];
+    final navigatorKey = GlobalKey<NavigatorState>();
+
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Navigator(
+          key: navigatorKey,
+          onGenerateRoute: (_) => PageRouteBuilder<void>(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                EffectListener<_Effect>(
+                  channel: effects,
+                  onEffect: (_, effect) => delivered.add(effect.id),
+                  child: const SizedBox(),
+                ),
+          ),
+        ),
+      ),
+    );
+    unawaited(
+      navigatorKey.currentState!.push<void>(
+        PageRouteBuilder<void>(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const SizedBox(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(effects.sink.emit(const _Effect(11)), EffectPublishResult.accepted);
+    await tester.pump();
+    expect(delivered, isEmpty);
+    expect(effects.pendingCount, 1);
+
+    navigatorKey.currentState!.pop();
+    await tester.pumpAndSettle();
+    expect(delivered, <int>[11]);
+    expect(effects.pendingCount, 0);
+
+    await tester.pumpWidget(const SizedBox());
+    await effects.disposeAsync();
+  });
+
   testWidgets('EffectListener swaps route channels without stale delivery', (
     tester,
   ) async {

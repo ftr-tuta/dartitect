@@ -8,13 +8,13 @@ import 'live_resource.dart';
 /// Equality used to suppress unchanged reactive publication.
 typedef Equality<T> = bool Function(T previous, T next);
 
-/// Reports an unexpected failure while a reactive computed is evaluated.
+/// Reports an unexpected compute or post-commit listener failure.
 abstract interface class ReactiveComputeReporter {
   /// Reports [error] with its original [stackTrace].
   void report(Object error, StackTrace stackTrace);
 }
 
-/// A reporter that deliberately ignores compute failures.
+/// A reporter that deliberately ignores reactive runtime failures.
 final class NoOpReactiveComputeReporter implements ReactiveComputeReporter {
   /// Creates a no-op reporter.
   const NoOpReactiveComputeReporter();
@@ -23,23 +23,78 @@ final class NoOpReactiveComputeReporter implements ReactiveComputeReporter {
   void report(Object error, StackTrace stackTrace) {}
 }
 
-/// An explicit, typed identity used to share a node inside one owner.
+/// An explicit, typed definition identity used to share a node inside one
+/// owner.
 final class ReactiveKey<T> {
-  /// Creates a key with a stable, non-empty [name].
-  const ReactiveKey(this.name) : assert(name != '');
+  /// Creates a namespaced key with explicit definition metadata.
+  const ReactiveKey(
+    this.name, {
+    required this.namespace,
+    required this.definitionRevision,
+    required this.definitionFingerprint,
+  }) : assert(name != ''),
+       assert(namespace != ''),
+       assert(definitionRevision > 0),
+       assert(definitionFingerprint != '');
 
   /// Human-readable static name of this key.
   final String name;
 
+  /// Static namespace that prevents unrelated features from sharing a node.
+  final String namespace;
+
+  /// Positive revision of the node definition.
+  final int definitionRevision;
+
+  /// Stable, non-empty fingerprint chosen by the definition owner.
+  final String definitionFingerprint;
+
+  /// Owner-independent identity used only inside one [ReactiveOwner].
+  String get identity => '$namespace::$name<$T>';
+
+  /// Full definition label used in diagnostics.
+  String get definition =>
+      '$identity@$definitionRevision#$definitionFingerprint';
+
+  bool _hasSameDefinition(ReactiveKey<T> other) =>
+      definitionRevision == other.definitionRevision &&
+      definitionFingerprint == other.definitionFingerprint;
+
   @override
   bool operator ==(Object other) =>
-      other is ReactiveKey<T> && other.name == name;
+      other is ReactiveKey<T> &&
+      other.name == name &&
+      other.namespace == namespace;
 
   @override
-  int get hashCode => Object.hash(T, name);
+  int get hashCode => Object.hash(T, namespace, name);
 
   @override
-  String toString() => 'ReactiveKey<$T>($name)';
+  String toString() => 'ReactiveKey($definition)';
+}
+
+/// Observable phase of one [ReactiveOwner] state machine.
+enum ReactiveOwnerPhase {
+  /// No transaction or teardown is active.
+  idle,
+
+  /// An outer or nested update body is staging writes.
+  write,
+
+  /// Derived values are being evaluated against one pending snapshot.
+  compute,
+
+  /// A complete pending snapshot is being published atomically.
+  commit,
+
+  /// Stable committed values are notifying external listeners.
+  notify,
+
+  /// Terminal teardown has begun.
+  dispose,
+
+  /// Terminal teardown has completed.
+  disposed,
 }
 
 /// Base type for values and derived values owned by a [ReactiveOwner].
@@ -95,9 +150,13 @@ final class ReactiveValue<T> extends ReactiveNode<T> {
     super.owner,
     super.ordinal,
     super.initialValue,
+    this.key,
     super.equality,
     super.usesDefaultEquality,
   );
+
+  /// Typed definition identity when this value is shared by key.
+  final ReactiveKey<T>? key;
 }
 
 /// A value derived from explicit dependencies.
@@ -117,7 +176,7 @@ final class ReactiveComputed<T> extends ReactiveNode<T> {
   /// Typed identity used to share this computed inside its owner.
   final ReactiveKey<T> key;
   final List<_ReactiveNodeBase> _dependencies;
-  final T Function(ReactiveRead read) _compute;
+  T Function(ReactiveRead read) _compute;
 }
 
 /// Read-only access supplied to a computed callback.
@@ -196,14 +255,30 @@ final class ReactiveCycleException implements Exception {
 
 /// Thrown when an explicit key is reused for an incompatible node.
 final class ReactiveKeyConflictException implements Exception {
-  /// Creates a conflict for [key].
-  const ReactiveKeyConflictException(this.key);
+  /// Creates a diagnosable definition conflict.
+  const ReactiveKeyConflictException({
+    required this.key,
+    required this.existingDefinition,
+    required this.incomingDefinition,
+    required this.reason,
+  });
 
-  /// Conflicting key description.
+  /// Conflicting owner-local key identity.
   final String key;
 
+  /// Definition already registered by this owner.
+  final String existingDefinition;
+
+  /// Definition presented by the conflicting registration.
+  final String incomingDefinition;
+
+  /// Static explanation of the incompatibility.
+  final String reason;
+
   @override
-  String toString() => 'ReactiveKeyConflictException($key)';
+  String toString() =>
+      'ReactiveKeyConflictException($key; $reason; '
+      'existing: $existingDefinition; incoming: $incomingDefinition)';
 }
 
 /// Owns a local incremental graph and publishes atomic logical commits.
@@ -241,7 +316,7 @@ final class ReactiveOwner {
   Map<_ReactiveNodeBase, Object?>? _pendingValues;
   var _depth = 0;
   var _revision = 0;
-  var _notifying = false;
+  var _phase = ReactiveOwnerPhase.idle;
   var _disposed = false;
   Future<void>? _disposeFuture;
 
@@ -250,6 +325,9 @@ final class ReactiveOwner {
 
   /// Whether this owner has begun terminal disposal.
   bool get isDisposed => _disposed;
+
+  /// Current write/compute/commit/notify/dispose phase.
+  ReactiveOwnerPhase get phase => _phase;
 
   /// Observer failures isolated from graph behavior.
   int get observerFailureCount => _events.failureCount;
@@ -279,22 +357,29 @@ final class ReactiveOwner {
     Equality<T>? equality,
   }) {
     _ensureActive();
+    _ensureDefinitionRegistrationAllowed();
     final resolvedEquality = equality ?? _defaultEquality;
     if (key != null) {
       final existing = _keyed[key];
       if (existing != null) {
         if (existing is ReactiveValue<T> &&
+            existing.key!._hasSameDefinition(key) &&
             ((equality == null && existing.usesDefaultEquality) ||
                 identical(existing.equality, equality))) {
           return existing;
         }
-        throw ReactiveKeyConflictException(key.toString());
+        throw _keyConflict(
+          existing,
+          key,
+          'value kind, definition, or equality differs',
+        );
       }
     }
     final node = ReactiveValue<T>(
       this,
       _nodes.length,
       initial,
+      key,
       resolvedEquality,
       equality == null,
     );
@@ -306,6 +391,7 @@ final class ReactiveOwner {
   /// Creates an invalidation group whose registrations this owner disposes.
   InvalidationGroup<K> invalidationGroup<K>() {
     _ensureActive();
+    _ensureDefinitionRegistrationAllowed();
     final group = InvalidationGroup<K>();
     _invalidationGroupDisposers.add(group.dispose);
     return group;
@@ -319,6 +405,7 @@ final class ReactiveOwner {
     Equality<T>? equality,
   }) {
     _ensureActive();
+    _ensureDefinitionRegistrationAllowed();
     final resolvedEquality = equality ?? _defaultEquality;
     final declared = dependencies.cast<_ReactiveNodeBase>().toList(
       growable: false,
@@ -342,20 +429,29 @@ final class ReactiveOwner {
     final existing = _keyed[key];
     if (existing != null) {
       if (existing is! ReactiveComputed<T> ||
+          !existing.key._hasSameDefinition(key) ||
           !_sameNodes(existing._dependencies, declared) ||
           !((equality == null && existing.usesDefaultEquality) ||
               identical(existing.equality, equality))) {
-        throw ReactiveKeyConflictException(key.toString());
+        throw _keyConflict(
+          existing,
+          key,
+          'computed kind, definition, dependencies, or equality differs',
+        );
       }
+      existing._compute = compute;
       return existing;
     }
 
     late final T initial;
     try {
+      _phase = ReactiveOwnerPhase.compute;
       initial = compute(ReactiveRead._(this, declared.toSet()));
     } catch (error, stackTrace) {
       _report(error, stackTrace);
       Error.throwWithStackTrace(error, stackTrace);
+    } finally {
+      if (!_disposed) _phase = ReactiveOwnerPhase.idle;
     }
     final node = ReactiveComputed<T>(
       this,
@@ -385,11 +481,19 @@ final class ReactiveOwner {
     ChangeCause cause = ChangeCauses.reactiveUpdate,
   }) {
     _ensureActive();
+    if (_phase == ReactiveOwnerPhase.compute ||
+        _phase == ReactiveOwnerPhase.commit) {
+      throw StateError(
+        'Reactive writes are not allowed during ${_phase.name}.',
+      );
+    }
     final staticCause = _causeRegistry.requireStatic(cause);
     final outer = _depth == 0;
+    final previousPhase = _phase;
     final previousRevision = _revision;
     final started = outer ? _eventNow() : 0;
     if (outer) _activeWrites = <_ReactiveNodeBase, Object?>{};
+    _phase = ReactiveOwnerPhase.write;
     _depth += 1;
     late final R result;
     try {
@@ -397,15 +501,17 @@ final class ReactiveOwner {
     } catch (error, stackTrace) {
       _depth -= 1;
       if (outer) _activeWrites = null;
+      _phase = previousPhase;
       Error.throwWithStackTrace(error, stackTrace);
     }
     _depth -= 1;
+    _phase = previousPhase;
     if (outer) {
       final writes = _activeWrites!;
       _activeWrites = null;
       var eventKind = ReactiveEventKind.updated;
       try {
-        if (_notifying) {
+        if (previousPhase == ReactiveOwnerPhase.notify) {
           _deferredWrites.addAll(writes);
         } else {
           _drainFlushes(writes);
@@ -434,11 +540,23 @@ final class ReactiveOwner {
   }
 
   /// Marks this owner terminal and releases every node and listener.
-  Future<void> dispose() => _disposeFuture ??= _dispose();
+  Future<void> dispose() {
+    if (!_disposed &&
+        (_phase == ReactiveOwnerPhase.write ||
+            _phase == ReactiveOwnerPhase.compute ||
+            _phase == ReactiveOwnerPhase.commit)) {
+      throw StateError(
+        'ReactiveOwner cannot dispose during ${_phase.name}; '
+        'finish or roll back the transaction first.',
+      );
+    }
+    return _disposeFuture ??= _dispose();
+  }
 
   Future<void> _dispose() async {
     if (_disposed) return;
     _disposed = true;
+    _phase = ReactiveOwnerPhase.dispose;
     _activeWrites = null;
     _deferredWrites.clear();
     _pendingValues = null;
@@ -451,7 +569,11 @@ final class ReactiveOwner {
     }
     _keyed.clear();
     _nodes.clear();
-    await _observerRegistration.disposeOwned();
+    try {
+      await _observerRegistration.disposeOwned();
+    } finally {
+      _phase = ReactiveOwnerPhase.disposed;
+    }
   }
 
   Object? _read(_ReactiveNodeBase node) {
@@ -479,35 +601,32 @@ final class ReactiveOwner {
 
   void _drainFlushes(Map<_ReactiveNodeBase, Object?> firstWrites) {
     var writes = firstWrites;
-    Object? notificationError;
-    StackTrace? notificationStackTrace;
     while (writes.isNotEmpty) {
-      final failure = _flushCycle(writes);
-      notificationError ??= failure?.error;
-      notificationStackTrace ??= failure?.stackTrace;
+      _flushCycle(writes);
       writes = Map<_ReactiveNodeBase, Object?>.of(_deferredWrites);
       _deferredWrites.clear();
       if (_disposed) break;
     }
-    if (notificationError != null) {
-      Error.throwWithStackTrace(notificationError, notificationStackTrace!);
-    }
   }
 
-  _NotificationFailure? _flushCycle(Map<_ReactiveNodeBase, Object?> writes) {
+  void _flushCycle(Map<_ReactiveNodeBase, Object?> writes) {
     _ensureActive();
+    _phase = ReactiveOwnerPhase.compute;
     final pending = <_ReactiveNodeBase, Object?>{};
     final changed = <_ReactiveNodeBase>{};
-    for (final entry in writes.entries) {
-      if (!entry.key.valuesEqual(entry.key.stableValue, entry.value)) {
-        pending[entry.key] = entry.value;
-        changed.add(entry.key);
-      }
-    }
-    if (changed.isEmpty) return null;
-
-    _pendingValues = pending;
     try {
+      for (final entry in writes.entries) {
+        if (!entry.key.valuesEqual(entry.key.stableValue, entry.value)) {
+          pending[entry.key] = entry.value;
+          changed.add(entry.key);
+        }
+      }
+      if (changed.isEmpty) {
+        _phase = ReactiveOwnerPhase.idle;
+        return;
+      }
+
+      _pendingValues = pending;
       for (final computed in _topologicalComputeds()) {
         if (!computed._dependencies.any(changed.contains)) continue;
         final next = computed._compute(
@@ -521,10 +640,12 @@ final class ReactiveOwner {
     } catch (error, stackTrace) {
       _pendingValues = null;
       _report(error, stackTrace);
+      if (!_disposed) _phase = ReactiveOwnerPhase.idle;
       Error.throwWithStackTrace(error, stackTrace);
     }
     _pendingValues = null;
 
+    _phase = ReactiveOwnerPhase.commit;
     _revision += 1;
     final ordered = changed.toList()
       ..sort((left, right) => left.ordinal.compareTo(right.ordinal));
@@ -534,22 +655,35 @@ final class ReactiveOwner {
         ..nodeRevision = _revision;
     }
 
-    Object? firstError;
-    StackTrace? firstStackTrace;
-    _notifying = true;
+    _phase = ReactiveOwnerPhase.notify;
     try {
       for (final node in ordered) {
         if (_disposed) break;
-        final failure = node.notifyListenersSafely();
-        firstError ??= failure?.error;
-        firstStackTrace ??= failure?.stackTrace;
+        for (final failure in node.notifyListenersSafely()) {
+          _report(failure.error, failure.stackTrace);
+        }
       }
     } finally {
-      _notifying = false;
+      if (!_disposed) _phase = ReactiveOwnerPhase.idle;
     }
-    return firstError == null
-        ? null
-        : _NotificationFailure(firstError, firstStackTrace!);
+  }
+
+  ReactiveKeyConflictException _keyConflict<T>(
+    _ReactiveNodeBase existing,
+    ReactiveKey<T> incoming,
+    String reason,
+  ) {
+    final existingKey = switch (existing) {
+      ReactiveValue<Object?>(:final key) => key,
+      ReactiveComputed<Object?>(:final key) => key,
+      _ => null,
+    };
+    return ReactiveKeyConflictException(
+      key: incoming.identity,
+      existingDefinition: existingKey?.definition ?? '<unkeyed>',
+      incomingDefinition: incoming.definition,
+      reason: reason,
+    );
   }
 
   List<ReactiveComputed<Object?>> _topologicalComputeds() {
@@ -610,6 +744,15 @@ final class ReactiveOwner {
   void _ensureActive() {
     if (_disposed) throw StateError('ReactiveOwner is disposed.');
   }
+
+  void _ensureDefinitionRegistrationAllowed() {
+    if (_phase != ReactiveOwnerPhase.idle) {
+      throw StateError(
+        'Reactive definitions may be registered only while the owner is idle; '
+        'current phase: ${_phase.name}.',
+      );
+    }
+  }
 }
 
 base class _ReactiveNodeBase {
@@ -623,9 +766,8 @@ base class _ReactiveNodeBase {
 
   bool valuesEqual(Object? previous, Object? next) => previous == next;
 
-  _NotificationFailure? notifyListenersSafely() {
-    Object? firstError;
-    StackTrace? firstStackTrace;
+  List<_NotificationFailure> notifyListenersSafely() {
+    final failures = <_NotificationFailure>[];
     final snapshot = List<VoidCallback>.of(listeners);
     for (final listener in snapshot) {
       if (owner.isDisposed) break;
@@ -633,13 +775,10 @@ base class _ReactiveNodeBase {
       try {
         listener();
       } catch (error, stackTrace) {
-        firstError ??= error;
-        firstStackTrace ??= stackTrace;
+        failures.add(_NotificationFailure(error, stackTrace));
       }
     }
-    return firstError == null
-        ? null
-        : _NotificationFailure(firstError, firstStackTrace!);
+    return failures;
   }
 }
 

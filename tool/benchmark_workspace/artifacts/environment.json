@@ -2,9 +2,11 @@
   "schemaVersion": 2,
   "generatedAtUtc": "2026-08-26T15:05:13.176963Z",
   "sourceRevision": {
-    "candidateCohort": "1.0.0-rc.2",
+    "candidateCohort": "1.0.0-rc.3",
     "evidenceStatus": "REFERENCE_ONLY_REPRODUCTION_REQUIRED"
   },
+  "publicClaimEligible": false,
+  "claimPolicy": "INTERNAL_GATE_ONLY",
   "operatingSystem": "linux",
   "operatingSystemVersion": "Linux 7.1.8-arch1-3 #1 SMP PREEMPT_DYNAMIC Tue, 11 Aug 2026 09:16:08 +0000",
   "processors": 4,
@@ -23,8 +25,8 @@
     "devToolsVersion": "2.60.0",
     "flutterVersion": "3.47.1"
   },
-  "comparatorLockFnv1a": "ae7cd05b",
-  "rawFnv1a": "16b822ed",
+  "comparatorLockFnv1a": "40d1a2bb",
+  "rawFnv1a": "6c5362a6",
   "seed": 140013,
   "warmupSamples": 3,
   "repetitions": 15,

@@ -56,7 +56,7 @@ unrelated cleanup, generated Dartdoc HTML, publication, or tags into a change.
 Push only the topic branch. Use a Conventional Commit PR title suitable for the
 final squash commit and complete every applicable template section: outcome,
 ownership, compatibility, platform impact, verification evidence, native
-integration, and remaining external gates.
+integration, and remaining GitHub-hosted gates.
 
 GitHub Actions checks out and builds the merge candidate. On `pull_request`, the
 release audit receives `github.event.pull_request.head.sha` only for authorship,
@@ -67,7 +67,7 @@ commits are audited while the synthetic queue merge is excluded.
 If a check fails, correct it on the same branch and keep the ruleset unchanged.
 Resolve review conversations and update the branch when required. With one
 maintainer, the ruleset intentionally requires zero approving reviews but still
-requires all five checks and resolved threads.
+requires `CI / Required` and resolved threads.
 
 ## Squash and clean up
 
@@ -76,7 +76,7 @@ web operations and that email privacy does not force a `noreply` author on the
 squash. Merge by squash only: the PR title becomes the commit title and commit
 messages become the body. GitHub automatically deletes the topic branch.
 
-After merge, wait for CI and Security on `main`. Confirm the remote has only
+After merge, wait for `CI / Required` on `main`. Confirm the remote has only
 `main`, the ruleset has no bypass actors, the new commit and all reachable
 history have canonical authorship, and GitHub lists only `ftr-tuta` as a
 contributor. Verify a fresh clone is clean. Create and verify a new final bundle
@@ -118,10 +118,6 @@ the commits.
 
 Protect `main` with no bypass actors, deletion and non-fast-forward protection,
 required thread resolution, an up-to-date branch, zero approvals while there is
-only one maintainer, and these required checks:
-
-- `Linux / Flutter 3.47.1 (floor)`;
-- `Linux / Flutter stable`;
-- `Windows / Flutter 3.47.1`;
-- `macOS and iOS / Flutter 3.47.1`;
-- `OSV / merge candidate`.
+only one maintainer, and exactly one required check: `CI / Required`. Its graph
+owns all platform, native, security, audit, benchmark, and canary dependencies;
+do not configure component jobs as separate required checks.

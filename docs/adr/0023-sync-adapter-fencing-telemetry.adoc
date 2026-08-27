@@ -8,7 +8,10 @@ a newer checkpoint, and identifiers or payloads can leak through telemetry.
 
 Decision:: Dio and ObjectBox sync adapters accept consumer callbacks and borrow
 consumer-owned clients and Stores. Checkpoint writes receive the active fencing
-token so persistence can reject stale workers. Cancellation bindings have
+token so persistence can reject stale workers. Dataset callbacks also receive
+typed authority; a fencing-capable adapter validates that token inside the same
+consumer transaction as the real dataset commit. An adapter whose provider
+cannot do this must state that dataset fencing is unsupported. Cancellation bindings have
 explicit cleanup. The observability adapter emits only static dataset/run
 facts, never keys, request IDs, checkpoints, payloads, credentials, or provider
 objects, and ends every span exactly once.

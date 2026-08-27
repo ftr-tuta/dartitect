@@ -13,7 +13,11 @@ rolls them back in reverse order after any failure, and transfers them to an
 `OwnedGraph` stops admission before draining active uses and then disposes in
 reverse order. `OwnedRuntimeSlot` serializes replacements, installs a complete
 new graph atomically, and drains the old graph afterward. Failed construction
-leaves the current graph authoritative.
+leaves the current graph authoritative. A failure while draining or disposing
+the old graph after publication throws
++OwnedRuntimeReplacementCleanupException+, which carries the authoritative
+published generation and the secondary cleanup failure. Callers must not retry
+that replacement blindly.
 
 Consequences:: Lifecycle ownership is deterministic without a service locator,
 global container, hidden provider graph, or framework dependency. Each

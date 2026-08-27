@@ -4,7 +4,7 @@
 
 ## Objetivo
 
-Inspeção local, scan, diagnósticos, migração de config, baseline revisado,
+Inspeção local, scan, diagnósticos, validação de config, baseline revisado,
 skills Codex e geradores transacionais no Dart VM, sem dependência de runtime.
 
 ## Quando usar
@@ -29,7 +29,7 @@ e as [receitas de implementação](https://github.com/ftr-tuta/dartitect/blob/ma
 ## Instalação
 
 ```console
-dart pub global activate dartitect_cli 1.0.0-rc.2
+dart pub global activate dartitect_cli 1.0.0-rc.3
 ```
 
 ## Exemplo mínimo
@@ -40,6 +40,8 @@ dartitect scan --no-baseline
 dartitect doctor
 dartitect model check
 dartitect dependencies audit
+dartitect fleet versions apps/a apps/b --root . --json
+dartitect fleet check apps/a apps/b --root . --json
 ```
 
 Veja `example/README.md` para comandos e exit codes.
@@ -47,6 +49,11 @@ Veja `example/README.md` para comandos e exit codes.
 ## Tour da API pública
 
 - `DartitectProjectService` compartilha inspect/scan/doctor/mudanças tipadas.
+- `DartitectFleetService` limita roots explícitos e fornece relatórios offline
+  de versões/check/policy fixada, além de previews de upgrade.
+- `DartitectChangePlan` expõe manifest ordenado de inputs semânticos. O digest
+  SHA-256 é revalidado sob lock de projeto do SO mantido até commit ou rollback;
+  assets irrelevantes não invalidam o plano.
 - `ProjectScanner`, `DartitectFinding` e `CommandEnvelope` fornecem resultados.
 - Config/migrator preservam chaves desconhecidas e originais.
 - Baseline ignora linhas e usa código/path/evidence.
@@ -64,6 +71,11 @@ Arquivos generated-once passam ao consumidor. Outputs de modelo e skills
 fully-generated continuam do tooling apenas enquanto o digest forte do manifest
 confere. `AGENTS.md` é preservado. `model sync` faz preview por padrão; somente
 `--apply` escreve ou recupera.
+Ignore `.dartitect/project-change.lock`; o path estável é necessário para que
+processos concorrentes coordenem no mesmo inode de lock do SO.
+A CLI de frota é read-only; `fleet upgrade` exige `--dry-run`. Bundles de policy
+são locais e fixados pelos digests SHA-256 do bundle e da policy informados pelo
+chamador. Veja o [guia de tooling de frota](../../docs/guides/fleet-tooling.pt-BR.md).
 
 ## Limitações
 
@@ -79,6 +91,8 @@ Dartitect nem analisar output humano em CLI/MCP.
 
 Execute `dart test`. Cubra Unicode/espaços, symlinks, traversal, conflitos,
 I/O parcial, recovery, rollback, JSON e consumidores gerados.
+Os testes de corrida cross-process e lock interrompido rodam em Linux, Windows
+e macOS pela matriz de verificação do repositório.
 
 ## Links
 

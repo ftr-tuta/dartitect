@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "auditDate": "2026-08-25",
   "profile": "native_strict",
   "documentation": "docs/guides/ecosystem-policy.md",
@@ -40,6 +40,7 @@
     "json_annotation": {"decision":"approved","owner":"Google","publisher":"google.dev","repository":"https://github.com/google/json_serializable.dart","compatibility":"infrastructure DTO boundary"},
     "json_serializable": {"decision":"approved","owner":"Google","publisher":"google.dev","repository":"https://github.com/google/json_serializable.dart","compatibility":"consumer-owned DTO generation"},
     "lottie": {"decision":"reviewed_exception","owner":"Dartitect maintainers","publisher":"xaha.dev","repository":"https://github.com/xvrh/lottie-flutter","compatibility":"requires a consumer-owned overlay and presentation boundary"},
+    "listen": {"decision":"approved_primitive","boundary":"pure_dart_primitive","maturity":"reviewed","compatibility":"nominal interoperability with Flutter listenables is not established","adoptionStatus":"deferred_until_real_consumer","owner":"Dartitect maintainers","publisher":"dart.dev","repository":"https://github.com/dart-lang/tools/tree/main/pkgs/listen"},
     "mapbox_maps_flutter": {"decision":"approved","owner":"Mapbox","publisher":"mapbox.com","repository":"https://github.com/mapbox/mapbox-maps-flutter","compatibility":"consumer-owned map provider boundary"},
     "mobx": {"decision":"prohibited_native_strict","replacement":"constructor injection and Dartitect resources","owner":"Dartitect maintainers","compatibility":"competing application state runtime"},
     "objectbox": {"decision":"approved","owner":"ObjectBox","publisher":"objectbox.io","repository":"https://github.com/objectbox/objectbox-dart","compatibility":"infrastructure boundary"},

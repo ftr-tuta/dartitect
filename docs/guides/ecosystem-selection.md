@@ -9,9 +9,9 @@ is the core for typed failures, concurrency, ownership, and offline mutation
 contracts. Every other package is optional. Provider SDKs, entities, generated
 models, credentials, and vendor configuration remain consumer-owned.
 
-For a new application or feature, use `$dartitect-design`. For an existing
-codebase, inventory it with `$dartitect-adopt` before selecting an incremental
-migration slice.
+For a new application or feature, use `$dartitect-design`. An existing codebase
+may use `$dartitect-audit` for read-only conformance evidence. It is not a path
+to migrate or coexist with another DI/application-state runtime.
 
 ## Capability matrix
 
@@ -42,7 +42,7 @@ to `$dartitect-tooling`; it is not an application entrypoint.
 | Scenario | Start with | Combine when needed |
 | --- | --- | --- |
 | New application or feature | `$dartitect-design` | Route the selected boundary to one or more focused skills |
-| Existing codebase migration | `$dartitect-adopt` | Add focused skills only for the current migration slice |
+| Existing codebase conformance audit | `$dartitect-audit` | Read-only evidence; no conversion plan is emitted |
 | Immutable generated values | `$dartitect-modeling` | `$dartitect-tooling` for CI/release integration |
 | Simple Flutter runtime | `$dartitect-runtime` | `$dartitect-testing` |
 | Reactive lifecycle and UI | `$dartitect-reactive` | `$dartitect-runtime`, `$dartitect-testing` |

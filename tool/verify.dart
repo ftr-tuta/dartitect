@@ -17,6 +17,12 @@ Future<void> main(List<String> arguments) async {
     ]),
     const _Command('flutter', <String>['analyze']),
     const _Command('dart', <String>['run', 'tool/check_goal_gates.dart']),
+    const _Command('dart', <String>['run', 'tool/check_optional_slices.dart']),
+    const _Command('dart', <String>['run', 'tool/check_goal09_evidence.dart']),
+    const _Command('dart', <String>[
+      'run',
+      'tool/check_technical_hardening_readiness.dart',
+    ]),
     const _Command('dart', <String>['run', 'tool/check_package_topology.dart']),
     const _Command('dart', <String>[
       'run',
@@ -47,6 +53,28 @@ Future<void> main(List<String> arguments) async {
     ]),
     const _Command('dart', <String>['run', 'tool/check_model_benchmark.dart']),
     const _Command('dart', <String>[
+      '--enable-asserts',
+      'run',
+      'tool/benchmark_diagnostics.dart',
+      'debug',
+    ]),
+    const _Command('dart', <String>[
+      'run',
+      'tool/benchmark_diagnostics.dart',
+      'profile',
+    ]),
+    const _Command('dart', <String>[
+      '--enable-asserts',
+      'run',
+      'tool/benchmark_lifecycle_churn.dart',
+      'debug',
+    ]),
+    const _Command('dart', <String>[
+      'run',
+      'tool/benchmark_lifecycle_churn.dart',
+      'profile',
+    ]),
+    const _Command('dart', <String>[
       'run',
       'tool/check_pure_dart_hardening.dart',
     ]),
@@ -70,12 +98,6 @@ Future<void> main(List<String> arguments) async {
       const _Command('dart', <String>[
         'run',
         'tool/check_rc_readiness.dart',
-        '--contract-only',
-      ]),
-    if (!stableCohort)
-      const _Command('dart', <String>[
-        'run',
-        'tool/check_rc_artifacts.dart',
         '--contract-only',
       ]),
     if (!stableCohort)
@@ -105,7 +127,7 @@ Future<void> main(List<String> arguments) async {
     ]),
     const _Command('dart', <String>[
       'test',
-      'tool/run_native_evidence_test.dart',
+      'tool/run_native_ci_evidence_test.dart',
     ]),
     const _Command('dart', <String>[
       'test',
@@ -117,7 +139,12 @@ Future<void> main(List<String> arguments) async {
     ]),
     const _Command('dart', <String>[
       'test',
-      'tool/prepare_stable_candidate_test.dart',
+      'tool/check_rc_readiness_test.dart',
+      'tool/check_publication_readiness_test.dart',
+    ]),
+    const _Command('dart', <String>[
+      'test',
+      'tool/check_rc_validation_test.dart',
     ]),
     const _Command('dart', <String>[
       'run',
@@ -165,8 +192,10 @@ Future<void> main(List<String> arguments) async {
       'examples/model_generator_fixture',
     ]),
     const _Command('dart', <String>[
-      'analyze',
-    ], workingDirectory: 'tool/analyzer_plugin_fixture'),
+      'test',
+      'tool/check_boundary_parity_test.dart',
+    ]),
+    const _Command('dart', <String>['run', 'tool/check_boundary_parity.dart']),
     if (nativeObjectBox)
       const _Command('flutter', <String>[
         'test',

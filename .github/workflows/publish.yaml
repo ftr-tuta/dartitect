@@ -1,0 +1,178 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact main SHA with a successful CI / Required run
+        required: true
+        type: string
+      ci_run_id:
+        description: CI run that produced actions-readiness-v1
+        required: true
+        type: string
+      channel:
+        description: Publication action to perform
+        required: true
+        type: choice
+        options:
+          - github-release
+          - pub-dev-prerelease
+          - pub-dev-stable
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: publish-${{ inputs.source_sha }}-${{ inputs.channel }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish / validated Actions readiness
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_SHA: ${{ inputs.source_sha }}
+      CI_RUN_ID: ${{ inputs.ci_run_id }}
+      CHANNEL: ${{ inputs.channel }}
+    steps:
+      - name: Validate input shapes
+        shell: bash
+        run: |
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "source_sha must be a full lowercase commit SHA." >&2
+            exit 64
+          }
+          [[ "$CI_RUN_ID" =~ ^[1-9][0-9]*$ ]] || {
+            echo "ci_run_id must be a positive Actions run ID." >&2
+            exit 64
+          }
+      - name: Check out the exact source SHA
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: "3.47.1"
+          channel: stable
+          cache: true
+      - name: Resolve workspace
+        run: flutter pub get
+      - name: Verify the referenced successful CI run on main
+        shell: bash
+        run: |
+          run_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${CI_RUN_ID}")"
+          jq -e \
+            --arg sha "$SOURCE_SHA" \
+            '.name == "CI" and .event == "push" and .head_branch == "main" and .head_sha == $sha and .conclusion == "success"' \
+            <<<"$run_json" >/dev/null || {
+              echo "ci_run_id is not a successful main CI run for source_sha." >&2
+              exit 1
+            }
+          ci_run_attempt="$(jq -er '.run_attempt | select(type == "number" and . > 0)' <<<"$run_json")"
+          echo "CI_RUN_ATTEMPT=$ci_run_attempt" >>"$GITHUB_ENV"
+          jobs_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${CI_RUN_ID}/jobs?per_page=100")"
+          jq -e \
+            '[.jobs[] | select(.name == "CI / Required" and .conclusion == "success")] | length == 1' \
+            <<<"$jobs_json" >/dev/null || {
+              echo "ci_run_id has no unique successful CI / Required job." >&2
+              exit 1
+            }
+          git merge-base --is-ancestor "$SOURCE_SHA" origin/main || {
+            echo "source_sha is not contained in main." >&2
+            exit 1
+          }
+      - name: Download actions-readiness-v1 from the referenced run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: actions-readiness-v1
+          path: build/actions-readiness-v1
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.ci_run_id }}
+      - name: Validate SHA, run ID, conclusions, and artifact hashes
+        run: >-
+          dart run tool/check_publication_readiness.dart
+          --source-sha=${SOURCE_SHA}
+          --ci-run-id=${CI_RUN_ID}
+          --channel=${CHANNEL}
+          --manifest=build/actions-readiness-v1/actions-readiness-v1.json
+      - name: Record the human trigger
+        shell: bash
+        run: |
+          mkdir -p build/publication
+          jq -n \
+            --arg actor "$GITHUB_ACTOR" \
+            --arg sourceSha "$SOURCE_SHA" \
+            --argjson ciRunId "$CI_RUN_ID" \
+            --arg channel "$CHANNEL" \
+            --arg runUrl "https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            '{schemaVersion: 1, actor: $actor, sourceSha: $sourceSha, ciRunId: $ciRunId, channel: $channel, publicationRunUrl: $runUrl}' \
+            >build/publication/provenance.json
+          {
+            echo "### Publication trigger"
+            echo "- Actor: ${GITHUB_ACTOR}"
+            echo "- Source: ${SOURCE_SHA}"
+            echo "- CI run: ${CI_RUN_ID}"
+            echo "- Channel: ${CHANNEL}"
+          } >>"$GITHUB_STEP_SUMMARY"
+      - name: Create GitHub Release
+        if: inputs.channel == 'github-release'
+        shell: bash
+        run: |
+          version="$(jq -r .cohortVersion tool/package_release_contract.json)"
+          gh release create "v${version}" \
+            --target "$SOURCE_SHA" \
+            --title "Dartitect ${version}" \
+            --generate-notes \
+            build/publication/provenance.json \
+            build/actions-readiness-v1/actions-readiness-v1.json
+      - name: Validate pub.dev channel against the cohort
+        if: startsWith(inputs.channel, 'pub-dev-')
+        shell: bash
+        run: |
+          version="$(jq -r .cohortVersion tool/package_release_contract.json)"
+          if [[ "$CHANNEL" == "pub-dev-prerelease" && ! "$version" =~ - ]]; then
+            echo "The prerelease channel requires a prerelease cohort." >&2
+            exit 1
+          fi
+          if [[ "$CHANNEL" == "pub-dev-stable" && "$version" =~ - ]]; then
+            echo "The stable channel rejects prerelease cohorts." >&2
+            exit 1
+          fi
+      - name: Create the exact publication tag
+        if: startsWith(inputs.channel, 'pub-dev-')
+        shell: bash
+        run: |
+          version="$(jq -r .cohortVersion tool/package_release_contract.json)"
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
+            --method POST \
+            -f ref="refs/tags/v${version}" \
+            -f sha="$SOURCE_SHA"
+      - name: Publish the cohort to pub.dev in topological order
+        if: startsWith(inputs.channel, 'pub-dev-')
+        env:
+          PUB_DEV_TOKEN: ${{ secrets.PUB_DEV_TOKEN }}
+        shell: bash
+        run: |
+          [[ -n "$PUB_DEV_TOKEN" ]] || {
+            echo "PUB_DEV_TOKEN is required for pub.dev publication." >&2
+            exit 1
+          }
+          dart pub token add https://pub.dev --env-var PUB_DEV_TOKEN
+          while IFS= read -r package; do
+            (cd "packages/${package}" && dart pub publish --force)
+          done < <(jq -r '.publicationOrder[]' tool/package_release_contract.json)
+      - name: Upload publication provenance
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: publication-provenance-${{ github.run_id }}
+          path: build/publication/provenance.json
+          if-no-files-found: warn
+          retention-days: 90

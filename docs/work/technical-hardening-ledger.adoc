@@ -1,0 +1,653 @@
+= Dartitect technical hardening ledger
+:revdate: 2026-08-27
+:toc: left
+:toclevels: 3
+
+NOTE: This ledger preserves historical findings. Its earlier separate
+CI/Security receipts and connected-hardware policy were superseded by the
+GitHub-hosted `CI / Required` and `actions-readiness-v1` policy.
+
+== Authority and baseline
+
+This ledger tracks the findings selected by
+`DARTITECT_PLANO_UNICO_DE_EVOLUCAO_CODEX.adoc`. The plan's historical baseline
+(`0ad88ea1b3402cf60f1184a364e8d8d8dff4a012`, `1.0.0-rc.1`) is not the active
+source baseline. Work started from the fetched `origin/main` at
+`eb2693fa92ccf30546568ade6133c253776d5cab`, version `1.0.0-rc.2`, on branch
+`feat/technical-hardening-plan` with a clean tracked tree.
+
+The allowed states are `UNREPRODUCED`, `RED`, `FIXED`, `REJECTED`, and
+`DEFERRED`. An existing implementation, test, or release note is context only:
+it does not move a finding from `UNREPRODUCED` until the finding's exact minimal
+reproduction has been executed.
+
+== Baseline evidence
+
+[cols="1,3"]
+|===
+|Item |Evidence
+
+|Host SDK
+|Flutter `3.47.1`, Dart `3.13.1`, Linux x64. Workspace constraints are Dart
+`^3.13.0` and Flutter `>=3.47.1` for Flutter packages.
+
+|Formatting
+|`dart format --output=none --set-exit-if-changed .` formatted 332 files with
+zero changes.
+
+|Static analysis
+|Root `dart analyze` completed with no issues. The aggregate verifier also ran
+the analyzer-plugin fixture and observed its four intentional `info`
+diagnostics (`DT1001`, direct console logging, empty catch, and sensitive
+metadata); that fixture is expected to contain violations.
+
+|Workspace gate
+|`dart run tool/verify.dart --skip-get --native-objectbox` passed. It covered
+formatting, Flutter analysis, topology, package/release contracts, policy,
+benchmarks, hardening checks, docs, skills, MCP catalog, API snapshot, package
+and example tests, the real native ObjectBox fixture, and CLI dry-runs.
+
+|Ignored tests
+|The ordinary reference-app pass skipped one native ObjectBox workload by
+design. The verifier immediately reran that test with native ObjectBox enabled,
+and it passed. No selected test remained unexecuted.
+
+|Warnings and updates
+|Dependency resolution reported ten newer incompatible versions (nine in the
+isolated ObjectBox fixture). Constraints were not changed because dependency
+updates are outside Goal 00.
+
+|Flakiness
+|No retry, intermittent failure, unobserved asynchronous error, or residual
+resource failure was observed in the baseline run.
+
+|Release state
+|Existing authorities remain fail-closed: `NOT_READY_FOR_1_0_RC` and stable
+candidate `NOT_ASSEMBLED/NOT_AUTHORIZED`. The repository already documents a
+known `OwnedRuntimeSlot.replaceGraph` semantic defect; its exact finding remains
+`UNREPRODUCED` here until Goal 02 captures the required red test.
+|===
+
+== Package and boundary map
+
+The workspace publishes sixteen lockstep packages and seventeen public
+entrypoints (the Flutter package has core and reactive entrypoints).
+
+[cols="1,3,3"]
+|===
+|Layer |Packages |Ownership and dependency boundary
+
+|Pure Dart foundation
+|`dartitect`
+|`Result`, cancellation, command lanes, lifecycle, owned graphs, snapshots, and
+payload-free architecture events. It has no Flutter import.
+
+|Pure Dart orchestration
+|`dartitect_sync`, `dartitect_isolates`
+|Sync depends only on the core and owns orchestration/protocol contracts;
+isolates depend only on the core and transfer messages. Neither imports
+Flutter.
+
+|Flutter integration
+|`dartitect_flutter`
+|Owns Flutter listenables, widgets, builders, scheduler/TickerMode integration,
+effects, ViewModel hosts, and the reactive graph. It depends on the pure core.
+
+|Provider-neutral observability and testing
+|`dartitect_observability`, `dartitect_testing`
+|Observability depends on core contracts. Testing supplies deterministic
+harnesses over core, sync, isolates, and observability.
+
+|Consumer-owned infrastructure adapters
+|`dartitect_dio`, `dartitect_objectbox`, `dartitect_sentry`,
+`dartitect_privacy`, `dartitect_media`
+|Adapters wrap selected provider boundaries; clients, stores, schemas,
+credentials, persistence, and product policy remain consumer-owned.
+
+|Pure capabilities
+|`dartitect_geometry`, `dartitect_locale_br`
+|Independent value/capability packages without application-state ownership.
+
+|Tooling
+|`dartitect_cli`, `dartitect_lints`, `dartitect_mcp`
+|CLI owns scanning and reviewed filesystem plans; lints own analyzer-hosted
+diagnostics; MCP composes bounded CLI services and reviewed previews.
+|===
+
+No `package:flutter` or `dart:ui` import exists under `packages/dartitect`,
+`packages/dartitect_sync`, or `packages/dartitect_isolates`. No
+`dartitect_state` package or production `package:listen` dependency exists.
+
+== File ownership for selected findings
+
+[cols="1,3"]
+|===
+|Finding area |Primary owners
+
+|Owned graph publication
+|`packages/dartitect/lib/src/lifecycle/owned_graph.dart` and
+`packages/dartitect/test/owned_graph_test.dart`
+
+|Command scheduling
+|`packages/dartitect/lib/src/concurrency/command_lane.dart` and command-lane
+tests under `packages/dartitect/test/`
+
+|Reactive transactions and definitions
+|`packages/dartitect_flutter/lib/src/reactive/reactive_owner.dart`, its tests,
+and `ViewModelHost` tests for reassembly
+
+|Isolate correlation
+|`packages/dartitect_isolates/lib/src/isolate_worker.dart` and its real-worker
+tests
+
+|Effect delivery
+|`packages/dartitect_flutter/lib/src/effect_channel.dart` and
+`effect_channel_test.dart`
+
+|Sync authority and terminal outcomes
+|`packages/dartitect_sync/lib/src/models.dart`, `ports.dart`, `engine.dart`, and
+sync contract tests/fixtures
+
+|CLI transactions
+|`packages/dartitect_cli/lib/src/project/`, generation/transaction services,
+and tooling tests
+
+|Scanner/plugin parity
+|`packages/dartitect_cli/lib/src/scan/`, generated shared boundary policy, and
+`packages/dartitect_lints/lib/src/`
+|===
+
+== Findings
+
+[cols="1,1,2,4"]
+|===
+|ID |State |Goal |Baseline note and next evidence
+
+|`DRT-P0-001`
+|`FIXED`
+|02
+|RED: the minimal old-cleanup failure published generation 2 and its new root,
+but the caller received only a generic `ResourceCleanupException`, with no way
+to distinguish post-publication cleanup from failed publication. FIXED:
+`OwnedRuntimeReplacementCleanupException` now carries
+`publishedGeneration == 2`, the original cleanup error/stack, and preserves the
+new authoritative root. Focused lifecycle tests pass.
+
+|`DRT-P0-002`
+|`FIXED`
+|02
+|RED: disposing from `onChanged` during the first unkeyed and keyed transition
+raised `LateInitializationError: Field 'work' has not been initialized` while
+draining the newly visible entry. FIXED: each entry publishes an initialized
+completion latch before the callback and attaches the action afterward. The
+full cancel/dispose reentrancy matrix passes for reject, join, drop, sequential,
+restart-latest, concurrent, and keyed policies with zero residual work.
+
+|`DRT-P0-003`
+|`FIXED`
+|03
+|RED: a computed-originated `update` returned normally, published an implicit
+nested flush, and failed the expected rejection; the pending graph was exposed
+to two logical commits. FIXED: `ReactiveOwnerPhase` rejects writes during
+compute/commit, custom equality runs under compute, failed compute preserves the
+snapshot/revision, and pre-commit dispose is rejected. Notify reentrancy remains
+explicitly deferred.
+
+|`DRT-P0-004`
+|`FIXED`
+|03
+|RED: the value and revision committed, then `StateError: listener failed` was
+rethrown from `notifyListenersSafely` to the mutation caller. FIXED: every
+listener failure is reported after commit, other listeners continue, reporter
+failure is isolated, and `update` returns its successful body outcome without
+encouraging retry.
+
+|`DRT-P1-001`
+|`FIXED`
+|03
+|RED: re-registering the same type/name/dependencies returned the old node but
+kept its obsolete compute closure (`expected 6`, `actual 4`). FIXED:
+`ReactiveKey` identity is owner-local type/namespace/name with required positive
+definition revision and non-empty fingerprint. Compatible registration refreshes
+the closure; mismatches report both definitions. `ViewModelHost.onReassemble`
+preserves compatible state and reports incompatible definitions through
+`FlutterError`; hot restart remains a new owner/graph.
+
+|`DRT-P0-005`
+|`FIXED`
+|04
+|RED: with the supervisor event loop blocked across deadline/result ordering,
+public ID `reused` was admitted again and the new request returned the old
+payload (`expected 2`, `actual 1`). An early unsendable-payload failure also
+left the unawaited ACK Future error in the zone. FIXED: protocol v2 uses a
+monotonic generation-local internal nonce on the wire, discards stale nonces,
+and installs internal observation branches for ACK/result while preserving
+their caller-visible errors.
+
+|`DRT-P0-006`
+|`FIXED`
+|04
+|RED: an effect queued before mount produced timeline
+`effect:false:9, frame`, proving synchronous `initState` delivery before the
+first post-frame context. FIXED: Flutter attachment is post-frame; delivery
+waits while `TickerMode` is disabled or the route is non-current, resumes once
+for the same binding, and is released by detach/swap/channel disposal. Headless
+channel policy remains independent and immediate.
+
+|`DRT-P0-007`
+|`FIXED`
+|05
+|RED: a dataset handler advanced past lease expiry and still performed its
+consumer-owned write (`datasetApplied == true`). FIXED: each handler receives a
+run-bound `SyncAuthority`; the engine checks it before and after application,
+and the consumer contract requires the fencing token to be compared atomically
+inside the dataset transaction. Tests reject stale token 7 against store token
+8 and prevent application after expiry.
+
+|`DRT-P0-008`
+|`FIXED`
+|05
+|RED: journal and lease-release faults after successful application/checkpoint
+escaped as raw `StateError`s without a durable terminal account. FIXED:
+application, checkpoint, journal, lease release, and optional consumer cleanup
+produce independent receipts. Unexpected terminal failures throw
+`SyncRunTerminalException` only after release, cleanup, and progress close,
+carrying the complete report and original cause/stack.
+
+|`DRT-P0-009`
+|`FIXED`
+|06
+|RED: the reviewed baseline token was only eight hex digits (`96e1523b`), a
+128 KiB unrelated asset caused `stale_plan`, and concurrent callers produced
+zero receipts through filesystem races. FIXED: schema-v1 semantic manifests use
+SHA-256; one service-owned OS lock spans revalidation through journal cleanup;
+real processes produce exactly one commit; abrupt holder death releases the
+lock; relevant Dart inputs still invalidate the plan.
+
+|`DRT-P0-010`
+|`FIXED`
+|06
+|RED: standard Freezed/header and configured-suffix files were not generated;
+the live plugin reported local `Store`, local `getIt`, and an ordinary
+configuration map as provider/locator/sensitive telemetry violations. FIXED:
+resolved library identity, telemetry-sink context, header+suffix policy, and an
+explicit invalid-config diagnostic feed one five-case scanner/plugin corpus.
+Budgets passed at 177 ms scanner and 3413 ms analyzer.
+|===
+
+== Reproduction commands
+
+[source,console]
+----
+git fetch --prune origin
+git switch -c feat/technical-hardening-plan origin/main
+dart --version
+flutter --version
+dart format --output=none --set-exit-if-changed .
+dart analyze
+dart run tool/verify.dart --skip-get --native-objectbox
+----
+
+The fetch is necessary because the previously checked-out remote topic branch
+had been deleted and `origin/main` had been force-updated. No prior local diff
+was carried into the new branch.
+
+== Goal 02 evidence
+
+[cols="1,3"]
+|===
+|Item |Evidence
+
+|Lifecycle reproduction
+|`owned_graph_test.dart` proved the ambiguous post-publication cleanup outcome
+before the production change. The fixed test catches the typed replacement
+cleanup exception, verifies generation 2 and its new root remain current, and
+retains `ResourceCleanupException` as the secondary old-graph failure.
+
+|Command reproduction
+|The first transition callback disposed unkeyed and keyed lanes and reproduced
+the same late-initialization failure in both schedulers before the fix.
+
+|Race matrix
+|`command_lane_race_test.dart` covers reentrant cancel and dispose for all six
+unkeyed policies and their keyed forms. Every outcome is cancelled, repeated
+dispose is idempotent, and running/queued/key counts end at zero.
+
+|Public contract
+|The package changelog, EN/pt-BR package READMEs, lifecycle/command guides, and
+ADR 0019 document post-publication authority and callback reentrancy. The API
+snapshot now contains the typed exception across 17 public entrypoints.
+
+|Gates
+|The three focused test files passed 21 tests. API snapshot, public docs, MCP
+catalog, and `dart analyze packages/dartitect` all passed.
+|===
+
+== Goal 03 evidence
+
+[cols="1,3"]
+|===
+|Item |Evidence
+
+|Reactive reproductions
+|The first focused run failed exactly three new tests: compute-originated write
+returned instead of throwing; listener failure escaped after commit; compatible
+key reuse retained the old closure and produced 4 instead of 6.
+
+|Phase and atomicity matrix
+|Tests cover linear and diamond recomputation, nested writes, writes from
+compute and custom equality, compute rollback, monotonic recovery, notify
+reentrancy, pre-commit dispose rejection, notify-time terminal dispose, and an
+attempted cyclic redefinition. No listener observes a partial commit.
+
+|Definition lifecycle
+|Tests cover owner-local reuse, separate namespaces, explicit definition
+conflicts, compatible closure rebinding, incompatible reassembly reporting, and
+complete owner teardown. ADR 0029 distinguishes hot reload from hot restart.
+
+|Failure isolation
+|A failing listener and a failing reporter cannot alter the committed mutation
+outcome; healthy listeners still observe the same stable revision.
+
+|Gates
+|The focused matrix passed 25 tests. The complete `dartitect_flutter` suite
+passed 105 tests. Package/root analysis, API snapshot, public docs, and MCP
+catalog checks all passed.
+|===
+
+== Goal 04 evidence
+
+[cols="1,3"]
+|===
+|Item |Evidence
+
+|Isolate reproduction
+|A real worker queued its old result behind a supervisor deadline while the
+event loop was blocked. Reusing the now-terminal public ID completed the second
+request with the first value. A separate zoned test captured the unobserved ACK
+error when only `result` was awaited.
+
+|Protocol matrix
+|Protocol v2 tests cover ACK/success/expected failure, cooperative deadline,
+remote crash, fatal isolate exit, stale public-ID reuse, unsendable payload,
+independent Futures, repeated stop, non-cooperative handler, bounded force-kill,
+and zero residual requests.
+
+|Effect reproduction
+|The pre-mount widget test recorded callback execution before the first frame.
+The fixed matrix covers post-frame delivery, mounted context, TickerMode pause,
+non-current route pause/resume, channel swap, inactive channel disposal,
+consumer failure, FIFO/overflow, and active callback drain.
+
+|Contracts
+|ADRs 0030 and 0031 define wire nonce/versioning/transfer cost and post-frame
+Flutter delivery respectively. EN/pt-BR/AsciiDoc guides and package changelogs
+document the compatibility and ownership impact.
+
+|Gates
+|All 7 isolate-real tests and 109 Flutter package tests passed. Root analysis,
+API snapshot, public docs, and MCP catalog checks passed.
+|===
+
+== Goal 05 evidence
+
+[cols="1,3"]
+|===
+|Item |Evidence
+
+|Authority reproduction
+|A handler advanced the clock beyond lease expiry and then blindly applied its
+dataset. The fixed test observes `SyncAuthority.ensureAuthority()` failing and
+no application. A second transactional store test rejects stale fencing token
+7 while token 8 is authoritative, proving that the consumer boundary—not an
+engine-side preflight alone—owns the atomic comparison.
+
+|Terminal reproduction
+|Journal and lease-release faults after successful application/checkpoint were
+raw `StateError`s before the change. They now produce
+`SyncRunTerminalException` with the original cause/stack and receipts that keep
+successful application/checkpoint distinct from failed run-finalization.
+
+|Failure matrix
+|Tests cover expired authority, atomic stale-token rejection, expected dataset
+failure, unexpected application crash, checkpoint failure, journal failure,
+lease-release failure, and independent optional cleanup failure. Missing work
+is reported as incomplete/not-attempted rather than successful or cancelled.
+
+|Compatibility and contracts
+|Persisted journal format v1 and mutation/outbox behavior remain compatible.
+ADR 0032, ADRs 0022/0023, the sync threat models, EN/pt-BR package and recipe
+docs, and managed offline/testing skills define authority and terminal receipt
+semantics.
+
+|Gates
+|The focused sync engine matrix and complete package suite passed 27 tests. API
+snapshot, public docs, MCP catalog, managed-skill coverage, and root analysis
+passed.
+|===
+
+== Goal 06 evidence
+
+[cols="1,3"]
+|===
+|Item |Evidence
+
+|Transactional reproduction
+|The RED service tests observed an eight-character FNV token, stale-plan after
+an unrelated binary asset, and no successful receipt when two services raced.
+The fixed plan exposes sorted semantic inputs and a 64-character SHA-256 digest.
+Unrelated assets remain stable while Dart input changes are stale.
+
+|Lock and recovery matrix
+|In-process and real two-process tests permit exactly one application. A helper
+process is killed while holding the actual OS lock; the next reviewed commit is
+valid and uncorrupted. Baseline backup/journal and Codex backup recovery pass,
+and the complete generator fault matrix restores or commits one whole result at
+every transition. The same tests run in the Linux/Windows/macOS CI jobs.
+
+|Lint reproduction and precision
+|The live analyzer fixture originally reported local `Store`, local `getIt`,
+and a non-telemetry `password` map. These disappear through resolved library
+identity and sink context, while `Scope.setContexts` remains a true positive.
+Invalid config emits `dartitect_invalid_configuration`; reviewed header plus
+default/configured suffix recognizes Freezed, ObjectBox/json_serializable, and
+router outputs.
+
+|Parity and performance
+|`boundary_parity_corpus.json` is the schema-v1 true/false-positive authority
+for scanner and plugin. Five exact cases passed both hosts. The last gate used
+177 ms of the 2000 ms scanner budget and 3413 ms of the 75000 ms analyzer
+budget; machine JSON contracts remain versioned and paths project-relative.
+
+|Gates
+|All 71 CLI, 9 lints, and 17 MCP tests passed. Root analysis, pure-Dart
+hardening, API snapshot, public docs, MCP catalog, shared generated policy,
+managed-skill coverage, formatting, and parity checks passed.
+|===
+
+== Goal 07 evidence
+
+[cols="1,3"]
+|===
+|Item |Evidence
+
+|Derived generation gate
+|A loader deliberately ignored cooperative cancellation and completed its old
+result after a dependency change. Restart-latest drained that operation, both
+dependency and lifecycle guards rejected value 10, and only generation 1 value
+20 reached ready state. Dependency listeners existed only during the observed
+hot lifecycle and were zero after close.
+
+|State and family contract
+|Tests cover waiting/ready/expected failure/crash, preserve/discard/
+stale-while-revalidate policy surface, equality deduplication, retry/disposal,
+and explicit family integration. Equal keys share the same underlying
+`LiveResource`; the existing family remains authoritative for leases, TTL,
+count/weight bounds, and eviction.
+
+|Diagnostics protocol and privacy
+|Schema v1 accepts only eight exact fields and eight fixed subject categories;
+unknown fields and unsupported versions fail closed. IDs are emitter-generated
+opaque UUID-shaped values. The bounded ring overwrites old entries and clears
+on dispose; reporter failure is isolated once. Failure strings and stacks have
+no event field, and off mode allocates no ID or changes caller control flow.
+
+|Topology and performance
+|`DiagnosticsTopologyHarness` reconstructed all owner/node/command/resource/
+family/effect/sync/isolate lifecycles and rejected unknown, out-of-order, and
+post-terminal facts. Five-sample debug/profile gates measured topology medians
+of 22/21 ns per event on this host within a 50,000 ns budget; 256 bounded events
+became zero after dispose.
+
+|Experimental boundary
+|ADR 0034 records a removal-before-stable contract if real use, lifecycle/leak,
+performance, privacy, or no-global-hook constraints fail. No package or public
+entrypoint was added. Protocol/construction APIs are marked experimental and no
+Flutter or `listen` global hook is installed.
+
+|Gates
+|All 67 core, 24 testing, and 123 Flutter tests passed. Root format/analysis,
+runtime and pure-Dart hardening, package topology, API/SDK snapshots, public
+docs, MCP catalog, and managed-skill coverage passed.
+|===
+
+== Goal 08 evidence
+
+[cols="1,3"]
+|===
+|Item |Evidence
+
+|Independent evidence audit
+|Repository search found existing explicit eager computed nodes and command
+execution IDs, but no dedicated lazy lifecycle, bounded command-progress
+consumer, consumer-owned restoration schema, reversible local-only history use,
+or DevTools extension consumer. Diagnostics construction remains experimental.
+
+|Classification
+|`optional_slice_gate.json` lists exactly the five Goal 08 slices. Each is
+`DEFERRED` with dedicated ADR, real consumer, benchmark, and package-boundary
+review explicitly `MISSING`. `blocksStable1` is false.
+
+|Scope protection
+|The checker rejects an activated status, claimed partial evidence, missing
+slice, `dartitect_state` package, or reserved public marker. No runtime code,
+public API, dependency, persisted schema, package, or DevTools integration was
+added.
+
+|Decision
+|ADR 0035 preserves the restrictions against implicit dependency tracking,
+progress event buses, repository-replacing restoration, undo of external
+effects, and a mutating first DevTools version. Evidence for one future slice
+cannot authorize siblings.
+
+|Gate
+|`dart run tool/check_optional_slices.dart` and focused analysis passed; the
+checker is now part of the aggregate verifier.
+|===
+
+== Goal 09 evidence
+
+[cols="1,3"]
+|===
+|Item |Evidence
+
+|SARIF and fleet boundary
+|`scan --sarif` emits exact SARIF 2.1.0 with relative artifact URIs, bounded
+sanitized messages, and no source evidence/remediation. Fleet roots are
+explicit, normalized, sorted, realpath-confined, and reject duplicate,
+absolute, traversal, missing-pubspec, and escaping symlink inputs. The service
+contains no process, network, or write operation.
+
+|Pinned policy and upgrade safety
+|`fleet_policy_bundle.json` pins the versioned policy SHA-256 and the caller
+must pin the bundle SHA-256. Fleet policy accepts no download, overlay, or
+time-relative exception. Upgrade is CLI dry-run only and returns a 64-character
+semantic state token. Typed application revalidates under the shared OS lock
+and commits pubspec through stage/backup/journal/digest verification with tested
+stale, unsupported-source, rollback, cleanup, and interruption recovery.
+
+|Real consumers
+|The minimal hosted consumer exercises Flutter construction, consumer-owned
+model sync/check, non-cooperative derived cancellation, an 8 MiB ignored asset,
+and two explicit workspace packages. Offline-first exercises ObjectBox local
+authority, atomic outbox, reconnect/idempotency, sync/isolate teardown, forced
+session logout/drain, and a host desktop build. The native capability consumer
+exercises its Flutter tests. All archives resolve from an ephemeral hosted
+repository rather than monorepo paths.
+
+|Benchmark maintenance
+|The competitive matrix retains callback/rebuild fan-out, reactive
+transactions, all command policies, resources/families, race fuzz, memory, and
+zero residual census. Model sync/check covers tooling at 100/500 models.
+Diagnostics and lifecycle create/dispose run five debug/profile samples with
+bounded/zero residual gates. Tracked reproduction-pending data has
+`publicClaimEligible=false` and `INTERNAL_GATE_ONLY` enforced by checker.
+
+|Distribution and release model
+|ADR 0036 selects separate exact-version CLI activation/dev dependency and
+defers shipped AOT binaries until signed per-host provenance/update/rollback is
+proven. ADR 0037 records runtime, Flutter, tooling, and adapter validation
+cohorts while preserving the single lockstep publication version and human
+release authority.
+
+|Gates
+|All 81 CLI tests, 2 direct hardening canary tests, three isolated hosted
+consumer canaries, native ObjectBox, Linux desktop build, full analysis,
+formatting, docs/API/SDK/MCP, Goal 09 checker, and debug/profile benchmarks
+passed. Dirty materialization is explicitly development-only; Goal 10 must
+reproduce on the exact clean candidate SHA.
+|===
+
+== Goal 10 evidence
+
+[cols="1,3"]
+|===
+|Item |Evidence
+
+|SemVer and candidate identity
+|The sixteen packages, internal constraints, examples, generated metadata,
+release contracts, canary contract, API snapshot, SDK inventory, supply-chain
+documents, and public docs form the lockstep `1.0.0-rc.3` cohort. Historical
+RC.2 changelog entries and the audited baseline SHA remain unchanged. Public
+API and isolate protocol v2 changes are therefore not misidentified as RC.2.
+
+|Complete local matrix
+|One continuous aggregate verifier pass covered format, root analysis, every
+hardening/release checker, package and Flutter suites, boundary parity,
+generated fixtures, native ObjectBox restart/workload, diagnostics and
+lifecycle five-sample debug/profile benchmarks, and zero residual resources.
+
+|Generated consumers
+|Seven disposable projects (`core`, `observability`, `dio`, `objectbox`,
+`sentry`, `full`, and `background`) passed deep doctor, unbaselined scan,
+analysis, tests, web build, Linux build, and applicable native ObjectBox tests.
+This produced fourteen host builds without relying on monorepo package imports
+inside generated application source.
+
+|API, docs, licenses, and security
+|All seventeen public entrypoints match the reviewed snapshot. Dartdoc passed
+all sixteen packages without warnings/errors. The SBOM/license inventory covers
+111 packages with zero `NOASSERTION`; public-doc parity covers eighteen
+translated guides; CI/Security policy pins reviewed external Actions and keeps
+formal remote receipts fail-closed.
+
+|Exact-candidate evidence boundary
+|The source commit cannot embed its own SHA or later receipts. Clean-clone
+publish dry-runs, packaged canaries, and candidate benchmarks are emitted under
+ignored `build/` paths after the candidate commit. Those receipts must match the
+reported SHA/tree; dirty runs remain development-only and cannot authorize a
+release.
+
+|Findings and optional work
+|Every selected `DRT-P0-001` through `DRT-P0-010` and `DRT-P1-001` finding is
+`FIXED`. The five Goal 08 slices remain explicitly `DEFERRED`, and Goal 07
+construction APIs remain experimental with documented discard criteria. No
+risk is represented as completed evidence.
+
+|Authority and recommendation
+|`technical_hardening_readiness.json`, RC readiness, stable readiness, and
+distribution authorization all fail closed. Recommendation is `NOT READY`
+until unique same-SHA CI/Security, physical Android 14/API 34, required
+iOS/native floor/current, and human-approval evidence exists. No tag, GitHub
+Release, pub.dev publication, or distribution authorization is created.
+|===

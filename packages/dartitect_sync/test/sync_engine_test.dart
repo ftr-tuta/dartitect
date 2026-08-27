@@ -235,6 +235,264 @@ void main() {
     },
   );
 
+  test('stale lease cannot authorize a consumer dataset commit', () async {
+    final clock = _Clock(DateTime.utc(2026, 8, 24));
+    final lease = _Lease(
+      clock.now().add(const Duration(minutes: 2)),
+      7,
+      renewResult: false,
+    );
+    var datasetApplied = false;
+    final engine = SyncEngine<String, int, _Failure>(
+      datasets: <SyncDataset<String, int, _Failure>>[
+        SyncDataset<String, int, _Failure>(
+          key: 'notes',
+          synchronize: (context) async {
+            clock.value = clock.value.add(const Duration(minutes: 3));
+            final authority = context.authority;
+            if (authority == null || !await authority.ensureAuthority()) {
+              return Err<_Failure>(const _Failure(), StackTrace.current);
+            }
+            datasetApplied = true;
+            return const Ok<SyncDatasetOutcome<int>>(
+              SyncDatasetOutcome<int>.checkpoint(1),
+            );
+          },
+        ),
+      ],
+      graph: SyncDependencyGraph<String>(keys: const <String>['notes']),
+      checkpoints: _MemoryCheckpoints<String, int>(),
+      leases: _LeaseStore(lease),
+      clock: clock,
+      leaseTtl: const Duration(minutes: 1),
+    );
+
+    final report = await engine.start().done;
+
+    expect(datasetApplied, isFalse);
+    expect(report.datasets.single.status, SyncDatasetStatus.failed);
+    expect(
+      report.datasets.single.application.status,
+      SyncBoundaryStatus.failed,
+    );
+    await engine.disposeAsync();
+  });
+
+  test('consumer store atomically rejects a stale fencing token', () async {
+    final clock = _Clock(DateTime.utc(2026, 8, 24));
+    final lease = _Lease(clock.now().add(const Duration(minutes: 10)), 7);
+    final dataset = _FencedDatasetStore(currentToken: 8);
+    final engine = SyncEngine<String, int, _Failure>(
+      datasets: <SyncDataset<String, int, _Failure>>[
+        SyncDataset<String, int, _Failure>(
+          key: 'notes',
+          synchronize: (context) async {
+            final authority = context.authority!;
+            if (!await authority.ensureAuthority() ||
+                !dataset.tryCommit(authority.fencingToken)) {
+              return Err<_Failure>(const _Failure(), StackTrace.current);
+            }
+            return const Ok<SyncDatasetOutcome<int>>(
+              SyncDatasetOutcome<int>.checkpoint(1),
+            );
+          },
+        ),
+      ],
+      graph: SyncDependencyGraph<String>(keys: const <String>['notes']),
+      checkpoints: _MemoryCheckpoints<String, int>(),
+      leases: _LeaseStore(lease),
+      clock: clock,
+      leaseTtl: const Duration(minutes: 1),
+    );
+
+    final report = await engine.start().done;
+
+    expect(dataset.applied, isFalse);
+    expect(report.datasets.single.status, SyncDatasetStatus.failed);
+    await engine.disposeAsync();
+  });
+
+  test(
+    'journal failure after application is not a generic terminal error',
+    () async {
+      final checkpoints = _MemoryCheckpoints<String, int>();
+      var datasetApplied = false;
+      final engine = SyncEngine<String, int, _Failure>(
+        datasets: <SyncDataset<String, int, _Failure>>[
+          SyncDataset<String, int, _Failure>(
+            key: 'notes',
+            synchronize: (_) async {
+              datasetApplied = true;
+              return const Ok<SyncDatasetOutcome<int>>(
+                SyncDatasetOutcome<int>.checkpoint(4),
+              );
+            },
+          ),
+        ],
+        graph: SyncDependencyGraph<String>(keys: const <String>['notes']),
+        checkpoints: checkpoints,
+        journal: _FailingJournal<String>(SyncJournalFact.datasetSucceeded),
+      );
+
+      Object? terminalError;
+      try {
+        await engine.start().done;
+      } catch (error) {
+        terminalError = error;
+      }
+
+      expect(datasetApplied, isTrue);
+      expect(checkpoints.values['notes'], 4);
+      expect(
+        terminalError,
+        isA<SyncRunTerminalException<String, int, _Failure>>(),
+      );
+      final terminal =
+          terminalError as SyncRunTerminalException<String, int, _Failure>;
+      expect(terminal.cause, isA<StateError>());
+      expect(
+        terminal.report.datasets.single.application.status,
+        SyncBoundaryStatus.succeeded,
+      );
+      expect(
+        terminal.report.datasets.single.checkpoint.status,
+        SyncBoundaryStatus.succeeded,
+      );
+      expect(terminal.report.journal.status, SyncBoundaryStatus.failed);
+      expect(
+        terminal.report.leaseRelease.status,
+        SyncBoundaryStatus.notRequired,
+      );
+      expect(terminal.report.cleanup.status, SyncBoundaryStatus.succeeded);
+      await engine.disposeAsync();
+    },
+  );
+
+  test(
+    'lease release failure is not a generic post-application error',
+    () async {
+      final clock = _Clock(DateTime.utc(2026, 8, 24));
+      final lease = _Lease(
+        clock.now().add(const Duration(minutes: 2)),
+        9,
+        releaseError: StateError('release failed'),
+      );
+      final checkpoints = _MemoryCheckpoints<String, int>();
+      final engine = SyncEngine<String, int, _Failure>(
+        datasets: <SyncDataset<String, int, _Failure>>[
+          SyncDataset<String, int, _Failure>(
+            key: 'notes',
+            synchronize: (_) async => const Ok<SyncDatasetOutcome<int>>(
+              SyncDatasetOutcome<int>.checkpoint(5),
+            ),
+          ),
+        ],
+        graph: SyncDependencyGraph<String>(keys: const <String>['notes']),
+        checkpoints: checkpoints,
+        leases: _LeaseStore(lease),
+        clock: clock,
+        leaseTtl: const Duration(minutes: 1),
+      );
+
+      Object? terminalError;
+      try {
+        await engine.start().done;
+      } catch (error) {
+        terminalError = error;
+      }
+
+      expect(checkpoints.values['notes'], 5);
+      expect(
+        terminalError,
+        isA<SyncRunTerminalException<String, int, _Failure>>(),
+      );
+      final terminal =
+          terminalError as SyncRunTerminalException<String, int, _Failure>;
+      expect(terminal.cause, isA<StateError>());
+      expect(
+        terminal.report.datasets.single.application.status,
+        SyncBoundaryStatus.succeeded,
+      );
+      expect(
+        terminal.report.datasets.single.checkpoint.status,
+        SyncBoundaryStatus.succeeded,
+      );
+      expect(terminal.report.leaseRelease.status, SyncBoundaryStatus.failed);
+      expect(terminal.report.cleanup.status, SyncBoundaryStatus.succeeded);
+      await engine.disposeAsync();
+    },
+  );
+
+  test('checkpoint failure reports application without blind replay', () async {
+    var datasetApplied = false;
+    final engine = SyncEngine<String, int, _Failure>(
+      datasets: <SyncDataset<String, int, _Failure>>[
+        SyncDataset<String, int, _Failure>(
+          key: 'notes',
+          synchronize: (_) async {
+            datasetApplied = true;
+            return const Ok<SyncDatasetOutcome<int>>(
+              SyncDatasetOutcome<int>.checkpoint(6),
+            );
+          },
+        ),
+      ],
+      graph: SyncDependencyGraph<String>(keys: const <String>['notes']),
+      checkpoints: _MemoryCheckpoints<String, int>(
+        writeError: StateError('checkpoint failed'),
+      ),
+    );
+
+    final terminal = await _terminalFailure(engine.start().done);
+
+    expect(datasetApplied, isTrue);
+    expect(
+      terminal.report.datasets.single.status,
+      SyncDatasetStatus.incomplete,
+    );
+    expect(
+      terminal.report.datasets.single.application.status,
+      SyncBoundaryStatus.succeeded,
+    );
+    expect(
+      terminal.report.datasets.single.checkpoint.status,
+      SyncBoundaryStatus.failed,
+    );
+    await engine.disposeAsync();
+  });
+
+  test(
+    'consumer cleanup failure has an independent terminal receipt',
+    () async {
+      final engine = SyncEngine<String, int, _Failure>(
+        datasets: <SyncDataset<String, int, _Failure>>[
+          SyncDataset<String, int, _Failure>(
+            key: 'notes',
+            synchronize: (_) async => const Ok<SyncDatasetOutcome<int>>(
+              SyncDatasetOutcome<int>.unchanged(),
+            ),
+          ),
+        ],
+        graph: SyncDependencyGraph<String>(keys: const <String>['notes']),
+        checkpoints: _MemoryCheckpoints<String, int>(),
+        cleanup: const _FailingCleanup(),
+      );
+
+      final terminal = await _terminalFailure(engine.start().done);
+
+      expect(
+        terminal.report.datasets.single.application.status,
+        SyncBoundaryStatus.succeeded,
+      );
+      expect(
+        terminal.report.datasets.single.checkpoint.status,
+        SyncBoundaryStatus.notRequired,
+      );
+      expect(terminal.report.cleanup.status, SyncBoundaryStatus.failed);
+      await engine.disposeAsync();
+    },
+  );
+
   test('deadline and cooperative cancellation produce typed reports', () async {
     final clock = _Clock(DateTime.utc(2026, 8, 24));
     var deadlineCalls = 0;
@@ -315,7 +573,13 @@ void main() {
       caught = error;
       stack = caughtStack;
     }
-    expect(caught, isA<StateError>());
+    expect(caught, isA<SyncRunTerminalException<String, int, _Failure>>());
+    final terminal = caught as SyncRunTerminalException<String, int, _Failure>;
+    expect(terminal.cause, isA<StateError>());
+    expect(
+      terminal.report.datasets.single.application.status,
+      SyncBoundaryStatus.failed,
+    );
     expect(stack.toString(), contains('_crash'));
     expect(run.progress.recent.last.phase, SyncProgressPhase.runCrashed);
     await engine.disposeAsync();
@@ -383,13 +647,27 @@ Future<Result<SyncDatasetOutcome<int>, _Failure>> _crash() async {
   throw StateError('unexpected sync crash');
 }
 
+Future<SyncRunTerminalException<String, int, _Failure>> _terminalFailure(
+  Future<SyncReport<String, int, _Failure>> done,
+) async {
+  try {
+    await done;
+  } on SyncRunTerminalException<String, int, _Failure> catch (error) {
+    return error;
+  }
+  throw StateError('Expected a terminal sync failure.');
+}
+
 final class _Failure implements Exception {
   const _Failure();
 }
 
 final class _MemoryCheckpoints<K, C> implements SyncCheckpointStore<K, C> {
+  _MemoryCheckpoints({this.writeError});
+
   final Map<K, C> values = <K, C>{};
   final List<int?> fencingTokens = <int?>[];
+  final Object? writeError;
 
   @override
   Future<C?> read(K key, CancellationSignal signal) async => values[key];
@@ -407,8 +685,32 @@ final class _MemoryCheckpoints<K, C> implements SyncCheckpointStore<K, C> {
     int? fencingToken,
   }) async {
     signal.throwIfCancelled();
+    final error = writeError;
+    if (error != null) throw error;
     fencingTokens.add(fencingToken);
     values[key] = checkpoint;
+  }
+}
+
+final class _FencedDatasetStore {
+  _FencedDatasetStore({required this.currentToken});
+
+  final int currentToken;
+  var applied = false;
+
+  bool tryCommit(int fencingToken) {
+    if (fencingToken != currentToken) return false;
+    applied = true;
+    return true;
+  }
+}
+
+final class _FailingCleanup implements SyncRunCleanup {
+  const _FailingCleanup();
+
+  @override
+  Future<void> cleanup(String runId) async {
+    throw StateError('cleanup failed');
   }
 }
 
@@ -441,6 +743,21 @@ final class _Journal<K> implements SyncRunJournal<K> {
       List<IncompleteSyncAttempt<K>>.unmodifiable(incomplete);
 }
 
+final class _FailingJournal<K> implements SyncRunJournal<K> {
+  const _FailingJournal(this.failOn);
+
+  final SyncJournalFact failOn;
+
+  @override
+  Future<void> append(SyncJournalEntry<K> entry) async {
+    if (entry.fact == failOn) throw StateError('journal failed: $failOn');
+  }
+
+  @override
+  Future<List<IncompleteSyncAttempt<K>>> loadIncompleteAttempts() async =>
+      <IncompleteSyncAttempt<K>>[];
+}
+
 final class _LeaseStore implements SyncLeaseStore {
   const _LeaseStore(this.lease);
 
@@ -454,7 +771,12 @@ final class _LeaseStore implements SyncLeaseStore {
 }
 
 final class _Lease implements SyncLease {
-  _Lease(this.expiresAt, this.fencingToken);
+  _Lease(
+    this.expiresAt,
+    this.fencingToken, {
+    this.renewResult = true,
+    this.releaseError,
+  });
 
   @override
   final int fencingToken;
@@ -466,12 +788,19 @@ final class _Lease implements SyncLease {
   String get ownerId => 'lease-owner';
 
   int releaseCount = 0;
+  final bool renewResult;
+  final Object? releaseError;
 
   @override
-  Future<void> release() async => releaseCount += 1;
+  Future<void> release() async {
+    releaseCount += 1;
+    final error = releaseError;
+    if (error != null) throw error;
+  }
 
   @override
   Future<bool> renew(Duration ttl) async {
+    if (!renewResult) return false;
     expiresAt = expiresAt.add(ttl);
     return true;
   }

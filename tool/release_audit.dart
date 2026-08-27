@@ -47,12 +47,6 @@ Future<void> main(List<String> arguments) async {
     if (!stableCohort)
       const _Command('dart', <String>[
         'run',
-        'tool/check_rc_artifacts.dart',
-        '--contract-only',
-      ]),
-    if (!stableCohort)
-      const _Command('dart', <String>[
-        'run',
         'tool/check_rc_validation.dart',
         '--contract-only',
       ]),
@@ -90,14 +84,12 @@ Future<void> main(List<String> arguments) async {
     'tool/api_surface.snapshot.json',
     'tool/package_release_contract.json',
     'tool/rc_candidate_contract.json',
-    'tool/rc_readiness_decision.json',
-    'tool/rc_distribution_authorization.json',
-    'tool/rc_bundle_contract.json',
+    'tool/actions_readiness_policy.json',
+    'tool/create_actions_readiness.dart',
+    'tool/check_publication_readiness.dart',
     'tool/rc_validation_contract.json',
-    'tool/stable_readiness_decision.json',
     'tool/stable_candidate_contract.json',
-    'tool/stable_candidate_record.json',
-    'tool/stable_publication_authorization.json',
+    '.github/workflows/publish.yaml',
   ]) {
     if (!await File('${root.path}/$path').exists()) {
       throw StateError('Required release artifact is missing: $path');

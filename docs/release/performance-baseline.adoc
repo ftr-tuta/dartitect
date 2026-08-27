@@ -2,7 +2,7 @@
 
 Snapshot:: 2026-08-23
 Toolchain:: Dart 3.13.1 / Flutter 3.47.1 / Linux x64
-Role:: Reviewed `1.0.0-rc.2` reference thresholds; exact-root reproduction is external
+Role:: Reviewed `1.0.0-rc.3` thresholds; exact-root reproduction runs in Actions
 
 Run the following commands on the same pinned runner for comparisons:
 

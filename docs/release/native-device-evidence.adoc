@@ -1,87 +1,62 @@
-= V1S-13 native device evidence
+= V1S-13 hosted native evidence
 
-Status:: EXTERNAL EVIDENCE REQUIRED
+Status:: GITHUB ACTIONS ONLY
 Authority:: `tool/native_evidence_contract.json`
 Structural gate:: `dart run tool/check_native_evidence.dart --contract-only`
 Formal gate:: `dart run tool/check_native_evidence.dart`
-Candidate-bound receipts:: Recorded outside the tracked root tree
+Schema:: v3
 
-V1S-13 uses a fail-closed five-cell matrix. Android emulators and physical
-iPhones are prohibited:
+V1S-13 uses exactly five current-run manifests and accepts only `build`,
+`emulator`, and `simulator` evidence kinds.
 
 [cols="2,2,5",options="header"]
 |===
-| Cell | Environment | Evidence
+| Cell | Hosted environment | Evidence
 
 | `android-media-floor-build`
-| Linux CI
-| API/minSdk 24 compatibility, manifest contract, Android lint, and APK build;
-no emulator runtime.
+| `ubuntu-24.04`
+| API/minSdk 24 compatibility, manifest contract, lint, APK build, clean tree.
 
-| `android-media-current-physical`
-| Connected physical Android
-| Android 14/API 34 media/privacy behavior, files, callbacks, lifecycle,
-rotation restoration, cleanup, and a clean reinstalled QA harness.
+| `android-media-current-emulator`
+| clean API 34 `google_apis/x86_64` AVD on `ubuntu-24.04`
+| Boot/API checks, media and privacy channels, album save, borrowed source,
+missing/invalid files, callback liveness, rotation, background/resume, owned
+state and media cleanup, application-data cleanup, and AVD shutdown.
 
 | `ios-media-floor-build`
-| macOS CI
-| Media plugin compilation and simulator link with an iOS 14 deployment target.
+| `macos-15`
+| Media plugin compilation and simulator link at the iOS 14 floor.
 
 | `ios-privacy-floor-build`
-| macOS CI
-| Privacy plugin compilation and simulator link with an iOS 12 deployment
-target.
+| `macos-15`
+| Privacy plugin compilation and simulator link at the iOS 12 floor.
 
 | `ios-current-simulator`
-| macOS CI
-| Real Photos/ATT method channels on a dynamically selected installed
-simulator, deterministic native status contracts, lifecycle, and cleanup.
+| installed simulator selected dynamically on `macos-15`
+| Real Photos/ATT channels, deterministic statuses, media/file scenarios,
+lifecycle, callbacks, cleanup, and shutdown.
 |===
 
-Generic `floor`, `current`, or `latest` labels are not versions. Schema-v2
-receipts record the exact source commit and tree, toolchain/OS versions,
-scenario set, ordered UTC interval, and clean source state. CI receipts also
-record the GitHub workflow/run; runtime receipts store only SHA-256 of the
-device identifier, never a serial or UDID.
+== Android AVD lifecycle
 
-== Automated harness
+The workflow provisions the image directly with the Android SDK, recreates a
+clean AVD, disables animations, and bounds boot with a timeout. A hosted
+infrastructure boot failure receives one complete AVD recreation; test failures
+are not masked by fallback. Diagnostics upload only on failure and contain
+emulator metadata and logcat. The runner always attempts cleanup and shutdown.
 
-`tool/run_native_evidence.dart` accepts only
-`android-media-current-physical`. Before any device query it requires
-`ADB_SERVER_SOCKET=tcp:127.0.0.1:5038`; it rejects missing/other sockets,
-offline or unauthorized devices, multiple Android devices, every emulator, and
-any API other than 34. Commands inherit the isolated socket and redact the
-selected identifier from logs.
+== Manifest identity
 
-The runner creates a disposable host, drives rotation and a real
-background/resume transition, removes the identified gallery asset, clears
-owned preferences idempotently, restores rotation/lifecycle, and reinstalls the
-QA harness with clean app data. The app intentionally remains installed for
-future manual QA; the physical receipt records the APK digest and authorized
-clean retention.
+Every cell manifest records exact versions, source SHA and tree, GitHub run ID
+and attempt, workflow URL, hosted runner identity, ordered UTC interval, exact
+scenario set, and clean-tree result. Hardware identifiers, installed-app
+retention, manual receipts, and artifacts from another execution have no schema
+slot.
 
-`tool/run_native_ci_evidence.dart` owns the three build cells and the iOS
-simulator cell. The macOS job chooses from installed, available simulators at
-runtime and fails when none exists. It never downloads a runtime silently and
-does not hardcode a runtime, model, or UDID. Photos full access is prepared by
-the host-side AppleSimulatorUtils 0.9.12 binary downloaded from its official
-release and accepted only after its pinned SHA-256 and exact version pass. The
-receipt records that tool version; the real package channel must still report
-authorized status, complete its request, and save the identified image. The
-hosted inventory is explicitly variable; see the
-https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md[official macOS 15 runner inventory].
+The aggregate job downloads all five manifests from its own run and validates
+their exact set. Missing, duplicate, failed, cancelled, skipped, cross-run,
+cross-SHA, cross-tree, or malformed manifests fail `CI / Required`. The main
+readiness artifact hashes each manifest so later alteration is detectable.
 
-== Required scenarios
-
-The matrix covers build compatibility at the declared floors, no legacy storage
-permission on Android 29+, Android `privacy.notSupported`, real Photos/ATT
-channels, deterministic native mappings for TCC-controlled states, save with
-album, borrowed source preservation, missing/invalid files, liveness and
-main-thread callbacks, rotation, background/resume, idempotent cleanup, and a
-clean source tree.
-
-The formal checker requires exactly five non-duplicate receipts for one source
-SHA/tree. A cross-SHA receipt, missing scenario, invalid workflow run, raw
-device identifier, dirty tree, or unauthorized residue invalidates the matrix.
-Receipts and their checksums remain external artifacts; a dated private backup
-is retained separately.
+No phone, tablet, iPhone, USB connection, or private runner is required. Local
+execution is optional feedback and never formal evidence.

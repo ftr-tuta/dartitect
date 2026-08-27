@@ -3,7 +3,7 @@ import 'dart:io';
 
 const _expectedSkills = <String>{
   'dartitect-adapters',
-  'dartitect-adopt',
+  'dartitect-audit',
   'dartitect-design',
   'dartitect-mcp',
   'dartitect-modeling',
@@ -17,7 +17,7 @@ const _expectedSkills = <String>{
 
 const _expectedRouting = <String, String>{
   'greenfield': 'dartitect-design',
-  'brownfield': 'dartitect-adopt',
+  'conformanceAudit': 'dartitect-audit',
   'simpleFlutterRuntime': 'dartitect-runtime',
   'reactiveRuntime': 'dartitect-reactive',
   'offlineOutbox': 'dartitect-offline-first',

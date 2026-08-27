@@ -4,94 +4,105 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 void main() {
-  test(
-    'accepts exactly five schema-v2 receipts and authorized retention',
-    () async {
+  test('accepts exactly five schema-v3 current-run manifests', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+
+    final result = await fixture.check();
+
+    expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
+    expect(result.stdout, contains('all five hosted cells'));
+  });
+
+  test('rejects a missing and a duplicate cell', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+    final paths = fixture.manifestPaths();
+
+    final missing = await fixture.check(manifests: paths.sublist(1));
+    final duplicate = await fixture.check(
+      manifests: <String>[...paths, paths.first],
+    );
+
+    expect(missing.exitCode, 1);
+    expect(missing.stderr, contains('Missing native evidence manifest'));
+    expect(duplicate.exitCode, 1);
+    expect(duplicate.stderr, contains('Duplicate native manifest'));
+  });
+
+  test('rejects cancelled or ignored conclusions', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+    for (final resultValue in const <String>['cancelled', 'skipped']) {
+      final manifest = fixture.manifest('android-media-floor-build');
+      manifest['result'] = resultValue;
+      await fixture.writeManifest('android-media-floor-build', manifest);
+      final result = await fixture.check();
+      expect(result.exitCode, 1);
+      expect(result.stderr, contains('conclusion'));
+    }
+  });
+
+  test('rejects SHA, tree, run id, and attempt mismatches', () async {
+    for (final mutation in <void Function(Map<String, Object?>)>[
+      (manifest) => manifest['sourceSha'] = _repeat('0', 40),
+      (manifest) => manifest['sourceTree'] = _repeat('0', 40),
+      (manifest) =>
+          (manifest['workflow']! as Map<String, Object?>)['runId'] = 999,
+      (manifest) =>
+          (manifest['workflow']! as Map<String, Object?>)['runAttempt'] = 2,
+    ]) {
       final fixture = await _Fixture.create();
       addTearDown(fixture.dispose);
+      final manifest = fixture.manifest('ios-current-simulator');
+      mutation(manifest);
+      await fixture.writeManifest('ios-current-simulator', manifest);
 
       final result = await fixture.check();
 
-      expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
-      expect(result.stdout, contains('all five'));
-    },
-  );
-
-  test('rejects a source-tree mismatch', () async {
-    final fixture = await _Fixture.create();
-    addTearDown(fixture.dispose);
-    final receipt = fixture.receipt('android-media-floor-build');
-    receipt['sourceTree'] = _repeat('0', 40);
-    await fixture.writeReceipt('android-media-floor-build', receipt);
-
-    final result = await fixture.check();
-
-    expect(result.exitCode, 1);
-    expect(result.stderr, contains('identity/result/cleanliness'));
+      expect(result.exitCode, 1);
+    }
   });
 
-  test('rejects duplicate receipts', () async {
-    final fixture = await _Fixture.create();
-    addTearDown(fixture.dispose);
-    final paths = fixture.receiptPaths();
+  test('rejects a physical cell or self-hosted runner policy', () async {
+    for (final mutate in <void Function(Map<String, Object?>)>[
+      (contract) =>
+          (contract['requiredCells']! as List<Object?>).add(<String, Object?>{
+            'id': 'android-physical',
+            'platform': 'android',
+            'capabilities': <String>['media'],
+            'evidenceKind': 'physical',
+            'floor': false,
+            'requiredVersionKeys': <String>['os'],
+            'requiredScenarios': <String>['tree-clean'],
+          }),
+      (contract) => contract['runner'] = 'self-hosted',
+    ]) {
+      final fixture = await _Fixture.create();
+      addTearDown(fixture.dispose);
+      final contract = fixture.contract;
+      mutate(contract);
+      await File('${fixture.root.path}/tool/native_evidence_contract.json')
+          .writeAsString(jsonEncode(contract));
 
-    final result = await fixture.check(
-      receipts: <String>[...paths, paths.first],
-    );
+      final result = await fixture.check(contractOnly: true);
 
-    expect(result.exitCode, 1);
-    expect(result.stderr, contains('Duplicate native receipt'));
-    expect(result.stderr, contains('receipt set is not exact'));
+      expect(result.exitCode, 1);
+      expect(result.stderr, contains('forbidden policy'));
+    }
   });
 
-  test('rejects incomplete scenarios', () async {
+  test('formal mode rejects local and other-run artifacts', () async {
     final fixture = await _Fixture.create();
     addTearDown(fixture.dispose);
-    final receipt = fixture.receipt('ios-current-simulator');
-    (receipt['scenarios']! as List<Object?>).removeLast();
-    await fixture.writeReceipt('ios-current-simulator', receipt);
 
-    final result = await fixture.check();
+    final local = await fixture.check(githubActions: false);
+    final otherRun = await fixture.check(runId: 124);
 
-    expect(result.exitCode, 1);
-    expect(result.stderr, contains('exact required scenario set'));
-  });
-
-  test('rejects an invalid CI workflow run', () async {
-    final fixture = await _Fixture.create();
-    addTearDown(fixture.dispose);
-    final receipt = fixture.receipt('ios-media-floor-build');
-    (receipt['workflow']! as Map<String, Object?>)['runId'] = 0;
-    await fixture.writeReceipt('ios-media-floor-build', receipt);
-
-    final result = await fixture.check();
-
-    expect(result.exitCode, 1);
-    expect(result.stderr, contains('CI workflow/run receipt is invalid'));
-  });
-
-  test('rejects raw serial fields even when the digest is present', () async {
-    final fixture = await _Fixture.create();
-    addTearDown(fixture.dispose);
-    final receipt = fixture.receipt('android-media-current-physical');
-    (receipt['environment']! as Map<String, Object?>)['serial'] = 'private';
-    await fixture.writeReceipt('android-media-current-physical', receipt);
-
-    final result = await fixture.check();
-
-    expect(result.exitCode, 1);
-    expect(result.stderr, contains('raw device identifier'));
-  });
-
-  test('rejects dirty source trees', () async {
-    final fixture = await _Fixture.create();
-    addTearDown(fixture.dispose);
-    await File('${fixture.root.path}/tracked.txt').writeAsString('dirty\n');
-
-    final result = await fixture.check();
-
-    expect(result.exitCode, 1);
-    expect(result.stderr, contains('Source tree is dirty'));
+    expect(local.exitCode, 1);
+    expect(local.stderr, contains('restricted to GitHub-hosted Actions'));
+    expect(otherRun.exitCode, 1);
+    expect(otherRun.stderr, contains('current GitHub Actions run'));
   });
 }
 
@@ -106,7 +117,7 @@ final class _Fixture {
   static Future<_Fixture> create() async {
     final sourceRoot = Directory.current.absolute;
     final root = await Directory.systemTemp.createTemp(
-      'dartitect-native-evidence-check-',
+      'dartitect-native-evidence-v3-',
     );
     await _copy(
       File('${sourceRoot.path}/tool/native_evidence_contract.json'),
@@ -120,25 +131,16 @@ final class _Fixture {
       'tool/canaries/native_capabilities/lib/main.dart',
       'tool/canaries/native_capabilities/integration_test/android_media_test.dart',
       'tool/canaries/native_capabilities/lib/ios_ci_harness.dart',
-      'tool/canaries/native_capabilities/test/native_qa_panel_test.dart',
-      'tool/canaries/native_capabilities/ios/RunnerTests/RunnerTests.swift',
-      'tool/run_native_evidence.dart',
       'tool/run_native_ci_evidence.dart',
     ]) {
       await _text(root, path, '// fixture\n');
     }
     final android = contract['android']! as Map<String, Object?>;
     final ios = contract['ios']! as Map<String, Object?>;
-    await _text(
-      root,
-      android['manifest']! as String,
-      (android['requiredSourceMarkers']! as List<Object?>).join('\n'),
-    );
-    await _text(
-      root,
-      android['plugin']! as String,
-      (android['requiredSourceMarkers']! as List<Object?>).join('\n'),
-    );
+    final androidSource = (android['requiredSourceMarkers']! as List<Object?>)
+        .join('\n');
+    await _text(root, android['manifest']! as String, androidSource);
+    await _text(root, android['plugin']! as String, androidSource);
     final iosSource = <String>[
       ...(ios['requiredSourceMarkers']! as List<Object?>).cast<String>(),
       "s.platform = :ios, '14.0'",
@@ -177,118 +179,124 @@ final class _Fixture {
     for (final cell
         in (contract['requiredCells']! as List<Object?>)
             .cast<Map<String, Object?>>()) {
-      await fixture.writeReceipt(
+      await fixture.writeManifest(
         cell['id']! as String,
-        fixture._newReceipt(cell),
+        fixture._newManifest(cell),
       );
     }
     return fixture;
   }
 
-  Map<String, Object?> _newReceipt(Map<String, Object?> cell) {
-    final id = cell['id']! as String;
+  Map<String, Object?> _newManifest(Map<String, Object?> cell) {
     final kind = cell['evidenceKind']! as String;
-    final versions = <String, Object?>{
-      for (final key
-          in (cell['requiredVersionKeys']! as List<Object?>).cast<String>())
-        key: '$key-1.2.3',
-    };
-    final environment = switch (kind) {
-      'build' => <String, Object?>{
-        'kind': 'build',
-        'runnerOs': 'fixture-os',
-        'runnerImage': 'fixture-image',
-      },
-      'simulator' => <String, Object?>{
-        'kind': 'simulator',
-        'runnerOs': 'fixture-os',
-        'runnerImage': 'fixture-image',
-        'deviceModel': 'fixture simulator',
-        'deviceIdSha256': _repeat('a', 64),
-      },
-      _ => <String, Object?>{
-        'kind': 'physical',
-        'osVersion': '14',
+    final environment = <String, Object?>{
+      'kind': kind,
+      'provider': 'github-hosted',
+      'runnerName': 'GitHub Actions 1',
+      'runnerOs': kind == 'simulator' ? 'macOS' : 'Linux',
+      'runnerImage': kind == 'simulator'
+          ? 'macos-15/20260820.1'
+          : 'ubuntu24/20260820.1',
+      if (kind == 'emulator') ...<String, Object?>{
         'apiLevel': 34,
-        'deviceModel': 'fixture physical device',
-        'deviceIdSha256': _repeat('b', 64),
+        'systemImage': 'system-images;android-34;google_apis;x86_64',
+        'avdName': 'dartitect-api-34',
+        'osVersion': '14',
+        'model': 'sdk_gphone_x86_64',
         'bootCompleted': true,
-        'availableDataKb': 1024,
-        'batteryLevel': 80,
-        'batteryStatus': '2',
+        'cleanShutdown': true,
+      },
+      if (kind == 'simulator') ...<String, Object?>{
+        'runtime': 'iOS 18.5',
+        'model': 'iPhone 16 Pro',
+        'cleanupCompleted': true,
       },
     };
     return <String, Object?>{
-      'schemaVersion': 2,
+      'schemaVersion': 3,
       'goal': 'V1S-13',
-      'cellId': id,
+      'cellId': cell['id'],
       'sourceSha': sha,
       'sourceTree': tree,
-      'result': 'passed',
+      'result': 'success',
       'platform': cell['platform'],
       'capabilities': cell['capabilities'],
       'evidenceKind': kind,
-      'versions': versions,
+      'versions': <String, Object?>{
+        for (final key
+            in (cell['requiredVersionKeys']! as List<Object?>).cast<String>())
+          key: '$key-1.2.3',
+      },
       'environment': environment,
-      'startedAt': '2026-08-26T12:00:00Z',
-      'completedAt': '2026-08-26T12:01:00Z',
-      'sourceDirty': false,
+      'startedAt': '2026-08-27T12:00:00Z',
+      'completedAt': '2026-08-27T12:01:00Z',
       'treeClean': true,
       'scenarios': cell['requiredScenarios'],
-      if (kind == 'physical')
-        'retention': <String, Object?>{
-          'kind': 'installed-app',
-          'applicationId':
-              'dev.dartitect.dartitect_native_capabilities_harness',
-          'dataClean': true,
-          'mediaClean': true,
-          'apkSha256': _repeat('c', 64),
-        }
-      else
-        'workflow': <String, Object?>{
-          'workflow': 'CI',
-          'runId': 123,
-          'runAttempt': 1,
-          'repository': 'ftr-tuta/dartitect',
-          'event': 'push',
-          'url': 'https://github.com/ftr-tuta/dartitect/actions/runs/123',
-          'sourceSha': sha,
-        },
+      'workflow': <String, Object?>{
+        'name': 'CI',
+        'runId': 123,
+        'runAttempt': 1,
+        'repository': 'ftr-tuta/dartitect',
+        'event': 'push',
+        'url': 'https://github.com/ftr-tuta/dartitect/actions/runs/123',
+        'sourceSha': sha,
+        'sourceTree': tree,
+      },
     };
   }
 
-  Map<String, Object?> receipt(String id) =>
-      jsonDecode(File(_receiptPath(id)).readAsStringSync())
+  Map<String, Object?> manifest(String id) =>
+      jsonDecode(File(_manifestPath(id)).readAsStringSync())
           as Map<String, Object?>;
 
-  Future<void> writeReceipt(String id, Map<String, Object?> receipt) async {
-    final file = File(_receiptPath(id));
+  Future<void> writeManifest(String id, Map<String, Object?> manifest) async {
+    final file = File(_manifestPath(id));
     await file.parent.create(recursive: true);
-    await file.writeAsString(jsonEncode(receipt));
+    await file.writeAsString(jsonEncode(manifest));
   }
 
-  List<String> receiptPaths() => <String>[
+  List<String> manifestPaths() => <String>[
     for (final cell
         in (contract['requiredCells']! as List<Object?>)
             .cast<Map<String, Object?>>())
-      _receiptPath(cell['id']! as String),
+      _manifestPath(cell['id']! as String),
   ];
 
-  String _receiptPath(String id) =>
-      '${root.path}/build/native-evidence/$id-$sha.json';
-
-  Future<ProcessResult> check({List<String>? receipts}) {
+  Future<ProcessResult> check({
+    bool contractOnly = false,
+    bool githubActions = true,
+    int runId = 123,
+    List<String>? manifests,
+  }) {
     final checker = File(
       '${Directory.current.path}/tool/check_native_evidence.dart',
     );
-    return Process.run(Platform.resolvedExecutable, <String>[
-      checker.path,
-      '--root=${root.path}',
-      '--source-sha=$sha',
-      if (receipts != null)
-        for (final receipt in receipts) '--receipt=$receipt',
-    ], workingDirectory: Directory.current.path);
+    return Process.run(
+      Platform.resolvedExecutable,
+      <String>[
+        checker.path,
+        '--root=${root.path}',
+        if (contractOnly) '--contract-only',
+        if (manifests != null)
+          for (final manifest in manifests) '--manifest=$manifest',
+      ],
+      environment: <String, String>{
+        ...Platform.environment,
+        if (githubActions)
+          'GITHUB_ACTIONS': 'true'
+        else
+          'GITHUB_ACTIONS': 'false',
+        'RUNNER_ENVIRONMENT': githubActions ? 'github-hosted' : 'self-hosted',
+        'GITHUB_SHA': sha,
+        'GITHUB_RUN_ID': '$runId',
+        'GITHUB_RUN_ATTEMPT': '1',
+        'GITHUB_REPOSITORY': 'ftr-tuta/dartitect',
+      },
+    );
   }
+
+  String _manifestPath(String id) =>
+      '${root.path}/build/native-evidence/$id-$sha.json';
 
   Future<void> dispose() => root.delete(recursive: true);
 }

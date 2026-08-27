@@ -11,7 +11,12 @@ void main() {
     final input = owner.value(0);
     var computes = 0;
     final doubled = owner.computed<int>(
-      const ReactiveKey<int>('benchmark.doubled'),
+      const ReactiveKey<int>(
+        'benchmark.doubled',
+        namespace: 'dartitect.benchmark',
+        definitionRevision: 1,
+        definitionFingerprint: 'doubled-v1',
+      ),
       <ReactiveNode<Object?>>[input],
       (read) {
         computes += 1;

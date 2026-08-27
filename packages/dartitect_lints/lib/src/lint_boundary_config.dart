@@ -13,9 +13,28 @@ final class DartitectLintBoundaryResolver {
 
   /// Classifies [sourcePath] with its nearest valid stable-v1 configuration.
   static DartitectSourceClassification classify(String sourcePath) {
+    return resolve(sourcePath).classification;
+  }
+
+  /// Resolves classification and any explicit configuration diagnostic.
+  static DartitectLintBoundaryResolution resolve(
+    String sourcePath, {
+    String? source,
+  }) {
     final resolved = _resolve(sourcePath);
-    return resolved.classifier.classify(
-      _relativePath(resolved.rootPath, sourcePath),
+    if (source == null) {
+      try {
+        source = File(sourcePath).readAsStringSync();
+      } on FileSystemException {
+        source = null;
+      }
+    }
+    return DartitectLintBoundaryResolution(
+      classification: resolved.classifier.classify(
+        _relativePath(resolved.rootPath, sourcePath),
+        source: source,
+      ),
+      configurationError: resolved.configurationError,
     );
   }
 
@@ -27,14 +46,22 @@ final class DartitectLintBoundaryResolver {
       );
       if (config.existsSync()) {
         DartitectBoundaryClassifier? classifier;
+        String? configurationError;
         try {
           classifier = _parse(config.readAsStringSync());
+          if (classifier == null) {
+            configurationError =
+                'Invalid dartitect.json; fix stable-v1 boundary configuration.';
+          }
         } on FileSystemException {
           classifier = null;
+          configurationError =
+              'dartitect.json could not be read; fix its permissions.';
         }
         return _ResolvedBoundaryPolicy(
           rootPath: directory.absolute.path,
           classifier: classifier ?? DartitectBoundaryClassifier.defaults(),
+          configurationError: configurationError,
         );
       }
       final parent = directory.parent;
@@ -45,6 +72,7 @@ final class DartitectLintBoundaryResolver {
     return _ResolvedBoundaryPolicy(
       rootPath: _defaultPackageRoot(sourcePath),
       classifier: DartitectBoundaryClassifier.defaults(),
+      configurationError: null,
     );
   }
 
@@ -59,6 +87,7 @@ final class DartitectLintBoundaryResolver {
       final rawLayers = decoded['layers'];
       final rawRoots = decoded['compositionRoots'];
       final rawGenerated = decoded['generatedInfrastructure'];
+      final rawSuffixes = decoded['generatedSuffixes'];
       if (rawLayers is! Map<String, Object?> ||
           rawRoots is! List<Object?> ||
           rawGenerated is! List<Object?> ||
@@ -85,11 +114,15 @@ final class DartitectLintBoundaryResolver {
       }
       final roots = _parseGlobs(rawRoots);
       final generated = _parseGlobs(rawGenerated);
-      if (roots == null || generated == null) return null;
+      final suffixes = rawSuffixes == null
+          ? DartitectArchitectureRules.defaultGeneratedSuffixes
+          : _parseSuffixes(rawSuffixes);
+      if (roots == null || generated == null || suffixes == null) return null;
       return DartitectBoundaryClassifier(
         layers: Map<String, List<String>>.unmodifiable(layers),
         compositionRoots: List<String>.unmodifiable(roots),
         generatedInfrastructure: List<String>.unmodifiable(generated),
+        generatedSuffixes: List<String>.unmodifiable(suffixes),
       );
     } on FormatException {
       return null;
@@ -109,6 +142,24 @@ final class DartitectLintBoundaryResolver {
         return null;
       }
       output.add(glob);
+    }
+    return output;
+  }
+
+  static List<String>? _parseSuffixes(Object? value) {
+    if (value is! List<Object?> || value.isEmpty) return null;
+    final output = <String>[];
+    for (final raw in value) {
+      if (raw is! String ||
+          !RegExp(
+            r'^\.[a-z0-9_.-]+\.dart$',
+            caseSensitive: false,
+          ).hasMatch(raw) ||
+          raw.contains('/') ||
+          raw.contains('\\')) {
+        return null;
+      }
+      if (!output.contains(raw)) output.add(raw);
     }
     return output;
   }
@@ -139,8 +190,25 @@ final class _ResolvedBoundaryPolicy {
   const _ResolvedBoundaryPolicy({
     required this.rootPath,
     required this.classifier,
+    required this.configurationError,
   });
 
   final String rootPath;
   final DartitectBoundaryClassifier classifier;
+  final String? configurationError;
+}
+
+/// Analyzer-side boundary resolution with a fail-visible config outcome.
+final class DartitectLintBoundaryResolution {
+  /// Creates one resolved lint policy.
+  const DartitectLintBoundaryResolution({
+    required this.classification,
+    required this.configurationError,
+  });
+
+  /// Source classification used by rule evaluation.
+  final DartitectSourceClassification classification;
+
+  /// Sanitized explicit diagnostic when defaults replaced invalid config.
+  final String? configurationError;
 }

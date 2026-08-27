@@ -4,7 +4,7 @@
 
 ## Escopo
 
-`dartitect_mcp 1.0.0-rc.2` é local e somente STDIO. Usa
+`dartitect_mcp 1.0.0-rc.3` é local e somente STDIO. Usa
 `dart_mcp 0.5.2`. Streamable HTTP, OAuth/autorização, plugins ChatGPT remotos,
 UI MCP, shell/arquivos arbitrários, scaffolding `create` e acesso a apps em
 execução estão fora do escopo.
@@ -12,7 +12,7 @@ execução estão fora do escopo.
 ## Configuração read-only
 
 O candidato não está no pub.dev. Declare
-`dartitect_mcp: 1.0.0-rc.2` em `dev_dependencies`, aplique o fechamento Git
+`dartitect_mcp: 1.0.0-rc.3` em `dev_dependencies`, aplique o fechamento Git
 completo do [guia de consumo do candidato](git-candidate-consumption.pt-BR.md)
 e execute `dart run dartitect_mcp:dartitect_mcp --root .`.
 
@@ -54,8 +54,12 @@ Cada resultado retorna `structuredContent` e bloco textual JSON compatível.
 
 ## Tools read-only e resources
 
-Inspect, scan, doctor, explicação, adoção e previews são read-only. Scan aceita
+Inspect, scan, doctor, explicação, conformidade e previews são read-only. Scan aceita
 baseline e paginação limitada. Doctor deep é opt-in e tem timeout.
+
+`dartitect_audit_conformance` declara projetos existentes como `audit_only`, usa
+o scan sem baseline como evidência e nunca retorna passos de migração ou
+coexistência.
 
 Resources gerados:
 
@@ -97,7 +101,7 @@ headers, DSNs, environment ou erros internos não sanitizados.
 
 - `writes_disabled`: reinicie com `--allow-writes` somente se necessário.
 - `plan_expired`, `plan_replayed` ou `stale_plan`: gere/revise novo preview.
-- `filesystem_locked`: aguarde a outra mudança local.
+- `change_locked`: aguarde a outra mudança local e crie novo preview.
 - erros de root/path: use nome configurado e path relativo.
 - timeout de startup: execute diretamente e veja stderr; não adicione segredos.
 

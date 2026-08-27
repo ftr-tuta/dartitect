@@ -4,6 +4,7 @@ import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/error/error.dart';
 
 import 'ecosystem_policy.g.dart';
@@ -203,6 +204,14 @@ final class DartitectBoundaryRule extends MultiAnalysisRule {
     uniqueName: 'DartitectLint.ecosystemException',
   );
 
+  /// Invalid boundary configuration that forced analyzer defaults.
+  static const invalidConfiguration = LintCode(
+    'dartitect_invalid_configuration',
+    'dartitect.json is invalid; analyzer defaults are active only to continue diagnostics.',
+    correctionMessage: 'Fix the stable-v1 configuration; run `dartitect doctor` for the exact field.',
+    uniqueName: 'DartitectLint.invalidConfiguration',
+  );
+
   /// Whether reviewed generated infrastructure may retain [uri].
   ///
   /// Provider generators may legitimately import their SDK internals and
@@ -236,6 +245,7 @@ final class DartitectBoundaryRule extends MultiAnalysisRule {
     sensitiveMetadataKey,
     ecosystemProhibited,
     ecosystemException,
+    invalidConfiguration,
   ];
 
   @override
@@ -246,6 +256,7 @@ final class DartitectBoundaryRule extends MultiAnalysisRule {
     if (!context.isInLibDir || context.isInTestDirectory) return;
     final visitor = _BoundaryVisitor(this, context);
     registry
+      ..addCompilationUnit(this, visitor)
       ..addImportDirective(this, visitor)
       ..addExportDirective(this, visitor)
       ..addNamedType(this, visitor)
@@ -270,6 +281,12 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
       .replaceAll('\\', '/');
 
   bool get _generated => _classification.isGeneratedInfrastructure;
+
+  @override
+  void visitCompilationUnit(CompilationUnit node) {
+    if (_resolution.configurationError == null) return;
+    _reportAtToken(node.beginToken, DartitectBoundaryRule.invalidConfiguration);
+  }
 
   @override
   void visitImportDirective(ImportDirective node) {
@@ -298,11 +315,16 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
     final typeName = node.name.lexeme;
     final classification = _classification;
     if (typeName == 'DartitectScope' &&
+        _isFromPackages(node.element, const <String>{'dartitect_flutter'}) &&
         !classification.isCompositionRoot &&
         !_path.endsWith('/dartitect_scope.dart')) {
       _reportAtToken(node.name, DartitectBoundaryRule.scopeBoundary);
     }
     if (DartitectArchitectureRules.providerTypes.contains(typeName) &&
+        _isFromPackages(
+          node.element,
+          DartitectArchitectureRules.infrastructurePackages,
+        ) &&
         !classification.isLayer('infrastructure') &&
         !classification.isCompositionRoot &&
         !_providerImportAlreadyReported) {
@@ -310,6 +332,7 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
     }
     if (typeName != 'BuildContext' &&
         DartitectArchitectureRules.flutterBoundaryTypes.contains(typeName) &&
+        _isFromPackages(node.element, const <String>{'flutter', 'go_router'}) &&
         !classification.isLayer('presentation') &&
         !classification.isCompositionRoot) {
       _reportAtToken(node.name, DartitectBoundaryRule.flutterTypeBoundary);
@@ -346,12 +369,20 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
     if (_generated) return;
     final name = node.name.toSource().split('.').last;
     if (DartitectArchitectureRules.architectureCodegenAnnotations.contains(
-      name,
-    )) {
+          name,
+        ) &&
+        _isFromPackages(
+          node.element,
+          DartitectArchitectureRules.forbiddenPackages,
+        )) {
       _reportAtNode(node, DartitectBoundaryRule.architectureCodegen);
     }
     if (!_classification.isLayer('infrastructure') &&
-        DartitectArchitectureRules.providerCodegenAnnotations.contains(name)) {
+        DartitectArchitectureRules.providerCodegenAnnotations.contains(name) &&
+        _isFromPackages(
+          node.element,
+          DartitectArchitectureRules.infrastructurePackages,
+        )) {
       _reportAtNode(node, DartitectBoundaryRule.providerCodegenBoundary);
     }
   }
@@ -362,6 +393,9 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
     final target = node.target?.toSource();
     final method = node.methodName.name;
     if (target == 'DartitectScope' &&
+        _isFromPackages(node.methodName.element, const <String>{
+          'dartitect_flutter',
+        }) &&
         const <String>{'read', 'maybeRead'}.contains(method) &&
         !_classification.isCompositionRoot &&
         !_path.endsWith('/dartitect_scope.dart')) {
@@ -388,7 +422,12 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
           'getByType',
           'lookupByType',
         }.contains(method);
-    if (locatorTarget && locatorCall || topLevelLocatorCall) {
+    if ((locatorTarget && locatorCall || topLevelLocatorCall) &&
+        _isFromPackages(node.methodName.element, const <String>{
+          'get_it',
+          'watch_it',
+          'injectable',
+        })) {
       _reportAtNode(node.methodName, DartitectBoundaryRule.serviceLocator);
     }
     if (node.target == null && method == 'print') {
@@ -411,8 +450,58 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
   void visitMapLiteralEntry(MapLiteralEntry node) {
     if (_generated || node.key is! StringLiteral) return;
     final key = (node.key as StringLiteral).stringValue?.toLowerCase();
-    if (key == null || !_sensitiveKeys.hasMatch(key)) return;
+    if (key == null ||
+        !_sensitiveKeys.hasMatch(key) ||
+        !_isTelemetryMetadata(node)) {
+      return;
+    }
     _reportAtNode(node.key, DartitectBoundaryRule.sensitiveMetadataKey);
+  }
+
+  bool _isTelemetryMetadata(MapLiteralEntry entry) {
+    var cursor = entry.parent;
+    for (var depth = 0; depth < 6 && cursor != null; depth += 1) {
+      if (cursor is MethodInvocation) return _isTelemetrySink(cursor);
+      if (cursor is! SetOrMapLiteral &&
+          cursor is! ArgumentList &&
+          cursor is! NamedArgument &&
+          cursor is! ParenthesizedExpression) {
+        return false;
+      }
+      cursor = cursor.parent;
+    }
+    return false;
+  }
+
+  bool _isTelemetrySink(MethodInvocation invocation) {
+    const methods = <String>{
+      'addBreadcrumb',
+      'captureEvent',
+      'captureException',
+      'captureMessage',
+      'log',
+      'record',
+      'report',
+      'setContext',
+      'setContexts',
+      'setExtra',
+    };
+    if (!methods.contains(invocation.methodName.name)) return false;
+    return _isFromPackages(
+      invocation.methodName.element,
+      const <String>{
+        'dartitect_observability',
+        'dartitect_sentry',
+        'sentry',
+        'sentry_flutter',
+      },
+      unresolvedTargets: const <String>{
+        'DartitectLogger',
+        'DartitectTelemetry',
+        'Sentry',
+      },
+      target: invocation.target?.toSource(),
+    );
   }
 
   void _inspectUri(StringLiteral literal, {required bool importsOwnPackage}) {
@@ -437,6 +526,7 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
             _reportAtNode(literal, DartitectBoundaryRule.ecosystemException);
           }
         case DartitectEcosystemDecision.approved:
+        case DartitectEcosystemDecision.approvedPrimitive:
         case DartitectEcosystemDecision.unreviewed:
           break;
       }
@@ -534,8 +624,14 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
     return source.split('/').where((segment) => segment.isNotEmpty).toList();
   }
 
-  late final DartitectSourceClassification _classification =
-      DartitectLintBoundaryResolver.classify(_path);
+  late final DartitectLintBoundaryResolution _resolution =
+      DartitectLintBoundaryResolver.resolve(
+        _path,
+        source: (context.currentUnit ?? context.definingUnit).content,
+      );
+
+  DartitectSourceClassification get _classification =>
+      _resolution.classification;
 
   static const DartitectLintEcosystemPolicy _ecosystemPolicy =
       DartitectLintEcosystemPolicy();
@@ -556,4 +652,19 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
     r'(^|[_-])(authorization|cookie|password|passwd|secret|token|api[_-]?key|dsn)($|[_-])',
     caseSensitive: false,
   );
+
+  static bool _isFromPackages(
+    Element? element,
+    Set<String> packages, {
+    Set<String> unresolvedTargets = const <String>{},
+    String? target,
+  }) {
+    final uri = element?.library?.uri.toString();
+    if (uri == null) {
+      return unresolvedTargets.isEmpty ||
+          target != null && unresolvedTargets.contains(target);
+    }
+    final package = RegExp(r'^package:([^/]+)/').firstMatch(uri)?.group(1);
+    return package != null && packages.contains(package);
+  }
 }

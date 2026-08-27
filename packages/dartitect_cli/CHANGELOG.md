@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.0-rc.3
+
+- Bind every reviewed project change to a sorted semantic-input manifest and
+  SHA-256 digest, excluding unrelated assets from stale-plan detection.
+- Hold one cross-process project lock from revalidation through transactional
+  commit/recovery and expose versioned plan/receipt JSON schemas.
+- Share generated-header/suffix classification and scanner/plugin parity
+  fixtures with explicit performance budgets.
+- Add sanitized SARIF 2.1.0 output, confined read-only fleet versions/check/
+  pinned-policy commands, and preview-only cohort upgrades backed by semantic
+  state tokens, an OS lock, and recoverable pubspec transactions.
+
 ## 1.0.0-rc.2
 
 - Promote the lockstep candidate cohort without public Dart API changes and

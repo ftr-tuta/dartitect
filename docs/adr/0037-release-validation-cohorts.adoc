@@ -1,0 +1,35 @@
+= ADR-0037: Logical release cohorts with one publication version
+
+Status:: ACCEPTED
+
+Context:: Runtime, Flutter, tooling, and provider adapters fail in different
+ways and need focused evidence. Publishing their versions independently before
+1.0 would add compatibility combinations that the current canaries do not prove.
+The release contract already publishes all sixteen packages in dependency order
+with one version.
+
+Decision:: Maintain four logical validation cohorts:
+
+* runtime: `dartitect`, `dartitect_sync`, and `dartitect_isolates`;
+* Flutter: `dartitect_flutter`;
+* tooling: `dartitect_testing`, `dartitect_cli`, `dartitect_lints`, and
+  `dartitect_mcp`;
+* adapters: `dartitect_dio`, `dartitect_objectbox`,
+  `dartitect_observability`, `dartitect_sentry`, `dartitect_geometry`,
+  `dartitect_locale_br`, `dartitect_media`, and `dartitect_privacy`.
+
+Decision:: Cohorts organize ownership, gates, canaries, and handoff evidence;
+they do not authorize independent package versions. The RC remains one lockstep
+publication cohort. A candidate advances only when runtime lifecycle/resource
+gates, Flutter widget/desktop gates, tooling scanner/codegen/fleet gates, and
+adapter/native gates all refer to the same candidate SHA and version.
+
+Decision:: Compatibility claims come from isolated hosted/Git consumer
+canaries and platform builds, not only from pub constraints. The human release
+authority may reject one logical cohort without publishing the others. Splitting
+version lines later requires a new ADR and an explicit cross-cohort compatibility
+matrix.
+
+Consequences:: Teams can diagnose ownership and run smaller evidence lanes
+without multiplying supported version combinations. Publication order and
+internal constraints remain centralized in `package_release_contract.json`.

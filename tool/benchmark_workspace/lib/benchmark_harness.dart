@@ -51,7 +51,7 @@ Future<Map<String, Object?>> runBenchmarkSuite({
     'warmupSamples': warmupSamples,
     'repetitions': repetitions,
     'comparators': <String, String>{
-      'dartitect_flutter': '1.0.0-rc.2',
+      'dartitect_flutter': '1.0.0-rc.3',
       'flutter_riverpod': '3.4.2',
       'flutter_bloc': '9.1.1',
       'bloc_concurrency': '0.3.0',
@@ -420,7 +420,12 @@ Map<String, Object?> _writeSample() {
   final input = owner.value(0);
   var computes = 0;
   final computed = owner.computed<int>(
-    const ReactiveKey<int>('benchmark.write'),
+    const ReactiveKey<int>(
+      'benchmark.write',
+      namespace: 'dartitect.benchmark',
+      definitionRevision: 1,
+      definitionFingerprint: 'write-v1',
+    ),
     <ReactiveNode<Object?>>[input],
     (read) {
       computes += 1;

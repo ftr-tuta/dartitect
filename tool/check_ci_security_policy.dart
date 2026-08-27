@@ -4,12 +4,15 @@ const _checkoutSha = '3d3c42e5aac5ba805825da76410c181273ba90b1';
 const _flutterActionSha = '1a449444c387b1966244ae4d4f8c696479add0b2';
 const _osvActionSha = 'ffa0a5f39214d80778c9b494822d94d0d9668458';
 const _osvScannerSha = 'ffa0a5f39214d80778c9b494822d94d0d9668458';
+const _uploadArtifactSha = 'ea165f8d65b6e75b540449e92b4886f43607fa02';
+const _downloadArtifactSha = 'd3f86a106a0bac45b974a628896c90dbdf5c8093';
 
 /// Audits immutable Actions references and bounded OSV exceptions.
 void main() {
   final root = File.fromUri(Platform.script).parent.parent.absolute;
   final errors = <String>[];
   _auditWorkflows(root, errors);
+  _auditHostedGatePolicy(root, errors);
   _auditOsvConfig(root, errors);
   if (errors.isNotEmpty) {
     stderr.writeln(errors.join('\n'));
@@ -20,6 +23,49 @@ void main() {
     'CI security policy passed: external Actions use reviewed SHAs and OSV '
     'exceptions are bounded.',
   );
+}
+
+void _auditHostedGatePolicy(Directory root, List<String> errors) {
+  final files = <File>[
+    ...Directory('${root.path}/.github/workflows')
+        .listSync(followLinks: false)
+        .whereType<File>(),
+    for (final path in const <String>[
+      'tool/native_evidence_contract.json',
+      'tool/actions_readiness_policy.json',
+      'tool/rc_validation_contract.json',
+      'tool/stable_candidate_contract.json',
+      'tool/goal_gates.json',
+      'README.md',
+      'README.pt-BR.md',
+      'docs/implementation-status.adoc',
+      'docs/release/1.0-readiness.adoc',
+      'docs/release/native-device-evidence.adoc',
+      'docs/release/installed-rc-validation.adoc',
+      'docs/release/publication-runbook.adoc',
+    ])
+      File('${root.path}/$path'),
+  ];
+  for (final file in files) {
+    if (!file.existsSync()) continue;
+    final source = file.readAsStringSync();
+    final relative = _relative(root, file);
+    for (final forbidden in const <String>[
+      'physical',
+      'aparelho físico',
+      'ADB_SERVER_SOCKET',
+      '--device',
+    ]) {
+      if (source.toLowerCase().contains(forbidden.toLowerCase())) {
+        errors.add(
+          '$relative contains forbidden active-gate policy: $forbidden',
+        );
+      }
+    }
+    if (RegExp(r'runs-on:\s*(?:\[[^\]]*)?self-hosted').hasMatch(source)) {
+      errors.add('$relative contains a self-hosted gate.');
+    }
+  }
 }
 
 void _auditWorkflows(Directory root, List<String> errors) {
@@ -33,8 +79,8 @@ void _auditWorkflows(Directory root, List<String> errors) {
           )
           .toList()
         ..sort((left, right) => left.path.compareTo(right.path));
-  if (workflows.length != 2) {
-    errors.add('Expected exactly two GitHub Actions workflows.');
+  if (workflows.length != 3) {
+    errors.add('Expected exactly three GitHub Actions workflows.');
   }
   for (final workflow in workflows) {
     final relative = _relative(root, workflow);
@@ -44,6 +90,9 @@ void _auditWorkflows(Directory root, List<String> errors) {
     }
     if (source.contains(RegExp(r'runs-on:\s*[^\n]*-latest'))) {
       errors.add('$relative contains an unpinned hosted runner.');
+    }
+    if (RegExp(r'runs-on:\s*(?:\[[^\]]*)?self-hosted').hasMatch(source)) {
+      errors.add('$relative must not use a self-hosted runner.');
     }
     for (final line in source.split(RegExp(r'\r?\n'))) {
       final match = RegExp(r'''^\s*(?:-\s*)?uses:\s*["']?([^\s#"']+)''')
@@ -73,6 +122,8 @@ void _auditWorkflows(Directory root, List<String> errors) {
             ) =>
           _osvActionSha,
         'google/osv-scanner-action/osv-scanner-action' => _osvScannerSha,
+        'actions/upload-artifact' => _uploadArtifactSha,
+        'actions/download-artifact' => _downloadArtifactSha,
         _ => null,
       };
       if (expected != null && reference != expected) {
@@ -97,11 +148,35 @@ void _auditWorkflows(Directory root, List<String> errors) {
     'GITHUB_EVENT_NAME\" == \"merge_group',
     '--exclude-merge-commits',
     'Clean clone / release audit',
-    'Git consumption / v1.0.0-rc.2',
+    'Git consumption / v1.0.0-rc.3',
     'tool/run_git_canaries.dart',
+    'name: CI / Required',
+    'android-media-current-emulator',
+    'system-images;android-34;google_apis;x86_64',
+    'sdkmanager',
+    'timeout 360',
+    'for attempt in 1 2',
+    'google/osv-scanner-action/osv-scanner-action@$_osvScannerSha',
+    'tool/check_native_evidence.dart',
+    'tool/create_actions_readiness.dart',
+    'name: actions-readiness-v1',
+    'retention-days: 90',
   ]) {
     if (!ci.contains(required)) {
       errors.add('CI authorship audit is missing required policy: $required');
+    }
+  }
+  for (final job in const <String>[
+    'linux',
+    'windows',
+    'macos',
+    'android-emulator',
+    'clean-clone',
+    'git-consumption',
+    'osv',
+  ]) {
+    if (!ci.contains('      - $job')) {
+      errors.add('CI / Required does not depend on job $job.');
     }
   }
   if (ci.contains(r'ref: ${{ github.event.pull_request.head.sha }}')) {
@@ -121,22 +196,53 @@ void _auditWorkflows(Directory root, List<String> errors) {
       errors.add('Security workflow is missing required policy: $required');
     }
   }
-  final mergeCandidate = security
-      .split('  osv-merge-candidate:')
-      .last
-      .split('  osv-trusted:')
-      .first;
-  if (mergeCandidate.contains('security-events: write') ||
-      mergeCandidate.contains('upload-sarif: true')) {
-    errors.add('Merge-candidate OSV scanning must remain read-only.');
+  for (final forbidden in const <String>[
+    'pull_request:',
+    'merge_group:',
+    'push:',
+    'osv-merge-candidate',
+  ]) {
+    if (security.contains(forbidden)) {
+      errors.add(
+        'Security is diagnostic-only and must not contain $forbidden.',
+      );
+    }
   }
-  if (!mergeCandidate.contains(
-    'google/osv-scanner-action/osv-scanner-action@$_osvScannerSha',
-  )) {
-    errors.add('Merge-candidate OSV scanning must use the reviewed action.');
+
+  final publish = File('${workflowRoot.path}/publish.yaml').readAsStringSync();
+  for (final required in const <String>[
+    'workflow_dispatch:',
+    'source_sha:',
+    'ci_run_id:',
+    'channel:',
+    r'actions/runs/${CI_RUN_ID}',
+    r'CI_RUN_ATTEMPT=$ci_run_attempt',
+    '.name == "CI / Required" and .conclusion == "success"',
+    r'run-id: ${{ inputs.ci_run_id }}',
+    'tool/check_publication_readiness.dart',
+    'GITHUB_ACTOR',
+  ]) {
+    if (!publish.contains(required)) {
+      errors.add('Publish workflow is missing required policy: $required');
+    }
   }
-  if (!mergeCandidate.contains("github.event_name == 'push'")) {
-    errors.add('Merge-candidate OSV scanning must run on root/main pushes.');
+
+  final rulesetFile = File('${root.path}/tool/github_ruleset_policy.json');
+  if (!rulesetFile.existsSync()) {
+    errors.add('The checked main ruleset policy is missing.');
+  } else {
+    final source = rulesetFile.readAsStringSync();
+    for (final required in const <String>[
+      '"target": "refs/heads/main"',
+      '"enforcement": "active"',
+      '"bypassActors": []',
+      '"requiredStatusChecks": ["CI / Required"]',
+      '"strictRequiredStatusChecks": true',
+    ]) {
+      if (!source.contains(required)) {
+        errors.add('The main ruleset policy is missing: $required');
+      }
+    }
   }
 }
 

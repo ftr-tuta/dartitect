@@ -5,10 +5,10 @@
     {
       "path": "lib/user.dartitect.g.dart",
       "source": "lib/user.dart",
-      "generatorVersion": "1.0.0-rc.2",
+      "generatorVersion": "1.0.0-rc.3",
       "inputSchemaVersion": 1,
       "inputDigest": "e9b9da82245c1556df39efd9d5527d48593bce79691ab154109f2badf66ffc18",
-      "outputDigest": "d3817e5ec99b9b5a63a22854d144ebdad52b60ff70dc88476bd69a00daad8e62"
+      "outputDigest": "5c6a232b75001b02681d1e8e34fec2acfe72b1b5a62e23382ecbafc22f907cb7"
     }
   ]
 }

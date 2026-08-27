@@ -53,7 +53,7 @@ Future<void> main(List<String> arguments) async {
   final artifact = <String, Object?>{
     'schemaVersion': 1,
     'recordedAt': '2026-08-25',
-    'generatorVersion': '1.0.0-rc.2',
+    'generatorVersion': '1.0.0-rc.3',
     'host': <String, Object?>{
       'os': Platform.operatingSystem,
       'dart': Platform.version.split(' ').first,

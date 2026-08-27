@@ -1,7 +1,7 @@
 = Sync and headless threat model
 :toc:
 
-Status:: Reviewed for `1.0.0-rc.2`
+Status:: Reviewed for `1.0.0-rc.3`
 Review date:: 2026-08-24
 
 == Assets and trust boundaries
@@ -23,12 +23,16 @@ deadline; they never carry clients, Stores, closures, tokens, or graph objects.
 | Bounded request-ID deduplication and explicit accepted/terminal ACKs.
 | Persist idempotency beyond one process when delivery can outlive it.
 
-| Stale worker overwrites a checkpoint
-| Lease fencing tokens flow into every checkpoint write.
-| Atomically reject stale tokens in the storage transaction.
+| Stale worker overwrites a dataset or checkpoint
+| Typed authority flows into dataset execution and the token flows into every
+checkpoint write.
+| Call `ensureAuthority()` immediately before commit and atomically reject the
+token in the dataset/checkpoint storage transaction. If storage cannot, fencing
+is unsupported.
 
 | Lease loss during work
-| Renewal failure cancels the run and produces a typed report.
+| Renewal failure stops new work; boundary receipts distinguish already applied
+data from checkpoint, journal, release, and cleanup.
 | Choose TTL, availability, and retry policy for the deployment.
 
 | Resource leak or use-after-close
@@ -48,7 +52,8 @@ requests are bounded, and deadlines/cancellation are explicit.
 
 | Crash misclassified as expected failure
 | Only typed `Err` values are expected failures. Unexpected exceptions retain
-their stack and are rethrown; retry is never automatic.
+their cause/stack in a terminal exception with a partial receipt; retry is never
+automatic.
 | Report crashes and decide recovery after inspecting durable state.
 |===
 

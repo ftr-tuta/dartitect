@@ -1,51 +1,21 @@
 import 'dart:convert';
 import 'dart:io';
 
-const _notReady = 'NOT_READY_FOR_1_0_RC';
-const _ready = 'READY_FOR_1_0_RC';
-const _notAuthorized = 'NOT_AUTHORIZED';
-const _authorized = 'AUTHORIZED';
-const _unselected = 'UNSELECTED';
-const _allowedChannels = <String>{'pub-dev-prerelease', 'signed-bundle'};
-final _sha = RegExp(r'^[0-9a-f]{40}$');
+import 'package:crypto/crypto.dart';
 
-/// Validates the separate RC-readiness decision and distribution authorization.
-///
-/// The structural mode is suitable for pre-RC CI: it proves that an incomplete
-/// record remains explicitly fail-closed. The default formal mode succeeds only
-/// for an exact, fully evidenced `READY_FOR_1_0_RC` decision.
+final _digestPattern = RegExp(r'^[0-9a-f]{64}$');
+
+/// Validates the immutable Actions readiness policy or a formal current-run
+/// manifest. Structural mode is intentionally unable to declare readiness.
 Future<void> main(List<String> arguments) async {
   try {
     final options = _Options.parse(arguments);
-    final root =
-        options.root ?? File.fromUri(Platform.script).parent.parent.absolute;
+    final root = options.root ?? File.fromUri(Platform.script).parent.parent;
+    final policy = _read(root, 'tool/actions_readiness_policy.json');
     final errors = <String>[];
-    final decision = _readObject(root, 'tool/rc_readiness_decision.json');
-    final authorization = _readObject(
-      root,
-      'tool/rc_distribution_authorization.json',
-    );
-    final release = _readObject(root, 'tool/package_release_contract.json');
-    final candidate = _readObject(root, 'tool/rc_candidate_contract.json');
-    final ledger = _readObject(root, 'tool/goal_gates.json');
-
-    _validateContract(
-      decision: decision,
-      authorization: authorization,
-      release: release,
-      candidate: candidate,
-      ledger: ledger,
-      errors: errors,
-    );
+    _validatePolicy(root, policy, errors);
     if (!options.contractOnly && errors.isEmpty) {
-      await _validateFormalReadiness(
-        root: root,
-        decision: decision,
-        authorization: authorization,
-        candidate: candidate,
-        ledger: ledger,
-        errors: errors,
-      );
+      await _validateFormal(root, policy, options.manifest!, errors);
     }
     if (errors.isNotEmpty) {
       stderr.writeln(errors.join('\n'));
@@ -54,241 +24,249 @@ Future<void> main(List<String> arguments) async {
     }
     if (options.contractOnly) {
       stdout.writeln(
-        'RC readiness decision contract is valid and fail-closed at '
-        '${decision['state']}.',
+        'Actions readiness policy is structurally valid; local mode cannot '
+        'declare release readiness.',
       );
     } else {
       stdout.writeln(
-        'RC readiness passed for ${decision['sourceSha']} with separately '
-        'authorized ${authorization['channel']} materialization.',
+        'Formal Actions readiness passed for the current main CI execution.',
       );
     }
   } on Object catch (error) {
-    stderr.writeln('RC readiness evidence could not be read: $error');
-    exitCode = 1;
+    stderr.writeln('Actions readiness could not be validated: $error');
+    exitCode = error is FormatException ? 64 : 1;
   }
 }
 
-void _validateContract({
-  required Map<String, Object?> decision,
-  required Map<String, Object?> authorization,
-  required Map<String, Object?> release,
-  required Map<String, Object?> candidate,
-  required Map<String, Object?> ledger,
-  required List<String> errors,
-}) {
-  final cohort = release['cohortVersion'];
-  if (cohort is! String ||
-      !RegExp(r'^1\.0\.0-rc\.[1-9][0-9]*$').hasMatch(cohort)) {
-    errors.add('The release contract does not identify an RC cohort.');
+void _validatePolicy(
+  Directory root,
+  Map<String, Object?> policy,
+  List<String> errors,
+) {
+  final artifact = _objectOrNull(policy['artifact']);
+  final publication = _objectOrNull(policy['publication']);
+  if (policy['schemaVersion'] != 1 ||
+      policy['authority'] != 'github-actions' ||
+      policy['workflow'] != 'CI' ||
+      policy['workflowPath'] != '.github/workflows/ci.yaml' ||
+      !_same(_stringsOrNull(policy['events']), const <String>[
+        'pull_request',
+        'merge_group',
+        'push-main',
+      ]) ||
+      policy['requiredCheck'] != 'CI / Required' ||
+      policy['releaseBranch'] != 'refs/heads/main' ||
+      policy['formalEvent'] != 'push' ||
+      artifact?['name'] != 'actions-readiness-v1' ||
+      artifact?['manifest'] != 'actions-readiness-v1.json' ||
+      artifact?['retentionDays'] != 90 ||
+      policy['localValidationCanDeclareReadiness'] != false ||
+      policy['hostedRunnersOnly'] != true) {
+    errors.add('The immutable Actions readiness policy is incomplete.');
   }
-  if (decision['schemaVersion'] != 1 ||
-      decision['goal'] != 'V1S-15' ||
-      decision['cohortVersion'] != cohort ||
-      candidate['cohortVersion'] != cohort) {
-    errors.add('The readiness decision does not match the RC cohort.');
+  if (!_same(_stringsOrNull(policy['requiredJobs']), const <String>[
+    'linux',
+    'windows',
+    'macos',
+    'android-emulator',
+    'clean-clone',
+    'git-consumption',
+    'osv',
+  ])) {
+    errors.add('The required Actions job set is not exact.');
   }
-  final roadmap = _objectOrNull(ledger['roadmap']);
-  final configuredRequired = _stringsOrNull(roadmap?['requiredGoalIds']);
-  final required = _stringsOrNull(decision['requiredGoalIds']);
-  final expectedRequired = <String>[
-    for (var index = 0; index <= 14; index += 1)
-      'V1S-${index.toString().padLeft(2, '0')}',
-  ];
-  if (configuredRequired == null ||
-      required == null ||
-      !_same(required, expectedRequired) ||
-      !configuredRequired.toSet().containsAll(required)) {
-    errors.add('The readiness prerequisite goal set is incomplete.');
+  if (!_same(_stringsOrNull(policy['nativeCells']), const <String>[
+    'android-media-floor-build',
+    'android-media-current-emulator',
+    'ios-media-floor-build',
+    'ios-privacy-floor-build',
+    'ios-current-simulator',
+  ])) {
+    errors.add('The readiness policy native matrix is not the nominal five.');
   }
-  if (!_same(
-    _stringsOrNull(decision['requiredWorkflowNames']) ?? const <String>[],
-    const <String>['CI', 'Security'],
-  )) {
-    errors.add('RC readiness must require same-SHA CI and Security.');
+  if (!_same(_stringsOrNull(policy['repositoryArtifacts']), const <String>[
+    'docs/release/sbom.spdx.json',
+    'docs/release/dependency-licenses.json',
+    'tool/api_surface.snapshot.json',
+    'tool/package_release_contract.json',
+  ])) {
+    errors.add('The readiness repository artifact set is not exact.');
   }
-
-  final authority = _objectOrNull(
-    _objectOrNull(ledger['statusPolicy'])?['reviewAuthority'],
-  );
-  final authorityName = authority?['name'];
-  if (authority?['kind'] != 'MAINTAINER_DELEGATED_AUTOMATION' ||
-      authorityName is! String ||
-      authorityName.trim().isEmpty) {
-    errors.add('The delegated review authority is not configured.');
+  if (publication?['workflowPath'] != '.github/workflows/publish.yaml' ||
+      publication?['manualOnly'] != true ||
+      !_same(_stringsOrNull(publication?['requiredInputs']), const <String>[
+        'source_sha',
+        'ci_run_id',
+        'channel',
+      ]) ||
+      !_same(_stringsOrNull(publication?['channels']), const <String>[
+        'github-release',
+        'pub-dev-prerelease',
+        'pub-dev-stable',
+      ])) {
+    errors.add('The manual publication policy is incomplete.');
   }
-
-  final state = decision['state'];
-  final blockers = _stringsOrNull(decision['blockers']);
-  if (state != _notReady && state != _ready) {
-    errors.add('Unknown RC readiness decision state: $state.');
-  } else if (state == _notReady) {
-    if (decision['decisionId'] != null ||
-        decision['sourceSha'] != null ||
-        decision['sourceTree'] != null ||
-        decision['recordedAt'] != null ||
-        !_emptyStrings(decision['reviewedBy']) ||
-        blockers == null ||
-        blockers.isEmpty) {
-      errors.add('NOT_READY_FOR_1_0_RC must remain unsigned with blockers.');
+  for (final path in const <String>[
+    '.github/workflows/ci.yaml',
+    '.github/workflows/publish.yaml',
+    'tool/native_evidence_contract.json',
+  ]) {
+    if (!File('${root.path}/$path').existsSync()) {
+      errors.add('Actions readiness policy dependency is missing: $path.');
     }
-  } else {
-    if (!_nonEmpty(decision['decisionId']) ||
-        !_validSha(decision['sourceSha']) ||
-        !_validSha(decision['sourceTree']) ||
-        !_utc(decision['recordedAt']) ||
-        blockers == null ||
-        blockers.isNotEmpty ||
-        !_exactReviewer(decision['reviewedBy'], authorityName)) {
-      errors.add('READY_FOR_1_0_RC decision evidence is incomplete.');
-    }
-  }
-
-  if (authorization['schemaVersion'] != 1 ||
-      authorization['goal'] != 'V1S-15' ||
-      authorization['cohortVersion'] != cohort ||
-      authorization['separateFromReadinessDecision'] != true ||
-      !_same(
-        _stringsOrNull(authorization['allowedChannels']) ?? const <String>[],
-        const <String>['pub-dev-prerelease', 'signed-bundle'],
-      )) {
-    errors.add('The RC distribution authorization contract is incomplete.');
-  }
-  final authorizationState = authorization['state'];
-  if (authorizationState == _notAuthorized) {
-    if (authorization['authorizationId'] != null ||
-        authorization['readinessDecisionId'] != null ||
-        authorization['sourceSha'] != null ||
-        authorization['channel'] != _unselected ||
-        authorization['recordedAt'] != null ||
-        !_emptyStrings(authorization['reviewedBy'])) {
-      errors.add('The non-authorized distribution record is not fail-closed.');
-    }
-  } else if (authorizationState == _authorized) {
-    if (state != _ready ||
-        !_nonEmpty(authorization['authorizationId']) ||
-        authorization['authorizationId'] == decision['decisionId'] ||
-        authorization['readinessDecisionId'] != decision['decisionId'] ||
-        authorization['sourceSha'] != decision['sourceSha'] ||
-        !_allowedChannels.contains(authorization['channel']) ||
-        !_utc(authorization['recordedAt']) ||
-        !_exactReviewer(authorization['reviewedBy'], authorityName)) {
-      errors.add('The RC distribution authorization is incomplete or coupled.');
-    }
-    final decisionAt = DateTime.tryParse('${decision['recordedAt']}');
-    final authorizationAt = DateTime.tryParse('${authorization['recordedAt']}');
-    if (decisionAt != null &&
-        authorizationAt != null &&
-        !authorizationAt.isAfter(decisionAt)) {
-      errors.add('Distribution authorization must follow readiness decision.');
-    }
-  } else {
-    errors.add(
-      'Unknown RC distribution authorization state: $authorizationState.',
-    );
   }
 }
 
-Future<void> _validateFormalReadiness({
-  required Directory root,
-  required Map<String, Object?> decision,
-  required Map<String, Object?> authorization,
-  required Map<String, Object?> candidate,
-  required Map<String, Object?> ledger,
-  required List<String> errors,
-}) async {
-  if (decision['state'] != _ready || authorization['state'] != _authorized) {
-    final blockers = _stringsOrNull(decision['blockers']) ?? const <String>[];
+Future<void> _validateFormal(
+  Directory root,
+  Map<String, Object?> policy,
+  File manifestFile,
+  List<String> errors,
+) async {
+  final environment = Platform.environment;
+  if (environment['GITHUB_ACTIONS'] != 'true' ||
+      environment['RUNNER_ENVIRONMENT'] != 'github-hosted' ||
+      environment['GITHUB_WORKFLOW'] != policy['workflow'] ||
+      environment['GITHUB_EVENT_NAME'] != policy['formalEvent'] ||
+      environment['GITHUB_REF'] != policy['releaseBranch']) {
     errors.add(
-      'Formal RC readiness is not granted'
-      '${blockers.isEmpty ? '.' : ': ${blockers.join('; ')}'}',
+      'Formal readiness is restricted to the current hosted CI push on main.',
     );
     return;
   }
-  final sourceSha = decision['sourceSha']! as String;
-  if (ledger['releaseStatus'] != _ready) {
-    errors.add('The goal authority does not record READY_FOR_1_0_RC.');
+  if (!manifestFile.existsSync()) {
+    errors.add('The current-run readiness manifest is missing.');
+    return;
   }
-  if (candidate['candidateState'] != 'ASSEMBLED' ||
-      candidate['sourceSha'] != sourceSha ||
-      candidate['sourceTree'] != decision['sourceTree'] ||
-      candidate['targetChannel'] != authorization['channel']) {
-    errors.add(
-      'The assembled candidate does not match the authorized decision.',
-    );
+  final manifest = _decodeObject(manifestFile.readAsStringSync());
+  if (!_sameSet(manifest.keys.toSet(), const <String>{
+    'schemaVersion',
+    'artifact',
+    'authority',
+    'workflow',
+    'requiredCheck',
+    'sourceSha',
+    'sourceTree',
+    'ref',
+    'event',
+    'runId',
+    'runAttempt',
+    'repository',
+    'url',
+    'jobs',
+    'artifactDigests',
+    'createdAt',
+  })) {
+    errors.add('Readiness manifest fields do not match schema v1.');
+  }
+  final sourceSha = environment['GITHUB_SHA'];
+  final runId = int.tryParse(environment['GITHUB_RUN_ID'] ?? '');
+  final runAttempt = int.tryParse(environment['GITHUB_RUN_ATTEMPT'] ?? '');
+  final repository = environment['GITHUB_REPOSITORY'];
+  final sourceTree = sourceSha == null
+      ? ''
+      : (await _git(root, <String>[
+          'show',
+          '-s',
+          '--format=%T',
+          sourceSha,
+        ])).trim();
+  if (manifest['schemaVersion'] != 1 ||
+      manifest['artifact'] != _objectOrNull(policy['artifact'])?['name'] ||
+      manifest['authority'] != policy['authority'] ||
+      manifest['workflow'] != policy['workflow'] ||
+      manifest['requiredCheck'] != policy['requiredCheck'] ||
+      manifest['sourceSha'] != sourceSha ||
+      manifest['sourceTree'] != sourceTree ||
+      manifest['ref'] != policy['releaseBranch'] ||
+      manifest['event'] != policy['formalEvent'] ||
+      manifest['runId'] != runId ||
+      manifest['runAttempt'] != runAttempt ||
+      manifest['repository'] != repository ||
+      manifest['url'] != 'https://github.com/$repository/actions/runs/$runId' ||
+      !_validUtc(manifest['createdAt'])) {
+    errors.add('Readiness manifest is not bound to the current CI execution.');
   }
 
-  final goals = <String, Map<String, Object?>>{
-    for (final value in _objectsOrEmpty(ledger['goals']))
-      if (value['id'] is String) value['id']! as String: value,
+  final jobs = _objectsOrNull(manifest['jobs']);
+  final requiredJobs = _stringsOrNull(policy['requiredJobs']);
+  if (jobs == null ||
+      requiredJobs == null ||
+      jobs.length != requiredJobs.length ||
+      jobs.asMap().entries.any(
+        (entry) =>
+            entry.value['id'] != requiredJobs[entry.key] ||
+            entry.value['conclusion'] != 'success' ||
+            !_sameSet(entry.value.keys.toSet(), const <String>{
+              'id',
+              'conclusion',
+            }),
+      )) {
+    errors.add('Readiness job conclusions are missing, skipped, or failed.');
+  }
+
+  final digests = _objectsOrNull(manifest['artifactDigests']);
+  final nativeCells = _stringsOrNull(policy['nativeCells']) ?? const <String>[];
+  final repositoryArtifacts =
+      _stringsOrNull(policy['repositoryArtifacts']) ?? const <String>[];
+  final expectedPaths = <String>{
+    for (final cell in nativeCells) 'native/$cell.json',
+    for (final path in repositoryArtifacts) 'repository/$path',
   };
-  final authorityName = _objectOrNull(
-    _objectOrNull(ledger['statusPolicy'])?['reviewAuthority'],
-  )?['name'];
-  for (final id in _stringsOrNull(decision['requiredGoalIds'])!) {
-    final goal = goals[id];
-    if (goal == null ||
-        goal['status'] != 'COMPLETE' ||
-        goal['sourceSha'] != sourceSha ||
-        !_exactReviewer(goal['reviewedBy'], authorityName) ||
-        !_utc(goal['completedAt'])) {
-      errors.add('$id lacks same-SHA delegated completion evidence.');
+  if (digests == null ||
+      digests.length != expectedPaths.length ||
+      digests.map((item) => item['path']).toSet().length != digests.length ||
+      !digests.map((item) => item['path']).toSet().containsAll(expectedPaths)) {
+    errors.add('Readiness artifact digest set is not exact.');
+    return;
+  }
+  final artifactRoot = manifestFile.parent;
+  for (final item in digests) {
+    final path = item['path'];
+    final expected = item['sha256'];
+    if (path is! String ||
+        !expectedPaths.contains(path) ||
+        expected is! String ||
+        !_digestPattern.hasMatch(expected) ||
+        (item['kind'] != 'native-manifest' &&
+            item['kind'] != 'repository-artifact') ||
+        !_sameSet(item.keys.toSet(), const <String>{
+          'path',
+          'kind',
+          'sha256',
+        })) {
+      errors.add('Readiness artifact digest entry is invalid.');
+      continue;
     }
-  }
-
-  final baselines = _objectOrNull(ledger['baselines']);
-  final rcCandidates = _objectsOrEmpty(baselines?['rcCandidates']);
-  final matchingBaselines = rcCandidates.where(
-    (value) => value['sha'] == sourceSha,
-  );
-  final baseline = matchingBaselines.length == 1
-      ? matchingBaselines.single
-      : null;
-  if (baseline == null || baseline['tree'] != decision['sourceTree']) {
-    errors.add('The exact RC candidate baseline is absent from the ledger.');
-  } else {
-    final runs = _objectsOrEmpty(baseline['workflowRuns']);
-    for (final workflow in _stringsOrNull(decision['requiredWorkflowNames'])!) {
-      final matching = runs.where(
-        (run) =>
-            run['workflow'] == workflow &&
-            run['sourceSha'] == sourceSha &&
-            run['conclusion'] == 'success' &&
-            run['runId'] is int &&
-            _nonEmpty(run['url']),
-      );
-      if (matching.length != 1) {
-        errors.add('Missing unique successful $workflow run for $sourceSha.');
-      }
+    final file = File('${artifactRoot.path}/$path');
+    if (!file.existsSync() || await _digest(file) != expected) {
+      errors.add('Readiness artifact was altered or is missing: $path.');
     }
-  }
-
-  final tree = await _git(root, <String>[
-    'show',
-    '-s',
-    '--format=%T',
-    sourceSha,
-  ]);
-  if (tree == null || tree.trim() != decision['sourceTree']) {
-    errors.add('The authorized source tree cannot be reproduced locally.');
-  }
-  final ancestor = await Process.run('git', <String>[
-    'merge-base',
-    '--is-ancestor',
-    sourceSha,
-    'HEAD',
-  ], workingDirectory: root.path);
-  if (ancestor.exitCode != 0) {
-    errors.add(
-      'The authorized RC SHA is not an ancestor of the decision HEAD.',
-    );
   }
 }
 
-Map<String, Object?> _readObject(Directory root, String path) {
-  final value = jsonDecode(File('${root.path}/$path').readAsStringSync());
+Future<String> _git(Directory root, List<String> arguments) async {
+  final result = await Process.run(
+    'git',
+    arguments,
+    workingDirectory: root.path,
+  );
+  if (result.exitCode != 0) {
+    throw StateError('git ${arguments.join(' ')} failed: ${result.stderr}');
+  }
+  return result.stdout as String;
+}
+
+Future<String> _digest(File file) async =>
+    (await sha256.bind(file.openRead()).first).toString();
+
+Map<String, Object?> _read(Directory root, String path) =>
+    _decodeObject(File('${root.path}/$path').readAsStringSync());
+
+Map<String, Object?> _decodeObject(String source) {
+  final value = jsonDecode(source);
   if (value is! Map<String, Object?>) {
-    throw FormatException('$path must contain one JSON object.');
+    throw const FormatException('Expected one JSON object.');
   }
   return value;
 }
@@ -296,74 +274,69 @@ Map<String, Object?> _readObject(Directory root, String path) {
 Map<String, Object?>? _objectOrNull(Object? value) =>
     value is Map<String, Object?> ? value : null;
 
-List<Map<String, Object?>> _objectsOrEmpty(Object? value) =>
+List<Map<String, Object?>>? _objectsOrNull(Object? value) =>
     value is List<Object?> &&
         value.every((item) => item is Map<String, Object?>)
     ? value.cast<Map<String, Object?>>()
-    : const <Map<String, Object?>>[];
+    : null;
 
 List<String>? _stringsOrNull(Object? value) =>
     value is List<Object?> && value.every((item) => item is String)
     ? value.cast<String>()
     : null;
 
-bool _same(List<String> left, List<String> right) =>
+bool _same(List<String>? left, List<String> right) =>
+    left != null &&
     left.length == right.length &&
-    List<bool>.generate(
-      left.length,
-      (index) => left[index] == right[index],
-    ).every((value) => value);
+    left.asMap().entries.every((entry) => entry.value == right[entry.key]);
 
-bool _emptyStrings(Object? value) => value is List<Object?> && value.isEmpty;
+bool _sameSet(Set<Object?> left, Set<Object?> right) =>
+    left.length == right.length && left.containsAll(right);
 
-bool _exactReviewer(Object? value, Object? reviewer) =>
-    reviewer is String &&
-    value is List<Object?> &&
-    value.length == 1 &&
-    value.single == reviewer;
-
-bool _validSha(Object? value) => value is String && _sha.hasMatch(value);
-
-bool _nonEmpty(Object? value) => value is String && value.trim().isNotEmpty;
-
-bool _utc(Object? value) {
-  if (value is! String) return false;
-  final parsed = DateTime.tryParse(value);
-  return parsed != null && parsed.isUtc;
-}
-
-Future<String?> _git(Directory root, List<String> arguments) async {
-  final result = await Process.run(
-    'git',
-    arguments,
-    workingDirectory: root.path,
-  );
-  return result.exitCode == 0 ? result.stdout as String : null;
+bool _validUtc(Object? value) {
+  final parsed = value is String ? DateTime.tryParse(value) : null;
+  return parsed != null && parsed.isUtc && (value as String).endsWith('Z');
 }
 
 final class _Options {
-  const _Options({required this.contractOnly, this.root});
+  const _Options({
+    required this.contractOnly,
+    required this.manifest,
+    this.root,
+  });
 
   factory _Options.parse(List<String> arguments) {
     var contractOnly = false;
     Directory? root;
-    for (var index = 0; index < arguments.length; index += 1) {
-      switch (arguments[index]) {
-        case '--contract-only':
-          if (contractOnly) throw ArgumentError('Duplicate --contract-only.');
-          contractOnly = true;
-        case '--root':
-          if (root != null || index + 1 == arguments.length) {
-            throw ArgumentError('Invalid or duplicate --root.');
-          }
-          root = Directory(arguments[++index]).absolute;
-        default:
-          throw ArgumentError('Unknown argument: ${arguments[index]}');
+    File? manifest;
+    for (final argument in arguments) {
+      if (argument == '--contract-only') {
+        if (contractOnly)
+          throw const FormatException('Duplicate --contract-only.');
+        contractOnly = true;
+      } else if (argument.startsWith('--root=')) {
+        if (root != null || argument.substring(7).trim().isEmpty) {
+          throw const FormatException('Invalid or duplicate --root=.');
+        }
+        root = Directory(argument.substring(7)).absolute;
+      } else if (argument.startsWith('--manifest=')) {
+        if (manifest != null || argument.substring(11).trim().isEmpty) {
+          throw const FormatException('Invalid or duplicate --manifest=.');
+        }
+        manifest = File(argument.substring(11)).absolute;
+      } else {
+        throw FormatException('Unknown argument: $argument');
       }
     }
-    return _Options(contractOnly: contractOnly, root: root);
+    if (contractOnly == (manifest != null)) {
+      throw const FormatException(
+        'Use exactly one mode: --contract-only or --manifest=<path>.',
+      );
+    }
+    return _Options(contractOnly: contractOnly, manifest: manifest, root: root);
   }
 
   final bool contractOnly;
+  final File? manifest;
   final Directory? root;
 }
