@@ -187,7 +187,6 @@ jobs:
           fi
           for tool_directory in \
             "$android_sdk_root/cmdline-tools/latest/bin" \
-            "$android_sdk_root/emulator" \
             "$android_sdk_root/platform-tools"; do
             if [[ ! -d "$tool_directory" ]]; then
               echo "Missing hosted Android tool directory: $tool_directory" >&2
@@ -195,17 +194,21 @@ jobs:
             fi
             echo "$tool_directory" >>"$GITHUB_PATH"
           done
+          echo "$android_sdk_root/emulator" >>"$GITHUB_PATH"
       - name: Resolve workspace
         run: flutter pub get
       - name: Install the pinned API 34 Google APIs image
         shell: bash
         run: |
+          set +o pipefail
           yes | sdkmanager --licenses >/dev/null
+          set -o pipefail
           sdkmanager \
             "platform-tools" \
             "emulator" \
             "platforms;android-34" \
             "${DARTITECT_ANDROID_SYSTEM_IMAGE}"
+          test -x "${ANDROID_SDK_ROOT:?}/emulator/emulator"
           sudo chmod 666 /dev/kvm
       - name: Create and boot a clean API 34 AVD
         id: avd
