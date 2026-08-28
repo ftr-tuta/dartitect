@@ -4,6 +4,26 @@ import 'package:dartitect/dartitect.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('runtime slot clears current only after admitted work drains', () async {
+    final slot = OwnedRuntimeSlot<String>();
+    final release = Completer<void>();
+    var disposed = false;
+    await slot.replace((transaction) {
+      transaction.own('runtime', (_) => disposed = true);
+      return 'runtime';
+    });
+    final active = slot.use((_) => release.future);
+    final clearing = slot.clearCurrent();
+    await Future<void>.delayed(Duration.zero);
+    expect(disposed, isFalse);
+    release.complete();
+    await active;
+    await clearing;
+    expect(disposed, isTrue);
+    expect(slot.hasCurrent, isFalse);
+    await slot.disposeAsync();
+  });
+
   test('transaction rolls back owned resources in LIFO order', () async {
     final timeline = <String>[];
 

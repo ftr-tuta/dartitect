@@ -7,6 +7,7 @@ export 'src/concurrency/operation_progress.dart';
 export 'src/concurrency/projection_executor.dart';
 export 'src/diagnostics/diagnostics_protocol.dart';
 export 'src/id_generator.dart';
+export 'src/lifecycle/bootstrap_coordinator.dart';
 export 'src/lifecycle/contracts.dart';
 export 'src/lifecycle/owned_graph.dart';
 export 'src/lifecycle/resource_owner.dart';

@@ -337,6 +337,30 @@ final class OwnedRuntimeSlot<T> implements AsyncDisposable {
     return completer.future;
   }
 
+  /// Atomically removes and disposes the current graph generation.
+  ///
+  /// Removal is serialized with replacements. New admission closes before the
+  /// graph is unpublished, then already admitted work drains before teardown.
+  Future<void> clearCurrent() {
+    if (_closing) throw StateError('$_label is shutting down.');
+    final completer = Completer<void>();
+    _tail = _tail
+        .then((_) async {
+          if (_closing) throw StateError('$_label is shutting down.');
+          final previous = _current;
+          previous?._closeAdmission();
+          _current = null;
+          await previous?.disposeAsync();
+          completer.complete();
+        })
+        .catchError((Object error, StackTrace stackTrace) {
+          if (!completer.isCompleted) {
+            completer.completeError(error, stackTrace);
+          }
+        });
+    return completer.future;
+  }
+
   /// Prevents replacements and closes the current generation.
   @override
   Future<void> disposeAsync() => _disposal ??= _dispose();
