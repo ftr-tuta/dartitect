@@ -1,0 +1,44 @@
+= ADR 0042: RC4 adoption and evidence boundaries
+
+Status:: Accepted for 1.0.0-rc.4
+
+== Decision
+
+Modeling adoption extends +configVersion: 1+ additively. Absence of the
++modeling+ block preserves existing consumers. The +minimal+,
++recommended_complete+, and +interop_existing_project+ presets suggest an
+adoption surface but never enable JSON, projections, or mappers without their
+independent annotations. The optional +ecosystem+ block records incremental
+coexistence: installed Riverpod, BLoC, Provider, GetIt, MobX, Signals, or an
+equivalent runtime is a +DT1019+ warning until a concrete type, service
+location, duplicate owner, or boundary leak makes it an error.
+
++dartitect verify+ is the strictly read-only aggregate gate and emits stable
+text, JSON, or SARIF. Fleet +versions+ and +check+ remain read-only; fleet
+upgrade remains preview-only. An actual write requires an independently
+reviewed project plan with lock, journal, stale-plan check, and rollback.
+
+The RC4 evidence matrix uses six isolated packaged canaries plus provider and
+workspace fixtures: pure-Dart modeling/JSON/projection/mapper/Chrome,
+incremental interop positive and negative, Flutter MVVM, Drift, ObjectBox
+primary-constructor evidence, separate ObjectBox/Drift bounded contexts,
+workspace and clean-clone installation. ObjectBox 5.3.2 cannot resolve a Dart
+3.13 primary-constructor model in the same generator package because its
+generator pins Analyzer 10.2/language 3.12. Mixed evidence therefore keeps the
+modeling and provider generator contexts separate; it does not hide the
+incompatibility, dual-write, or imply a cross-engine transaction.
+
+Performance evidence compares exact baseline +2a8261a+ and modular candidate
++0057db5+ on one host. Each 100/500-model sync/check cell records five cold
+runs for median/peak RSS and twenty warm incremental runs for p95/peak RSS.
+Cache is disposable. A latency or RSS regression above 10% blocks unless a
+reviewed approval is recorded; hard budgets remain independent.
+
+== Consequences
+
+The renderer, Analyzer, formatter, CLI, lints, and generation engine never
+enter an application runtime. Generated catalogs and checked examples must be
+regenerated when public guides change. Provider schemas, converter hooks,
+storage writers, migrations, and exceptions remain consumer-owned and
+version-specific. Release readiness requires the entire evidence matrix on one
+candidate SHA; partial, mixed-host, or stale catalog evidence is rejected.

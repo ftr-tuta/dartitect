@@ -21,6 +21,66 @@
   },
   "canaries": [
     {
+      "id": "modeling",
+      "source": "examples/model_generator_fixture",
+      "pubspec": "tool/canaries/modeling/pubspec.yaml",
+      "requiredPackages": [
+        "dartitect",
+        "dartitect_cli",
+        "dartitect_modeling",
+        "dartitect_modeling_analyzer"
+      ],
+      "forbiddenPackages": [
+        "dartitect_drift",
+        "dartitect_flutter",
+        "dartitect_objectbox"
+      ],
+      "commands": [
+        "flutter pub get",
+        "dart run dartitect_cli:dartitect model sync --apply",
+        "dart run dartitect_cli:dartitect model check",
+        "dart run dartitect_cli:dartitect verify --json",
+        "dart analyze",
+        "dart test",
+        "dart test --platform chrome"
+      ],
+      "coverage": [
+        "pure_dart_modeling",
+        "json",
+        "projection",
+        "mapper",
+        "chrome",
+        "clean_clone"
+      ],
+      "residualResourceCensus": 0
+    },
+    {
+      "id": "interop",
+      "source": "tool/canaries/interop",
+      "pubspec": "tool/canaries/interop/pubspec.yaml",
+      "requiredPackages": [
+        "dartitect",
+        "dartitect_cli",
+        "dartitect_modeling_analyzer"
+      ],
+      "forbiddenPackages": [
+        "dartitect_drift",
+        "dartitect_objectbox"
+      ],
+      "commands": [
+        "flutter pub get",
+        "dart analyze",
+        "dart test"
+      ],
+      "coverage": [
+        "interop_positive",
+        "interop_negative",
+        "overlap_warning",
+        "boundary_error"
+      ],
+      "residualResourceCensus": 0
+    },
+    {
       "id": "minimal",
       "source": "tool/canaries/minimal",
       "pubspec": "tool/canaries/minimal/pubspec.yaml",
@@ -49,6 +109,7 @@
       ],
       "coverage": [
         "flutter_simple",
+        "flutter_mvvm",
         "noncooperative_cancellation",
         "large_assets",
         "multipackage_workspace",
@@ -81,7 +142,9 @@
       ],
       "coverage": [
         "objectbox_local_first",
+        "objectbox_primary_evidence",
         "drift_objectbox_bounded_contexts",
+        "mixed_dartitect_objectbox_drift",
         "outbox_sync",
         "desktop",
         "session_replacement"

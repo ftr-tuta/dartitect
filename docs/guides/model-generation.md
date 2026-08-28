@@ -176,20 +176,25 @@ than overwritten. Recovery and retry are idempotent.
 
 ## Frozen performance envelope
 
-The Linux reference artifact records five cold runs per scenario. Medians and
-the highest observed RSS are:
+`tool/model_benchmark.json` compares exact baseline `2a8261a` and modular RC4
+commit `0057db5` on the same Linux/Dart 3.13.1/4-CPU host. Each matrix cell has
+five isolated cold runs (median and peak RSS) and twenty same-process warm runs
+(p95 and peak RSS). Warm sync alternates one semantic field change; cache is
+discardable and never ownership authority.
 
-| Models | Command | Median | Peak RSS | Hard budget |
-|---:|---|---:|---:|---:|
-| 100 | sync | 4,761,902 µs | 725,803,008 B | 15 s / 1 GiB |
-| 100 | check | 2,799,851 µs | 740,970,496 B | 15 s / 1 GiB |
-| 500 | sync | 9,911,425 µs | 732,372,992 B | 60 s / 1 GiB |
-| 500 | check | 6,497,860 µs | 765,853,696 B | 60 s / 1 GiB |
+| Models | Command | RC4 cold median | RC4 cold RSS | RC4 warm p95 | RC4 warm RSS |
+|---:|---|---:|---:|---:|---:|
+| 100 | sync | 3,564,654 µs | 728,629,248 B | 1,869,518 µs | 811,585,536 B |
+| 100 | check | 2,274,713 µs | 776,019,968 B | 1,914,912 µs | 803,418,112 B |
+| 500 | sync | 6,907,795 µs | 813,146,112 B | 4,761,429 µs | 844,062,720 B |
+| 500 | check | 6,043,847 µs | 803,332,096 B | 4,125,455 µs | 847,642,624 B |
 
-`dart run tool/check_model_benchmark.dart` enforces the hard budgets and the
-five-run evidence. A regression above 25% or any benchmark/budget replacement
-requires recorded review. The validated performance envelope ends at 500
-models; larger workspaces have no 1.0 performance guarantee.
+Against the same-host legacy baseline, cold medians improved by 20.5–27.5%
+and warm p95 improved by 20.6–34.3%. The largest RSS increase was 5.43%, at
+500-model warm sync. `dart run tool/check_model_benchmark.dart` recomputes the
+comparison, enforces the 15/60-second and 1-GiB hard budgets, and blocks any
+latency or RSS regression above 10% without recorded approval. The validated
+envelope ends at 500 models; larger workspaces have no 1.0 guarantee.
 
 Run `dartitect model check`, `dart analyze`, package tests, and the benchmark
 gate from a clean checkout. Also confirm provider-generated JSON/ObjectBox

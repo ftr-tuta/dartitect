@@ -1,52 +1,58 @@
-= Git-tag canary contract
+= Packaged and Git candidate canary contract
 
-Status:: Implemented; Git and native canaries are coordinated by GitHub Actions
+Status:: Implemented for the RC4 candidate; final tag/publication are outside this delivery
 Machine authority:: `tool/canaries/canary_contract.json`
-Gate:: `dart run tool/run_git_canaries.dart --repository=<url> --ref=v1.0.0-rc.3`
+Development gate:: `dart run tool/check_canaries.dart --allow-dirty`
 
-== Candidate source
+== Candidate source and isolation
 
-The Git candidate uses one annotated, unsigned, protected tag for all seventeen
-packages. The gate resolves that tag from the supplied remote, requires both the
-tag object and peeled commit, and installs every Dartitect dependency through a
-Git override with the same URL and ref. A lightweight/missing tag, hosted
-Dartitect package, local `path:` source, mixed commit, version mismatch, or
-workspace root fails the gate.
+The packaged gate creates archives for all nineteen packages from one exact
+candidate tree, serves them through an ephemeral hosted repository, and copies
+each consumer outside the checkout. It rejects local path resolution,
+dependency overrides, missing/transitive cohort members, mixed versions,
+archive digest mismatch, symlinks, and workspace-root leakage. A shared pub
+cache is only transport; each requested archive digest remains authoritative.
 
-The normal dependency declarations retain `1.0.0-rc.3`; overrides are generated
-from package pubspecs by `tool/git_dependency_overrides.dart`, including the
-complete transitive Dartitect closure. External provider packages may still use
-their ordinary hosted source. No Dartitect package is read from pub.dev.
+The Git variant requires one annotated tag and resolves the complete transitive
+Dartitect closure from one URL/ref. It remains release infrastructure, but this
+RC4 delivery creates no tag, GitHub Release, or publication. Both runners use
+the same six-canary machine contract and command order.
 
-The gate copies each consumer outside the checkout, removes lock/config/build
-state, runs `flutter pub get`, and verifies both `pubspec.lock` and
-`package_config.json`. Receipts under ignored `build/git-canary-receipts/`
-record the tag object, peeled commit, remote URL, commands, resolved package
-paths, and results.
+== Modeling and interop
 
-== Minimal
+The pure-Dart modeling canary is
++examples/model_generator_fixture+. It installs only core/modeling/compiler/CLI,
+applies committed generation in the isolated copy, checks freshness, executes
++dartitect verify+, analyzes, and tests equality, JSON, projection, and mapper
+on VM and Chrome. This is also the clean-clone and Web modeling evidence.
 
-The minimal consumer resolves only core, Flutter, and CLI packages needed for
-its generated model and ViewModel command. It runs model sync/check, analysis,
-tests, and teardown assertions while forbidden optional packages remain absent.
+The interop canary installs Provider without importing it and requires a
++DT1019+ warning with no violation. A second temporary source imports a
+concrete provider type across a presentation boundary and requires +DT1006+
+and a failing provider status. This proves incremental overlap does not weaken
+the concrete boundary.
 
-== Offline-first
+== Flutter, providers, and workspace
 
-The offline-first consumer runs paging, mutation/outbox, reconnect, sync,
-isolate projection, and real ObjectBox close/reopen tests. The ObjectBox native
-library comes from the separately verified provider fixture; every Dartitect
-library comes from the supplied Git tag.
+The minimal canary covers generated consumer ownership, Flutter MVVM,
+non-cooperative cancellation, large assets, and a multipackage workspace. The
+offline-first canary covers ObjectBox native, separate ObjectBox/Drift bounded
+contexts, outbox sync, session replacement, and host desktop build. The Drift
+provider canary owns its schema/generator and forbids ObjectBox. The native
+capabilities canary covers privacy, media, locale BR, and geometry without
+storage providers.
 
-== Native capabilities
+ObjectBox primary-constructor evidence is intentionally two-part: the exact
+5.3.2 primary +var+ candidate must fail under its pinned Analyzer 10.2 resolver,
+and the narrowly excepted traditional entity must generate and pass a real
+native Store test. The mixed Dartitect+ObjectBox+Drift evidence keeps generator
+contexts and data writers in separate bounded packages; it proves coexistence,
+not a same-package resolver, bridge, dual-write, or cross-engine transaction.
 
-The native-capability consumer runs host-side Flutter tests for privacy, media,
-locale BR, and geometry boundaries from the same tag. Android/iOS floor and
-hosted runtime runs, OS permissions, and lifecycle are the five V1S-13 cells
-inside the same coordinated Actions graph.
+== Receipts and release rule
 
-== Formal future channel
-
-`tool/check_canaries.dart` and the signed-bundle tools remain fail-closed
-preparation for a future authorized formal channel. They do not describe,
-authorize, or materialize this Git candidate, and no GitHub Release or pub.dev
-publication accompanies `v1.0.0-rc.3`.
+Receipts record source SHA, package/archive digests, resolved graph, commands,
+platform, duration, and zero residual-resource census. Development receipts may
+identify a working tree and cannot become release authority. Final evidence
+must be rerun from the exact committed candidate; a partial pass, dirty tree,
+stale catalog, or differently resolved cohort is rejected.

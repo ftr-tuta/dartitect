@@ -133,6 +133,32 @@ Future<Map<String, Object?>> _runCanary({
 
   await run('flutter', const <String>['pub', 'get']);
   switch (id) {
+    case 'modeling':
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'model',
+        'sync',
+        '--apply',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'model',
+        'check',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'verify',
+        '--json',
+      ]);
+      await run('dart', const <String>['analyze']);
+      await run('dart', const <String>['test']);
+      await run('dart', const <String>['test', '--platform', 'chrome']);
+    case 'interop':
+      await run('dart', const <String>['analyze']);
+      await run('dart', const <String>['test']);
     case 'minimal':
       await run('dart', const <String>[
         'run',
@@ -325,6 +351,7 @@ Future<void> _copyConsumer(Directory source, Directory destination) async {
     }
     if (relative == 'pubspec.yaml' ||
         relative == 'pubspec.lock' ||
+        relative == 'pubspec_overrides.yaml' ||
         relative == '.flutter-plugins-dependencies') {
       continue;
     }

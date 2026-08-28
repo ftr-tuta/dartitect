@@ -1,8 +1,8 @@
 = Offline, sync, isolate, and telemetry threat model
 :toc:
 
-Status:: Locally reviewed for `1.0.0-rc.3`; `CI / Required` evidence pending
-Review date:: 2026-08-24
+Status:: Locally reviewed for `1.0.0-rc.4`; `CI / Required` evidence pending
+Review date:: 2026-08-27
 
 == Offline mutation and outbox
 
@@ -95,6 +95,27 @@ its composition root.
 |===
 | Threat | SDK control | Consumer responsibility
 
+| Malicious JSON exhausts memory/stack or leaks rejected values
+| Generated codecs reject unknown keys by default, enforce untrusted depth 64,
+10,000 items per collection, and 100,000 total nodes, reject cycles/non-finite
+numbers, and keep failures payload-free.
+| Select custom limits explicitly for a known boundary. Use trusted mode only
+for genuinely trusted data; it never disables shape, cycle, finite-number, or
+unknown-key policy.
+
+| An inferred conversion silently changes meaning
+| JSON and mappers compose only semantically assignable/lossless fields.
+Renames and exact static hooks are explicit; narrowing, enum/string, dates,
+IDs, relations, and flattening are rejected before rendering.
+| Own decoder/encoder and mapper hooks, test both directions where requested,
+and keep provider schemas outside Dartitect ownership.
+
+| Cyclic or mutable collections break value semantics
+| Immutable wrappers defensively copy input, expose no mutable collection
+interface, and reject cyclic equality/hash graphs.
+| Keep values small and acyclic; use identity, projection, or a precomputed
+hash for large/provider-owned collections.
+
 | Consumer bytes are overwritten or deleted
 | Fully-generated outputs require a versioned manifest and matching SHA-256;
 unmanaged, diverged, unsafe, or symlinked paths fail closed. Commit/recovery
@@ -114,6 +135,22 @@ transitives to a first direct owner. CLI/scanner and the generated lint snapshot
 share the reviewed decisions.
 | Review publisher, repository, license, advisory, compatibility, reason,
 owner, paths, and expiry; do not use package-wide ignores.
+
+| Incremental provider overlap becomes duplicate architecture ownership
+| Merely installed Riverpod/BLoC/Provider/GetIt/MobX/Signals is a +DT1019+
+warning. Imports, provider types, service location, duplicate owners, and
+concrete boundary leakage remain errors in verify/scanner/lints.
+| Keep the overlapping runtime behind its existing consumer boundary while
+migrating one owned slice at a time; never dual-write or globally suppress the
+boundary error.
+
+| Provider generator parses a newer language feature incorrectly
+| Constructor exceptions require exact versioned source/failure/generated/
+runtime evidence. ObjectBox 5.3.2 records its Analyzer 10.2 primary-constructor
+failure and keeps the accepted traditional entity fixture scoped.
+| Rerun the evidence registry on every provider/generator upgrade. Keep
+incompatible generator contexts in separate packages and do not claim a mixed
+same-package generator pass.
 |===
 
 == Privacy and media channels

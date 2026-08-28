@@ -178,20 +178,26 @@ sem overwrite. Recovery e retry são idempotentes.
 
 ## Envelope de performance congelado
 
-O artefato de referência Linux registra cinco execuções cold por cenário. As
-medianas e o maior RSS observado são:
+`tool/model_benchmark.json` compara a baseline exata `2a8261a` e o commit RC4
+modular `0057db5` no mesmo host Linux/Dart 3.13.1/4 CPUs. Cada célula da matriz
+possui cinco runs cold isoladas (mediana e peak RSS) e vinte runs warm no mesmo
+processo (p95 e peak RSS). O sync warm alterna uma mudança semântica de campo;
+cache é descartável e nunca autoridade de ownership.
 
-| Modelos | Command | Mediana | Peak RSS | Budget rígido |
-|---:|---|---:|---:|---:|
-| 100 | sync | 4.761.902 µs | 725.803.008 B | 15 s / 1 GiB |
-| 100 | check | 2.799.851 µs | 740.970.496 B | 15 s / 1 GiB |
-| 500 | sync | 9.911.425 µs | 732.372.992 B | 60 s / 1 GiB |
-| 500 | check | 6.497.860 µs | 765.853.696 B | 60 s / 1 GiB |
+| Modelos | Command | Mediana cold RC4 | RSS cold RC4 | p95 warm RC4 | RSS warm RC4 |
+|---:|---|---:|---:|---:|---:|
+| 100 | sync | 3.564.654 µs | 728.629.248 B | 1.869.518 µs | 811.585.536 B |
+| 100 | check | 2.274.713 µs | 776.019.968 B | 1.914.912 µs | 803.418.112 B |
+| 500 | sync | 6.907.795 µs | 813.146.112 B | 4.761.429 µs | 844.062.720 B |
+| 500 | check | 6.043.847 µs | 803.332.096 B | 4.125.455 µs | 847.642.624 B |
 
-`dart run tool/check_model_benchmark.dart` aplica os budgets rígidos e a
-evidência de cinco runs. Regressão acima de 25% ou substituição de benchmark ou
-budget exige revisão registrada. O envelope de performance validado termina em
-500 modelos; workspaces maiores não possuem garantia de performance em 1.0.
+Contra a baseline legacy no mesmo host, as medianas cold melhoraram de
+20,5–27,5% e o p95 warm melhorou de 20,6–34,3%. O maior aumento de RSS foi
+5,43%, no sync warm de 500 modelos. `dart run
+tool/check_model_benchmark.dart` recalcula a comparação, aplica os budgets
+rígidos de 15/60 segundos e 1 GiB e bloqueia qualquer regressão de latência ou
+RSS acima de 10% sem aprovação registrada. O envelope validado termina em 500
+modelos; workspaces maiores não possuem garantia em 1.0.
 
 Execute `dartitect model check`, `dart analyze`, os testes dos packages e o gate
 de benchmark em checkout limpo. Confirme também que arquivos JSON/ObjectBox

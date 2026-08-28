@@ -1,128 +1,1027 @@
 {
-  "schemaVersion": 1,
-  "recordedAt": "2026-08-25",
-  "generatorVersion": "1.0.0-rc.3",
-  "host": {
-    "os": "linux",
-    "dart": "3.13.1",
-    "processors": 4
+  "schemaVersion": 2,
+  "recordedAt": "2026-08-28T02:51:09.683319Z",
+  "targetVersion": "1.0.0-rc.4",
+  "policy": {
+    "coldRuns": 5,
+    "coldStatistic": "median",
+    "warmRuns": 20,
+    "warmStatistic": "p95",
+    "rssStatistic": "peak",
+    "maxRegressionPercent": 10.0,
+    "cacheAuthority": false,
+    "sameHostRequired": true
   },
-  "results": [
+  "baseline": {
+    "revision": "2a8261aa5dc8a79990ce00a599ee42c0d7fa2202",
+    "implementation": "legacy-core-modeling",
+    "host": {
+      "os": "linux",
+      "dart": "3.13.1",
+      "processors": 4
+    },
+    "results": [
+      {
+        "models": 100,
+        "command": "sync",
+        "cold": {
+          "runs": 5,
+          "medianMicros": 4749787,
+          "peakRssBytes": 737742848,
+          "samples": [
+            {
+              "elapsedMicros": 4749787,
+              "peakRssBytes": 737742848
+            },
+            {
+              "elapsedMicros": 4734548,
+              "peakRssBytes": 729628672
+            },
+            {
+              "elapsedMicros": 4745774,
+              "peakRssBytes": 719781888
+            },
+            {
+              "elapsedMicros": 4750561,
+              "peakRssBytes": 722599936
+            },
+            {
+              "elapsedMicros": 4751281,
+              "peakRssBytes": 712134656
+            }
+          ]
+        },
+        "warm": {
+          "runs": 20,
+          "p95Micros": 2671328,
+          "peakRssBytes": 814895104,
+          "samples": [
+            {
+              "elapsedMicros": 3098412,
+              "peakRssBytes": 757972992
+            },
+            {
+              "elapsedMicros": 2671328,
+              "peakRssBytes": 757972992
+            },
+            {
+              "elapsedMicros": 2430559,
+              "peakRssBytes": 780824576
+            },
+            {
+              "elapsedMicros": 2253118,
+              "peakRssBytes": 780824576
+            },
+            {
+              "elapsedMicros": 2143973,
+              "peakRssBytes": 780824576
+            },
+            {
+              "elapsedMicros": 2073779,
+              "peakRssBytes": 780824576
+            },
+            {
+              "elapsedMicros": 2047056,
+              "peakRssBytes": 780824576
+            },
+            {
+              "elapsedMicros": 2004394,
+              "peakRssBytes": 780824576
+            },
+            {
+              "elapsedMicros": 1940851,
+              "peakRssBytes": 780824576
+            },
+            {
+              "elapsedMicros": 1926850,
+              "peakRssBytes": 780824576
+            },
+            {
+              "elapsedMicros": 1903195,
+              "peakRssBytes": 780824576
+            },
+            {
+              "elapsedMicros": 1848652,
+              "peakRssBytes": 780824576
+            },
+            {
+              "elapsedMicros": 1789363,
+              "peakRssBytes": 780824576
+            },
+            {
+              "elapsedMicros": 1753760,
+              "peakRssBytes": 814895104
+            },
+            {
+              "elapsedMicros": 1709211,
+              "peakRssBytes": 814895104
+            },
+            {
+              "elapsedMicros": 1717575,
+              "peakRssBytes": 814895104
+            },
+            {
+              "elapsedMicros": 1683731,
+              "peakRssBytes": 814895104
+            },
+            {
+              "elapsedMicros": 1731321,
+              "peakRssBytes": 814895104
+            },
+            {
+              "elapsedMicros": 1745545,
+              "peakRssBytes": 814895104
+            },
+            {
+              "elapsedMicros": 1644200,
+              "peakRssBytes": 814895104
+            }
+          ]
+        }
+      },
+      {
+        "models": 100,
+        "command": "check",
+        "cold": {
+          "runs": 5,
+          "medianMicros": 3107513,
+          "peakRssBytes": 782831616,
+          "samples": [
+            {
+              "elapsedMicros": 2987120,
+              "peakRssBytes": 755818496
+            },
+            {
+              "elapsedMicros": 3107513,
+              "peakRssBytes": 763105280
+            },
+            {
+              "elapsedMicros": 3114399,
+              "peakRssBytes": 778985472
+            },
+            {
+              "elapsedMicros": 3024772,
+              "peakRssBytes": 782831616
+            },
+            {
+              "elapsedMicros": 3119797,
+              "peakRssBytes": 746766336
+            }
+          ]
+        },
+        "warm": {
+          "runs": 20,
+          "p95Micros": 2412054,
+          "peakRssBytes": 821653504,
+          "samples": [
+            {
+              "elapsedMicros": 2886488,
+              "peakRssBytes": 779939840
+            },
+            {
+              "elapsedMicros": 2412054,
+              "peakRssBytes": 779939840
+            },
+            {
+              "elapsedMicros": 2237672,
+              "peakRssBytes": 785235968
+            },
+            {
+              "elapsedMicros": 2084603,
+              "peakRssBytes": 785235968
+            },
+            {
+              "elapsedMicros": 1940552,
+              "peakRssBytes": 785235968
+            },
+            {
+              "elapsedMicros": 1822588,
+              "peakRssBytes": 785235968
+            },
+            {
+              "elapsedMicros": 1848118,
+              "peakRssBytes": 798851072
+            },
+            {
+              "elapsedMicros": 1766855,
+              "peakRssBytes": 798851072
+            },
+            {
+              "elapsedMicros": 1776299,
+              "peakRssBytes": 798851072
+            },
+            {
+              "elapsedMicros": 1752966,
+              "peakRssBytes": 798851072
+            },
+            {
+              "elapsedMicros": 1716161,
+              "peakRssBytes": 798851072
+            },
+            {
+              "elapsedMicros": 1670080,
+              "peakRssBytes": 798851072
+            },
+            {
+              "elapsedMicros": 1663024,
+              "peakRssBytes": 798851072
+            },
+            {
+              "elapsedMicros": 1599334,
+              "peakRssBytes": 821653504
+            },
+            {
+              "elapsedMicros": 1539612,
+              "peakRssBytes": 821653504
+            },
+            {
+              "elapsedMicros": 1516174,
+              "peakRssBytes": 821653504
+            },
+            {
+              "elapsedMicros": 1494457,
+              "peakRssBytes": 821653504
+            },
+            {
+              "elapsedMicros": 1625614,
+              "peakRssBytes": 821653504
+            },
+            {
+              "elapsedMicros": 1530066,
+              "peakRssBytes": 821653504
+            },
+            {
+              "elapsedMicros": 1481060,
+              "peakRssBytes": 821653504
+            }
+          ]
+        }
+      },
+      {
+        "models": 500,
+        "command": "sync",
+        "cold": {
+          "runs": 5,
+          "medianMicros": 9525929,
+          "peakRssBytes": 783323136,
+          "samples": [
+            {
+              "elapsedMicros": 9681711,
+              "peakRssBytes": 764461056
+            },
+            {
+              "elapsedMicros": 9205430,
+              "peakRssBytes": 756948992
+            },
+            {
+              "elapsedMicros": 9594440,
+              "peakRssBytes": 762773504
+            },
+            {
+              "elapsedMicros": 9459690,
+              "peakRssBytes": 763740160
+            },
+            {
+              "elapsedMicros": 9525929,
+              "peakRssBytes": 783323136
+            }
+          ]
+        },
+        "warm": {
+          "runs": 20,
+          "p95Micros": 6341761,
+          "peakRssBytes": 800624640,
+          "samples": [
+            {
+              "elapsedMicros": 7687498,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 6341761,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 5630786,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 5162243,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4838501,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4718962,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4549121,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4607822,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4302538,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4262049,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4030739,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4283751,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4362457,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4299969,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4302641,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4250086,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4300415,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4244428,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4238788,
+              "peakRssBytes": 800624640
+            },
+            {
+              "elapsedMicros": 4348750,
+              "peakRssBytes": 800624640
+            }
+          ]
+        }
+      },
+      {
+        "models": 500,
+        "command": "check",
+        "cold": {
+          "runs": 5,
+          "medianMicros": 7600602,
+          "peakRssBytes": 807899136,
+          "samples": [
+            {
+              "elapsedMicros": 8133327,
+              "peakRssBytes": 807034880
+            },
+            {
+              "elapsedMicros": 7427587,
+              "peakRssBytes": 807899136
+            },
+            {
+              "elapsedMicros": 7835912,
+              "peakRssBytes": 801902592
+            },
+            {
+              "elapsedMicros": 7600602,
+              "peakRssBytes": 806293504
+            },
+            {
+              "elapsedMicros": 7357466,
+              "peakRssBytes": 795246592
+            }
+          ]
+        },
+        "warm": {
+          "runs": 20,
+          "p95Micros": 6276928,
+          "peakRssBytes": 852549632,
+          "samples": [
+            {
+              "elapsedMicros": 8163988,
+              "peakRssBytes": 795746304
+            },
+            {
+              "elapsedMicros": 6276928,
+              "peakRssBytes": 795746304
+            },
+            {
+              "elapsedMicros": 5488754,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 4925338,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 4631938,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 4272766,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 4100275,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 4055665,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 4030054,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 3806037,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 3885242,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 3760231,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 3817662,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 4018492,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 4057877,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 4212738,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 3995636,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 4043620,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 3968368,
+              "peakRssBytes": 852549632
+            },
+            {
+              "elapsedMicros": 4017077,
+              "peakRssBytes": 852549632
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "candidate": {
+    "revision": "0057db5aa259c3403a796e4ea8ce60eadca79435",
+    "implementation": "modular-modeling",
+    "host": {
+      "os": "linux",
+      "dart": "3.13.1",
+      "processors": 4
+    },
+    "results": [
+      {
+        "models": 100,
+        "command": "sync",
+        "cold": {
+          "runs": 5,
+          "medianMicros": 3564654,
+          "peakRssBytes": 728629248,
+          "samples": [
+            {
+              "elapsedMicros": 3631147,
+              "peakRssBytes": 699162624
+            },
+            {
+              "elapsedMicros": 3514426,
+              "peakRssBytes": 711680000
+            },
+            {
+              "elapsedMicros": 3557776,
+              "peakRssBytes": 728629248
+            },
+            {
+              "elapsedMicros": 3564654,
+              "peakRssBytes": 721522688
+            },
+            {
+              "elapsedMicros": 3739691,
+              "peakRssBytes": 727650304
+            }
+          ]
+        },
+        "warm": {
+          "runs": 20,
+          "p95Micros": 1869518,
+          "peakRssBytes": 811585536,
+          "samples": [
+            {
+              "elapsedMicros": 2352437,
+              "peakRssBytes": 765128704
+            },
+            {
+              "elapsedMicros": 1869518,
+              "peakRssBytes": 770166784
+            },
+            {
+              "elapsedMicros": 1544319,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1524091,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1401112,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1300852,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1293252,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1317716,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1152487,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1151228,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1197535,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1033410,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1109949,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 975580,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1181979,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1099439,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1122423,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1097824,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1049133,
+              "peakRssBytes": 811585536
+            },
+            {
+              "elapsedMicros": 1044006,
+              "peakRssBytes": 811585536
+            }
+          ]
+        }
+      },
+      {
+        "models": 100,
+        "command": "check",
+        "cold": {
+          "runs": 5,
+          "medianMicros": 2274713,
+          "peakRssBytes": 776019968,
+          "samples": [
+            {
+              "elapsedMicros": 2274713,
+              "peakRssBytes": 759418880
+            },
+            {
+              "elapsedMicros": 2372618,
+              "peakRssBytes": 776019968
+            },
+            {
+              "elapsedMicros": 2236514,
+              "peakRssBytes": 733499392
+            },
+            {
+              "elapsedMicros": 2217219,
+              "peakRssBytes": 744177664
+            },
+            {
+              "elapsedMicros": 2277097,
+              "peakRssBytes": 763867136
+            }
+          ]
+        },
+        "warm": {
+          "runs": 20,
+          "p95Micros": 1914912,
+          "peakRssBytes": 803418112,
+          "samples": [
+            {
+              "elapsedMicros": 2422918,
+              "peakRssBytes": 737935360
+            },
+            {
+              "elapsedMicros": 1914912,
+              "peakRssBytes": 743124992
+            },
+            {
+              "elapsedMicros": 1726130,
+              "peakRssBytes": 773824512
+            },
+            {
+              "elapsedMicros": 1542814,
+              "peakRssBytes": 789962752
+            },
+            {
+              "elapsedMicros": 1413511,
+              "peakRssBytes": 789962752
+            },
+            {
+              "elapsedMicros": 1409704,
+              "peakRssBytes": 789962752
+            },
+            {
+              "elapsedMicros": 1271827,
+              "peakRssBytes": 803418112
+            },
+            {
+              "elapsedMicros": 1305835,
+              "peakRssBytes": 803418112
+            },
+            {
+              "elapsedMicros": 1203627,
+              "peakRssBytes": 803418112
+            },
+            {
+              "elapsedMicros": 1164204,
+              "peakRssBytes": 803418112
+            },
+            {
+              "elapsedMicros": 1144134,
+              "peakRssBytes": 803418112
+            },
+            {
+              "elapsedMicros": 1055289,
+              "peakRssBytes": 803418112
+            },
+            {
+              "elapsedMicros": 1097991,
+              "peakRssBytes": 803418112
+            },
+            {
+              "elapsedMicros": 1006644,
+              "peakRssBytes": 803418112
+            },
+            {
+              "elapsedMicros": 1014678,
+              "peakRssBytes": 803418112
+            },
+            {
+              "elapsedMicros": 947790,
+              "peakRssBytes": 803418112
+            },
+            {
+              "elapsedMicros": 1042800,
+              "peakRssBytes": 803418112
+            },
+            {
+              "elapsedMicros": 920993,
+              "peakRssBytes": 803418112
+            },
+            {
+              "elapsedMicros": 1027188,
+              "peakRssBytes": 803418112
+            },
+            {
+              "elapsedMicros": 922645,
+              "peakRssBytes": 803418112
+            }
+          ]
+        }
+      },
+      {
+        "models": 500,
+        "command": "sync",
+        "cold": {
+          "runs": 5,
+          "medianMicros": 6907795,
+          "peakRssBytes": 813146112,
+          "samples": [
+            {
+              "elapsedMicros": 6742373,
+              "peakRssBytes": 754114560
+            },
+            {
+              "elapsedMicros": 7010427,
+              "peakRssBytes": 792727552
+            },
+            {
+              "elapsedMicros": 6998091,
+              "peakRssBytes": 813146112
+            },
+            {
+              "elapsedMicros": 6907795,
+              "peakRssBytes": 776978432
+            },
+            {
+              "elapsedMicros": 6559562,
+              "peakRssBytes": 761094144
+            }
+          ]
+        },
+        "warm": {
+          "runs": 20,
+          "p95Micros": 4761429,
+          "peakRssBytes": 844062720,
+          "samples": [
+            {
+              "elapsedMicros": 6330540,
+              "peakRssBytes": 798519296
+            },
+            {
+              "elapsedMicros": 4761429,
+              "peakRssBytes": 798519296
+            },
+            {
+              "elapsedMicros": 4033427,
+              "peakRssBytes": 810766336
+            },
+            {
+              "elapsedMicros": 3747555,
+              "peakRssBytes": 810766336
+            },
+            {
+              "elapsedMicros": 3612931,
+              "peakRssBytes": 810766336
+            },
+            {
+              "elapsedMicros": 3432139,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 3279459,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 3300973,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 3116043,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 3006771,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 2911169,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 2932683,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 2892651,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 2978507,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 2831919,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 2851109,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 2923991,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 2782546,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 2831257,
+              "peakRssBytes": 844062720
+            },
+            {
+              "elapsedMicros": 2942402,
+              "peakRssBytes": 844062720
+            }
+          ]
+        }
+      },
+      {
+        "models": 500,
+        "command": "check",
+        "cold": {
+          "runs": 5,
+          "medianMicros": 6043847,
+          "peakRssBytes": 803332096,
+          "samples": [
+            {
+              "elapsedMicros": 6171769,
+              "peakRssBytes": 755556352
+            },
+            {
+              "elapsedMicros": 5775194,
+              "peakRssBytes": 765747200
+            },
+            {
+              "elapsedMicros": 6043847,
+              "peakRssBytes": 783310848
+            },
+            {
+              "elapsedMicros": 5949270,
+              "peakRssBytes": 803332096
+            },
+            {
+              "elapsedMicros": 6082439,
+              "peakRssBytes": 768294912
+            }
+          ]
+        },
+        "warm": {
+          "runs": 20,
+          "p95Micros": 4125455,
+          "peakRssBytes": 847642624,
+          "samples": [
+            {
+              "elapsedMicros": 5497361,
+              "peakRssBytes": 818163712
+            },
+            {
+              "elapsedMicros": 4125455,
+              "peakRssBytes": 818163712
+            },
+            {
+              "elapsedMicros": 3545427,
+              "peakRssBytes": 818163712
+            },
+            {
+              "elapsedMicros": 3242027,
+              "peakRssBytes": 818163712
+            },
+            {
+              "elapsedMicros": 3057525,
+              "peakRssBytes": 818163712
+            },
+            {
+              "elapsedMicros": 3052835,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2930491,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2946163,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2833987,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2788506,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2787174,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2836666,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2683222,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2647084,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2763629,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2695953,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2679008,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2769958,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2593753,
+              "peakRssBytes": 847642624
+            },
+            {
+              "elapsedMicros": 2491079,
+              "peakRssBytes": 847642624
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comparisons": [
     {
       "models": 100,
       "command": "sync",
-      "runs": 5,
-      "medianMicros": 6367966,
-      "peakRssBytes": 730644480,
-      "samples": [
-        {
-          "elapsedMicros": 6184678,
-          "peakRssBytes": 730644480
-        },
-        {
-          "elapsedMicros": 6431037,
-          "peakRssBytes": 706850816
-        },
-        {
-          "elapsedMicros": 6345227,
-          "peakRssBytes": 725442560
-        },
-        {
-          "elapsedMicros": 6367966,
-          "peakRssBytes": 711622656
-        },
-        {
-          "elapsedMicros": 6531611,
-          "peakRssBytes": 705085440
-        }
-      ]
+      "regressionPercent": {
+        "coldMedianMicros": -24.951,
+        "coldPeakRssBytes": -1.235,
+        "warmP95Micros": -30.015,
+        "warmPeakRssBytes": -0.406
+      },
+      "status": "pass"
     },
     {
       "models": 100,
       "command": "check",
-      "runs": 5,
-      "medianMicros": 3834284,
-      "peakRssBytes": 775012352,
-      "samples": [
-        {
-          "elapsedMicros": 3908768,
-          "peakRssBytes": 753627136
-        },
-        {
-          "elapsedMicros": 3834284,
-          "peakRssBytes": 775012352
-        },
-        {
-          "elapsedMicros": 3761529,
-          "peakRssBytes": 762486784
-        },
-        {
-          "elapsedMicros": 3770114,
-          "peakRssBytes": 727793664
-        },
-        {
-          "elapsedMicros": 3907908,
-          "peakRssBytes": 766910464
-        }
-      ]
+      "regressionPercent": {
+        "coldMedianMicros": -26.8,
+        "coldPeakRssBytes": -0.87,
+        "warmP95Micros": -20.611,
+        "warmPeakRssBytes": -2.219
+      },
+      "status": "pass"
     },
     {
       "models": 500,
       "command": "sync",
-      "runs": 5,
-      "medianMicros": 12497291,
-      "peakRssBytes": 773722112,
-      "samples": [
-        {
-          "elapsedMicros": 12488515,
-          "peakRssBytes": 773722112
-        },
-        {
-          "elapsedMicros": 12455900,
-          "peakRssBytes": 739643392
-        },
-        {
-          "elapsedMicros": 12568605,
-          "peakRssBytes": 735784960
-        },
-        {
-          "elapsedMicros": 12497291,
-          "peakRssBytes": 773087232
-        },
-        {
-          "elapsedMicros": 12525103,
-          "peakRssBytes": 761442304
-        }
-      ]
+      "regressionPercent": {
+        "coldMedianMicros": -27.484,
+        "coldPeakRssBytes": 3.807,
+        "warmP95Micros": -24.919,
+        "warmPeakRssBytes": 5.426
+      },
+      "status": "pass"
     },
     {
       "models": 500,
       "command": "check",
-      "runs": 5,
-      "medianMicros": 9694169,
-      "peakRssBytes": 773210112,
-      "samples": [
-        {
-          "elapsedMicros": 9516593,
-          "peakRssBytes": 766685184
-        },
-        {
-          "elapsedMicros": 10140571,
-          "peakRssBytes": 749719552
-        },
-        {
-          "elapsedMicros": 9602354,
-          "peakRssBytes": 773210112
-        },
-        {
-          "elapsedMicros": 9769171,
-          "peakRssBytes": 760762368
-        },
-        {
-          "elapsedMicros": 9694169,
-          "peakRssBytes": 758657024
-        }
-      ]
+      "regressionPercent": {
+        "coldMedianMicros": -20.482,
+        "coldPeakRssBytes": -0.565,
+        "warmP95Micros": -34.276,
+        "warmPeakRssBytes": -0.576
+      },
+      "status": "pass"
     }
   ]
 }

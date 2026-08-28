@@ -1,0 +1,9 @@
+dependency_overrides:
+  dartitect:
+    path: ../../../packages/dartitect
+  dartitect_cli:
+    path: ../../../packages/dartitect_cli
+  dartitect_modeling:
+    path: ../../../packages/dartitect_modeling
+  dartitect_modeling_analyzer:
+    path: ../../../packages/dartitect_modeling_analyzer

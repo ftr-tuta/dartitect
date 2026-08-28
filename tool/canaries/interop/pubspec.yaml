@@ -1,0 +1,14 @@
+name: dartitect_interop_packaged_canary
+description: Isolated positive and negative incremental-adoption consumer.
+version: 0.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  provider: ^6.1.5
+
+dev_dependencies:
+  dartitect_cli: 1.0.0-rc.3
+  test: ^1.26.3
