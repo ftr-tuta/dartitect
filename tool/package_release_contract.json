@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "series": "1.0.x",
-  "cohortVersion": "1.0.0-rc.4",
-  "internalConstraint": ">=1.0.0-rc.4 <1.0.0",
+  "cohortVersion": "1.0.0-rc.5",
+  "internalConstraint": ">=1.0.0-rc.5 <1.0.0",
   "publicationLayers": [
     [
       "dartitect",
@@ -11,19 +11,25 @@
       "dartitect_privacy"
     ],
     [
+      "dartitect_devtools",
       "dartitect_flutter",
       "dartitect_isolates",
+      "dartitect_jobs",
       "dartitect_media",
       "dartitect_modeling",
       "dartitect_observability",
-      "dartitect_sync"
+      "dartitect_resilience",
+      "dartitect_transfer"
     ],
     [
       "dartitect_modeling_analyzer",
-      "dartitect_drift",
-      "dartitect_dio",
-      "dartitect_objectbox",
       "dartitect_sentry",
+      "dartitect_sync"
+    ],
+    [
+      "dartitect_dio",
+      "dartitect_drift",
+      "dartitect_objectbox",
       "dartitect_testing"
     ],
     [
@@ -39,17 +45,21 @@
     "dartitect_geometry",
     "dartitect_locale_br",
     "dartitect_privacy",
+    "dartitect_devtools",
     "dartitect_flutter",
     "dartitect_isolates",
+    "dartitect_jobs",
     "dartitect_media",
     "dartitect_modeling",
     "dartitect_observability",
-    "dartitect_sync",
+    "dartitect_resilience",
+    "dartitect_transfer",
     "dartitect_modeling_analyzer",
-    "dartitect_drift",
-    "dartitect_dio",
-    "dartitect_objectbox",
     "dartitect_sentry",
+    "dartitect_sync",
+    "dartitect_dio",
+    "dartitect_drift",
+    "dartitect_objectbox",
     "dartitect_testing",
     "dartitect_cli",
     "dartitect_lints",
@@ -65,7 +75,7 @@
   },
   "gitCandidate": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "tag": "v1.0.0-rc.4",
+    "tag": "v1.0.0-rc.5",
     "materialized": false,
     "annotated": true,
     "signed": false,

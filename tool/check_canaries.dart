@@ -473,7 +473,7 @@ void _validateContract(
         'drift_provider',
         'native_capabilities',
       })) {
-    throw StateError('All six RC4 formal canaries are required.');
+    throw StateError('All six RC5 formal canaries are required.');
   }
   const requiredCoverage = <String>{
     'pure_dart_modeling',

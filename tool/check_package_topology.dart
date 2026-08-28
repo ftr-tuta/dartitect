@@ -50,7 +50,19 @@ void main() {
     if (!visit(package))
       errors.add('Internal package cycle includes $package.');
   }
-  for (final package in const <String>['dartitect', 'dartitect_sync']) {
+  const purePackageImports = <String, Set<String>>{
+    'dartitect': <String>{},
+    'dartitect_jobs': <String>{'dartitect'},
+    'dartitect_resilience': <String>{'dartitect'},
+    'dartitect_sync': <String>{
+      'dartitect',
+      'dartitect_jobs',
+      'dartitect_resilience',
+    },
+    'dartitect_transfer': <String>{'dartitect'},
+  };
+  for (final entry in purePackageImports.entries) {
+    final package = entry.key;
     final lib = Directory('${root.path}/packages/$package/lib');
     for (final entity in lib.listSync(recursive: true, followLinks: false)) {
       if (entity is! File || !entity.path.endsWith('.dart')) continue;
@@ -58,7 +70,7 @@ void main() {
           .allMatches(entity.readAsStringSync());
       for (final match in imports) {
         final dependency = match.group(1)!;
-        if (package == 'dartitect' || dependency != 'dartitect') {
+        if (!entry.value.contains(dependency)) {
           errors.add('$package purity violation: $dependency.');
         }
       }
@@ -70,7 +82,7 @@ void main() {
     return;
   }
   stdout.writeln(
-    'Stable-v1 package DAG is acyclic and core/sync purity is intact.',
+    'Stable-v1 package DAG is acyclic and bounded-runtime purity is intact.',
   );
 }
 
@@ -97,7 +109,12 @@ bool _sameSet(Set<String> left, Set<String> right) =>
 const Map<String, Set<String>> _allowed = <String, Set<String>>{
   'dartitect': <String>{},
   'dartitect_cli': <String>{'dartitect_modeling_analyzer'},
-  'dartitect_dio': <String>{'dartitect', 'dartitect_observability'},
+  'dartitect_devtools': <String>{'dartitect'},
+  'dartitect_dio': <String>{
+    'dartitect',
+    'dartitect_observability',
+    'dartitect_transfer',
+  },
   'dartitect_drift': <String>{
     'dartitect',
     'dartitect_observability',
@@ -105,6 +122,7 @@ const Map<String, Set<String>> _allowed = <String, Set<String>>{
   },
   'dartitect_flutter': <String>{'dartitect'},
   'dartitect_isolates': <String>{'dartitect'},
+  'dartitect_jobs': <String>{'dartitect'},
   'dartitect_lints': <String>{'dartitect_modeling_analyzer'},
   'dartitect_locale_br': <String>{},
   'dartitect_mcp': <String>{'dartitect_cli'},
@@ -119,14 +137,23 @@ const Map<String, Set<String>> _allowed = <String, Set<String>>{
   },
   'dartitect_observability': <String>{'dartitect'},
   'dartitect_privacy': <String>{},
+  'dartitect_resilience': <String>{'dartitect'},
   'dartitect_geometry': <String>{},
   'dartitect_sentry': <String>{'dartitect_observability'},
-  'dartitect_sync': <String>{'dartitect'},
+  'dartitect_sync': <String>{
+    'dartitect',
+    'dartitect_jobs',
+    'dartitect_resilience',
+  },
   'dartitect_testing': <String>{
     'dartitect',
     'dartitect_isolates',
+    'dartitect_jobs',
     'dartitect_modeling',
     'dartitect_observability',
+    'dartitect_resilience',
     'dartitect_sync',
+    'dartitect_transfer',
   },
+  'dartitect_transfer': <String>{'dartitect'},
 };

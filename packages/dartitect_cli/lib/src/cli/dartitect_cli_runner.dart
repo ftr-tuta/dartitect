@@ -381,7 +381,7 @@ final class DartitectCliRunner {
     }.toList()..sort();
     final localOverridePackages = _localSdkPackageClosure(sdkPackages);
     final dependencyBlock = localSdk == null
-        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.4\n').join()
+        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.5\n').join()
         : sdkPackages
               .map(
                 (package) =>
@@ -939,28 +939,39 @@ final class ${name.pascal}App extends StatelessWidget {
 
   static List<String> _localSdkPackageClosure(Iterable<String> packages) {
     final closure = <String>{...packages};
-    if (closure.contains('dartitect_flutter') ||
-        closure.contains('dartitect_dio') ||
-        closure.contains('dartitect_drift') ||
-        closure.contains('dartitect_objectbox')) {
-      closure
-        ..add('dartitect')
-        ..add('dartitect_observability');
-    }
-    if (closure.contains('dartitect_sentry')) {
-      closure.add('dartitect_observability');
-    }
-    if (closure.contains('dartitect_observability') ||
-        closure.contains('dartitect_testing') ||
-        closure.contains('dartitect_dio') ||
-        closure.contains('dartitect_drift') ||
-        closure.contains('dartitect_objectbox')) {
-      closure
-        ..add('dartitect')
-        ..add('dartitect_sync');
-    }
-    if (closure.contains('dartitect_sync')) {
-      closure.add('dartitect');
+    const dependencies = <String, Set<String>>{
+      'dartitect_flutter': {'dartitect'},
+      'dartitect_observability': {'dartitect'},
+      'dartitect_jobs': {'dartitect'},
+      'dartitect_resilience': {'dartitect'},
+      'dartitect_transfer': {'dartitect'},
+      'dartitect_sync': {'dartitect', 'dartitect_jobs', 'dartitect_resilience'},
+      'dartitect_dio': {
+        'dartitect',
+        'dartitect_observability',
+        'dartitect_transfer',
+      },
+      'dartitect_drift': {
+        'dartitect',
+        'dartitect_observability',
+        'dartitect_sync',
+      },
+      'dartitect_objectbox': {
+        'dartitect',
+        'dartitect_flutter',
+        'dartitect_observability',
+        'dartitect_sync',
+      },
+      'dartitect_sentry': {'dartitect_observability'},
+    };
+    var changed = true;
+    while (changed) {
+      changed = false;
+      for (final package in closure.toList(growable: false)) {
+        for (final dependency in dependencies[package] ?? const <String>{}) {
+          changed = closure.add(dependency) || changed;
+        }
+      }
     }
     return closure.toList()..sort();
   }

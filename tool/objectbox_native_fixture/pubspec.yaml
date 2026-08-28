@@ -12,12 +12,16 @@ dependencies:
     path: ../../packages/dartitect
   dartitect_flutter:
     path: ../../packages/dartitect_flutter
+  dartitect_jobs:
+    path: ../../packages/dartitect_jobs
   dartitect_drift:
     path: ../../packages/dartitect_drift
   dartitect_objectbox:
     path: ../../packages/dartitect_objectbox
   dartitect_observability:
     path: ../../packages/dartitect_observability
+  dartitect_resilience:
+    path: ../../packages/dartitect_resilience
   dartitect_sync:
     path: ../../packages/dartitect_sync
   flutter:
@@ -38,9 +42,13 @@ dependency_overrides:
     path: ../../packages/dartitect
   dartitect_flutter:
     path: ../../packages/dartitect_flutter
+  dartitect_jobs:
+    path: ../../packages/dartitect_jobs
   dartitect_drift:
     path: ../../packages/dartitect_drift
   dartitect_observability:
     path: ../../packages/dartitect_observability
+  dartitect_resilience:
+    path: ../../packages/dartitect_resilience
   dartitect_sync:
     path: ../../packages/dartitect_sync

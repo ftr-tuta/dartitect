@@ -81,6 +81,6 @@ zero active or retained resources after shutdown.
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.4` source candidate. Supported Git use
+The workspace contains the `1.0.0-rc.5` source candidate. Supported Git use
 requires coordinates from a matching tagged GitHub Release; otherwise there is
 no supported consumption path.

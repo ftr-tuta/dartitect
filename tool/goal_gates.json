@@ -12,7 +12,7 @@
   },
   "releaseStatus": "ACTIONS_READINESS_PENDING",
   "featurePolicy": "FEATURE_FREEZE",
-  "target": {"packageCount": 19, "entrypointCount": 20},
+  "target": {"packageCount": 23, "entrypointCount": 24},
   "statusPolicy": {
     "allowed": [
       "PLANNED", "IN_PROGRESS", "BLOCKED", "IMPLEMENTED_LOCAL",
@@ -43,7 +43,7 @@
       "id": "V1S-00", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": [],
       "owner": "Dartitect maintainers", "affectedPackages": [],
       "coveredPaths": ["tool/goal_gates.json", "tool/check_goal_gates.dart", "tool/check_goal_gates_test.dart", "docs/release/**", "docs/implementation-status.adoc"],
-      "acceptance": ["Use one active fail-closed roadmap authority, preserve the 19/20 topology, record the assembled Git candidate state, and keep formal readiness external under FEATURE_FREEZE."],
+      "acceptance": ["Use one active fail-closed roadmap authority, preserve the 23/24 topology, record the assembled Git candidate state, and keep formal readiness external under FEATURE_FREEZE."],
       "gateCommands": ["dart run tool/check_goal_gates.dart", "dart test tool/check_goal_gates_test.dart"],
       "evidence": ["tool/goal_gates.json", "tool/check_goal_gates_test.dart"],
       "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
@@ -85,7 +85,7 @@
     },
     {
       "id": "V1S-05", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": ["V1S-04"],
-      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_flutter", "dartitect_isolates", "dartitect_testing"],
+      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_flutter", "dartitect_isolates", "dartitect_jobs", "dartitect_testing", "dartitect_transfer"],
       "coveredPaths": ["packages/dartitect/lib/**", "packages/dartitect/test/lifecycle_contract_matrix_test.dart", "packages/dartitect_flutter/lib/**", "packages/dartitect_flutter/test/view_model_host_test.dart", "packages/dartitect_isolates/lib/**", "packages/dartitect_isolates/test/isolate_worker_test.dart", "packages/dartitect_testing/lib/**", "packages/dartitect_testing/test/testing_primitives_test.dart", "packages/dartitect_mcp/lib/src/catalog/generated_catalog.dart", "docs/guides/composition-lifecycle-isolates*"],
       "acceptance": ["Freeze lifetimes, ownership, transfer, durability, teardown, and reverse disposal order in one public matrix and contract tests."],
       "gateCommands": ["dart test packages/dartitect", "flutter test packages/dartitect_flutter", "dart test packages/dartitect_isolates", "dart test packages/dartitect_testing"],
@@ -93,7 +93,7 @@
     },
     {
       "id": "V1S-06", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": ["V1S-05"],
-      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_flutter", "dartitect_sync"],
+      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_flutter", "dartitect_jobs", "dartitect_resilience", "dartitect_sync", "dartitect_transfer"],
       "coveredPaths": ["packages/dartitect/lib/src/concurrency/**", "packages/dartitect/test/command_lane_test.dart", "packages/dartitect_flutter/lib/src/command/**", "packages/dartitect_flutter/lib/src/effect_channel.dart", "packages/dartitect_flutter/lib/src/reactive/**", "packages/dartitect_flutter/test/command_test.dart", "packages/dartitect_flutter/test/effect_channel_test.dart", "packages/dartitect_flutter/test/live_resource_test.dart", "packages/dartitect_flutter/test/reactive_owner_test.dart", "packages/dartitect_flutter/test/resource_family_test.dart", "packages/dartitect_flutter/test/resource_lifecycle_test.dart", "packages/dartitect_sync/lib/**", "packages/dartitect_mcp/lib/src/catalog/generated_catalog.dart", "docs/guides/commands-results-effects*"],
       "acceptance": ["Freeze bounded Command policies and reactive resource temperature, cancellation, retention, retry, crash, observer, and disposal contracts."],
       "gateCommands": ["dart test packages/dartitect", "flutter test packages/dartitect_flutter", "dart test packages/dartitect_sync"],
@@ -141,7 +141,7 @@
     },
     {
       "id": "V1S-12", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": ["V1S-05", "V1S-06", "V1S-09", "V1S-10"],
-      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_flutter", "dartitect_objectbox", "dartitect_sync", "dartitect_isolates"],
+      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_flutter", "dartitect_isolates", "dartitect_jobs", "dartitect_objectbox", "dartitect_resilience", "dartitect_sync", "dartitect_transfer"],
       "coveredPaths": ["packages/dartitect/**", "packages/dartitect_flutter/**", "packages/dartitect_objectbox/**", "packages/dartitect_sync/**", "packages/dartitect_isolates/**", "examples/reference_app/test/native_objectbox_workload_test.dart", "tool/runtime_hardening_contract.json", "tool/check_runtime_hardening.dart", "tool/verify.dart", "docs/release/runtime-hardening.adoc", "docs/implementation-status.adoc", "docs/release/1.0-readiness.adoc"],
       "acceptance": ["Complete runtime/offline-first crash, race, restart, persisted-format, and zero-residual hardening."],
       "gateCommands": ["dart run tool/verify.dart --skip-get --native-objectbox"],
@@ -157,7 +157,7 @@
     },
     {
       "id": "V1S-14", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-11", "V1S-12", "V1S-13"],
-      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_dio", "dartitect_drift", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_modeling", "dartitect_modeling_analyzer", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_sentry", "dartitect_sync", "dartitect_testing"],
+      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_devtools", "dartitect_dio", "dartitect_drift", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_jobs", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_modeling", "dartitect_modeling_analyzer", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_resilience", "dartitect_sentry", "dartitect_sync", "dartitect_testing", "dartitect_transfer"],
       "coveredPaths": ["README*", ".github/ISSUE_TEMPLATE/bug_report.yml", ".agents/skills/**/.dartitect-skill.json", "docs/**", "examples/**", "packages/**/README*", "packages/**/CHANGELOG.md", "packages/**/pubspec.yaml", "pubspec.yaml", "tool/api_surface.snapshot.json", "tool/sdk_inventory.json", "tool/package_release_contract.json", "tool/rc_candidate_contract.json", "tool/check_rc_candidate.dart", "tool/check_pub_dev_identity.dart", "tool/run_clean_clone_release_audit.dart", "tool/release_audit.dart", "tool/generate_supply_chain.dart"],
       "acceptance": ["Finish English docs, API review, examples, clean clone, dry-runs, Dartdoc, SBOM, licenses, advisories, ownership checks, changelogs, and the rc.N candidate."],
       "gateCommands": ["dart run tool/release_audit.dart --docs --publish-dry-run"],
@@ -189,7 +189,7 @@
     },
     {
       "id": "V1-18", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-17"],
-      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_dio", "dartitect_drift", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_modeling", "dartitect_modeling_analyzer", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_sentry", "dartitect_sync", "dartitect_testing"],
+      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_devtools", "dartitect_dio", "dartitect_drift", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_jobs", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_modeling", "dartitect_modeling_analyzer", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_resilience", "dartitect_sentry", "dartitect_sync", "dartitect_testing", "dartitect_transfer"],
       "coveredPaths": ["packages/**/pubspec.yaml", "packages/**/CHANGELOG.md", ".github/workflows/**", "docs/release/**", "tool/goal_gates.json", "tool/stable_candidate_contract.json", "tool/check_stable_candidate.dart", "tool/check_stable_candidate_test.dart", "tool/check_public_docs.dart", "tool/check_api_snapshot.dart", "tool/check_sdk_inventory.dart", "tool/check_skill_coverage.dart", "tool/generate_supply_chain.dart", "tool/release_audit.dart", "tool/verify.dart"],
       "acceptance": ["Validate the stable candidate through CI / Required and actions-readiness-v1, then leave the human role limited to selecting the manual publication channel."],
       "gateCommands": ["dart run tool/check_stable_candidate.dart --contract-only", "dart run tool/release_audit.dart --docs --publish-dry-run"],

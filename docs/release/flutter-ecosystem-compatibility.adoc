@@ -2,7 +2,7 @@
 :toc:
 
 Snapshot:: 2026-08-25
-Candidate cohort:: `1.0.0-rc.4`
+Candidate cohort:: `1.0.0-rc.5`
 
 == Supported boundaries
 

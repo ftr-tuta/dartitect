@@ -54,7 +54,7 @@ void _validateMetadata(
   }
   final comparators = _object(raw['comparators']);
   const expected = <String, String>{
-    'dartitect_flutter': '1.0.0-rc.4',
+    'dartitect_flutter': '1.0.0-rc.5',
     'flutter_riverpod': '3.4.2',
     'flutter_bloc': '9.1.1',
     'bloc_concurrency': '0.3.0',
@@ -128,7 +128,7 @@ void _validateSourceRevision(
     errors.add('Environment source revision is missing or invalid.');
     return;
   }
-  const cohort = '1.0.0-rc.4';
+  const cohort = '1.0.0-rc.5';
   const status = 'REFERENCE_ONLY_REPRODUCTION_REQUIRED';
   if (rawSource['candidateCohort'] != cohort ||
       rawSource['evidenceStatus'] != status ||

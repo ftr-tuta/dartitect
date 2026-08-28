@@ -519,7 +519,7 @@ jobs:
         run: git diff --exit-code -- .
 
   git-consumption:
-    name: Git consumption / v1.0.0-rc.4
+    name: Git consumption / v1.0.0-rc.5
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
@@ -546,14 +546,14 @@ jobs:
         run: |
           git config user.name ftr
           git config user.email ftr@tuta.com
-          git tag --delete v1.0.0-rc.4 2>/dev/null || true
-          git tag --annotate v1.0.0-rc.4 --message "Dartitect 1.0.0-rc.4 Git candidate"
+          git tag --delete v1.0.0-rc.5 2>/dev/null || true
+          git tag --annotate v1.0.0-rc.5 --message "Dartitect 1.0.0-rc.5 Git candidate"
           git clone --bare . "${RUNNER_TEMP:?}/dartitect.git"
       - name: Validate all consumers through Git only
         run: >-
           dart run tool/run_git_canaries.dart
           --repository=file://${RUNNER_TEMP:?}/dartitect.git
-          --ref=v1.0.0-rc.4
+          --ref=v1.0.0-rc.5
       - name: Confirm tracked files are unchanged
         if: always()
         run: git diff --exit-code -- .

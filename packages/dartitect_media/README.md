@@ -116,7 +116,7 @@ storage, and telemetry policy in the application. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.4` source candidate. Use only coordinates
+The workspace contains the `1.0.0-rc.5` source candidate. Use only coordinates
 from a matching tag with a corresponding published GitHub Release and compatible
 cohort. Without one, there is no supported consumption path. See the
 [experimental consumption guide](../../docs/guides/git-candidate-consumption.md).

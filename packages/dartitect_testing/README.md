@@ -118,7 +118,7 @@ the provider integration. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.4` source candidate. Add it only from a
+The workspace contains the `1.0.0-rc.5` source candidate. Add it only from a
 matching tagged GitHub Release and compatible cohort coordinates in that
 Release's notes. If no compatible Release exists, there is no supported
 consumption path. See the

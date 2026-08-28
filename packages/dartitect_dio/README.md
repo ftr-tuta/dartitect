@@ -121,7 +121,7 @@ deterministic tests. Read [adapters](../../docs/guides/adapters.md) and
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.4` source candidate. Use only coordinates
+The workspace contains the `1.0.0-rc.5` source candidate. Use only coordinates
 from a matching tag with a published GitHub Release and its complete cohort
 notes. If no compatible Release exists, there is no supported consumption path.
 See the

@@ -581,6 +581,7 @@ final class DartitectDiagnosticsEmitter implements AsyncDisposable {
       }
     } on Object {
       // Diagnostics clocks never alter runtime behavior.
+      return _lastMonotonicMicroseconds;
     }
     return _lastMonotonicMicroseconds;
   }

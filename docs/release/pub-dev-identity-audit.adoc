@@ -1,21 +1,23 @@
 = pub.dev package identity audit
 
 Status:: PACKAGE NAMES AVAILABLE; PUBLISHER VERIFICATION FAIL-CLOSED
-Observed at:: 2026-08-27 UTC
+Observed at:: 2026-08-28 UTC
 Registry:: `https://pub.dev`
 Machine contract:: `tool/rc_candidate_contract.json`
 
 == Package names
 
 An unauthenticated `GET /api/packages/{name}` request to the official pub.dev
-API returned HTTP 404 for each of the 19 names in the lockstep publication
+API returned HTTP 404 for each of the 23 names in the lockstep publication
 order. No existing package currently collides with the intended cohort:
 
-`dartitect`, `dartitect_cli`, `dartitect_geometry`, `dartitect_lints`,
-`dartitect_locale_br`, `dartitect_privacy`, `dartitect_flutter`,
-`dartitect_isolates`, `dartitect_mcp`, `dartitect_media`, `dartitect_modeling`,
-`dartitect_modeling_analyzer`, `dartitect_observability`, `dartitect_sync`, `dartitect_drift`, `dartitect_dio`,
-`dartitect_objectbox`, `dartitect_sentry`, and `dartitect_testing`.
+`dartitect`, `dartitect_geometry`, `dartitect_locale_br`, `dartitect_privacy`,
+`dartitect_devtools`, `dartitect_flutter`, `dartitect_isolates`,
+`dartitect_jobs`, `dartitect_media`, `dartitect_modeling`,
+`dartitect_observability`, `dartitect_resilience`, `dartitect_transfer`,
+`dartitect_modeling_analyzer`, `dartitect_sentry`, `dartitect_sync`,
+`dartitect_dio`, `dartitect_drift`, `dartitect_objectbox`,
+`dartitect_testing`, `dartitect_cli`, `dartitect_lints`, and `dartitect_mcp`.
 
 This is a point-in-time observation, not a reservation. The materialization
 runbook must query each name again immediately before its authorized upload.

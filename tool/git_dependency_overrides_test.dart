@@ -12,10 +12,10 @@ void main() {
       root,
       const <String>['dartitect_flutter'],
       repository: 'https://example.invalid/dartitect.git',
-      ref: 'v1.0.0-rc.4',
+      ref: 'v1.0.0-rc.5',
     );
     expect(_packages(output), <String>['dartitect', 'dartitect_flutter']);
-    expect(output, contains('ref: v1.0.0-rc.4'));
+    expect(output, contains('ref: v1.0.0-rc.5'));
   });
 
   test('computes deeper adapter closure in publication order', () {
@@ -28,25 +28,29 @@ void main() {
     expect(_packages(output), <String>[
       'dartitect',
       'dartitect_observability',
+      'dartitect_transfer',
       'dartitect_dio',
     ]);
   });
 
-  test('supports any combination of the complete nineteen-package cohort', () {
-    final contract = File('${root.path}/tool/package_release_contract.json')
-        .readAsStringSync();
-    final names = RegExp(
-      r'^      "(dartitect(?:_[a-z]+)*)"',
-      multiLine: true,
-    ).allMatches(contract).map((match) => match.group(1)!).toSet();
-    final output = buildGitDependencyOverrides(
-      root,
-      names,
-      repository: 'https://example.invalid/dartitect.git',
-      ref: 'v1.0.0-rc.4',
-    );
-    expect(_packages(output).toSet(), hasLength(19));
-  });
+  test(
+    'supports any combination of the complete twenty-three-package cohort',
+    () {
+      final contract = File('${root.path}/tool/package_release_contract.json')
+          .readAsStringSync();
+      final names = RegExp(
+        r'^      "(dartitect(?:_[a-z]+)*)"',
+        multiLine: true,
+      ).allMatches(contract).map((match) => match.group(1)!).toSet();
+      final output = buildGitDependencyOverrides(
+        root,
+        names,
+        repository: 'https://example.invalid/dartitect.git',
+        ref: 'v1.0.0-rc.5',
+      );
+      expect(_packages(output).toSet(), hasLength(23));
+    },
+  );
 
   test('rejects packages outside the public cohort', () {
     expect(
@@ -54,7 +58,7 @@ void main() {
         root,
         const <String>['not_dartitect'],
         repository: 'https://example.invalid/dartitect.git',
-        ref: 'v1.0.0-rc.4',
+        ref: 'v1.0.0-rc.5',
       ),
       throwsArgumentError,
     );

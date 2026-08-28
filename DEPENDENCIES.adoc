@@ -13,6 +13,34 @@ maintained, removable, and cheaper than the code and supply chain it replaces.
 | Core uses only `dart:*`.
 | Not applicable.
 
+| dartitect_resilience
+| dartitect
+| SDK
+| Reuses core cancellation, deadlines, results, and ownership for bounded
+retry, single-flight, circuit-breaker, bulkhead, and rate-limit primitives.
+| Consumers can compose equivalent policies around their own ports.
+
+| dartitect_jobs
+| dartitect
+| SDK
+| Reuses core ownership, cancellation, deadlines, and typed progress for a
+provider-neutral bounded headless job runtime.
+| Consumers can invoke handlers directly or provide another dispatcher.
+
+| dartitect_transfer
+| dartitect
+| SDK
+| Reuses core ownership, cancellation, results, and typed progress for
+provider-neutral resumable transfer contracts.
+| Consumers can implement workload-specific chunk and checkpoint orchestration.
+
+| dartitect_devtools
+| dartitect, Dart developer service extensions
+| SDK
+| Exposes the payload-free diagnostics protocol through three explicitly
+registered read-only development service extensions.
+| Omit the package and registration from product entrypoints.
+
 | dartitect_modeling
 | dartitect
 | SDK
@@ -35,14 +63,16 @@ host compiler.
 | Core remains usable without Flutter.
 
 | dartitect_sync
-| dartitect
+| dartitect, dartitect_jobs, dartitect_resilience
 | SDK
-| Reuses pure-Dart lifecycle, cancellation, and typed-result contracts for a
-provider-neutral DAG engine and headless protocol.
+| Reuses pure-Dart lifecycle, cancellation, typed-result, bounded retry, and
+job contracts for a provider-neutral DAG engine and headless protocol.
 | Consumer can implement the small ports around its own orchestration.
 
 | dartitect_testing
-| dartitect, dartitect_isolates, dartitect_modeling, dartitect_observability, dartitect_sync
+| dartitect, dartitect_isolates, dartitect_jobs, dartitect_modeling,
+dartitect_observability, dartitect_resilience, dartitect_sync,
+dartitect_transfer
 | SDK
 | Reuses lifecycle and modeling contracts for runner-neutral test harnesses.
 | Consumer can use local fakes.
@@ -72,9 +102,10 @@ official test pins.
 | Critical rules remain available in `dartitect scan`.
 
 | dartitect_dio
-| dio 5.11.0, dartitect, dartitect_observability
+| dio 5.11.0, dartitect, dartitect_observability, dartitect_transfer
 | APPROVED EXCEPTION
-| An adapter must expose the actual client types and lifecycle.
+| An adapter must expose the actual client types and lifecycle while mapping
+provider-neutral transfer requests without owning remote protocol policy.
 | Compose `Dio` directly at the application root.
 
 | dartitect_objectbox

@@ -43,9 +43,15 @@ void main() {
   test(
     'profile, progress, restoration, resilience, jobs, transfer, and RPC',
     () async {
-      final config = jsonDecode(
-        File('dartitect.json').readAsStringSync(),
-      ) as Map<String, Object?>;
+      final currentName = Directory.current.path
+          .split(Platform.pathSeparator)
+          .where((segment) => segment.isNotEmpty)
+          .last;
+      final configFile = currentName == 'paved_road_canary'
+          ? File('dartitect.json')
+          : File('examples/paved_road_canary/dartitect.json');
+      final config =
+          jsonDecode(configFile.readAsStringSync()) as Map<String, Object?>;
       final features = config['features']! as Map<String, Object?>;
       final declarations = features['declarations']! as Map<String, Object?>;
       final pavedRoad = declarations['paved_road']! as Map<String, Object?>;

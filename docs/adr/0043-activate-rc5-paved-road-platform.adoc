@@ -25,8 +25,8 @@ and reproducible.
 Activate +explicit-lazy-computed+, +typed-command-progress+,
 +versioned-ui-restoration+, +bounded-local-history+, and
 +readonly-devtools-diagnostics+ for RC5. The canary is accepted as the consumer
-evidence field for all five slices. Each slice retains its own benchmark and
-package-boundary evidence in +tool/optional_slice_gate.json+.
+evidence field for all five slices. Each slice records applicable benchmark
+and package-boundary evidence in +tool/optional_slice_gate.json+.
 
 +ReactiveLazyComputed+ reuses +ReactiveOwner+ and explicit listenable
 dependencies. It adds no implicit/global dependency tracking. Typed progress

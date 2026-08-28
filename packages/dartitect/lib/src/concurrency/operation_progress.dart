@@ -92,6 +92,7 @@ final class SafeProgressReporter<P> implements ProgressReporter<P> {
         _onFailure?.call(error, stackTrace);
       } on Object {
         // Reporting progress failure cannot affect operation behavior.
+        return false;
       }
       return false;
     } finally {

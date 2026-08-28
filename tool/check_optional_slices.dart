@@ -38,12 +38,16 @@ void main() {
       errors.add('Optional slice has an invalid or duplicate ID: $id.');
       continue;
     }
-    if (slice['status'] != 'DEFERRED') {
-      errors.add('$id must remain DEFERRED without its complete evidence.');
+    if (slice['status'] != 'ACTIVATED_RC5') {
+      errors.add('$id must record its explicit RC5 activation.');
     }
     for (final key in evidence) {
-      if (slice[key] != 'MISSING') {
-        errors.add('$id cannot claim $key without an independent gate.');
+      final path = slice[key];
+      if (path is! String || path.isEmpty || path == 'MISSING') {
+        errors.add('$id must identify its independent $key evidence.');
+      } else if (!File('${root.path}/$path').existsSync() &&
+          !Directory('${root.path}/$path').existsSync()) {
+        errors.add('$id $key evidence is missing: $path.');
       }
     }
     final reason = slice['reason'];
@@ -65,27 +69,13 @@ void main() {
   if (packages.contains('dartitect_state')) {
     errors.add('Deferred slices must not create dartitect_state.');
   }
-  final source = StringBuffer();
-  for (final directory in Directory('${root.path}/packages').listSync()) {
-    if (directory is! Directory) continue;
-    final lib = Directory('${directory.path}/lib');
-    if (!lib.existsSync()) continue;
-    for (final file in lib.listSync(recursive: true).whereType<File>()) {
-      if (file.path.endsWith('.dart')) source.write(file.readAsStringSync());
-    }
-  }
-  for (final marker in _strings(contract['forbiddenPublicMarkers'], errors)) {
-    if (source.toString().contains(marker)) {
-      errors.add('Deferred public marker was implemented: $marker.');
-    }
-  }
   if (errors.isNotEmpty) {
     stderr.writeln(errors.join('\n'));
     exitCode = 1;
     return;
   }
   stdout.writeln(
-    'Goal 08 gate keeps all five optional slices DEFERRED with no new package.',
+    'Goal 08 gate records all five RC5 activations with complete independent evidence.',
   );
 }
 

@@ -1,6 +1,6 @@
 name: dartitect_media
 description: Explicit Android and iOS gallery permission and image-save boundary with typed failures for Flutter.
-version: 1.0.0-rc.4
+version: 1.0.0-rc.5
 repository: https://github.com/ftr-tuta/dartitect
 issue_tracker: https://github.com/ftr-tuta/dartitect/issues
 topics: [gallery, media, android, ios, flutter]
@@ -11,7 +11,7 @@ environment:
   flutter: ">=3.47.1"
 
 dependencies:
-  dartitect: '>=1.0.0-rc.4 <1.0.0'
+  dartitect: '>=1.0.0-rc.5 <1.0.0'
   flutter:
     sdk: flutter
 

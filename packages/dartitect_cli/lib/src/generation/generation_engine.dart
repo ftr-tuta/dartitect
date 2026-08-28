@@ -9,7 +9,7 @@ import 'project_lock.dart';
 /// Independent compatibility versions used by generation and reporting.
 abstract final class DartitectGenerationVersions {
   /// Package release version; never used as generated ownership identity.
-  static const String release = '1.0.0-rc.4';
+  static const String release = '1.0.0-rc.5';
 
   /// Cross-component generation protocol version.
   static const int protocol = 1;

@@ -174,13 +174,13 @@ than overwritten. Recovery and retry are idempotent.
 
 ## Frozen performance envelope
 
-`tool/model_benchmark.json` compares exact baseline `2a8261a` and modular RC4
+`tool/model_benchmark.json` compares exact baseline `2a8261a` and modular RC5
 commit `0057db5` on the same Linux/Dart 3.13.1/4-CPU host. Each matrix cell has
 five isolated cold runs (median and peak RSS) and twenty same-process warm runs
 (p95 and peak RSS). Warm sync alternates one semantic field change; cache is
 discardable and never ownership authority.
 
-| Models | Command | RC4 cold median | RC4 cold RSS | RC4 warm p95 | RC4 warm RSS |
+| Models | Command | RC5 cold median | RC5 cold RSS | RC5 warm p95 | RC5 warm RSS |
 |---:|---|---:|---:|---:|---:|
 | 100 | sync | 3,564,654 µs | 728,629,248 B | 1,869,518 µs | 811,585,536 B |
 | 100 | check | 2,274,713 µs | 776,019,968 B | 1,914,912 µs | 803,418,112 B |

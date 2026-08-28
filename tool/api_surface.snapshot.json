@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sdkVersion": "1.0.0-rc.4",
+  "sdkVersion": "1.0.0-rc.5",
   "entrypoints": {
     "packages/dartitect/lib/dartitect.dart": [
       {
@@ -18,6 +18,50 @@
       {
         "name": "AsyncDisposable",
         "declaration": "abstract interface class AsyncDisposable"
+      },
+      {
+        "name": "BootstrapAttempt",
+        "declaration": "sealed class BootstrapAttempt<R>"
+      },
+      {
+        "name": "BootstrapCoordinator",
+        "declaration": "final class BootstrapCoordinator<R> implements AsyncDisposable"
+      },
+      {
+        "name": "BootstrapFailed",
+        "declaration": "final class BootstrapFailed<R> extends BootstrapAttempt<R>"
+      },
+      {
+        "name": "BootstrapFailureKind",
+        "declaration": "enum BootstrapFailureKind"
+      },
+      {
+        "name": "BootstrapProgress",
+        "declaration": "final class BootstrapProgress"
+      },
+      {
+        "name": "BootstrapProgressPhase",
+        "declaration": "enum BootstrapProgressPhase"
+      },
+      {
+        "name": "BootstrapReport",
+        "declaration": "final class BootstrapReport"
+      },
+      {
+        "name": "BootstrapStage",
+        "declaration": "final class BootstrapStage"
+      },
+      {
+        "name": "BootstrapSucceeded",
+        "declaration": "final class BootstrapSucceeded<R> extends BootstrapAttempt<R>"
+      },
+      {
+        "name": "BoundedLocalHistory",
+        "declaration": "final class BoundedLocalHistory<T> implements Disposable"
+      },
+      {
+        "name": "BoundedProgressReporter",
+        "declaration": "final class BoundedProgressReporter<P> implements ProgressReporter<P>, Disposable"
       },
       {
         "name": "CancellationException",
@@ -66,6 +110,10 @@
       {
         "name": "CommandDropped",
         "declaration": "final class CommandDropped<T, F extends Object> extends CommandOutcome<T, F>"
+      },
+      {
+        "name": "CommandExecutionContext",
+        "declaration": "final class CommandExecutionContext<P>"
       },
       {
         "name": "CommandFailed",
@@ -168,6 +216,10 @@
         "declaration": "final class KeyedCommandLane<K, A, T, F extends Object>"
       },
       {
+        "name": "LatestExecutionProgressReporter",
+        "declaration": "final class LatestExecutionProgressReporter<P> implements ProgressReporter<P>, Disposable"
+      },
+      {
         "name": "NoOpArchitectureObserver",
         "declaration": "final class NoOpArchitectureObserver implements ArchitectureObserver"
       },
@@ -180,12 +232,24 @@
         "declaration": "final class NoOpDartitectDiagnosticReporter implements DartitectDiagnosticReporter"
       },
       {
+        "name": "NoOpProgressReporter",
+        "declaration": "final class NoOpProgressReporter<P> implements ProgressReporter<P>"
+      },
+      {
         "name": "NoOpReactiveObserver",
         "declaration": "final class NoOpReactiveObserver implements ReactiveObserver"
       },
       {
         "name": "Ok",
         "declaration": "final class Ok<T> extends Result<T, Never>"
+      },
+      {
+        "name": "OperationDeadlineExceededException",
+        "declaration": "final class OperationDeadlineExceededException implements Exception"
+      },
+      {
+        "name": "OperationProgress",
+        "declaration": "final class OperationProgress<P>"
       },
       {
         "name": "OwnedGraph",
@@ -198,6 +262,10 @@
       {
         "name": "OwnedRuntimeSlot",
         "declaration": "final class OwnedRuntimeSlot<T> implements AsyncDisposable"
+      },
+      {
+        "name": "ProgressReporter",
+        "declaration": "abstract interface class ProgressReporter<P>"
       },
       {
         "name": "ProjectionExecution",
@@ -278,6 +346,10 @@
       {
         "name": "SafeDartitectDiagnosticReporter",
         "declaration": "final class SafeDartitectDiagnosticReporter implements DartitectDiagnosticReporter"
+      },
+      {
+        "name": "SafeProgressReporter",
+        "declaration": "final class SafeProgressReporter<P> implements ProgressReporter<P>"
       },
       {
         "name": "SafeReactiveObserver",
@@ -386,8 +458,32 @@
         "declaration": "enum DartitectExitCode"
       },
       {
+        "name": "DartitectFeatureDeclaration",
+        "declaration": "final class DartitectFeatureDeclaration"
+      },
+      {
+        "name": "DartitectFeaturesConfig",
+        "declaration": "final class DartitectFeaturesConfig"
+      },
+      {
         "name": "DartitectFinding",
         "declaration": "final class DartitectFinding"
+      },
+      {
+        "name": "DartitectFleetCanaryCommand",
+        "declaration": "enum DartitectFleetCanaryCommand"
+      },
+      {
+        "name": "DartitectFleetCanaryCommandReceipt",
+        "declaration": "final class DartitectFleetCanaryCommandReceipt"
+      },
+      {
+        "name": "DartitectFleetCanaryReceipt",
+        "declaration": "final class DartitectFleetCanaryReceipt"
+      },
+      {
+        "name": "DartitectFleetCanaryService",
+        "declaration": "final class DartitectFleetCanaryService"
       },
       {
         "name": "DartitectFleetReport",
@@ -472,6 +568,18 @@
       {
         "name": "EcosystemPolicyRecord",
         "declaration": "final class EcosystemPolicyRecord"
+      },
+      {
+        "name": "FeatureDiagnosticsLevel",
+        "declaration": "enum FeatureDiagnosticsLevel"
+      },
+      {
+        "name": "FeatureProfile",
+        "declaration": "enum FeatureProfile"
+      },
+      {
+        "name": "FeatureScaffoldOptions",
+        "declaration": "final class FeatureScaffoldOptions"
       },
       {
         "name": "FileGenerationOperation",
@@ -618,6 +726,36 @@
         "declaration": "String get nativeStrictProfile"
       }
     ],
+    "packages/dartitect_devtools/lib/dartitect_devtools.dart": [
+      {
+        "name": "DartitectDevToolsRegistration",
+        "declaration": "final class DartitectDevToolsRegistration implements Disposable"
+      },
+      {
+        "name": "DartitectServiceExtensionRegistrar",
+        "declaration": "abstract interface class DartitectServiceExtensionRegistrar"
+      },
+      {
+        "name": "VmDartitectServiceExtensionRegistrar",
+        "declaration": "final class VmDartitectServiceExtensionRegistrar implements DartitectServiceExtensionRegistrar"
+      },
+      {
+        "name": "dartitectCapabilitiesExtension",
+        "declaration": "String get dartitectCapabilitiesExtension"
+      },
+      {
+        "name": "dartitectEventsExtension",
+        "declaration": "String get dartitectEventsExtension"
+      },
+      {
+        "name": "dartitectReadOnlyServiceExtensions",
+        "declaration": "List<String> get dartitectReadOnlyServiceExtensions"
+      },
+      {
+        "name": "dartitectSnapshotExtension",
+        "declaration": "String get dartitectSnapshotExtension"
+      }
+    ],
     "packages/dartitect_dio/lib/dartitect_dio.dart": [
       {
         "name": "CancellationToken",
@@ -694,6 +832,18 @@
       {
         "name": "DioTelemetryObserver",
         "declaration": "abstract interface class DioTelemetryObserver"
+      },
+      {
+        "name": "DioTransferCommitDecoder",
+        "declaration": "typedef DioTransferCommitDecoder = TransferCommit Function(Response<Object?>, TransferChunk)"
+      },
+      {
+        "name": "DioTransferRequest",
+        "declaration": "typedef DioTransferRequest = FutureOr<Response<Object?>> Function(Dio, TransferChunk, CancelToken)"
+      },
+      {
+        "name": "DioTransferTransport",
+        "declaration": "final class DioTransferTransport implements TransferTransport<DioFailure>"
       },
       {
         "name": "DioTransportFailure",
@@ -775,6 +925,18 @@
       }
     ],
     "packages/dartitect_flutter/lib/dartitect_flutter.dart": [
+      {
+        "name": "ApplicationFailureBuilder",
+        "declaration": "typedef ApplicationFailureBuilder<in R> = Widget Function(BuildContext, BootstrapFailed<R>, void Function())"
+      },
+      {
+        "name": "ApplicationHost",
+        "declaration": "final class ApplicationHost<R> extends StatefulWidget"
+      },
+      {
+        "name": "ApplicationReadyBuilder",
+        "declaration": "typedef ApplicationReadyBuilder<in R> = Widget Function(BuildContext, R)"
+      },
       {
         "name": "CallbackFlutterCrashReporter",
         "declaration": "final class CallbackFlutterCrashReporter implements FlutterCrashReporter"
@@ -924,6 +1086,10 @@
         "declaration": "final class KeyedCommand1<K, A, T, F extends Object> extends ChangeNotifier with _CommandBinding<T, F>"
       },
       {
+        "name": "KeyedProgressCommand1",
+        "declaration": "final class KeyedProgressCommand1<K, A, P, T, F extends Object> implements ValueListenable<CommandState<T, F>>, Disposable, AsyncDisposable"
+      },
+      {
         "name": "ListenableSelection",
         "declaration": "typedef ListenableSelection<in S extends Listenable, out R> = R Function(S)"
       },
@@ -940,6 +1106,10 @@
         "declaration": "typedef ListenableSelectorBuilder<in R> = Widget Function(BuildContext, R, Widget?)"
       },
       {
+        "name": "LocalHistoryListenable",
+        "declaration": "final class LocalHistoryListenable<T> extends ChangeNotifier implements ValueListenable<T>"
+      },
+      {
         "name": "NoOpEffectErrorReporter",
         "declaration": "final class NoOpEffectErrorReporter implements EffectErrorReporter"
       },
@@ -948,8 +1118,24 @@
         "declaration": "final class NoOpFlutterCrashReporter implements FlutterCrashReporter"
       },
       {
+        "name": "ProgressCommand0",
+        "declaration": "final class ProgressCommand0<P, T, F extends Object> implements ValueListenable<CommandState<T, F>>, Disposable, AsyncDisposable"
+      },
+      {
+        "name": "ProgressCommand1",
+        "declaration": "final class ProgressCommand1<A, P, T, F extends Object> implements ValueListenable<CommandState<T, F>>, Disposable, AsyncDisposable"
+      },
+      {
+        "name": "RestorableVersionedValue",
+        "declaration": "final class RestorableVersionedValue<T, F extends Object> extends RestorableValue<T>"
+      },
+      {
         "name": "SessionActive",
         "declaration": "final class SessionActive<S extends Object> extends SessionState<S>"
+      },
+      {
+        "name": "SessionActiveBuilder",
+        "declaration": "typedef SessionActiveBuilder<in R, in D extends Object> = Widget Function(BuildContext, R, D)"
       },
       {
         "name": "SessionAnonymous",
@@ -958,6 +1144,18 @@
       {
         "name": "SessionForcedLogout",
         "declaration": "final class SessionForcedLogout<S extends Object> extends SessionState<S>"
+      },
+      {
+        "name": "SessionHost",
+        "declaration": "final class SessionHost<R, D extends Object> extends StatefulWidget"
+      },
+      {
+        "name": "SessionRouteRemover",
+        "declaration": "typedef SessionRouteRemover = Future<void> Function(int)"
+      },
+      {
+        "name": "SessionRuntimeController",
+        "declaration": "final class SessionRuntimeController<R, D extends Object> implements AsyncDisposable"
       },
       {
         "name": "SessionSignedOut",
@@ -978,6 +1176,22 @@
       {
         "name": "SessionTransitioning",
         "declaration": "final class SessionTransitioning<S extends Object> extends SessionState<S>"
+      },
+      {
+        "name": "VersionedRestorationCodec",
+        "declaration": "final class VersionedRestorationCodec<T, F extends Object>"
+      },
+      {
+        "name": "VersionedRestorationEncodingException",
+        "declaration": "final class VersionedRestorationEncodingException implements Exception"
+      },
+      {
+        "name": "VersionedRestorationIssue",
+        "declaration": "enum VersionedRestorationIssue"
+      },
+      {
+        "name": "VersionedRestorationMigration",
+        "declaration": "typedef VersionedRestorationMigration<out F extends Object> = Result<Object?, F> Function(Object?)"
       },
       {
         "name": "ViewModelDisposer",
@@ -1258,6 +1472,14 @@
         "declaration": "final class ReactiveKeyConflictException implements Exception"
       },
       {
+        "name": "ReactiveLazyComputed",
+        "declaration": "final class ReactiveLazyComputed<T> implements ValueListenable<T>"
+      },
+      {
+        "name": "ReactiveLazyRead",
+        "declaration": "final class ReactiveLazyRead"
+      },
+      {
         "name": "ReactiveNode",
         "declaration": "sealed base class ReactiveNode<T> extends _ReactiveNodeBase implements ValueListenable<T>"
       },
@@ -1476,6 +1698,80 @@
       {
         "name": "currentIsolateWorkerProtocolVersion",
         "declaration": "int get currentIsolateWorkerProtocolVersion"
+      }
+    ],
+    "packages/dartitect_jobs/lib/dartitect_jobs.dart": [
+      {
+        "name": "JobAccepted",
+        "declaration": "final class JobAccepted<R, F extends Object> extends JobAck<R, F>"
+      },
+      {
+        "name": "JobAck",
+        "declaration": "sealed class JobAck<R, F extends Object>"
+      },
+      {
+        "name": "JobClock",
+        "declaration": "abstract interface class JobClock"
+      },
+      {
+        "name": "JobCompleted",
+        "declaration": "final class JobCompleted<R, F extends Object> extends JobAck<R, F>"
+      },
+      {
+        "name": "JobDefinition",
+        "declaration": "final class JobDefinition<P, R, F extends Object, Q>"
+      },
+      {
+        "name": "JobDispatcher",
+        "declaration": "final class JobDispatcher<P, R, F extends Object, Q> implements AsyncDisposable"
+      },
+      {
+        "name": "JobEnvelope",
+        "declaration": "final class JobEnvelope<P>"
+      },
+      {
+        "name": "JobExecutionContext",
+        "declaration": "final class JobExecutionContext<P>"
+      },
+      {
+        "name": "JobFailed",
+        "declaration": "final class JobFailed<R, F extends Object> extends JobAck<R, F>"
+      },
+      {
+        "name": "JobHandler",
+        "declaration": "abstract interface class JobHandler<P, R, F extends Object, Q>"
+      },
+      {
+        "name": "JobLease",
+        "declaration": "abstract interface class JobLease implements AsyncDisposable"
+      },
+      {
+        "name": "JobLeasePort",
+        "declaration": "abstract interface class JobLeasePort"
+      },
+      {
+        "name": "JobReceipt",
+        "declaration": "final class JobReceipt<R, F extends Object>"
+      },
+      {
+        "name": "JobReceiptStore",
+        "declaration": "abstract interface class JobReceiptStore<R, F extends Object>"
+      },
+      {
+        "name": "JobRejected",
+        "declaration": "final class JobRejected<R, F extends Object> extends JobAck<R, F>"
+      },
+      {
+        "name": "JobRejection",
+        "declaration": "enum JobRejection"
+      },
+      {
+        "name": "SystemJobClock",
+        "declaration": "final class SystemJobClock implements JobClock"
+      },
+      {
+        "name": "currentJobProtocolVersion",
+        "declaration": "int get currentJobProtocolVersion"
       }
     ],
     "packages/dartitect_lints/lib/main.dart": [
@@ -2088,6 +2384,108 @@
         "declaration": "enum TrackingAuthorizationStatus"
       }
     ],
+    "packages/dartitect_resilience/lib/dartitect_resilience.dart": [
+      {
+        "name": "BackoffStrategy",
+        "declaration": "abstract interface class BackoffStrategy"
+      },
+      {
+        "name": "Bulkhead",
+        "declaration": "final class Bulkhead implements AsyncDisposable"
+      },
+      {
+        "name": "BulkheadRejectedException",
+        "declaration": "final class BulkheadRejectedException implements Exception"
+      },
+      {
+        "name": "CircuitBreaker",
+        "declaration": "final class CircuitBreaker"
+      },
+      {
+        "name": "CircuitBreakerOpenException",
+        "declaration": "final class CircuitBreakerOpenException implements Exception"
+      },
+      {
+        "name": "CircuitBreakerState",
+        "declaration": "enum CircuitBreakerState"
+      },
+      {
+        "name": "ExponentialBackoff",
+        "declaration": "final class ExponentialBackoff implements BackoffStrategy"
+      },
+      {
+        "name": "FixedBackoff",
+        "declaration": "final class FixedBackoff implements BackoffStrategy"
+      },
+      {
+        "name": "FullJitter",
+        "declaration": "final class FullJitter implements JitterStrategy"
+      },
+      {
+        "name": "JitterStrategy",
+        "declaration": "abstract interface class JitterStrategy"
+      },
+      {
+        "name": "NoJitter",
+        "declaration": "final class NoJitter implements JitterStrategy"
+      },
+      {
+        "name": "RateLimiter",
+        "declaration": "final class RateLimiter"
+      },
+      {
+        "name": "ResilienceClock",
+        "declaration": "abstract interface class ResilienceClock"
+      },
+      {
+        "name": "ResilienceRandom",
+        "declaration": "abstract interface class ResilienceRandom"
+      },
+      {
+        "name": "ResilienceScheduler",
+        "declaration": "abstract interface class ResilienceScheduler"
+      },
+      {
+        "name": "RetryDecision",
+        "declaration": "final class RetryDecision"
+      },
+      {
+        "name": "RetryDecisionKind",
+        "declaration": "enum RetryDecisionKind"
+      },
+      {
+        "name": "RetryExecutor",
+        "declaration": "final class RetryExecutor"
+      },
+      {
+        "name": "RetryPolicy",
+        "declaration": "final class RetryPolicy<F extends Object>"
+      },
+      {
+        "name": "SingleFlight",
+        "declaration": "final class SingleFlight<K, V> implements AsyncDisposable"
+      },
+      {
+        "name": "SingleFlightCapacityException",
+        "declaration": "final class SingleFlightCapacityException implements Exception"
+      },
+      {
+        "name": "SingleFlightDrainingException",
+        "declaration": "final class SingleFlightDrainingException implements Exception"
+      },
+      {
+        "name": "SystemResilienceClock",
+        "declaration": "final class SystemResilienceClock implements ResilienceClock"
+      },
+      {
+        "name": "SystemResilienceRandom",
+        "declaration": "final class SystemResilienceRandom implements ResilienceRandom"
+      },
+      {
+        "name": "TimerResilienceScheduler",
+        "declaration": "final class TimerResilienceScheduler implements ResilienceScheduler"
+      }
+    ],
     "packages/dartitect_sentry/lib/dartitect_sentry.dart": [
       {
         "name": "SentryErrorReporter",
@@ -2326,6 +2724,14 @@
     ],
     "packages/dartitect_testing/lib/dartitect_testing.dart": [
       {
+        "name": "BootstrapContractHarness",
+        "declaration": "final class BootstrapContractHarness<R>"
+      },
+      {
+        "name": "BootstrapHarnessResult",
+        "declaration": "final class BootstrapHarnessResult<R>"
+      },
+      {
         "name": "CensusLease",
         "declaration": "final class CensusLease implements Disposable"
       },
@@ -2378,6 +2784,26 @@
         "declaration": "final class FakeArchitectureObserver implements ArchitectureObserver"
       },
       {
+        "name": "FeatureContract",
+        "declaration": "enum FeatureContract"
+      },
+      {
+        "name": "FeatureContractFixtures",
+        "declaration": "final class FeatureContractFixtures<T extends Object>"
+      },
+      {
+        "name": "FeatureContractMatrix",
+        "declaration": "final class FeatureContractMatrix<T extends Object>"
+      },
+      {
+        "name": "FeatureContractProfile",
+        "declaration": "enum FeatureContractProfile"
+      },
+      {
+        "name": "FeatureContractResult",
+        "declaration": "final class FeatureContractResult"
+      },
+      {
         "name": "InMemorySyncCheckpointStore",
         "declaration": "final class InMemorySyncCheckpointStore<K, C> implements SyncCheckpointStore<K, C>"
       },
@@ -2394,6 +2820,14 @@
         "declaration": "final class IsolateWorkerHarnessResult<R, F extends Object>"
       },
       {
+        "name": "JobContractHarness",
+        "declaration": "final class JobContractHarness<P, R, F extends Object, Q>"
+      },
+      {
+        "name": "JobHarnessResult",
+        "declaration": "final class JobHarnessResult<R, F extends Object>"
+      },
+      {
         "name": "LifecycleHarness",
         "declaration": "final class LifecycleHarness<R extends Object>"
       },
@@ -2404,6 +2838,14 @@
       {
         "name": "LifecycleRun",
         "declaration": "final class LifecycleRun<T>"
+      },
+      {
+        "name": "LocalHistoryContractHarness",
+        "declaration": "final class LocalHistoryContractHarness<T>"
+      },
+      {
+        "name": "LocalHistoryHarnessResult",
+        "declaration": "final class LocalHistoryHarnessResult<T>"
       },
       {
         "name": "ManualClock",
@@ -2454,6 +2896,10 @@
         "declaration": "final class ProjectionContractRun<Projection>"
       },
       {
+        "name": "ReadOnlyDiagnosticsContractHarness",
+        "declaration": "final class ReadOnlyDiagnosticsContractHarness"
+      },
+      {
         "name": "RecordingErrorReporter",
         "declaration": "final class RecordingErrorReporter extends ErrorReporter"
       },
@@ -2486,6 +2932,22 @@
         "declaration": "final class ResourceCensus"
       },
       {
+        "name": "RestorationContractHarness",
+        "declaration": "final class RestorationContractHarness<T, E>"
+      },
+      {
+        "name": "RestorationHarnessResult",
+        "declaration": "final class RestorationHarnessResult<T, E>"
+      },
+      {
+        "name": "RetryContractHarness",
+        "declaration": "final class RetryContractHarness<T, F extends Object>"
+      },
+      {
+        "name": "RetryHarnessResult",
+        "declaration": "final class RetryHarnessResult<T, F extends Object>"
+      },
+      {
         "name": "SequenceSyncIdGenerator",
         "declaration": "final class SequenceSyncIdGenerator implements IdGenerator"
       },
@@ -2510,12 +2972,90 @@
         "declaration": "final class TestingMatrixRow"
       },
       {
+        "name": "TransferContractHarness",
+        "declaration": "final class TransferContractHarness<F extends Object>"
+      },
+      {
+        "name": "TransferHarnessResult",
+        "declaration": "final class TransferHarnessResult<F extends Object>"
+      },
+      {
         "name": "collectStreamEvents",
         "declaration": "Future<List<T>> collectStreamEvents<T>(Stream<T> stream, {required int count, required Duration timeout})"
       },
       {
         "name": "waitForStreamEvent",
         "declaration": "Future<T> waitForStreamEvent<T>(Stream<T> stream, {required bool Function(T) where, required Duration timeout})"
+      }
+    ],
+    "packages/dartitect_transfer/lib/dartitect_transfer.dart": [
+      {
+        "name": "SinkTransferTransport",
+        "declaration": "final class SinkTransferTransport<F extends Object> implements TransferTransport<F>"
+      },
+      {
+        "name": "TransferCheckpoint",
+        "declaration": "final class TransferCheckpoint"
+      },
+      {
+        "name": "TransferCheckpointStore",
+        "declaration": "abstract interface class TransferCheckpointStore"
+      },
+      {
+        "name": "TransferChecksum",
+        "declaration": "final class TransferChecksum"
+      },
+      {
+        "name": "TransferChecksumAlgorithm",
+        "declaration": "enum TransferChecksumAlgorithm"
+      },
+      {
+        "name": "TransferChecksumVerifier",
+        "declaration": "abstract interface class TransferChecksumVerifier"
+      },
+      {
+        "name": "TransferChunk",
+        "declaration": "final class TransferChunk"
+      },
+      {
+        "name": "TransferCommit",
+        "declaration": "final class TransferCommit"
+      },
+      {
+        "name": "TransferEngine",
+        "declaration": "final class TransferEngine<F extends Object> implements AsyncDisposable"
+      },
+      {
+        "name": "TransferProgress",
+        "declaration": "final class TransferProgress"
+      },
+      {
+        "name": "TransferProgressPhase",
+        "declaration": "enum TransferProgressPhase"
+      },
+      {
+        "name": "TransferProtocolException",
+        "declaration": "final class TransferProtocolException implements Exception"
+      },
+      {
+        "name": "TransferReport",
+        "declaration": "final class TransferReport"
+      },
+      {
+        "name": "TransferRun",
+        "declaration": "final class TransferRun<F extends Object>"
+      },
+      {
+        "name": "TransferSink",
+        "declaration": "abstract interface class TransferSink<F extends Object>"
+      },
+      {
+        "name": "TransferSource",
+        "declaration": "abstract interface class TransferSource"
+      },
+      {
+        "name": "TransferTransport",
+        "declaration": "abstract interface class TransferTransport<F extends Object>"
       }
     ]
   }

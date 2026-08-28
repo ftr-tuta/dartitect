@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "generatedAtUtc": "2026-08-28T03:25:12.639781Z",
+  "generatedAtUtc": "2026-08-28T17:57:06.957178Z",
   "sourceRevision": {
-    "candidateCohort": "1.0.0-rc.4",
+    "candidateCohort": "1.0.0-rc.5",
     "evidenceStatus": "REFERENCE_ONLY_REPRODUCTION_REQUIRED"
   },
   "publicClaimEligible": false,
@@ -25,18 +25,18 @@
     "devToolsVersion": "2.60.0",
     "flutterVersion": "3.47.1"
   },
-  "comparatorLockFnv1a": "69630d3f",
-  "rawFnv1a": "920ab209",
+  "comparatorLockFnv1a": "1c1df14f",
+  "rawFnv1a": "9070c265",
   "seed": 140013,
   "warmupSamples": 3,
   "repetitions": 15,
   "memory": {
-    "rssBeforeBytes": 211771392,
-    "rssAfterBytes": 361226240,
-    "maxRssBytes": 398426112,
-    "heapBeforeBytes": 106559168,
-    "heapAfterBytes": 226575888,
-    "heapCapacityAfterBytes": 232730624,
-    "externalAfterBytes": 131536
+    "rssBeforeBytes": 210165760,
+    "rssAfterBytes": 374456320,
+    "maxRssBytes": 401362944,
+    "heapBeforeBytes": 107196208,
+    "heapAfterBytes": 242276624,
+    "heapCapacityAfterBytes": 246689792,
+    "externalAfterBytes": 2389552
   }
 }

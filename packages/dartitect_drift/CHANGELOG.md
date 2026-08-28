@@ -1,3 +1,8 @@
+## 1.0.0-rc.5
+
+- Join the lockstep RC5 paved-road source cohort without creating a tag,
+  release, or publication.
+
 ## 1.0.0-rc.4
 
 - Preserve consumer-owned Drift schemas in the modular cohort and add mixed

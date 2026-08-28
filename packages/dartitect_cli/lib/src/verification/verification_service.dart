@@ -6,7 +6,7 @@ import '../model/model_generator.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
 
-/// Read-only RC4 verification shared by the public CLI, fleet, and MCP server.
+/// Read-only RC5 verification shared by the public CLI, fleet, and MCP server.
 final class DartitectVerificationService {
   /// Creates a verifier for one package or workspace root.
   DartitectVerificationService(Directory root) : root = root.absolute;
