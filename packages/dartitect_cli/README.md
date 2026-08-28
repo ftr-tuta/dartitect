@@ -1,105 +1,138 @@
 # dartitect_cli
 
-[Português (Brasil)](README.pt-BR.md)
-
 ## Purpose
 
-Local Dart VM inspection, architecture scanning, diagnostics, config validation,
-reviewed baselines, managed Codex skills, and transactional generators. The CLI
-has no runtime dependency outside the Dart SDK.
+Local Dart VM inspection, architecture scanning, diagnostics, stable config,
+reviewed baselines, modeling generation/migration, dependency/fleet policy,
+managed Codex skill synchronization, and transactional filesystem changes.
 
-## When to use it
+## When to use
 
-Use it in local development and CI. Read-only commands are safe for discovery;
-preview every supported filesystem change before writing. It does not run arbitrary
-shell supplied by a model and is not a build system.
+Use the CLI in local development and CI. Start with read-only inspection and
+preview every supported change. Tooling integrations may use the exported typed
+services directly instead of parsing console output.
 
-## When not to use it
+## When not to use
 
-Do not embed it as application runtime behavior or use it as a remote service.
-Use the MCP package only when a local agent needs bounded typed tools/resources;
-scripts and CI should call this CLI directly.
+Do not embed it in an application runtime, expose it as a remote service, or use
+it as a build system or arbitrary shell bridge. Scripts and CI should call this
+CLI directly; local agents needing typed MCP tools use `dartitect_mcp`.
 
-## Recommended combinations
+## Platforms and entrypoints
 
-Combine with `dartitect_lints` for editor feedback and with the eleven managed
-Codex skills for focused guidance. Use `dartitect_mcp` separately for local
-agent context. See the
-[ecosystem selection guide](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/ecosystem-selection.md)
-and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/implementation-recipes.md).
+- The executable is `dartitect` (or `dart run dartitect_cli:dartitect`).
+- The tooling library is `package:dartitect_cli/dartitect_cli.dart`.
 
-## Install
+Both run on the Dart VM. Commands that create Flutter projects additionally
+invoke the consumer's local Flutter SDK.
 
-```console
-dart pub global activate dartitect_cli 1.0.0-rc.4
-```
+## Mental model and data flow
 
-## Minimal example
+Read-only operations resolve a confined project root, parse stable config,
+compile semantic source facts, and return `CommandEnvelope`/typed reports.
+Mutating operations first produce a deterministic `DartitectChangePlan` with a
+semantic-input manifest. Apply revalidates the plan under an OS-level project
+lock, writes through a recoverable journal, and commits or rolls back.
+
+Generated-once files become consumer-owned. Only fully generated,
+manifest-owned namespaces are converged. Managed skill sync follows the same
+rule and preserves consumer-owned skills and an existing `AGENTS.md`.
+
+## Minimal workflow
 
 ```console
 dartitect inspect --json
 dartitect scan --no-baseline
 dartitect doctor
-dartitect model check
-dartitect model migrate primary
-dartitect dependencies audit
-dartitect fleet versions apps/a apps/b --root . --json
-dartitect fleet check apps/a apps/b --root . --json
+dartitect model check --json
+dartitect model sync
+dartitect codex sync --dry-run
 ```
 
-See `example/README.md` for all commands and exit codes.
+`model sync` previews by default and writes only with `--apply`. Other mutators
+document their own `--dry-run`/apply form in `example/README.md`.
 
 ## Public API tour
 
-- `DartitectProjectService` is the typed shared inspect/scan/doctor/change layer.
-- `DartitectFleetService` confines explicit project roots and provides offline
-  versions/check/pinned-policy reports plus upgrade previews.
-- `DartitectChangePlan` exposes a sorted semantic-input manifest. Its SHA-256
-  digest is revalidated while an OS-level project lock is held through commit
-  or rollback; unrelated assets do not invalidate a plan.
-- `ProjectScanner`, `DartitectFinding`, and `CommandEnvelope` provide results.
-- `DartitectConfig`/`ConfigMigrator` preserve unknown keys and originals.
+- `DartitectProjectService` is the shared typed inspect/scan/doctor/change layer.
+- `ProjectScanner`, `DartitectFinding`, `DartitectRuleCodes`, source
+  classification, and SARIF/report types expose architecture results.
+- `DartitectConfig`, `ConfigMigrator`, and `nativeStrictProfile` define stable
+  config v1 and architecture defaults.
 - `DartitectBaseline` fingerprints code/path/evidence without line numbers.
-- `GenerationEngine` preserves generated-once files and converges manifest-owned
-  model outputs through recoverable create/update/delete transactions.
-- `DartitectModelGenerator` and `EcosystemDependencyAuditor` provide native
-  value generation and offline direct/transitive policy checks.
-- `PrimaryConstructorMigration` provides semantic preview/apply with a shared
-  project lock, dedicated source journal, and integral rollback.
-- `CodexSkillSynchronizer` synchronizes eleven templates and replaces only
-  manifest-owned skills; consumer-owned skills remain untouched.
-- `DartitectCliRunner` maps the public service to stable exit codes.
+- `DartitectChangePlan`, semantic inputs/manifests, receipts, and
+  `GenerationEngine` implement preview/revalidation/recovery.
+- `DartitectModelGenerator` and `PrimaryConstructorMigration` consume shared
+  semantic modeling IR.
+- `EcosystemDependencyAuditor` and policy types provide pinned offline
+  dependency decisions.
+- `DartitectFleetService` confines explicit application roots and returns
+  versions/check/policy/upgrade previews; fleet operations never apply changes.
+- `CodexSkillSynchronizer` synchronizes eleven canonical managed templates while
+  preserving consumer-owned skill directories.
+- `DartitectVerificationService` and `DartitectCliRunner` map services to stable
+  JSON and exit codes.
+- Scaffold/generation types expose reviewed blueprint and file-operation
+  contracts for tooling authors.
 
-## Ownership
+## Ownership and lifecycle
 
-Generated-once files become consumer-owned. Fully generated model outputs and
-skill directories remain tool-owned only while their strong manifest digest
-matches. Existing `AGENTS.md` is preserved. `model sync` previews by default;
-only `--apply` writes or recovers.
-Fleet CLI commands are read-only; `fleet upgrade` requires `--dry-run`. Policy
-bundles are local and pinned by caller-supplied bundle and policy SHA-256
-digests. See the [fleet tooling guide](../../docs/guides/fleet-tooling.md).
-Ignore `.dartitect/project-change.lock`; its stable pathname is required so
-concurrent processes always coordinate on the same OS lock inode.
+The caller owns process I/O, project roots, source files, and provider tooling.
+The CLI owns only an active lock/journal/temporary transaction. Generated-once
+outputs become consumer-owned; fully generated model outputs and managed skills
+remain tool-owned only while their strong manifest digest matches.
 
-## Limitations
+Keep `.dartitect/project-change.lock` ignored but at its stable path so
+concurrent processes coordinate on one OS lock inode. Do not edit canonical
+managed-skill output under `.agents/skills` independently; update the catalog
+and synchronize it.
 
-Deep doctor runs `dart analyze` only when requested. `create app` invokes the
-local Flutter SDK. Scan is conservative and does not prove business correctness.
+## Failure, cancellation, and concurrency
 
-## Extending
+Exit codes are `0` success, `1` findings/conflicts, `2` usage/configuration, and
+`3` unexpected I/O/internal failure. Plans fail closed on changed semantic input,
+path escape, symlink/traversal, manifest mismatch, lock conflict, or partial I/O.
+Recoverable journals preserve integral rollback.
 
-Add typed service operations first, then CLI rendering. Never implement CLI/MCP
-features by subprocessing Dartitect or parsing its human output.
+Mutations serialize through the project lock and revalidate immediately before
+commit. Read-only operations do not grant write authority. Deep doctor may run
+`dart analyze` only when explicitly requested. Fleet operations are read-only;
+upgrade has preview only.
+
+## Prohibited uses and limitations
+
+- No application runtime dependency, remote service, arbitrary shell, or
+  arbitrary file access.
+- No parsing human output when typed service/JSON output is available.
+- No apply without reviewing the corresponding preview.
+- No overwrite of consumer-owned or locally modified managed files without the
+  explicit documented override.
+- No claim that scan proves business correctness, provider behavior, or
+  lifecycle cleanup.
+- No tag, release, package publication, or dependency download performed by
+  ordinary verification.
 
 ## Testing
 
-Run `dart test`. Cover paths with spaces/Unicode, symlinks, traversal, conflicts,
-partial I/O, recovery, rollback, deterministic JSON, and generated consumers.
-The cross-process race and interrupted-lock tests run on Linux, Windows, and
-macOS through the repository verification matrix.
+Run `dart test`. Cover paths with spaces/Unicode, root confinement, symlinks,
+traversal, semantic-plan invalidation, conflicts, concurrent processes, partial
+I/O, recovery/rollback, deterministic JSON, generated consumers, analyzer
+parity, and managed-skill idempotency. Run formatting and analysis for modified
+Dart tooling.
 
-## Links
+## Related packages and guides
 
-See [getting started](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/getting-started.md),
-[MCP](https://github.com/ftr-tuta/dartitect/tree/main/packages/dartitect_mcp), and the [issue tracker](https://github.com/ftr-tuta/dartitect/issues).
+Use `dartitect_lints` for editor feedback,
+`dartitect_modeling_analyzer` for shared semantic IR, and `dartitect_mcp` for a
+bounded local agent interface. Read
+[getting started](../../docs/guides/getting-started.md),
+[model generation](../../docs/guides/model-generation.md),
+[fleet tooling](../../docs/guides/fleet-tooling.md), and
+[MCP](../../docs/guides/mcp.md).
+
+## Availability
+
+The workspace contains the `1.0.0-rc.4` source candidate. Global activation or
+Git use is supported only from coordinates in a matching tagged GitHub Release.
+If no compatible Release exists, there is no supported consumption path. See
+the [experimental consumption guide](../../docs/guides/git-candidate-consumption.md).

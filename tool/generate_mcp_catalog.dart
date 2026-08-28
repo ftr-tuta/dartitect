@@ -44,12 +44,7 @@ Future<void> main(List<String> arguments) async {
   final guides = <String, Object?>{};
   final guideFiles = await Directory('${root.path}/docs/guides')
       .list(followLinks: false)
-      .where(
-        (entity) =>
-            entity is File &&
-            entity.path.endsWith('.md') &&
-            !entity.path.endsWith('.pt-BR.md'),
-      )
+      .where((entity) => entity is File && entity.path.endsWith('.md'))
       .cast<File>()
       .toList();
   guideFiles.sort((left, right) => left.path.compareTo(right.path));

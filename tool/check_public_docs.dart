@@ -1,17 +1,34 @@
 import 'dart:convert';
 import 'dart:io';
 
-/// Verifies publish-facing package files, translations, and local links.
+/// Verifies English publish-facing documents, metadata, coverage, and links.
 Future<void> main() async {
   final root = File.fromUri(Platform.script).parent.parent.absolute;
   final errors = <String>[];
-  final release = jsonDecode(
-    File('${root.path}/tool/package_release_contract.json').readAsStringSync(),
+  final release = _object(
+    jsonDecode(
+      File('${root.path}/tool/package_release_contract.json')
+          .readAsStringSync(),
+    ),
   );
-  if (release is! Map<String, Object?> || release['cohortVersion'] is! String) {
+  final expectedVersion = release['cohortVersion'];
+  if (expectedVersion is! String) {
     throw const FormatException('Invalid package release cohort.');
   }
-  final expectedVersion = release['cohortVersion']! as String;
+
+  final platforms = _object(
+    jsonDecode(
+      File('${root.path}/docs/mcp/package-platforms.json').readAsStringSync(),
+    ),
+  );
+  final platformPackages = _object(platforms['packages']);
+  final snapshot = _object(
+    jsonDecode(
+      File('${root.path}/tool/api_surface.snapshot.json').readAsStringSync(),
+    ),
+  );
+  final entrypoints = _object(snapshot['entrypoints']).keys.toList();
+
   final packages = await Directory('${root.path}/packages')
       .list(followLinks: false)
       .where((entity) => entity is Directory)
@@ -29,9 +46,12 @@ Future<void> main() async {
     final name = _field(source, 'name');
     final version = _field(source, 'version');
     final description = _field(source, 'description');
-    if (name == null || name.isEmpty) errors.add('${package.path}: no name.');
+    if (name == null || name.isEmpty) {
+      errors.add('${package.path}: no name.');
+      continue;
+    }
     if (description == null || description.length < 40) {
-      errors.add('${name ?? package.path}: description is too short.');
+      errors.add('$name: description is too short.');
     }
     if (version != expectedVersion) {
       errors.add('$name: expected version $expectedVersion, found $version.');
@@ -56,9 +76,9 @@ Future<void> main() async {
     if (topicCount < 3) {
       errors.add('$name: at least three topics are required.');
     }
+
     for (final fileName in const <String>[
       'README.md',
-      'README.pt-BR.md',
       'CHANGELOG.md',
       'LICENSE',
     ]) {
@@ -71,33 +91,48 @@ Future<void> main() async {
         await example.list(followLinks: false).isEmpty) {
       errors.add('$name: example/ is missing or empty.');
     }
-    await _checkTranslationPair(
-      File('${package.path}/README.md'),
-      File('${package.path}/README.pt-BR.md'),
-      errors,
+
+    final readme = File('${package.path}/README.md');
+    if (await readme.exists()) {
+      await _checkPackageReadme(readme, name, errors);
+    }
+    if (!platformPackages.containsKey(name)) {
+      errors.add('$name: missing platform metadata.');
+    }
+
+    final relative = package.path
+        .substring(root.path.length + 1)
+        .replaceAll(Platform.pathSeparator, '/');
+    if (!entrypoints.any((path) => path.startsWith('$relative/lib/'))) {
+      errors.add('$name: public API snapshot has no package entrypoint.');
+    }
+  }
+  if (platformPackages.length != packages.length) {
+    errors.add(
+      'Platform metadata has ${platformPackages.length} packages; '
+      'expected ${packages.length}.',
     );
   }
 
-  await _checkTranslationPair(
-    File('${root.path}/README.md'),
-    File('${root.path}/README.pt-BR.md'),
-    errors,
-  );
+  for (final required in const <String>[
+    'README.md',
+    'CONTRIBUTING.md',
+    'SECURITY.md',
+    'CODE_OF_CONDUCT.md',
+  ]) {
+    if (!File('${root.path}/$required').existsSync()) {
+      errors.add('Missing English repository document: $required.');
+    }
+  }
+
   final guides = await Directory('${root.path}/docs/guides')
       .list(followLinks: false)
-      .where(
-        (entity) =>
-            entity is File &&
-            entity.path.endsWith('.md') &&
-            !entity.path.endsWith('.pt-BR.md'),
-      )
+      .where((entity) => entity is File && entity.path.endsWith('.md'))
       .cast<File>()
       .toList();
-  for (final guide in guides) {
-    final translated = File(
-      guide.path.substring(0, guide.path.length - '.md'.length) + '.pt-BR.md',
-    );
-    await _checkTranslationPair(guide, translated, errors);
+  guides.sort((left, right) => left.path.compareTo(right.path));
+  if (guides.length != 18) {
+    errors.add('Expected 18 English guides; found ${guides.length}.');
   }
 
   final markdown = await root
@@ -120,53 +155,83 @@ Future<void> main() async {
     return;
   }
   stdout.writeln(
-    'Public docs passed: ${packages.length} packages, '
-    '${guides.length} translated guides, ${markdown.length} Markdown files.',
+    'Public docs passed: ${packages.length} package READMEs, '
+    '${guides.length} English guides, ${markdown.length} linked Markdown files.',
   );
+}
+
+const _requiredPackageHeadings = <String>[
+  '## Purpose',
+  '## When to use',
+  '## When not to use',
+  '## Platforms and entrypoints',
+  '## Mental model and data flow',
+  '## Minimal workflow',
+  '## Public API tour',
+  '## Ownership and lifecycle',
+  '## Failure, cancellation, and concurrency',
+  '## Prohibited uses and limitations',
+  '## Testing',
+  '## Related packages and guides',
+  '## Availability',
+];
+
+Future<void> _checkPackageReadme(
+  File readme,
+  String packageName,
+  List<String> errors,
+) async {
+  final source = await readme.readAsString();
+  final lines = source.split(RegExp(r'\r?\n'));
+  if (lines.isEmpty || lines.first != '# $packageName') {
+    errors.add('$packageName: README title must be "# $packageName".');
+  }
+  var previous = -1;
+  for (final heading in _requiredPackageHeadings) {
+    final matches = <int>[
+      for (var index = 0; index < lines.length; index += 1)
+        if (lines[index] == heading) index,
+    ];
+    if (matches.length != 1) {
+      errors.add(
+        '$packageName: README must contain exactly one "$heading" heading.',
+      );
+      continue;
+    }
+    if (matches.single <= previous) {
+      errors.add('$packageName: README heading is out of order: $heading.');
+    }
+    previous = matches.single;
+  }
+
+  final purpose = _section(lines, '## Purpose');
+  if (purpose.length < 40) {
+    errors.add('$packageName: README Purpose is too short.');
+  }
+}
+
+String _section(List<String> lines, String heading) {
+  final start = lines.indexOf(heading);
+  if (start < 0) return '';
+  final result = <String>[];
+  for (final line in lines.skip(start + 1)) {
+    if (line.startsWith('## ')) break;
+    if (line.trim().isNotEmpty) result.add(line.trim());
+  }
+  return result.join(' ');
+}
+
+Map<String, Object?> _object(Object? value) {
+  if (value is! Map<String, Object?>) {
+    throw const FormatException('Expected a JSON object.');
+  }
+  return value;
 }
 
 String? _field(String source, String name) => RegExp(
   '^${RegExp.escape(name)}:\\s*(.+?)\\s*\$',
   multiLine: true,
 ).firstMatch(source)?.group(1);
-
-Future<void> _checkTranslationPair(
-  File canonical,
-  File translated,
-  List<String> errors,
-) async {
-  if (!await canonical.exists()) {
-    errors.add('Missing canonical document: ${canonical.path}.');
-    return;
-  }
-  if (!await translated.exists()) {
-    errors.add('Missing pt-BR translation for ${canonical.path}.');
-    return;
-  }
-  final canonicalStructure = _headingStructure(await canonical.readAsString());
-  final translatedStructure = _headingStructure(
-    await translated.readAsString(),
-  );
-  if (!_sameInts(canonicalStructure, translatedStructure)) {
-    errors.add(
-      'Heading structure differs: ${canonical.path} and ${translated.path}.',
-    );
-  }
-}
-
-List<int> _headingStructure(String source) => source
-    .split(RegExp(r'\r?\n'))
-    .map((line) => RegExp(r'^(#{1,6})\s+').firstMatch(line)?.group(1)?.length)
-    .whereType<int>()
-    .toList(growable: false);
-
-bool _sameInts(List<int> left, List<int> right) {
-  if (left.length != right.length) return false;
-  for (var index = 0; index < left.length; index += 1) {
-    if (left[index] != right[index]) return false;
-  }
-  return true;
-}
 
 Future<void> _checkLocalLinks(File document, List<String> errors) async {
   final source = await document.readAsString();
@@ -202,6 +267,7 @@ bool _ignored(String path, String root) {
       .substring(root.length + 1)
       .replaceAll(Platform.pathSeparator, '/');
   return relative.startsWith('.dart_tool/') ||
+      relative.startsWith('.private/') ||
       relative.startsWith('build/') ||
       relative.contains('/build/') ||
       relative.startsWith('docs/api/');

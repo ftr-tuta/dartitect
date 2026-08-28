@@ -1,7 +1,5 @@
 # Dartitect model generation
 
-[Português (Brasil)](model-generation.pt-BR.md)
-
 ## 1.0 scope and source contract
 
 Model generation is limited to opt-in immutable value, JSON, projection, and

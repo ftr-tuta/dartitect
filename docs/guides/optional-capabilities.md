@@ -1,7 +1,5 @@
 # Optional capability contracts
 
-[Português (Brasil)](optional-capabilities.pt-BR.md)
-
 The four capability packages are opt-in leaves. Foundation, runtime,
 observability, and tooling do not depend on them. Adding one package does not
 select the others, and removing one does not change persisted Dartitect core

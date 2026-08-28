@@ -1,10 +1,9 @@
 # Native Strict Flutter-to-Dartitect matrix
 
-[Português (Brasil)](native-strict-matrix.pt-BR.md)
-
-Dartitect 1.0 supports greenfield Native Strict applications. Existing projects
-may use the read-only conformance audit; no runtime migration or coexistence
-workflow is supported.
+Dartitect 1.0 defines a Native Strict profile for Dartitect-owned code. Existing
+projects may adopt a feature or boundary incrementally beside another runtime,
+provided each feature has one composition/state/lifecycle authority and no
+provider or service-locator API leaks into the Dartitect-owned graph.
 
 | Flutter/application responsibility | Native Strict contract | Primary Dartitect surface | Consumer-owned boundary |
 | --- | --- | --- | --- |
@@ -19,10 +18,10 @@ workflow is supported.
 | One-shot effects | Typed, bounded, at-most-once local delivery; context exists only in the mounted Flutter consumer | `EffectChannel`, `EffectListener` | Navigation, dialogs, snack bars, and route-active policy |
 | Local-first state | Local repository publication is presentation authority; remote work writes through the repository and waits for causal observation | `LiveResource`, `PagedLiveResource`, mutation/outbox and sync orchestration contracts | Store transaction, durable outbox, checkpoint codec, scheduling, fencing support and distributed protocol |
 
-Competing DI or application-state runtimes—including Riverpod, BLoC, Provider,
-GetIt, MobX, and Signals—are incompatible with the Native Strict profile because
-they introduce a second composition/state-lifecycle authority. This is a scope
-contract, not a quality judgment about those packages outside Dartitect.
+Riverpod, BLoC, Provider, GetIt, MobX, Signals, and similar runtimes may remain
+outside a Dartitect-owned feature boundary. They are incompatible only when
+they become a second composition/state/lifecycle authority for the same graph.
+This is a scope contract, not a quality judgment about those packages.
 
 Use `dartitect scan --no-baseline` as the canonical conformance gate for a new
 project. Baselines describe reviewed legacy debt only and never weaken that

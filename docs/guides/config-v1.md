@@ -1,7 +1,5 @@
 # Stable config v1
 
-[Português (Brasil)](config-v1.pt-BR.md)
-
 ## Contract
 
 `dartitect.json` accepts exactly `configVersion: 1` with the

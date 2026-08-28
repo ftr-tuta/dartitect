@@ -1,7 +1,5 @@
 # Commands, results, and effects
 
-[Português (Brasil)](commands-results-effects.pt-BR.md)
-
 ## Expected failures
 
 Return `Result<T, F>` for expected domain/application failure. Callers must

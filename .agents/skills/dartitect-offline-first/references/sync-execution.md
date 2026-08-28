@@ -1,8 +1,12 @@
 # Sync execution
 
-Use `dartitect_sync` only when a feature needs an explicit dataset DAG,
-checkpoints, leases/fencing, progress, deadlines, or headless acknowledgements.
-The repository operation commits remote results into the authoritative local
+Dataset DAG synchronization and headless synchronization are separate flows.
+Use `SyncEngine` for a validated dataset DAG, checkpoints, journals, leases/
+fencing, progress, and deadlines. Use `HeadlessSyncEndpoint` for a versioned
+transferable command, bounded duplicate retention, separate acceptance and
+terminal acknowledgements, and a fresh graph per admitted request.
+
+For a dataset run, the repository operation commits remote results into the authoritative local
 transaction before returning a confirmed checkpoint. A failed dependency blocks
 only downstream datasets; independent branches continue.
 
@@ -14,7 +18,7 @@ token, explicitly declare dataset fencing unsupported. Inspect application,
 checkpoint, journal, lease-release, and cleanup receipts before retrying a
 `SyncRunTerminalException`.
 
-Validate headless payloads before graph creation, create a fresh `OwnedGraph`
+For headless work, validate payloads before graph creation, create a fresh `OwnedGraph`
 per accepted request, deduplicate request IDs, and transfer data rather than
 provider objects. Retry, scheduling, authentication, conflicts, schemas, and
 durable cross-process deduplication remain consumer policy. Expected failure

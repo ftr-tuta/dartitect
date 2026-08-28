@@ -1,117 +1,121 @@
 # dartitect_mcp
 
-[Português (Brasil)](README.pt-BR.md)
-
 ## Purpose
 
-Local MCP access to Dartitect inspection, diagnostics, conformance, reviewed
-previews, and generated public documentation on the lockstep `1.0.0-rc.4`
-candidate line.
+A local MCP server exposing bounded Dartitect project inspection, diagnostics,
+conformance, reviewed change previews/application, and a generated English
+documentation catalog over STDIO.
 
-## When to use it
+## When to use
 
-Use it with Codex or another local MCP client when an agent needs bounded,
-typed project context. Use the CLI directly in scripts. This package is not a
-remote service, ChatGPT web plugin, application debugger, or shell bridge.
+Use it with Codex or another local MCP client when an agent needs typed,
+root-confined Dartitect project context. Keep scripts and CI on the CLI.
 
-## When not to use it
+## When not to use
 
-Do not use it for shell/CI automation, arbitrary file access, HTTP/OAuth,
-remote application access, or unattended writes. Do not enable writes unless a
-reviewed local mutation is intended.
+Do not use it as a remote service, ChatGPT web plugin, application debugger,
+shell bridge, arbitrary file reader, HTTP/OAuth server, or unattended writer.
+Do not enable writes unless a reviewed local mutation is intended.
 
-## Recommended combinations
+## Platforms and entrypoints
 
-Combine with `dartitect_cli` as the shared project service, while keeping scripts
-on the CLI. Use the managed `$dartitect-mcp` skill for MCP work and
-`$dartitect-tooling` for shell/CI tooling. See the
-[ecosystem selection guide](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/ecosystem-selection.md)
-and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/implementation-recipes.md).
+- Run `dart run dartitect_mcp:dartitect_mcp --root .` on the Dart VM.
+- Import `package:dartitect_mcp/dartitect_mcp.dart` to embed the server in a
+  local STDIO host.
 
-## Install
+The current server is local STDIO only.
 
-This candidate is not published on pub.dev. Declare
-`dartitect_mcp: 1.0.0-rc.4` under `dev_dependencies`, apply the overrides from
-the [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md),
-then run `dart run dartitect_mcp:dartitect_mcp --root .`.
+## Mental model and data flow
 
-## Minimal example
+The host owns stdin/stdout and chooses allowed canonical roots.
+`DartitectMcpPolicy` bounds roots, result size, time, and write permission.
+`DartitectMcpServer` maps MCP tools to the typed `DartitectProjectService`; it
+never shells out or parses CLI text. Resources come from generated package
+metadata, diagnostics, English guides, config v1, and the reviewed API snapshot.
+
+Writes are off by default. When enabled, a preview produces an opaque,
+short-lived, single-use plan ID. Apply requires explicit confirmation and client
+approval, then revalidates state under serialization and the project lock.
+
+## Minimal workflow
 
 ```dart
-final server = DartitectMcpServer(
-  stdioChannel(input: stdin, output: stdout),
-  policy: DartitectMcpPolicy(allowedRoots: [Directory.current]),
-);
-await server.done;
+import 'dart:io';
+
+import 'package:dart_mcp/stdio.dart';
+import 'package:dartitect_mcp/dartitect_mcp.dart';
+
+Future<void> main() async {
+  final server = DartitectMcpServer(
+    stdioChannel(input: stdin, output: stdout),
+    policy: DartitectMcpPolicy(
+      allowedRoots: <Directory>[Directory.current],
+    ),
+  );
+  await server.done;
+}
 ```
 
 ## Public API tour
 
-- `DartitectMcpServer` implements tools/resources over an injected MCP channel.
-- `DartitectMcpPolicy` canonicalizes allowed roots, keeps writes off by default,
-  limits results/time, and injects clock/IDs for deterministic tests.
+- `DartitectMcpServer` implements the local tools/resources over an injected MCP
+  channel.
+- `DartitectMcpPolicy` canonicalizes roots, defaults to read-only, bounds
+  results/time, and accepts injectable clocks/IDs for deterministic tests.
 - `DartitectMcpException` represents sanitized policy/request failures.
 
-Tools: `dartitect_inspect_project`, `dartitect_scan_architecture`,
-`dartitect_doctor_project`, `dartitect_explain_finding`,
-`dartitect_audit_conformance`, three `dartitect_preview_*` tools, and
-`dartitect_apply_change`. There is no `create`, arbitrary file read, process
-argument, or shell tool.
+Tools cover inspect, scan, doctor, finding explanation, conformance audit,
+change previews, and guarded apply. Resources cover packages, package details,
+diagnostics, English guides, and config v1. There is no create, shell, process
+argument, arbitrary file-read, or network tool.
 
-Resources: `dartitect://packages`, package/diagnostic/guide templates, and
-`dartitect://config/v1`. The catalog is generated from package metadata, public
-docs—including ecosystem selection and implementation recipes—config,
-diagnostics, and the API snapshot; CI rejects staleness.
+## Ownership and lifecycle
 
-## Ownership
+The host owns the channel, process, server lifetime, project files, credentials,
+and running applications. Policy owns authorization decisions only. Dispose the
+server/channel before process shutdown. Project provider resources never enter
+MCP.
 
-The host owns stdin/stdout and server lifetime. The policy owns only canonical
-root authorization. Project providers, credentials, and running applications
-remain outside MCP.
+## Failure, cancellation, and concurrency
 
-## Limitations
+Policy and request failures are sanitized and bounded. Tool deadlines cancel at
+the project-service boundary where supported; filesystem work already committed
+is governed by the transaction receipt. Apply is serialized, consumes one
+unexpired plan exactly once, and revalidates the complete semantic state.
 
-`dart_mcp` is pinned to `0.5.2`. This release supports local STDIO only; no
-Streamable HTTP, OAuth/authorization, UI, remote plugin, or application access.
-Stdout is JSON-RPC only; diagnostics go to stderr.
+Stdout is JSON-RPC only; diagnostics go to stderr. Failed, expired, changed, or
+replayed plans fail closed. A read-only setup cannot invoke writes even if a
+client asks.
 
-## Extending
+## Prohibited uses and limitations
 
-Add a typed operation to `DartitectProjectService`, then a bounded MCP mapping.
-Never subprocess the CLI or parse its text. Preserve relative/sanitized output,
-closed schemas, explicit annotations, and server-wide instructions.
+- No remote transport, HTTP, OAuth, UI, application access, or credentials.
+- No arbitrary shell/process arguments or arbitrary filesystem reads.
+- No unattended write or apply without preview, `confirmed: true`, and client
+  approval.
+- No bypass of root confinement, state revalidation, serialization, or lock.
+- No hand-edited generated catalog.
+
+The package is experimental and pins `dart_mcp` `0.5.2`.
 
 ## Testing
 
-Run `dart test`. The suite uses a real `dart_mcp` client in-process and as a
-STDIO child process; it requires no model, network, token, or provider account.
+Run `dart test`. The suite uses a real in-process and child-process MCP client
+with no model, network, token, or provider account. Cover root confinement,
+schemas, annotations, catalog freshness, result/time bounds, read-only denial,
+preview/apply/expiry/replay, concurrent apply, sanitized errors, and clean STDIO.
 
-## Codex setup
+## Related packages and guides
 
-```console
-codex mcp add dartitect -- dart run dartitect_mcp:dartitect_mcp --root .
-```
+`dartitect_cli` supplies the typed project service and canonical managed skills.
+Use the `dartitect-mcp` managed skill for agent workflows. Read
+[MCP](../../docs/guides/mcp.md),
+[getting started](../../docs/guides/getting-started.md), and
+[model generation](../../docs/guides/model-generation.md).
 
-```toml
-[mcp_servers.dartitect]
-command = "dart"
-args = ["run", "dartitect_mcp:dartitect_mcp", "--root", "."]
-default_tools_approval_mode = "writes"
-startup_timeout_sec = 20
-tool_timeout_sec = 120
-```
+## Availability
 
-For writes, add `--allow-writes`. Application still requires a reviewed preview,
-unexpired single-use plan, `confirmed: true`, client approval, state revalidation,
-serialization, and a filesystem lock. Read-only setup is recommended.
-
-## Generic MCP clients
-
-Configure an MCP 2025-06-18-or-newer compatible STDIO client with command
-`dart` and arguments `run dartitect_mcp:dartitect_mcp --root .`. Do not add
-secrets or environment credentials. Mark `dartitect_apply_change` for approval.
-
-## Links
-
-See the [MCP guide](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/mcp.md),
-[security policy](https://github.com/ftr-tuta/dartitect/blob/main/SECURITY.md), and [issue tracker](https://github.com/ftr-tuta/dartitect/issues).
+The workspace contains the `1.0.0-rc.4` source candidate. Use only coordinates
+from a matching tag with a published GitHub Release and complete compatible
+cohort notes. If none exists, there is no supported consumption path. See the
+[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).

@@ -1,7 +1,5 @@
 # Fleet tooling
 
-[Português (Brasil)](fleet-tooling.pt-BR.md)
-
 ## Distribution
 
 Run the CLI from an exact dev-dependency version or activate it separately:

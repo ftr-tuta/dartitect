@@ -1,36 +1,37 @@
 # dartitect_lints
 
-[Português (Brasil)](README.pt-BR.md)
-
 ## Purpose
 
-Native-first boundary diagnostics implemented with Dart's official
-`analysis_server_plugin` API.
+Official Dartitect architecture diagnostics implemented with Dart's
+`analysis_server_plugin` API and the shared semantic modeling compiler.
 
-## When to use it
+## When to use
 
-Use it for editor/analyzer feedback in Dart and Flutter packages. Use
-`dartitect scan` as the deterministic CI or plugin-host fallback.
+Use it as a development dependency for editor and `dart analyze` feedback in
+Dart/Flutter packages. Use `dartitect scan` as the deterministic CI or
+unsupported analyzer-host fallback.
 
-## When not to use it
+## When not to use
 
-Do not use it as a runtime dependency or assume every editor can host analyzer
-plugins. It reports architecture boundaries; it does not prove business logic,
-ownership cleanup, or provider behavior.
+Do not add it as a runtime dependency or assume every editor hosts analyzer
+plugins. It reports static boundary evidence; it does not prove business logic,
+runtime ownership cleanup, provider behavior, or transaction durability.
 
-## Recommended combinations
+## Platforms and entrypoints
 
-Combine with `dartitect_cli` scan/doctor in CI and focused tests for runtime and
-provider contracts. Keep justified local suppressions narrow. See the
-[ecosystem selection guide](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/ecosystem-selection.md)
-and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/implementation-recipes.md).
+Enable the analyzer plugin from package `dartitect_lints`. Its analyzer-facing
+library is `package:dartitect_lints/main.dart`, exporting `plugin` and
+`DartitectPlugin`; application code should not import either. The host must
+support Dart analyzer plugins.
 
-## Install
+## Mental model and data flow
 
-This candidate is not published on pub.dev. Declare
-`dartitect_lints: 1.0.0-rc.4` under `dev_dependencies` and use the
-[Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md)
-to pin it to the protected tag.
+The analyzer owns plugin lifecycle. The plugin reads resolved source and
+`dartitect.json`, classifies semantic boundaries with element/library identity,
+and reports warnings at source locations. It never edits source. When an editor
+cannot host it, the CLI scanner consumes the same policy and parity corpus.
+
+## Minimal workflow
 
 ```yaml
 # analysis_options.yaml
@@ -38,67 +39,69 @@ plugins:
   dartitect_lints:
 ```
 
-Repository contributors use the local path:
-
-```yaml
-plugins:
-  dartitect_lints:
-    path: packages/dartitect_lints
-```
-
-## Minimal example
-
-After enabling the plugin, `dart analyze` and supported editors report the
-diagnostics. See `example/README.md` for a complete configuration.
+Run `dart analyze`. A repository checkout may use the documented local `path`
+plugin configuration from `example/README.md`.
 
 ## Public API tour
 
-`plugin` is the analyzer-discovered entrypoint. `DartitectPlugin` registers the
-architecture warning rule. Application code should not import either.
+`plugin` is the analyzer-discovered entrypoint and `DartitectPlugin` registers
+the official rule. Public application APIs are intentionally absent.
 
-## Ownership
+Diagnostics:
 
-The analyzer owns plugin lifecycle. The plugin reads source analysis only and
-does not edit the project.
+- `DT1001` domain imports Flutter.
+- `DT1002` domain imports data/infrastructure.
+- `DT1003` data imports presentation.
+- `DT1004` `BuildContext` crosses ViewModel/domain/data/service/repository.
+- `DT1005` presentation imports infrastructure.
+- `DT1006` a forbidden architecture framework appears in a strict boundary.
+- `DT1007` code imports another package's private `src`.
 
-When resolution is available, type, annotation, locator, and telemetry rules
-use element/library identity. A local class named `Store` or `Widget` is not a
-provider/Flutter type. Sensitive map keys are reported only at a recognized
-telemetry sink. Invalid `dartitect.json` emits
-`dartitect_invalid_configuration` instead of silently behaving as strict
-defaults.
+## Ownership and lifecycle
 
-## Limitations
+The analyzer owns plugin construction, contexts, scheduling, and shutdown. The
+plugin borrows source/config and retains no project resource after analyzer
+teardown. Suppressions are consumer-owned reviewed source comments.
 
-Diagnostics are warnings: `DT1001` domain imports Flutter; `DT1002` domain
-imports data/infrastructure; `DT1003` data imports presentation; `DT1004`
-`BuildContext` crosses ViewModel/domain/data/service/repository boundaries;
-`DT1005` presentation imports infrastructure; `DT1006` forbidden architecture
-framework; `DT1007` private cross-package `src` import.
+## Failure, cancellation, and concurrency
 
-Generated sources outside an explicit `generatedInfrastructure` glob are
-recognized only when a standard generated-code header and a reviewed suffix
-both match. Defaults cover `.g.dart`, `.freezed.dart`, `.gr.dart`, and
-`.router.dart`; `generatedSuffixes` can replace that list in stable config v1.
+Invalid `dartitect.json` emits `dartitect_invalid_configuration` instead of
+silently using strict defaults. Analyzer cancellation/staleness is owned by the
+host. Rules are read-only and safe under analyzer concurrency; scanner/plugin
+parity is checked independently.
 
-Suppress a single finding only with a justification:
+A single suppression must include a reason:
 
 ```dart
 // dartitect-ignore: DT1004 -- required by a reviewed legacy callback
 ```
 
-## Extending
+## Prohibited uses and limitations
 
-Keep diagnostics semantically aligned with `dartitect scan`, document a stable
-code/remediation, and add analyzer-host plus scanner fixtures.
+Do not treat warnings as runtime proof, suppress a whole rule without evidence,
+or duplicate divergent policy in another plugin. Generated source is exempt
+only when it matches the documented generated header/suffix or an explicit
+`generatedInfrastructure` glob. A local type named `Store` or `Widget` is not a
+provider/Flutter match because resolved identity is used when available.
 
 ## Testing
 
-Run `dart test` and `dart run tool/check_boundary_parity.dart`. The versioned
-corpus enforces scanner/plugin parity and analyzer performance. Compatibility
-pins and their rationale live in the root dependency ledger.
+Run `dart test` and `dart run tool/check_boundary_parity.dart`. Cover
+analyzer-host loading, resolved identity, invalid configuration, suppressions,
+generated-source recognition, every diagnostic, scanner parity, and performance
+over the versioned corpus.
 
-## Links
+## Related packages and guides
 
-See [dependency rationale](https://github.com/ftr-tuta/dartitect/blob/main/DEPENDENCIES.adoc),
-[CLI fallback](https://github.com/ftr-tuta/dartitect/tree/main/packages/dartitect_cli), and the [issue tracker](https://github.com/ftr-tuta/dartitect/issues).
+Use `dartitect_cli` for CI scan/doctor and
+`dartitect_modeling_analyzer` for shared semantic interpretation. Read
+[getting started](../../docs/guides/getting-started.md),
+[ecosystem policy](../../docs/guides/ecosystem-policy.md), and the
+[dependency ledger](../../DEPENDENCIES.adoc).
+
+## Availability
+
+The workspace contains the `1.0.0-rc.4` source candidate. Add it only from
+coordinates in a matching tagged GitHub Release and compatible cohort. If no
+such Release exists, there is no supported consumption path. See the
+[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).

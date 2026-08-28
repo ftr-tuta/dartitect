@@ -1,34 +1,244 @@
 # dartitect_sync
 
-[Português (Brasil)](README.pt-BR.md)
-
 ## Purpose
 
-Pure-Dart, provider-neutral synchronization primitives for Dartitect. Consumers
-define datasets, dependency order, checkpoints, leases, retry/conflict policy,
-and provider adapters. The engine never imports Flutter, HTTP, storage, or a
-platform scheduler.
+Provider-neutral primitives for three separate offline/background concerns:
+durable mutation plus outbox delivery, ordered dataset synchronization, and
+headless synchronization commands. The package imports no Flutter, HTTP,
+database, or platform scheduler.
 
-Each foreground or headless entrypoint creates and disposes its own owned graph.
-Only validated command data crosses isolate boundaries.
+## When to use
 
-## Use it
+Use it when correctness depends on an explicit durable outbox, a validated
+dataset dependency graph with checkpoints, or a versioned headless command
+whose acceptance and terminal result must be distinguished.
 
-Define a `SyncDataset` per local-authority dataset, validate dependencies with
-`SyncDependencyGraph`, inject checkpoint and optional lease ports, then await
-`engine.start().done`. Expected failures return `Err`; unexpected exceptions
-keep their stack in `SyncRunTerminalException`, whose report distinguishes
-dataset application, checkpoint, journal, lease release, and cleanup. Inspect
-that receipt before any retry. See the
-[runnable example](example/dartitect_sync_example.dart).
+## When not to use
 
-## Consumer policy
+Do not use it for an in-memory refresh with no durability or ordering
+requirements. It is not a repository, transport, database schema, scheduler,
+background-service plugin, conflict resolver, retry oracle, or exactly-once
+delivery system.
 
-The application owns local transactions, remote mapping, idempotency, retry,
-conflict resolution, authentication, scheduling, payload validation, durable
-cross-process deduplication, and provider resources. Checkpoint stores must use
-the supplied fencing token to reject a stale lease holder. When a lease is
-configured, each `SyncDatasetContext` carries `SyncAuthority`: call
-`ensureAuthority()` immediately before the local commit and pass
-`fencingToken` into the same atomic storage transaction. A store that cannot
-compare-and-commit the token does not gain a fencing guarantee from the engine.
+## Platforms and entrypoints
+
+Import `package:dartitect_sync/dartitect_sync.dart`. The package is pure Dart and
+supports the Dart VM, Flutter, and web. A host that runs work in another isolate
+must separately provide isolate/platform scheduling and transferable payloads.
+
+## Mental model and data flow
+
+Choose one mechanism for each concern:
+
+1. A `MutationCommand` asks the consumer's `MutationOutboxStore` to atomically
+   apply the local change and enqueue one `OutboxOperation`. The local state is
+   authoritative immediately. Delivery reuses the operation's idempotency key
+   and persists every attempt/state transition.
+2. A `SyncEngine` validates a DAG, reads the confirmed checkpoint for each
+   eligible dataset, runs prerequisites first, lets the dataset atomically apply
+   remote data locally, and only then writes the new checkpoint. An optional
+   journal records payload-free run facts; an optional lease supplies fencing
+   authority.
+3. A `HeadlessSyncEndpoint` validates a versioned envelope, deduplicates a
+   bounded request set, acknowledges acceptance, creates one fresh `OwnedGraph`,
+   and produces a terminal completion/failure acknowledgment.
+
+These flows may call the same repositories, but their durability records and
+retry ownership are distinct. A mutation outbox is not a dataset checkpoint; a
+run journal is not domain data; a headless receipt is not proof of remote
+exactly-once execution.
+
+## Minimal workflow
+
+```dart
+import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_sync/dartitect_sync.dart';
+
+Future<void> main() async {
+  final checkpoints = _MemoryCheckpoints<String, int>();
+  final graph = SyncDependencyGraph<String>(
+    keys: const <String>['records', 'search_index'],
+    dependencies: const <String, List<String>>{
+      'search_index': <String>['records'],
+    },
+  );
+  final engine = SyncEngine<String, int, StateError>(
+    graph: graph,
+    checkpoints: checkpoints,
+    datasets: <SyncDataset<String, int, StateError>>[
+      SyncDataset<String, int, StateError>(
+        key: 'records',
+        synchronize: (context) async {
+          context.cancellation.throwIfCancelled();
+          // Commit downloaded records locally before returning the checkpoint.
+          return const Ok(SyncDatasetOutcome<int>.checkpoint(1));
+        },
+      ),
+      SyncDataset<String, int, StateError>(
+        key: 'search_index',
+        synchronize: (context) async =>
+            const Ok(SyncDatasetOutcome<int>.unchanged()),
+      ),
+    ],
+  );
+
+  try {
+    final report = await engine.start().done;
+    assert(report.succeeded);
+  } finally {
+    await engine.disposeAsync();
+  }
+}
+
+final class _MemoryCheckpoints<K, C> implements SyncCheckpointStore<K, C> {
+  final Map<K, C> values = <K, C>{};
+
+  @override
+  Future<C?> read(K key, CancellationSignal signal) async => values[key];
+
+  @override
+  Future<void> write(
+    K key,
+    C checkpoint,
+    CancellationSignal signal, {
+    int? fencingToken,
+  }) async {
+    signal.throwIfCancelled();
+    values[key] = checkpoint;
+  }
+
+  @override
+  Future<void> remove(K key, CancellationSignal signal) async {
+    signal.throwIfCancelled();
+    values.remove(key);
+  }
+}
+```
+
+Production stores replace the in-memory checkpoint port and commit the dataset
+plus fencing comparison atomically where fencing is required.
+
+## Public API tour
+
+Durable mutation and outbox:
+
+- `MutationCommand` (also aliased as `MutationLane`) owns bounded sequential
+  lanes per aggregate key and bounded concurrency across keys.
+- `MutationOutboxStore` defines atomic local/enqueue, state persistence,
+  recovery loading, and explicit compensation.
+- `OutboxOperation` preserves a stable idempotency key, aggregate key, argument,
+  attempt count, and sync state.
+- `MutationExecution`, `CommitDisposition`, `EntitySyncState`,
+  `MutationFailurePolicy`, `RetryClassification`, and `RetryKind` make accepted,
+  queued, rejected, conflicted, uncertain, retry, and success states explicit.
+
+Dataset synchronization:
+
+- `SyncDependencyGraph` rejects missing keys, duplicates, self-edges, and cycles,
+  then produces a stable `SyncPlan`.
+- `SyncDataset` and `SyncDatasetContext` provide checkpoint, cancellation,
+  deadline, run ID, and optional `SyncAuthority` to consumer code.
+- `SyncEngine.start` returns a single-use `SyncRun` with bounded progress and a
+  terminal `SyncReport`.
+- `SyncCheckpointStore` persists opaque consumer checkpoints.
+- `SyncLeaseStore`/`SyncLease` provide mutual exclusion, renewal, expiry, and a
+  monotonic fencing token.
+- `SyncRunJournal` stores ordered `SyncJournalEntry` facts and reconstructs
+  `IncompleteSyncAttempt` summaries for `resumeIncomplete`.
+- `SyncDatasetReport` and `SyncBoundaryReceipt` expose application, checkpoint,
+  journal, lease-release, and cleanup outcomes independently.
+
+Headless synchronization:
+
+- `SyncCommandEnvelope` carries protocol version, request ID, UTC deadline, and
+  consumer-validated transferable payload.
+- `HeadlessSyncEndpoint.accept` returns `SyncCommandReceipt` with immediate
+  acceptance/rejection and a terminal future; `handle` waits for the terminal.
+- Ack variants distinguish accepted, pre-admission rejected, completed, and
+  expected failed outcomes. `HeadlessSyncHandler` is built inside the fresh
+  graph.
+
+## Ownership and lifecycle
+
+The engine, runs, mutation command, and headless endpoint are owned by the
+composition that creates them. Checkpoint, lease, journal, outbox, repository,
+transport, clock, observer, and provider resources are borrowed unless the
+consumer graph explicitly owns them. Dispose producers first, then engine/
+endpoint/commands, then persistence and transport dependencies.
+
+Every foreground or headless execution builds or uses a graph owned by its
+entrypoint. Only validated data crosses isolates. Headless disposal rejects new
+commands, cancels active handlers, waits for terminal work, and disposes each
+fresh graph.
+
+The consumer owns schemas, codecs, retention, authentication, scheduling,
+idempotency scope, remote mapping, local transactions, conflict policy, retry
+classification, compensation, and distributed protocol.
+
+## Failure, cancellation, and concurrency
+
+Expected mutation or dataset failures remain typed results/reports. Unexpected
+exceptions retain their original stack. `SyncRunTerminalException.report` is a
+terminal receipt: inspect application, checkpoint, journal, lease-release, and
+cleanup boundaries before deciding whether replay is safe. If application
+succeeded but checkpointing failed, the result is uncertain/incomplete and must
+not be blindly replayed.
+
+Cancellation and deadlines are cooperative. A dataset may have committed before
+a later boundary observes cancellation, so terminal receipts remain
+authoritative. Dependencies run only after their selected prerequisites
+succeed. One engine may own multiple runs; a configured lease controls external
+authority, not in-process scheduling.
+
+For fencing, call `ensureAuthority()` immediately before the local commit and
+compare `fencingToken` inside the same storage transaction. Checking the lease
+without atomic compare-and-commit provides no fencing guarantee.
+
+Mutation delivery is at least once. Same-key work is sequential; active keys and
+per-key queues are bounded. Automatic retry is opt-in and bounded; uncertainty,
+conflict, definitive rejection, lane crash/resume, and compensation remain
+explicit. Headless request retention is bounded, and duplicates share the
+recorded terminal future while retained.
+
+## Prohibited uses and limitations
+
+- Never advance a checkpoint before the corresponding local coverage commits.
+- Never treat a journal as a source of checkpoint authority or domain payload.
+- Never claim a lease fence when storage cannot atomically reject stale tokens.
+- Never generate a new idempotency key for a retry of the same operation.
+- Never compensate automatically after an uncertain remote outcome.
+- Never transfer live clients, databases, Stores, owners, or handlers across an
+  isolate.
+- Never assume exactly-once delivery, global scheduling, or crash-proof
+  persistence from in-memory ports.
+
+`resumeIncomplete` starts replacement attempts for incomplete journal summaries
+and omits journal-confirmed completed datasets, but the checkpoint store remains
+the coverage authority.
+
+## Testing
+
+Run `dart test`. Cover graph validation/order, atomic local-plus-outbox rollback,
+offline enqueue, duplicate delivery, recovery, bounded retry, conflicts,
+uncertainty, explicit compensation, checkpoints, crash journaling, lease
+renewal/expiry/fencing, cancellation, deadlines, cleanup failures, terminal
+receipt inspection, headless duplicate requests, protocol rejection, and graph
+teardown. `dartitect_testing` includes in-memory stores, manual leases/clocks,
+crash harnesses, and sync contract harnesses.
+
+## Related packages and guides
+
+Use `dartitect_drift` or `dartitect_objectbox` for consumer-owned checkpoint,
+journal, and transaction adapters; `dartitect_isolates` for a typed native
+worker; and `dartitect_flutter` for local-authority presentation. Read
+[implementation recipes](../../docs/guides/implementation-recipes.md),
+[commands/results/effects](../../docs/guides/commands-results-effects.md), and
+[composition/lifecycle/isolates](../../docs/guides/composition-lifecycle-isolates.md).
+
+## Availability
+
+The workspace contains the `1.0.0-rc.4` source candidate. Supported experimental
+Git consumption requires one compatible cohort from a tag with a corresponding
+published GitHub Release, using its Release-note coordinates. If no compatible
+Release exists, there is no supported consumption path. See the
+[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).

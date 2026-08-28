@@ -15,7 +15,7 @@ Describe the user-visible result and affected packages.
 - [ ] Format and analyze pass.
 - [ ] Relevant pure Dart/Flutter/real-boundary tests pass.
 - [ ] Public Dartdoc and API snapshot are current.
-- [ ] English and pt-BR docs/examples are structurally aligned.
+- [ ] English docs/examples and generated catalogs are current.
 - [ ] Dependency/source/license/SBOM/advisory records are current if affected.
 - [ ] Skills/catalog/gates are current if affected.
 - [ ] No secrets, generated Dartdoc HTML, publication, tags, or unrelated changes.

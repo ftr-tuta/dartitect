@@ -1,7 +1,5 @@
 # Custom integrations
 
-[Português (Brasil)](custom-integrations.pt-BR.md)
-
 ## Goal
 
 Integrate a database, HTTP client, observability backend, cache, queue, or other
@@ -75,7 +73,7 @@ borrowed lifetime, redaction, destination failure, and zero residual resources.
 ## Proposing an official adapter
 
 A reusable PR must include an isolated optional package, tests against the real
-SDK boundary, public English/pt-BR docs, an executable or configuration example,
+SDK boundary, public English docs, an executable or configuration example,
 dependency/version rationale, license and advisory review, public API snapshot,
 and updates to the adapter/testing/conformance skills. Official support remains a
 maintainer decision; consumer-owned custom integration is always valid.

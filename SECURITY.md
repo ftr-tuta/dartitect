@@ -1,7 +1,5 @@
 # Security policy
 
-[Português (Brasil)](SECURITY.pt-BR.md)
-
 ## Supported versions
 
 Security fixes target the current lockstep development/stable cohort. Older

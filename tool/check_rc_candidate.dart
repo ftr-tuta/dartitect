@@ -129,7 +129,6 @@ void main() {
   for (final path in const <String>[
     '.github/ISSUE_TEMPLATE/bug_report.yml',
     'README.md',
-    'README.pt-BR.md',
     'docs/release/1.0-readiness.adoc',
     'docs/release/public-api-review.adoc',
     'packages/dartitect_cli/lib/src/diagnostics/models.dart',

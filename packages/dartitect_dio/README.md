@@ -1,84 +1,128 @@
 # dartitect_dio
 
-[Português (Brasil)](README.pt-BR.md)
-
 ## Purpose
 
-Optional ownership, typed failure, cancellation, W3C propagation, and minimal
-telemetry helpers around the real Dio API.
+Optional ownership, typed failure mapping, cancellation binding, route-template
+validation, JSON transport, W3C propagation, and minimal telemetry around the
+real Dio API.
 
-## When to use it
+## When to use
 
-Use it at an infrastructure composition root that already chose Dio. Do not
-import Dio or this adapter into domain, ViewModel, or presentation code.
+Use it at an infrastructure composition root after the application has selected
+Dio. It is useful when owned/borrowed client lifetime, typed transport failures,
+core cancellation, or sanitized observability must be consistent.
 
-## When not to use it
+## When not to use
 
-Do not use it when the application has not selected Dio, when a domain-facing
-HTTP abstraction is expected, or when another interceptor already provides the
-same tracing/capture.
+Do not use it as the domain-facing HTTP API, before selecting Dio, or alongside
+another interceptor that performs the same trace propagation or capture. Do not
+import Dio or this package into domain, application, ViewModel, or presentation
+code.
 
-## Recommended combinations
+## Platforms and entrypoints
 
-Combine with application-owned transport contracts, `dartitect_observability`
-for neutral telemetry policy, and offline-first repositories only after their
-local transaction boundary is defined. See the
-[ecosystem selection guide](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/ecosystem-selection.md)
-and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/implementation-recipes.md).
+Import `package:dartitect_dio/dartitect_dio.dart`. It supports the platforms
+supported by the selected Dio adapter, including Dart VM, Flutter, and web where
+the consumer configuration supports them.
 
-## Install
+## Mental model and data flow
 
-This candidate is not published on pub.dev. Declare
-`dartitect_dio: 1.0.0-rc.4` and use the
-[Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md)
-to generate the complete override closure.
+The composition root creates or borrows a Dio client. Infrastructure
+repositories resolve a validated `RouteTemplate`, send through
+`DioJsonClient`/Dio, bind a caller-owned cancellation signal, and map
+`DioException` into an exhaustive `DioFailure`. Neutral telemetry and W3C
+context are injected by explicit interceptors. Domain code receives only
+application-owned ports and failure/value types.
 
-## Minimal example
+## Minimal workflow
 
 ```dart
-final owner = DioOwner.create();
-try {
-  final response = await owner.dio.get<void>('/health');
-  print(response.statusCode);
-} finally {
-  owner.dispose();
+import 'package:dartitect_dio/dartitect_dio.dart';
+
+void main() {
+  final owner = DioOwner.create();
+  try {
+    assert(owner.ownsClient);
+    assert(!owner.isDisposed);
+  } finally {
+    owner.dispose();
+  }
 }
 ```
+
+Use `DioOwner.value(existingDio)` when another composition owns and closes the
+client.
 
 ## Public API tour
 
 - `DioOwner.create` owns/closes a client; `DioOwner.value` borrows one.
-- `DioFailure` variants separate cancellation, HTTP, transport, and config.
-- `captureDioException` maps Dio exceptions to typed `Result` failures.
-- `DartitectHeadersInterceptor` propagates only configured W3C context.
-- `DioTelemetryInterceptor`/`DioInstrumentation` emit minimal safe attributes.
-- `ownCancelToken` registers cooperative cancellation with a `ResourceOwner`.
-- `bindCancelToken` binds a pure-Dart `CancellationSignal` to one shareable
-  Dio token without reversing ownership.
+- `DioJsonClient` and `DefaultDioJsonClient` provide typed JSON request/response
+  mapping over the borrowed Dio client.
+- `DioEndpoint`, `DioResponse`, `RouteTemplate`, and
+  `RouteTemplateResolver` define validated endpoint and route expansion.
+- `DioFailure` variants distinguish cancellation, HTTP, transport,
+  configuration, decoding, and route failures.
+- `captureDioException` maps Dio failures to `Result` without swallowing
+  unrelated exceptions.
+- `bindCancelToken` and `ownCancelToken` bridge core cancellation and explicit
+  token ownership.
+- `DartitectHeadersInterceptor` propagates configured W3C context.
+  `DioTelemetryInterceptor`, `DioInstrumentation`, events, and observer types
+  emit fixed minimal facts and reject duplicate instrumentation.
 
-## Ownership
+## Ownership and lifecycle
 
-Create the client at an app/session/isolate composition root. Dispose requests
-and cancellation tokens before an owned Dio client. Borrowed clients are closed
-by their consumer owner.
+Create the client at an app/session/isolate composition root. `.create` owns it;
+`.value` borrows it. Dispose request scopes, cancellation registrations/tokens,
+repositories, and interceptors before an owned client. A shared `CancelToken` is
+borrowed by the binding; the cancellation source remains caller-owned.
 
-## Limitations
+A receiving isolate constructs its own Dio instance and interceptors. Never
+transfer a live client or interceptor graph.
 
-Telemetry includes method, protocol, and status only—never bodies, headers,
-queries, credentials, or identifying paths. Duplicate Dartitect or `sentry_dio`
-instrumentation is rejected.
+## Failure, cancellation, and concurrency
 
-## Extending
+Typed failures retain their category and safe metadata. Expected HTTP/transport
+outcomes can be mapped into application failures; unrelated unexpected
+exceptions keep their stack. Cancellation has its own failure type and must not
+be presented as a transport or domain rejection.
 
-Add application-specific interceptors at composition, returning domain-owned
-contracts from repositories. Do not hide a global Dio instance behind Dartitect.
+Core cancellation triggers the bound Dio token. Cancelling one request must not
+dispose a shared client. Dio governs concurrent requests; Dartitect adds no
+unbounded queue or retry loop. Duplicate Dartitect instrumentation or overlap
+with `sentry_dio` is rejected to avoid double capture.
+
+## Prohibited uses and limitations
+
+- No global Dio instance or service-location wrapper.
+- No provider types in inward-facing APIs.
+- No automatic retry, authentication, caching, schema validation, or offline
+  transaction.
+- No duplicate tracing/capture interceptors.
+- No telemetry containing bodies, headers, query values, credentials, tokens,
+  identity, or identifying paths.
+
+Route templates validate shape but do not define an application's endpoint or
+authorization policy.
 
 ## Testing
 
-Run `dart test`; use a mock Dio adapter and disable network. Cover concurrency,
-cancellation, mapping, propagation, duplicate instrumentation, and disposal.
+Run `dart test` with a deterministic Dio adapter and network disabled. Cover
+owned/borrowed disposal, route validation/encoding, JSON success and decoding
+failure, every `DioFailure` category, cancellation, concurrent requests, W3C
+propagation, duplicate instrumentation, redaction, and observer isolation.
 
-## Links
+## Related packages and guides
 
-See [adapters](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/adapters.md),
-[custom integrations](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/custom-integrations.md), and the [issue tracker](https://github.com/ftr-tuta/dartitect/issues).
+Combine with `dartitect_observability` for neutral policy, `dartitect_sync` only
+behind a consumer repository/outbox boundary, and `dartitect_testing` for
+deterministic tests. Read [adapters](../../docs/guides/adapters.md) and
+[custom integrations](../../docs/guides/custom-integrations.md).
+
+## Availability
+
+The workspace contains the `1.0.0-rc.4` source candidate. Use only coordinates
+from a matching tag with a published GitHub Release and its complete cohort
+notes. If no compatible Release exists, there is no supported consumption path.
+See the
+[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).

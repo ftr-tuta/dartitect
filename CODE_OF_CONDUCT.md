@@ -1,7 +1,5 @@
 # Code of Conduct
 
-[Português (Brasil)](CODE_OF_CONDUCT.pt-BR.md)
-
 ## Our standard
 
 We are committed to a respectful, inclusive, technically rigorous community.

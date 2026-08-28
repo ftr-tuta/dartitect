@@ -1,7 +1,5 @@
 # Observability
 
-[Português (Brasil)](observability.pt-BR.md)
-
 ## Safe defaults
 
 Create `ObservabilityRuntime` explicitly. Developer logging is the default;

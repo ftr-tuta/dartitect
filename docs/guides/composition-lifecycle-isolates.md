@@ -1,7 +1,5 @@
 # Composition, lifecycle, and isolates
 
-[Português (Brasil)](composition-lifecycle-isolates.pt-BR.md)
-
 ## Composition roots
 
 Build explicit application, session, feature, route, operation, and receiver-

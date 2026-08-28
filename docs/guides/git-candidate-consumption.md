@@ -1,70 +1,29 @@
-# Git candidate consumption
+# Experimental Git consumption
 
-[Português (Brasil)](git-candidate-consumption.pt-BR.md)
+Git consumption is experimental and supported only from a repository tag that
+has a corresponding published GitHub Release.
 
-## Channel
+## Rules
 
-`v1.0.0-rc.4` is the prepared annotated, unsigned Git-consumption target for
-the complete nineteen-package cohort. This source delivery does not create the
-tag, a GitHub Release, or a pub.dev publication. If later authorized, the tag
-must be protected against updates and deletion.
+1. Never depend on `main`, a workspace path, a branch, or an arbitrary source
+   commit.
+2. Select one tag/Release whose notes declare a compatible Dartitect cohort.
+3. Use that same cohort and tag for every Dartitect package in the dependency
+   closure.
+4. Copy package versions, Git URLs, refs, paths, and any required overrides from
+   the relevant Release notes. Do not derive or guess coordinates from the
+   repository tree.
+5. If no compatible published GitHub Release exists, there is no supported
+   consumption path.
 
-## Add packages
+A tag without a GitHub Release is not a documented distribution channel. A
+GitHub Release for a different tag or cohort does not authorize mixing package
+versions. Repository tools may validate a candidate, but validation does not
+create a tag, publish a Release, or authorize consumption.
 
-Keep normal version declarations so the intended cohort remains visible, then
-override every selected package and transitive Dartitect dependency to the same
-repository and tag:
+## Consumer verification
 
-```yaml
-dependencies:
-  dartitect_flutter: 1.0.0-rc.4
-
-dependency_overrides:
-  dartitect:
-    git:
-      url: https://github.com/ftr-tuta/dartitect.git
-      ref: v1.0.0-rc.4
-      path: packages/dartitect
-  dartitect_flutter:
-    git:
-      url: https://github.com/ftr-tuta/dartitect.git
-      ref: v1.0.0-rc.4
-      path: packages/dartitect_flutter
-```
-
-Do not mix local `path:` dependencies, another Dartitect ref, or hosted
-Dartitect packages into the same resolution.
-
-## Generate the transitive closure
-
-From a clone of this repository, emit a ready-to-paste override block for one
-or more packages:
-
-```console
-dart run tool/git_dependency_overrides.dart dartitect_flutter
-dart run tool/git_dependency_overrides.dart dartitect_media,dartitect_privacy
-```
-
-The generator reads the checked nineteen-package publication order and package
-pubspecs, follows all internal dependencies, rejects unknown packages, and
-emits one common URL/ref with a package-relative Git path.
-
-## Verify resolution
-
-Run `flutter pub get`, then inspect `pubspec.lock`: every resolved package whose
-name starts with `dartitect` must have `source: git`, the same URL, the
-`v1.0.0-rc.4` ref, and a `packages/<name>` path. The package configuration must
-point into Pub's Git cache, never into a local Dartitect checkout.
-
-Maintainers validate modeling, interop, minimal, offline-first, Drift-provider,
-and native-capability consumers with:
-
-```console
-dart run tool/run_git_canaries.dart \
-  --repository=https://github.com/ftr-tuta/dartitect.git \
-  --ref=v1.0.0-rc.4
-```
-
-The gate rejects a missing/lightweight tag, a mixed commit, any hosted
-Dartitect package, and any local path resolution. Native evidence is supplied
-by hosted emulator/simulator jobs inside `CI / Required`.
+Commit the resolved lockfile, review that every Dartitect package comes from the
+documented cohort, and run the consuming application's normal analysis, tests,
+and platform builds. Treat a later cohort as a new dependency change and repeat
+that review.

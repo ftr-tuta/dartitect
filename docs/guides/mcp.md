@@ -1,7 +1,5 @@
 # Local MCP server
 
-[Português (Brasil)](mcp.pt-BR.md)
-
 ## Scope
 
 `dartitect_mcp 1.0.0-rc.4` is local and STDIO-only. It uses
