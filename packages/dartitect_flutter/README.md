@@ -80,6 +80,13 @@ Thin entrypoint:
 - `Command0`, `Command1`, and `KeyedCommand1` expose reject, join, drop,
   sequential, restart-latest, concurrent, and bounded per-key policies with
   exhaustive `CommandState` and `CommandExecution` types.
+- `ProgressCommand0`, `ProgressCommand1`, and `KeyedProgressCommand1` preserve
+  those policies while injecting execution-fenced typed progress contexts.
+- `ApplicationHost` owns bootstrap/retry/atomic publication and
+  `SessionRuntimeController` plus `SessionHost` coordinate route-confirmed
+  session replacement without closing application resources.
+- `VersionedRestorationCodec`, `RestorableVersionedValue`, and
+  `LocalHistoryListenable` adapt explicitly bounded ephemeral UI state.
 - `ListenableSelector` rebuilds only when the selected value changes and detaches
   while its `TickerMode` is disabled.
 - `DartitectScope` marks a stable composition boundary; its opaque
@@ -95,6 +102,9 @@ Reactive entrypoint:
 
 - `ReactiveOwner` owns typed-key `ReactiveValue` and `ReactiveComputed` nodes,
   atomic updates, equality, diagnostics, and invalidation groups.
+- `ReactiveLazyComputed` evaluates explicit dependencies only on first use,
+  remains dirty after failed computation, and supports hot-reload rebinding
+  without global read tracking.
 - `LiveResource`, `ReactiveSource`, `ReactiveSourceSession`, activation policies,
   source adapters, backpressure, observations, and leases define causal reads.
 - `DerivedAsyncResource` is an experimental generation-guarded derivation from

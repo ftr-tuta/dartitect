@@ -29,7 +29,7 @@ is classified either by an explicit infrastructure glob or by both a standard
 generated-code header and a configured suffix. Invalid analyzer configuration
 is reported explicitly; defaults never hide the invalid state.
 
-## Additive RC4 blocks
+## Additive modeling and ecosystem blocks
 
 Omitting `modeling` preserves the behavior of existing config-v1 consumers.
 When present, it selects one adoption preset and explicit untrusted JSON
@@ -70,6 +70,34 @@ conversion.
 Run `dartitect verify --json` after changing either block. Use
 `dartitect verify --sarif` for code-scanning ingestion; both forms are strictly
 read-only.
+
+## Additive feature declarations
+
+The `features` block records provider choices and public behavior profiles
+without changing config version 1. Unknown extension keys remain preserved.
+
+```json
+{
+  "features": {
+    "declarations": {
+      "orders": {
+        "profile": "offline-full",
+        "persistence": "drift",
+        "transport": "dio",
+        "cursorPagination": true,
+        "headlessSync": true,
+        "diagnostics": "full"
+      }
+    }
+  }
+}
+```
+
+`online` requires persistence `none`; `cache`, `replica`, and `offline-full`
+require a named consumer provider. Headless sync is valid only for `replica`
+and `offline-full`. These checks prove declarative compatibility only. Use the
+matching `FeatureContractMatrix` to prove transactions, local observation,
+fencing, uncertain delivery, and cleanup behavior.
 
 ## Suppress deliberately
 

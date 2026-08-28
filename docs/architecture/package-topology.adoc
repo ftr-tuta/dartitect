@@ -4,16 +4,21 @@
 ----
 dartitect
 ├── dartitect_modeling
+├── dartitect_resilience
+├── dartitect_jobs
+├── dartitect_transfer
 ├── dartitect_sync
 ├── dartitect_isolates
 ├── dartitect_flutter
 ├── dartitect_observability
-│   ├── dartitect_dio
+│   ├── dartitect_dio (+ transfer)
 │   └── dartitect_sentry
 ├── dartitect_drift (+ observability, sync)
 ├── dartitect_objectbox (+ flutter, observability, sync)
 ├── dartitect_media
-└── dartitect_testing (+ isolates, modeling, observability, sync)
+├── dartitect_devtools
+└── dartitect_testing (+ flutter, isolates, jobs, modeling, observability,
+    resilience, sync, transfer)
 
 dartitect_privacy
 dartitect_locale_br
@@ -40,6 +45,10 @@ Public entrypoints:
 * +package:dartitect_modeling/dartitect_modeling.dart+
 * +package:dartitect_modeling_analyzer/dartitect_modeling_analyzer.dart+
 * +package:dartitect_sync/dartitect_sync.dart+
+* +package:dartitect_resilience/dartitect_resilience.dart+
+* +package:dartitect_jobs/dartitect_jobs.dart+
+* +package:dartitect_transfer/dartitect_transfer.dart+
+* +package:dartitect_devtools/dartitect_devtools.dart+
 * +package:dartitect_isolates/dartitect_isolates.dart+
 * +package:dartitect_flutter/dartitect_flutter.dart+
 * +package:dartitect_flutter/dartitect_flutter_reactive.dart+
@@ -61,12 +70,14 @@ Every isolate constructs a new graph and transfers values/envelopes only.
 
 == Platform boundaries
 
-Core, modeling, sync, isolates, observability, locale BR, and geometry are pure Dart.
+Core, modeling, resilience, jobs, transfer, sync, isolates, observability,
+locale BR, and geometry are pure Dart.
 Flutter APIs stay in +dartitect_flutter+; privacy is iOS-only and media supports
 Android/iOS through narrow platform channels. Drift is executor-neutral across
 native and web, while ObjectBox is native-only and keeps its Store local to one
 isolate. The modeling analyzer, CLI, lints, and MCP are host tools. Dio and
-Sentry are opt-in adapters.
+Sentry are opt-in adapters. DevTools is a development-only VM bridge with a
+bundled Flutter Web extension and no product registration.
 
 The machine inventory in +tool/sdk_inventory.json+ records each reviewed
 package, version, internal dependency, entrypoint, public-symbol count, and

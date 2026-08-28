@@ -10,3 +10,9 @@ fingerprint, and allowlisted attributes, then are rethrown with the original
 stack. Errors and fatal events bypass sampling. Bounded destination queues must
 have explicit overflow behavior, and one destination failure cannot affect the
 application or another destination.
+
+Diagnostics protocol v2 permits only fixed enums, opaque process-local IDs,
+counters, generations, revisions, and monotonic time. It rejects metadata,
+URLs, domain keys, dynamic errors, stacks, and user identifiers. Optional
+DevTools registration is explicit, isolate-local, development-only, and exposes
+capabilities, snapshot, and event-delta reads only; disposal clears the ring.

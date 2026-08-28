@@ -5,6 +5,11 @@ only after affected computed values stabilize. A compute crash preserves the
 prior graph snapshot, is reported through the injected reporter, and is
 rethrown. Disposal removes every edge and listener.
 
+`ReactiveLazyComputed<T>` declares dependencies explicitly, evaluates on first
+read or observation, marks dirty while unobserved, and recomputes atomically
+while observed. A compute failure preserves its last valid value and remains
+dirty. Hot reload uses explicit `rebind`; never add ambient read tracking.
+
 `LiveResource<T, F>` separates waiting/ready/failed/crashed data from hot/warm/
 cold temperature. A hot resource owns an active source session, warm retains
 last-known data without upstream activity, and cold discards both. Use an

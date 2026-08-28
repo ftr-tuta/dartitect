@@ -39,9 +39,10 @@ Choose one mechanism for each concern:
    remote data locally, and only then writes the new checkpoint. An optional
    journal records payload-free run facts; an optional lease supplies fencing
    authority.
-3. A `HeadlessSyncEndpoint` validates a versioned envelope, deduplicates a
-   bounded request set, acknowledges acceptance, creates one fresh `OwnedGraph`,
-   and produces a terminal completion/failure acknowledgment.
+3. A `HeadlessSyncEndpoint` adapts a versioned sync definition through
+   `dartitect_jobs`, deduplicates a bounded request set, acknowledges
+   acceptance, creates one fresh `OwnedGraph`, and produces a terminal
+   completion/failure acknowledgment without hidden retries.
 
 These flows may call the same repositories, but their durability records and
 retry ownership are distinct. A mutation outbox is not a dataset checkpoint; a
@@ -124,6 +125,9 @@ Durable mutation and outbox:
 
 - `MutationCommand` (also aliased as `MutationLane`) owns bounded sequential
   lanes per aggregate key and bounded concurrency across keys.
+- Optional `RetryExecutor` integration reuses `dartitect_resilience` while
+  retaining existing constructors; uncertain outcomes always stop automatic
+  retry.
 - `MutationOutboxStore` defines atomic local/enqueue, state persistence,
   recovery loading, and explicit compensation.
 - `OutboxOperation` preserves a stable idempotency key, aggregate key, argument,

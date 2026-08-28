@@ -1,14 +1,88 @@
-# Dartitect Resilience
+# dartitect_resilience
 
-`dartitect_resilience` provides bounded, provider-neutral retry,
-single-flight, circuit-breaker, bulkhead, and rate-limiter primitives. It
-depends only on `dartitect`.
+## Purpose
 
-Expected failures remain typed `Result` values. A consumer classifies the exact
-failure types that may retry; uncertain mutations never retry automatically.
-Unexpected exceptions remain crashes. Clocks, schedulers, and randomness are
-injectable for deterministic tests.
+Pure-Dart, provider-neutral resilience primitives with explicit bounds,
+failure classification, time budgets, cancellation, and injectable execution
+dependencies. The package depends only on `dartitect`.
 
-The package does not define HTTP policy, remote idempotency, auth, scheduling,
-storage, or a universal failure taxonomy.
+## When to use
 
+Use it for a bounded retry, single-flight operation, circuit breaker, bulkhead,
+or rate limiter when those policies must be visible at composition.
+
+## When not to use
+
+Do not use it to invent a universal failure taxonomy or to hide retry inside a
+repository. It does not define HTTP, auth, scheduling, storage, or idempotency.
+
+## Platforms and entrypoints
+
+Import `package:dartitect_resilience/dartitect_resilience.dart`. It is pure Dart
+and supports the Dart VM, Flutter, and web.
+
+## Mental model and data flow
+
+The consumer classifies an expected typed failure. `RetryExecutor` applies an
+explicit attempt, elapsed-time, backoff, jitter, cancellation, and deadline
+budget. Unexpected exceptions remain crashes. An uncertain result stops
+automatic retry.
+
+## Minimal workflow
+
+```dart
+final result = await RetryExecutor().execute<int, MyFailure>(
+  operation: runAttempt,
+  policy: RetryPolicy(
+    classify: (failure) => failure.transient
+        ? const RetryDecision.retry()
+        : const RetryDecision.stop(),
+  ),
+  cancellation: cancellation,
+);
+```
+
+## Public API tour
+
+`RetryPolicy`, `RetryDecision`, backoff, and jitter define retry behavior.
+`SingleFlight` shares matching work without sharing waiter cancellation.
+`CircuitBreaker`, `Bulkhead`, and `RateLimiter` bound admission and retention.
+Clock, scheduler, and randomness interfaces support deterministic evidence.
+
+## Ownership and lifecycle
+
+The composition root owns long-lived coordination primitives and disposes them
+before their clients/providers. Borrowed operations retain their own resources.
+Closing single-flight cancels shared work; cancelling one waiter only detaches
+that waiter unless no waiters remain.
+
+## Failure, cancellation, and concurrency
+
+Expected failures remain `Result<T, F>`. Cancellation and deadline exceptions
+are control flow; programming defects escape. Every queue, concurrent count,
+failure window, and retained key is positively bounded.
+
+## Prohibited uses and limitations
+
+- No retry of uncertain mutations.
+- No unbounded queue, key registry, or failure history.
+- No inferred idempotency or exactly-once claim.
+- No conversion of an unexpected exception to an expected failure.
+
+## Testing
+
+Run `dart test`. Inject deterministic clocks, schedulers, and randomness. Cover
+budgets, cancellation, uncertainty, owner disposal, waiter detachment, open/
+half-open breaker behavior, overflow, and zero retained state.
+
+## Related packages and guides
+
+Use `dartitect_sync` for durable mutation policy and `dartitect_jobs` for
+headless execution. Read the
+[paved-road guide](../../docs/guides/paved-road-platform.md).
+
+## Availability
+
+The workspace contains the `1.0.0-rc.4` source candidate. Supported Git use
+requires coordinates from a matching tagged GitHub Release; otherwise there is
+no supported consumption path.

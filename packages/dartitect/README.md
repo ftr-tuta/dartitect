@@ -76,13 +76,21 @@ Future<void> main() async {
   explicit choice.
 - `ResourceTransaction` and `ResourceSnapshot` support atomic owned-resource
   changes and immutable local-authority snapshots.
+- `BootstrapCoordinator`, named `BootstrapStage` values, and terminal reports
+  build an application graph with typed progress, cancellation, deadlines, and
+  rollback over the existing transaction primitive.
+- `OperationProgress<P>`, `ProgressReporter<P>`,
+  `CommandExecutionContext<P>`, and bounded/latest-execution reporters provide
+  one execution-fenced typed progress protocol.
+- `BoundedLocalHistory<T>` keeps synchronous undo/redo values under count and
+  optional weight bounds; it cannot represent callbacks or async effects.
 - `IdGenerator`, `SecureUuidV4Generator`, `ValueEquality`, and immutable-copy
   helpers cover small cross-package primitives.
 - `ArchitectureObserver` and reactive observer types expose payload-free
   lifecycle facts. `ReactiveJournal` is a bounded memory-only diagnostic ring.
 - `DartitectDiagnosticsEmitter`, reporter registrations, subjects, phases, and
   `DartitectDiagnosticBuffer` implement the experimental local diagnostic
-  protocol.
+  payload-free protocol v2.
 
 ## Ownership and lifecycle
 

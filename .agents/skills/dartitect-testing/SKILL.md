@@ -28,6 +28,9 @@ and disposes what it creates and proves no residual resources.
 Build a matrix across success, expected failure, unexpected crash,
 cancellation/concurrency, lifecycle temperature, disposal, and provider failure.
 Choose deterministic fakes for policy and real fixtures for integration.
+For a public feature profile, run the matching `FeatureContractMatrix.online`,
+`.cache`, `.replica`, or `.offlineFull`; each required row gets a fresh typed
+fixture and returns a framework-neutral result with disposal evidence.
 
 Read [references/runtime-and-reactive.md](references/runtime-and-reactive.md),
 [references/sync.md](references/sync.md),

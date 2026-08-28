@@ -14,3 +14,10 @@ navigation out of the ViewModel. Use replayable `SessionState`, not an effect,
 for forced logout and remove routes before closing the old session graph. For
 hot/warm/cold resources or advanced list/page builders, switch to
 `$dartitect-reactive` instead of growing the basic runtime ad hoc.
+
+Use `ApplicationHost` for named cancellable bootstrap, retry, atomic graph
+publication, and teardown. Use `SessionRuntimeController`/`SessionHost` for
+login, logout, tenant switch, and route-confirmed generation replacement.
+Versioned restoration accepts only consumer codecs/migrations and ephemeral UI
+payloads; invalid data falls back safely. `BoundedLocalHistory` is value-only
+and cannot claim to undo persistence, HTTP, upload, sync, or another effect.

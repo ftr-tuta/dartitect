@@ -55,6 +55,11 @@ Future<void> main() async {
   randomness.
 - `CommandContractHarness` and `EffectContractHarness` exercise terminal command
   and bounded effect contracts.
+- `FeatureContractMatrix.online`, `.cache`, `.replica`, and `.offlineFull`
+  require profile-specific typed fixtures and return test-framework-neutral row
+  results.
+- Host, resilience, jobs, transfer, local-history, restoration, and read-only
+  DevTools harnesses cover the RC5 paved road without provider substitution.
 - `RepositoryContractHarness` runs consumer-supplied repository cases.
 - `ProjectionContractHarness` and `MapperContractHarness` record selector,
   expected-failure, and bidirectional round-trip evidence.
@@ -63,7 +68,7 @@ Future<void> main() async {
 - `IsolateWorkerContractHarness` exercises a real isolate protocol.
 - `RecordingLogSink`, `RecordingErrorReporter`, `RecordingTracer`, and
   `RecordingSpan` expose observability assertions.
-- `DiagnosticsTopologyHarness` reconstructs protocol-v1 lifecycle using only
+- `DiagnosticsTopologyHarness` reconstructs protocol-v2 lifecycle using only
   opaque payload-free events.
 - `collectStreamEvents`, `waitForStreamEvent`, `TestingMatrix`, and
   `TestingMatrixAuditor` provide bounded async and coverage utilities.

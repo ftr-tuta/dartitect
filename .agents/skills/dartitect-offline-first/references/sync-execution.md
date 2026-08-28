@@ -3,8 +3,9 @@
 Dataset DAG synchronization and headless synchronization are separate flows.
 Use `SyncEngine` for a validated dataset DAG, checkpoints, journals, leases/
 fencing, progress, and deadlines. Use `HeadlessSyncEndpoint` for a versioned
-transferable command, bounded duplicate retention, separate acceptance and
-terminal acknowledgements, and a fresh graph per admitted request.
+sync definition adapted through `dartitect_jobs`, bounded duplicate retention,
+separate acceptance and terminal acknowledgements, and a fresh graph per
+admitted request.
 
 For a dataset run, the repository operation commits remote results into the authoritative local
 transaction before returning a confirmed checkpoint. A failed dependency blocks
@@ -24,3 +25,11 @@ provider objects. Retry, scheduling, authentication, conflicts, schemas, and
 durable cross-process deduplication remain consumer policy. Expected failure
 returns `Err`; an unexpected exception preserves its cause/stack and is never
 retried automatically.
+
+Use `RetryExecutor` only with explicit expected-failure classification, budget,
+deadline, and injected timing/randomness in tests. An uncertain result always
+stops retry. Use `JobDispatcher` for generic bounded headless definitions and
+one graph per job; scheduling, recurrence, credentials, schemas, and durable
+cross-process policy remain outside the SDK. Use `TransferEngine` for chunks,
+pause/resume/cancel, checksums, and post-commit checkpoints; remote protocol,
+ETag, Range, auth, and idempotency remain consumer policy.
