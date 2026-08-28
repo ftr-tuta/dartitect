@@ -4,14 +4,14 @@
 
 ## Escopo 1.0 e contrato do source
 
-A geração de modelos se limita a boilerplate de values imutáveis. O gerador
+A geração de modelos se limita a boilerplate opt-in de values imutáveis e JSON. O gerador
 varre `lib/**` e cada árvore imediata `packages/*/lib/**` sem seguir symlinks.
 Uma library anotada pode conter modelos na unit de definição e em parts; todos
 os modelos compartilham um único part Dartitect determinístico.
 
 | Contrato | Forma suportada em 1.0 | Forma rejeitada |
 |---|---|---|
-| Annotation | `@DartitectValue()` resolvido para o elemento de `package:dartitect_modeling`, inclusive por prefixo e reexport | Annotations homônimas ou não resolvidas |
+| Annotation | Elementos independentes `@DartitectValue()` e `@DartitectJson()` resolvidos de `package:dartitect_modeling`, inclusive por prefixo e reexport | Capabilities homônimas, não resolvidas ou ativadas implicitamente |
 | Classe | `final` concreta, estende `ValueEquality` e aplica `_$TypeDartitect` | Abstrata, não final ou com herança complexa |
 | Part | Exatamente um `part '<source>.dartitect.g.dart';` | Part ausente, duplicado ou incompatível |
 | Campos | Ao menos um campo público, tipado, nomeado e `final` no primary constructor | Campos privados, inferidos, positional, late ou mutáveis |
@@ -19,10 +19,10 @@ os modelos compartilham um único part Dartitect determinístico.
 | Construtor | Um primary constructor sem nome; use `class const` quando construção constante for necessária | Formas tradicionais, primary named, somente factory, external ou positional |
 | Forma da library | Múltiplos modelos, generics com bounds, const/defaults, records e parts comuns | Um part gerado por modelo ou acesso do renderer a AST/types não resolvidos |
 
-O gerador não cria JSON, unions, schemas de DTO/entity, entities ObjectBox,
-injeção de dependência, ViewModels, rotas, clients REST, reflexão runtime nem
-modelos mutáveis. Outros geradores podem coexistir somente quando possuem
-arquivos de saída distintos.
+Geração JSON ocorre somente com `@DartitectJson()`. O gerador não cria unions,
+schemas de DTO/entity, entities ObjectBox, injeção de dependência, ViewModels,
+rotas, clients REST, reflexão runtime nem modelos mutáveis. Outros geradores
+podem coexistir somente quando possuem arquivos de saída distintos.
 
 Primary constructor ausente produz `DT1030` e nenhum output de modelo é
 aplicado. A identidade da annotation é semântica, não uma comparação de nome
@@ -55,10 +55,27 @@ aninhados são estruturais. Records e outros values usam seu próprio contrato d
 igualdade. Values iguais recebem hashes iguais. Grafos cíclicos de collections
 lançam `CyclicValueException` em equality e hashing.
 
-Use esse contrato para values pequenos, imutáveis e acíclicos. Use
-`immutableListCopy`, `immutableSetCopy` ou `immutableMapCopy` antes de reter
-inputs de collections. Collections grandes, entities e snapshots devem usar
-identidade, versão/projeção ou hash pré-calculado.
+Use esse contrato para values pequenos, imutáveis e acíclicos. Campos de modelo
+retêm `ImmutableValueList`, `ImmutableValueSet` ou `ImmutableValueMap`; cada um
+copia a origem e não expõe interface mutável. Collections grandes, entities e
+snapshots devem usar identidade, versão/projeção ou hash pré-calculado.
+
+## Codecs JSON gerados
+
+JSON permanece independente de value equality. Codecs gerados retornam
+`Result` tipado, rejeitam keys desconhecidas por padrão, respeitam renames
+explícitos e nunca colocam valores rejeitados em `DartitectJsonFailure`. A
+composição automática se limita a escalares JSON, codecs injetados de generics
+e collections imutáveis Dartitect. Datas, enums, IDs, records, narrowing e
+outras conversões semânticas exigem um par exato de hooks estáticos
+decoder/encoder pertencentes ao consumidor; `DT1043` rejeita pares ausentes ou
+inválidos antes do renderer.
+
+Os limites untrusted padrão são profundidade 64, 10.000 itens por collection e
+100.000 nós totais. Bounds diferentes exigem `DartitectJsonLimits.custom` no
+call site. Desativar limites numéricos exige metadata explícita na annotation
+ou `DartitectJsonLimits.trusted`; validação de forma JSON, números finitos e
+ciclos continua habilitada. Trusted mode nunca altera a policy de unknown keys.
 
 ## Commands, freshness e ownership no Git
 
@@ -101,7 +118,7 @@ registrado.
 
 | Artefato | Schema 1.0 | Regra de compatibilidade |
 |---|---:|---|
-| Assinatura semântica de input do modelo | 2 | Inclui identidade da library, capabilities, generics, defaults, types e todos os modelos do part gerado |
+| Assinatura semântica de input do modelo | 3 | Inclui identidade da library, capabilities, generics, defaults, types, policy JSON, renames, hooks e todos os modelos do part gerado |
 | Relatório JSON do command | 1 | Consumidores devem selecionar explicitamente o schema suportado |
 | `.dartitect/model-outputs.json` | 1 | Ownership ausente conflita com outputs candidatos; schemas malformados, anteriores ou futuros falham fechado |
 | `.dartitect/generation-journal.json` | 2 | Schemas malformados, anteriores ou futuros interrompem recovery e preservam resíduos para diagnóstico |

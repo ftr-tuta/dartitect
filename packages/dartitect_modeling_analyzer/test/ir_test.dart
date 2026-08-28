@@ -5,6 +5,7 @@ void main() {
   test('public IR retains renderer-neutral modeling decisions', () {
     const type = ModelingTypeIr(
       displayName: 'String',
+      declarationName: 'String',
       libraryUri: 'dart:core',
       nullable: false,
     );

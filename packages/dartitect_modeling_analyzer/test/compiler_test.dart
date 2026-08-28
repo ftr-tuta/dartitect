@@ -24,8 +24,25 @@ part 'models.dartitect.g.dart';
 @DartitectProjection(name: 'summary')
 final class const Envelope<T extends Object>({
   @DartitectField(jsonName: 'record_id') required final T id,
+  @DartitectField(
+    decodeWith: 'decodeMetadata',
+    encodeWith: 'encodeMetadata',
+  )
   final (int, {String label}) metadata = (0, label: ''),
 }) extends ValueEquality with _$EnvelopeDartitect<T>;
+
+Result<(int, {String label}), DartitectJsonFailure> decodeMetadata(
+  Object? input,
+  DartitectJsonPath path,
+) => const Ok<(int, {String label})>((0, label: ''));
+
+Result<Object?, DartitectJsonFailure> encodeMetadata(
+  (int, {String label}) value,
+  DartitectJsonPath path,
+) => Ok<Object?>(<String, Object?>{
+  'index': value.$1,
+  'label': value.label,
+});
 ''');
       await File('${root.path}/lib/detail.dart').writeAsString(r'''
 part of 'models.dart';
@@ -90,6 +107,86 @@ final class Legacy extends ValueEquality with _$LegacyDartitect {
     expect(missing.fixId, 'model.migrate.primary');
     expect(missing.path, 'lib/legacy.dart');
     expect(missing.line, isNotNull);
+  });
+
+  test('JSON types require automatic support or exact static hooks', () async {
+    final root = await _modelPackage();
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/lib/good.dart').writeAsString(r'''
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+part 'good.dartitect.g.dart';
+
+@DartitectJson()
+final class const Good({
+  @DartitectField(
+    decodeWith: 'GoodHooks.decodeDate',
+    encodeWith: 'GoodHooks.encodeDate',
+  )
+  required final DateTime createdAt,
+});
+
+abstract final class GoodHooks {
+  static Result<DateTime, DartitectJsonFailure> decodeDate(
+    Object? input,
+    DartitectJsonPath path,
+  ) => input is String
+      ? Ok<DateTime>(DateTime.parse(input))
+      : DartitectJsonFailure.result<DateTime>(
+          DartitectJsonFailureKind.customCodec,
+          path,
+        );
+
+  static Result<Object?, DartitectJsonFailure> encodeDate(
+    DateTime value,
+    DartitectJsonPath path,
+  ) => Ok<Object?>(value.toIso8601String());
+}
+''');
+    await File('${root.path}/lib/bad.dart').writeAsString(r'''
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+part 'bad.dartitect.g.dart';
+
+@DartitectJson()
+final class const Bad({
+  required final DateTime createdAt,
+});
+''');
+    await File('${root.path}/lib/bad_id.dart').writeAsString(r'''
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+part 'bad_id.dartitect.g.dart';
+
+extension type const UserId(String value) {}
+
+@DartitectJson()
+final class const BadId({
+  required final UserId id,
+});
+''');
+
+    final result = await ModelingCompiler(root).compile();
+
+    expect(
+      result.diagnostics.where(
+        (diagnostic) => diagnostic.path == 'lib/good.dart',
+      ),
+      isEmpty,
+    );
+    expect(
+      result.diagnostics
+          .where((diagnostic) => diagnostic.path == 'lib/bad.dart')
+          .map((diagnostic) => diagnostic.rule),
+      contains('DT1043'),
+    );
+    expect(
+      result.diagnostics
+          .where((diagnostic) => diagnostic.path == 'lib/bad_id.dart')
+          .map((diagnostic) => diagnostic.rule),
+      contains('DT1043'),
+    );
+    expect(
+      result.workspace.libraries.map((library) => library.path),
+      contains('lib/good.dart'),
+    );
   });
 }
 

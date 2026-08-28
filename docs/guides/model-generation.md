@@ -4,14 +4,14 @@
 
 ## 1.0 scope and source contract
 
-Model generation is limited to immutable value boilerplate. The generator scans
+Model generation is limited to opt-in immutable value and JSON boilerplate. The generator scans
 `lib/**` and each immediate `packages/*/lib/**` tree without following symlinks.
 An annotated source library may contain models in its defining unit and parts;
 all models share one deterministic Dartitect part.
 
 | Contract | Supported 1.0 form | Rejected form |
 |---|---|---|
-| Annotation | `@DartitectValue()` resolved to the element from `package:dartitect_modeling`, including prefixes and reexports | Homonymous or unresolved annotations |
+| Annotation | Independent `@DartitectValue()` and `@DartitectJson()` elements resolved from `package:dartitect_modeling`, including prefixes and reexports | Homonymous, unresolved, or implicitly enabled capabilities |
 | Class | Concrete `final`, extends `ValueEquality`, mixes in `_$TypeDartitect` | Abstract, non-final, or complex inheritance |
 | Part | Exactly one `part '<source>.dartitect.g.dart';` | Missing, duplicate, or mismatched part |
 | Fields | At least one public, typed, named `final` primary-constructor field | Private, inferred, positional, late, or mutable fields |
@@ -19,10 +19,10 @@ all models share one deterministic Dartitect part.
 | Constructor | One unnamed primary constructor; use `class const` when constant construction is required | Traditional, named-primary, factory-only, external, or positional forms |
 | Library shape | Multiple models, generics with bounds, const/defaults, records, and ordinary parts | A generated part per model or renderer access to unresolved AST/types |
 
-The generator does not create JSON, unions, DTO/entity schemas, ObjectBox
-entities, dependency injection, ViewModels, routes, REST clients, runtime
-reflection, or mutable models. Other generators may coexist only when they own
-different output files.
+JSON generation occurs only with `@DartitectJson()`. The generator does not
+create unions, DTO/entity schemas, ObjectBox entities, dependency injection,
+ViewModels, routes, REST clients, runtime reflection, or mutable models. Other
+generators may coexist only when they own different output files.
 
 Missing primary constructors produce `DT1030` and no model output is applied.
 Annotation identity is semantic, not a lexical name comparison. The shared
@@ -55,10 +55,27 @@ lists, sets, and maps are structural. Records and other values use their own
 equality contract. Equal values receive equal hashes. Cyclic collection graphs
 throw `CyclicValueException` for equality and hashing.
 
-Use this contract for small, immutable, acyclic values. Use
-`immutableListCopy`, `immutableSetCopy`, or `immutableMapCopy` before retaining
-collection inputs. Large collections, entities, and snapshots should use
-identity, a version/projection, or a precomputed hash.
+Use this contract for small, immutable, acyclic values. Model fields retain
+`ImmutableValueList`, `ImmutableValueSet`, or `ImmutableValueMap`; each copies
+its source and exposes no mutable collection interface. Large collections,
+entities, and snapshots should use identity, a version/projection, or a
+precomputed hash.
+
+## Generated JSON codecs
+
+JSON remains independent from value equality. Generated codecs return typed
+`Result` values, reject unknown keys by default, honor explicit field renames,
+and never place rejected input values in `DartitectJsonFailure`. Automatic
+composition is limited to JSON scalars, injected generic codecs, and Dartitect
+immutable collections. Dates, enums, IDs, records, narrowing, and other
+semantic conversions require an exact consumer-owned static decoder/encoder
+hook pair; `DT1043` rejects missing or invalid pairs before rendering.
+
+The default untrusted limits are depth 64, 10,000 items per collection, and
+100,000 total nodes. Different bounds require `DartitectJsonLimits.custom` at
+the call site. Disabling numeric limits requires either explicit annotation
+metadata or `DartitectJsonLimits.trusted`; JSON shape, finite-number, and cycle
+validation remain enabled. Trusted mode never changes unknown-key policy.
 
 ## Commands, freshness, and Git ownership
 
@@ -100,7 +117,7 @@ Updates and deletes require the existing bytes to match the recorded digest.
 
 | Artifact | 1.0 schema | Compatibility rule |
 |---|---:|---|
-| Semantic model input signature | 2 | Includes library identity, capabilities, generics, defaults, types, and all models in the generated part |
+| Semantic model input signature | 3 | Includes library identity, capabilities, generics, defaults, types, JSON policy, renames, hooks, and all models in the generated part |
 | JSON command report | 1 | Consumers must select the supported schema explicitly |
 | `.dartitect/model-outputs.json` | 1 | Missing ownership conflicts with candidate outputs; malformed, older, or future schemas fail closed |
 | `.dartitect/generation-journal.json` | 2 | Malformed, older, or future schemas stop recovery and preserve residue for diagnosis |

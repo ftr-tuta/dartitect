@@ -1552,20 +1552,116 @@
         "declaration": "final class CyclicValueException implements Exception"
       },
       {
+        "name": "DartitectBoolJsonCodec",
+        "declaration": "final class DartitectBoolJsonCodec extends DartitectJsonCodec<bool>"
+      },
+      {
+        "name": "DartitectDoubleJsonCodec",
+        "declaration": "final class DartitectDoubleJsonCodec extends DartitectJsonCodec<double>"
+      },
+      {
         "name": "DartitectField",
         "declaration": "final class DartitectField"
+      },
+      {
+        "name": "DartitectHookJsonCodec",
+        "declaration": "final class DartitectHookJsonCodec<T> extends DartitectJsonCodec<T>"
+      },
+      {
+        "name": "DartitectImmutableValueListJsonCodec",
+        "declaration": "final class DartitectImmutableValueListJsonCodec<T> extends DartitectJsonCodec<ImmutableValueList<T>>"
+      },
+      {
+        "name": "DartitectImmutableValueMapJsonCodec",
+        "declaration": "final class DartitectImmutableValueMapJsonCodec<V> extends DartitectJsonCodec<ImmutableValueMap<String, V>>"
+      },
+      {
+        "name": "DartitectImmutableValueSetJsonCodec",
+        "declaration": "final class DartitectImmutableValueSetJsonCodec<T> extends DartitectJsonCodec<ImmutableValueSet<T>>"
+      },
+      {
+        "name": "DartitectIntJsonCodec",
+        "declaration": "final class DartitectIntJsonCodec extends DartitectJsonCodec<int>"
       },
       {
         "name": "DartitectJson",
         "declaration": "final class DartitectJson"
       },
       {
+        "name": "DartitectJsonCodec",
+        "declaration": "abstract class DartitectJsonCodec<T>"
+      },
+      {
+        "name": "DartitectJsonCodecs",
+        "declaration": "abstract final class DartitectJsonCodecs"
+      },
+      {
+        "name": "DartitectJsonDecodeHook",
+        "declaration": "typedef DartitectJsonDecodeHook<out T> = Result<T, DartitectJsonFailure> Function(Object?, DartitectJsonPath)"
+      },
+      {
+        "name": "DartitectJsonEncodeHook",
+        "declaration": "typedef DartitectJsonEncodeHook<in T> = Result<Object?, DartitectJsonFailure> Function(T, DartitectJsonPath)"
+      },
+      {
+        "name": "DartitectJsonFailure",
+        "declaration": "final class DartitectJsonFailure extends ValueEquality implements Exception"
+      },
+      {
+        "name": "DartitectJsonFailureKind",
+        "declaration": "enum DartitectJsonFailureKind"
+      },
+      {
+        "name": "DartitectJsonIndexPathSegment",
+        "declaration": "final class DartitectJsonIndexPathSegment extends DartitectJsonPathSegment"
+      },
+      {
+        "name": "DartitectJsonKeyPathSegment",
+        "declaration": "final class DartitectJsonKeyPathSegment extends DartitectJsonPathSegment"
+      },
+      {
+        "name": "DartitectJsonLimits",
+        "declaration": "final class DartitectJsonLimits extends ValueEquality"
+      },
+      {
+        "name": "DartitectJsonObjectSupport",
+        "declaration": "abstract final class DartitectJsonObjectSupport"
+      },
+      {
+        "name": "DartitectJsonPath",
+        "declaration": "final class DartitectJsonPath extends ValueEquality"
+      },
+      {
+        "name": "DartitectJsonPathSegment",
+        "declaration": "sealed class DartitectJsonPathSegment extends ValueEquality"
+      },
+      {
+        "name": "DartitectJsonValueCodec",
+        "declaration": "final class DartitectJsonValueCodec extends DartitectJsonCodec<Object?>"
+      },
+      {
         "name": "DartitectMapper",
         "declaration": "final class DartitectMapper"
       },
       {
+        "name": "DartitectNullJsonCodec",
+        "declaration": "final class DartitectNullJsonCodec extends DartitectJsonCodec<Null>"
+      },
+      {
+        "name": "DartitectNullableJsonCodec",
+        "declaration": "final class DartitectNullableJsonCodec<T> extends DartitectJsonCodec<T?>"
+      },
+      {
+        "name": "DartitectNumJsonCodec",
+        "declaration": "final class DartitectNumJsonCodec extends DartitectJsonCodec<num>"
+      },
+      {
         "name": "DartitectProjection",
         "declaration": "final class DartitectProjection"
+      },
+      {
+        "name": "DartitectStringJsonCodec",
+        "declaration": "final class DartitectStringJsonCodec extends DartitectJsonCodec<String>"
       },
       {
         "name": "DartitectUnknownKeys",
@@ -1578,6 +1674,18 @@
       {
         "name": "Err",
         "declaration": "final class Err<F extends Object> extends Result<Never, F>"
+      },
+      {
+        "name": "ImmutableValueList",
+        "declaration": "final class ImmutableValueList<T> extends ValueEquality with Iterable<T>"
+      },
+      {
+        "name": "ImmutableValueMap",
+        "declaration": "final class ImmutableValueMap<K, V> extends ValueEquality"
+      },
+      {
+        "name": "ImmutableValueSet",
+        "declaration": "final class ImmutableValueSet<T> extends ValueEquality with Iterable<T>"
       },
       {
         "name": "Ok",

@@ -232,7 +232,7 @@ final class DartitectModelGenerator {
           content: _render(library),
           ownership: GeneratedOwnership.fullyGenerated,
           sourcePath: library.path,
-          inputSchemaVersion: 2,
+          inputSchemaVersion: 3,
           inputSignature: _semanticSignature(library),
         ),
       );
@@ -249,7 +249,7 @@ final class DartitectModelGenerator {
 
 String _semanticSignature(ModelingLibraryIr library) => jsonEncode(
   <String, Object?>{
-    'schemaVersion': 2,
+    'schemaVersion': 3,
     'library': library.uri,
     'source': library.path,
     'part': library.outputPath,
@@ -278,8 +278,16 @@ String _semanticSignature(ModelingLibraryIr library) => jsonEncode(
                 'nullable': field.type.nullable,
                 'required': field.isRequiredNamed,
                 if (field.defaultCode != null) 'default': field.defaultCode,
+                if (field.jsonName != null) 'jsonName': field.jsonName,
+                if (field.decodeHook != null) 'decodeHook': field.decodeHook,
+                if (field.encodeHook != null) 'encodeHook': field.encodeHook,
               },
           ],
+          if (model.json case final json?)
+            'json': <String, Object?>{
+              'rejectUnknownKeys': json.rejectUnknownKeys,
+              'trusted': json.trusted,
+            },
         },
     ],
     'configuration': <String, Object?>{
@@ -294,7 +302,7 @@ String _render(ModelingLibraryIr library) {
   final partName = _basename(library.outputPath);
   final buffer = StringBuffer()
     ..writeln('// GENERATED CODE - DO NOT EDIT BY HAND.')
-    ..writeln('// Dartitect model generator 1.0.0-rc.3, input schema 2.')
+    ..writeln('// Dartitect model generator 1.0.0-rc.3, input schema 3.')
     ..writeln()
     ..writeln("part of '$sourceName';");
   for (final model in library.models.where(
@@ -358,10 +366,200 @@ String _render(ModelingLibraryIr library) {
       ..writeln('  }')
       ..writeln('}');
   }
+  for (final model in library.models.where(
+    (model) => model.capabilities.contains(ModelingCapability.json),
+  )) {
+    _renderJsonCodec(buffer, model);
+  }
   return DartFormatter(
     languageVersion: DartFormatter.latestLanguageVersion,
     lineEnding: '\n',
   ).format(buffer.toString(), uri: partName);
+}
+
+void _renderJsonCodec(StringBuffer buffer, ModelingModelIr model) {
+  final declaration = _typeParameterDeclaration(model);
+  final use = _typeParameterUse(model);
+  final codecName = '${model.name}DartitectJsonCodec';
+  final trustedInitializer = model.json?.trusted ?? false
+      ? ' : super(defaultLimits: const DartitectJsonLimits.trusted())'
+      : '';
+  buffer
+    ..writeln()
+    ..writeln('/// Generated JSON codec for [${model.name}].')
+    ..writeln(
+      'final class $codecName$declaration '
+      'extends DartitectJsonCodec<${model.name}$use> {',
+    );
+  if (model.typeParameters.isEmpty) {
+    buffer
+      ..writeln('  /// Creates the generated codec.')
+      ..writeln('  const $codecName()$trustedInitializer;');
+  } else {
+    buffer
+      ..writeln(
+        '  /// Creates the generated codec with explicit generic codecs.',
+      )
+      ..writeln('  const $codecName({')
+      ..writeAll(
+        model.typeParameters.map(
+          (parameter) =>
+              '    required this.${_typeParameterCodecName(parameter)},\n',
+        ),
+      )
+      ..writeln('  })$trustedInitializer;')
+      ..writeln();
+    for (final parameter in model.typeParameters) {
+      buffer
+        ..writeln('  /// Codec for `${parameter.name}` fields.')
+        ..writeln(
+          '  final DartitectJsonCodec<${parameter.name}> '
+          '${_typeParameterCodecName(parameter)};',
+        );
+    }
+  }
+  final allowedKeys = model.fields
+      .map((field) => _dartStringLiteral(field.jsonName ?? field.name))
+      .join(', ');
+  final requiredKeys = model.fields
+      .where((field) => field.isRequiredNamed)
+      .map((field) => _dartStringLiteral(field.jsonName ?? field.name))
+      .join(', ');
+  buffer
+    ..writeln()
+    ..writeln('  @override')
+    ..writeln('  Result<${model.name}$use, DartitectJsonFailure> decodeValue(')
+    ..writeln('    Object? input,')
+    ..writeln('    DartitectJsonPath path,')
+    ..writeln('  ) => DartitectJsonObjectSupport.decodeObject(')
+    ..writeln('    input,')
+    ..writeln('    path,')
+    ..writeln('    allowedKeys: const <String>{$allowedKeys},')
+    ..writeln('    requiredKeys: const <String>{$requiredKeys},')
+    ..writeln(
+      '    rejectUnknownKeys: ${model.json?.rejectUnknownKeys ?? true},',
+    )
+    ..writeln('  ).flatMap(')
+    ..writeln('    (object) => ${_jsonDecodeChain(model, 0)},')
+    ..writeln('  );')
+    ..writeln()
+    ..writeln('  @override')
+    ..writeln('  Result<Object?, DartitectJsonFailure> encodeValue(')
+    ..writeln('    ${model.name}$use value,')
+    ..writeln('    DartitectJsonPath path,')
+    ..writeln('  ) => ${_jsonEncodeChain(model, 0)};')
+    ..writeln('}');
+  if (model.typeParameters.isEmpty) {
+    buffer
+      ..writeln()
+      ..writeln('/// Shared generated JSON codec for [${model.name}].')
+      ..writeln(
+        'const ${_lowerFirst(model.name)}DartitectJsonCodec = '
+        '$codecName();',
+      );
+  }
+}
+
+String _jsonDecodeChain(ModelingModelIr model, int index) {
+  final use = _typeParameterUse(model);
+  if (index == model.fields.length) {
+    final arguments = model.fields
+        .map((field) => '${field.name}: _${field.name}Json')
+        .join(', ');
+    return 'Ok<${model.name}$use>(${model.name}$use($arguments))';
+  }
+  final field = model.fields[index];
+  final key = _dartStringLiteral(field.jsonName ?? field.name);
+  final codec = _jsonCodecExpression(model, field);
+  final decoded = '$codec.decodeValue(object[$key], path.key($key))';
+  final expression = field.isRequiredNamed
+      ? decoded
+      : "object.containsKey($key) ? $decoded : Ok<${field.type.displayName}>(${field.defaultCode ?? 'null'})";
+  return '($expression).flatMap((_${field.name}Json) => '
+      '${_jsonDecodeChain(model, index + 1)})';
+}
+
+String _jsonEncodeChain(ModelingModelIr model, int index) {
+  if (index == model.fields.length) {
+    final entries = model.fields
+        .map(
+          (field) =>
+              '${_dartStringLiteral(field.jsonName ?? field.name)}: '
+              '_${field.name}Json',
+        )
+        .join(', ');
+    return 'Ok<Object?>(<String, Object?>{$entries})';
+  }
+  final field = model.fields[index];
+  final key = _dartStringLiteral(field.jsonName ?? field.name);
+  final codec = _jsonCodecExpression(model, field);
+  return '$codec.encodeValue(value.${field.name}, path.key($key)).flatMap('
+      '(_${field.name}Json) => ${_jsonEncodeChain(model, index + 1)})';
+}
+
+String _jsonCodecExpression(ModelingModelIr model, ModelingFieldIr field) {
+  final decodeHook = field.decodeHook;
+  final encodeHook = field.encodeHook;
+  if (decodeHook != null && encodeHook != null) {
+    return 'DartitectHookJsonCodec<${field.type.displayName}>('
+        'decode: $decodeHook, encode: $encodeHook)';
+  }
+  return _automaticJsonCodec(model, field.type);
+}
+
+String _automaticJsonCodec(ModelingModelIr model, ModelingTypeIr type) {
+  final parameter = model.typeParameters.where(
+    (parameter) => parameter.name == type.declarationName,
+  );
+  String codec;
+  if (parameter.isNotEmpty) {
+    codec = _typeParameterCodecName(parameter.single);
+  } else if (type.declarationName == 'dynamic' ||
+      type.displayName == 'Object?') {
+    codec = 'DartitectJsonCodecs.jsonValue';
+  } else if (type.libraryUri == 'dart:core') {
+    codec = switch (type.declarationName) {
+      'String' => 'DartitectJsonCodecs.string',
+      'bool' => 'DartitectJsonCodecs.boolean',
+      'int' => 'DartitectJsonCodecs.integer',
+      'num' => 'DartitectJsonCodecs.number',
+      'double' => 'DartitectJsonCodecs.doubleValue',
+      'Null' => 'DartitectJsonCodecs.nullValue',
+      _ => throw StateError('Compiler admitted an unsupported JSON scalar.'),
+    };
+  } else {
+    codec = switch (type.declarationName) {
+      'ImmutableValueList' =>
+        'DartitectJsonCodecs.immutableList('
+            '${_automaticJsonCodec(model, type.typeArguments.single)})',
+      'ImmutableValueSet' =>
+        'DartitectJsonCodecs.immutableSet('
+            '${_automaticJsonCodec(model, type.typeArguments.single)})',
+      'ImmutableValueMap' =>
+        'DartitectJsonCodecs.immutableMap('
+            '${_automaticJsonCodec(model, type.typeArguments.last)})',
+      _ => throw StateError('Compiler admitted an unsupported JSON type.'),
+    };
+  }
+  return type.nullable && type.declarationName != 'Null'
+      ? 'DartitectJsonCodecs.nullable($codec)'
+      : codec;
+}
+
+String _typeParameterCodecName(ModelingTypeParameterIr parameter) =>
+    'codec${parameter.name}';
+
+String _lowerFirst(String value) =>
+    '${value[0].toLowerCase()}${value.substring(1)}';
+
+String _dartStringLiteral(String value) {
+  var content = jsonEncode(value);
+  content = content.substring(1, content.length - 1);
+  content = content
+      .replaceAll(r'\"', '"')
+      .replaceAll("'", r"\'")
+      .replaceAll(r'$', r'\$');
+  return "'$content'";
 }
 
 String _typeParameterDeclaration(ModelingModelIr model) {

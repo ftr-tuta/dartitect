@@ -1,4 +1,5 @@
 import 'package:dartitect_model_generator_fixture/user.dart';
+import 'package:dartitect_modeling/dartitect_modeling.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -17,6 +18,28 @@ void main() {
     expect(
       () => original.copyWith(email: 'new@example.test', clearEmail: true),
       throwsArgumentError,
+    );
+  });
+
+  test('generated JSON codec round-trips and rejects unknown keys', () {
+    final decoded = userDartitectJsonCodec.decode(<String, Object?>{
+      'id': '1',
+      'email': null,
+    });
+    final unknown = userDartitectJsonCodec.decode(<String, Object?>{
+      'id': '1',
+      'email': null,
+      'extra': true,
+    });
+
+    expect(decoded, const Ok<User>(User(id: '1', email: null)));
+    expect(
+      unknown,
+      isA<Err<DartitectJsonFailure>>().having(
+        (result) => result.failure.kind,
+        'kind',
+        DartitectJsonFailureKind.unknownKey,
+      ),
     );
   });
 }

@@ -1,9 +1,11 @@
+import 'dart:collection';
 import 'dart:io';
 
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/diagnostic/diagnostic.dart';
@@ -330,6 +332,7 @@ final class ModelingCompiler {
     }
 
     final fields = <ModelingFieldIr>[];
+    final fieldTypes = <String, DartType>{};
     if (primaryNode != null && primaryElement != null) {
       for (final parameter in primaryNode.formalParameters.parameters) {
         final parameterName = parameter.name?.lexeme;
@@ -352,6 +355,7 @@ final class ModelingCompiler {
           continue;
         }
         final dartType = parameterElement.type;
+        fieldTypes[parameterName] = dartType;
         if (_isMutableCollection(dartType)) {
           reject(
             'DT1037',
@@ -407,6 +411,50 @@ final class ModelingCompiler {
         .toList(growable: false);
     if (jsonAnnotations.length > 1) {
       reject('DT1040', 'A model may declare DartitectJson only once.');
+    }
+    if (jsonAnnotations.isNotEmpty) {
+      final jsonNames = <String>{};
+      final typeParameters = <String>{
+        for (final parameter in classElement.typeParameters)
+          parameter.name ?? '',
+      };
+      for (final field in fields) {
+        final jsonName = field.jsonName ?? field.name;
+        if (jsonName.isEmpty || !jsonNames.add(jsonName)) {
+          reject('DT1040', 'JSON field names must be non-empty and unique.');
+        }
+        final hasDecodeHook = field.decodeHook != null;
+        final hasEncodeHook = field.encodeHook != null;
+        if (hasDecodeHook != hasEncodeHook ||
+            !_validHookName(field.decodeHook) ||
+            !_validHookName(field.encodeHook)) {
+          reject(
+            'DT1043',
+            'JSON hooks must be a valid explicit decoder/encoder pair.',
+          );
+          continue;
+        }
+        if (hasDecodeHook &&
+            !_validJsonHookPair(
+              classElement.library,
+              fieldTypes[field.name]!,
+              field.decodeHook!,
+              field.encodeHook!,
+            )) {
+          reject(
+            'DT1043',
+            'JSON hooks must be consumer-owned static functions with exact codec signatures.',
+          );
+          continue;
+        }
+        if (!hasDecodeHook &&
+            !_supportsGeneratedJson(field.type, typeParameters)) {
+          reject(
+            'DT1043',
+            'This JSON field type requires explicit decoder and encoder hooks.',
+          );
+        }
+      }
     }
     final projectionAnnotations = recognized
         .where((entry) => entry.capability == ModelingCapability.projection)
@@ -627,17 +675,14 @@ String? _enumField(Annotation annotation, String field) => annotation
     ?.toStringValue();
 
 ModelingTypeIr _typeIr(DartType type) {
-  final erased = type.extensionTypeErasure;
   final arguments = <ModelingTypeIr>[];
-  if (erased is ParameterizedType) {
-    arguments.addAll(erased.typeArguments.map(_typeIr));
-  } else if (erased is RecordType) {
-    arguments.addAll(
-      erased.positionalFields.map((field) => _typeIr(field.type)),
-    );
-    arguments.addAll(erased.namedFields.map((field) => _typeIr(field.type)));
+  if (type is ParameterizedType) {
+    arguments.addAll(type.typeArguments.map(_typeIr));
+  } else if (type is RecordType) {
+    arguments.addAll(type.positionalFields.map((field) => _typeIr(field.type)));
+    arguments.addAll(type.namedFields.map((field) => _typeIr(field.type)));
   }
-  final libraryUri = switch (erased) {
+  final libraryUri = switch (type) {
     final InterfaceType value => value.element.library.uri.toString(),
     final TypeParameterType value =>
       value.element.library?.uri.toString() ?? '',
@@ -645,16 +690,156 @@ ModelingTypeIr _typeIr(DartType type) {
   };
   return ModelingTypeIr(
     displayName: type.getDisplayString(),
+    declarationName: switch (type) {
+      final InterfaceType value => value.element.name ?? '',
+      final TypeParameterType value => value.element.name ?? '',
+      final DynamicType _ => 'dynamic',
+      final VoidType _ => 'void',
+      _ => '',
+    },
     libraryUri: libraryUri,
     nullable: type.nullabilitySuffix == NullabilitySuffix.question,
     typeArguments: List<ModelingTypeIr>.unmodifiable(arguments),
-    isRecord: erased is RecordType,
+    isRecord: type is RecordType,
   );
 }
 
-bool _isMutableCollection(DartType type) {
+bool _validHookName(String? name) {
+  if (name == null) return true;
+  return RegExp(r'^_?[A-Za-z][A-Za-z0-9_]*(\._?[A-Za-z][A-Za-z0-9_]*)?$')
+      .hasMatch(name);
+}
+
+bool _validJsonHookPair(
+  LibraryElement library,
+  DartType fieldType,
+  String decodeName,
+  String encodeName,
+) {
+  final decode = _lookupHook(library, decodeName);
+  final encode = _lookupHook(library, encodeName);
+  if (decode == null || encode == null) return false;
+  return _validHookParameters(
+        decode,
+        first: (type) => _isObjectQuestion(type),
+      ) &&
+      _isJsonResult(
+        decode.returnType,
+        (type) => _sameType(library, type, fieldType),
+      ) &&
+      _validHookParameters(
+        encode,
+        first: (type) => _sameType(library, type, fieldType),
+      ) &&
+      _isJsonResult(encode.returnType, _isObjectQuestion);
+}
+
+ExecutableElement? _lookupHook(LibraryElement library, String name) {
+  final parts = name.split('.');
+  if (parts.length == 1) {
+    return library.topLevelFunctions
+        .where((function) => function.name == parts.single)
+        .firstOrNull;
+  }
+  if (parts.length != 2) return null;
+  final owner = library.classes
+      .where((element) => element.name == parts.first)
+      .firstOrNull;
+  return owner?.methods
+      .where((method) => method.name == parts.last && method.isStatic)
+      .firstOrNull;
+}
+
+bool _validHookParameters(
+  ExecutableElement hook, {
+  required bool Function(DartType type) first,
+}) {
+  final parameters = hook.formalParameters;
+  return parameters.length == 2 &&
+      parameters.every((parameter) => parameter.isRequiredPositional) &&
+      first(parameters.first.type) &&
+      _isInterface(
+        parameters.last.type,
+        'DartitectJsonPath',
+        'package:dartitect_modeling/src/json_codec.dart',
+      );
+}
+
+bool _isJsonResult(DartType type, bool Function(DartType type) valueType) {
   final erased = type.extensionTypeErasure;
-  if (erased is! InterfaceType) return false;
+  return erased is InterfaceType &&
+      erased.element.name == 'Result' &&
+      erased.element.library.uri.toString() ==
+          'package:dartitect/src/result.dart' &&
+      erased.typeArguments.length == 2 &&
+      valueType(erased.typeArguments.first) &&
+      _isInterface(
+        erased.typeArguments.last,
+        'DartitectJsonFailure',
+        'package:dartitect_modeling/src/json_codec.dart',
+      );
+}
+
+bool _sameType(LibraryElement library, DartType left, DartType right) =>
+    library.typeSystem.isSubtypeOf(left, right) &&
+    library.typeSystem.isSubtypeOf(right, left);
+
+bool _isObjectQuestion(DartType type) =>
+    _isInterface(type, 'Object', 'dart:core') &&
+    type.nullabilitySuffix == NullabilitySuffix.question;
+
+bool _isInterface(DartType type, String name, String libraryUri) {
+  final erased = type.extensionTypeErasure;
+  return erased is InterfaceType &&
+      erased.element.name == name &&
+      erased.element.library.uri.toString() == libraryUri;
+}
+
+bool _supportsGeneratedJson(ModelingTypeIr type, Set<String> typeParameters) {
+  if (typeParameters.contains(type.declarationName)) return true;
+  if (type.libraryUri == 'dart:core' &&
+      const <String>{
+        'String',
+        'bool',
+        'int',
+        'num',
+        'double',
+        'Null',
+      }.contains(type.declarationName)) {
+    return true;
+  }
+  if (type.declarationName == 'dynamic' || type.displayName == 'Object?') {
+    return true;
+  }
+  if (type.libraryUri !=
+      'package:dartitect_modeling/src/value_collections.dart') {
+    return false;
+  }
+  return switch (type.declarationName) {
+    'ImmutableValueList' || 'ImmutableValueSet' =>
+      type.typeArguments.length == 1 &&
+          _supportsGeneratedJson(type.typeArguments.single, typeParameters),
+    'ImmutableValueMap' =>
+      type.typeArguments.length == 2 &&
+          type.typeArguments.first.libraryUri == 'dart:core' &&
+          type.typeArguments.first.declarationName == 'String' &&
+          _supportsGeneratedJson(type.typeArguments.last, typeParameters),
+    _ => false,
+  };
+}
+
+bool _isMutableCollection(DartType type, [Set<DartType>? active]) {
+  active ??= HashSet<DartType>.identity();
+  if (!active.add(type)) return false;
+  try {
+    return _isMutableCollectionActive(type, active);
+  } finally {
+    active.remove(type);
+  }
+}
+
+bool _isMutableCollectionActive(DartType type, Set<DartType> active) {
+  final erased = type.extensionTypeErasure;
   const names = <String>{
     'List',
     'Set',
@@ -678,7 +863,26 @@ bool _isMutableCollection(DartType type) {
     'Float32List',
     'Float64List',
   };
-  return names.contains(erased.element.name);
+  if (erased is InterfaceType && names.contains(erased.element.name)) {
+    return true;
+  }
+  if (type is TypeParameterType && _isMutableCollection(type.bound, active)) {
+    return true;
+  }
+  if (type is ParameterizedType &&
+      type.typeArguments.any(
+        (argument) => _isMutableCollection(argument, active),
+      )) {
+    return true;
+  }
+  if (type is RecordType &&
+      <DartType>[
+        ...type.positionalFields.map((field) => field.type),
+        ...type.namedFields.map((field) => field.type),
+      ].any((field) => _isMutableCollection(field, active))) {
+    return true;
+  }
+  return false;
 }
 
 void _appendAnalyzerDiagnostics(

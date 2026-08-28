@@ -30,6 +30,7 @@ final class ModelingTypeIr {
   /// Creates a canonical type description.
   const ModelingTypeIr({
     required this.displayName,
+    required this.declarationName,
     required this.libraryUri,
     required this.nullable,
     this.typeArguments = const <ModelingTypeIr>[],
@@ -38,6 +39,9 @@ final class ModelingTypeIr {
 
   /// Canonical source-facing name.
   final String displayName;
+
+  /// Declared interface or type-parameter name without generic arguments.
+  final String declarationName;
 
   /// Declaring library identity, or an empty string for structural types.
   final String libraryUri;

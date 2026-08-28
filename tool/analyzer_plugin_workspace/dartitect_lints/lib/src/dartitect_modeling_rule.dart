@@ -118,6 +118,14 @@ final class DartitectModelingRule extends MultiAnalysisRule {
     uniqueName: 'DartitectModelingRule.DT1042',
   );
 
+  /// JSON type or consumer hook cannot be rendered safely.
+  static const jsonCodecContract = LintCode(
+    'dartitect_dt1043',
+    'DT1043: JSON fields require a supported type or explicit hook pair.',
+    correctionMessage: 'Provide validated consumer-owned decode/encode hooks.',
+    uniqueName: 'DartitectModelingRule.DT1043',
+  );
+
   /// Stable compiler-rule to Analyzer-code mapping.
   static const Map<String, LintCode> codes = <String, LintCode>{
     'DT1030': primaryConstructor,
@@ -132,6 +140,7 @@ final class DartitectModelingRule extends MultiAnalysisRule {
     'DT1040': capabilityContract,
     'DT1041': bodyState,
     'DT1042': analyzerError,
+    'DT1043': jsonCodecContract,
   };
 
   @override

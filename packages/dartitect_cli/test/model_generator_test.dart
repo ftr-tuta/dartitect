@@ -69,7 +69,7 @@ part 'bad.dartitect.g.dart';
 
 @DartitectValue()
 final class Bad<T>({
-  required final List<T> values,
+  required final ImmutableValueList<List<T>> values,
 }) extends ValueEquality with _\$BadDartitect;
 ''');
 
@@ -338,6 +338,84 @@ final class Malformed extends ValueEquality with _\$MalformedDartitect {
     },
   );
 
+  test('generated JSON codec round-trips and rejects unknown keys', () async {
+    final root = await _modelPackage();
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/lib/user.dart').writeAsString(
+      _userSource.replaceFirst(
+        '@DartitectValue()',
+        '@DartitectValue()\n@DartitectJson()',
+      ),
+    );
+    final generator = DartitectModelGenerator(root);
+
+    await generator.apply();
+    final output = await File('${root.path}/lib/user.dartitect.g.dart')
+        .readAsString();
+
+    expect(output, contains('final class UserDartitectJsonCodec'));
+    expect(output, contains('const userDartitectJsonCodec'));
+    expect(output, contains('rejectUnknownKeys: true'));
+    await _runGeneratedJsonContract(root);
+  });
+
+  test(
+    'generated JSON composes generics collections hooks and defaults',
+    () async {
+      final root = await _modelPackage();
+      addTearDown(() => root.delete(recursive: true));
+      await File('${root.path}/lib/payload.dart').writeAsString(r'''
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+part 'payload.dartitect.g.dart';
+
+@DartitectJson(trusted: true)
+final class const Payload<T>({
+  required final T value,
+  required final ImmutableValueList<int> numbers,
+  @DartitectField(
+    jsonName: 'created_at',
+    decodeWith: 'PayloadHooks.decodeDate',
+    encodeWith: 'PayloadHooks.encodeDate',
+  )
+  required final DateTime createdAt,
+  final String label = 'default',
+});
+
+abstract final class PayloadHooks {
+  static Result<DateTime, DartitectJsonFailure> decodeDate(
+    Object? input,
+    DartitectJsonPath path,
+  ) {
+    final parsed = input is String ? DateTime.tryParse(input) : null;
+    return parsed == null
+        ? DartitectJsonFailure.result<DateTime>(
+            DartitectJsonFailureKind.customCodec,
+            path,
+          )
+        : Ok<DateTime>(parsed);
+  }
+
+  static Result<Object?, DartitectJsonFailure> encodeDate(
+    DateTime value,
+    DartitectJsonPath path,
+  ) => Ok<Object?>(value.toIso8601String());
+}
+''');
+      final generator = DartitectModelGenerator(root);
+
+      await generator.apply();
+      final output = await File('${root.path}/lib/payload.dartitect.g.dart')
+          .readAsString();
+
+      expect(output, contains('required this.codecT'));
+      expect(output, contains('DartitectJsonLimits.trusted'));
+      expect(output, contains('DartitectJsonCodecs.immutableList'));
+      expect(output, contains('PayloadHooks.decodeDate'));
+      expect(output, isNot(contains('payloadDartitectJsonCodec =')));
+      await _runGeneratedGenericJsonContract(root);
+    },
+  );
+
   test('CLI sync previews by default and check remains read-only', () async {
     final root = await _modelPackage();
     addTearDown(() => root.delete(recursive: true));
@@ -469,6 +547,136 @@ void main() {
   for (final arguments in <List<String>>[
     <String>['analyze'],
     <String>['run', 'bin/model_contract.dart'],
+  ]) {
+    final result = await Process.run(
+      Platform.resolvedExecutable,
+      arguments,
+      workingDirectory: root.path,
+    );
+    expect(
+      result.exitCode,
+      0,
+      reason:
+          'dart ${arguments.join(' ')} failed:\n'
+          '${result.stdout}\n${result.stderr}',
+    );
+  }
+}
+
+Future<void> _runGeneratedJsonContract(Directory root) async {
+  await Directory('${root.path}/bin').create();
+  await File('${root.path}/bin/json_contract.dart').writeAsString(r'''
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+import 'package:model_fixture/user.dart';
+
+void expectContract(bool condition, String message) {
+  if (!condition) throw StateError(message);
+}
+
+void main() {
+  final decoded = userDartitectJsonCodec.decode(<String, Object?>{
+    'id': 'one',
+    'email': null,
+  });
+  switch (decoded) {
+    case Ok<dynamic>(:final value):
+      expectContract(value == const User(id: 'one', email: null), 'decode');
+    case Err<Object>(:final failure):
+      throw StateError('unexpected decode failure: $failure');
+  }
+  final encoded = userDartitectJsonCodec.encode(
+    const User(id: 'two', email: 'two@example.test'),
+  );
+  switch (encoded) {
+    case Ok<dynamic>(:final value):
+      expectContract(
+        ValueEquality.equals(value, <String, Object?>{
+          'id': 'two',
+          'email': 'two@example.test',
+        }),
+        'encode',
+      );
+    case Err<Object>(:final failure):
+      throw StateError('unexpected encode failure: $failure');
+  }
+  final unknown = userDartitectJsonCodec.decode(<String, Object?>{
+    'id': 'one',
+    'email': null,
+    'extra': true,
+  });
+  switch (unknown) {
+    case Ok<dynamic>():
+      throw StateError('unknown key was accepted');
+    case Err<Object>(:final failure):
+      expectContract(
+        (failure as DartitectJsonFailure).kind ==
+            DartitectJsonFailureKind.unknownKey,
+        'unknown-key kind',
+      );
+  }
+}
+
+''');
+  for (final arguments in <List<String>>[
+    <String>['analyze'],
+    <String>['run', 'bin/json_contract.dart'],
+  ]) {
+    final result = await Process.run(
+      Platform.resolvedExecutable,
+      arguments,
+      workingDirectory: root.path,
+    );
+    expect(
+      result.exitCode,
+      0,
+      reason:
+          'dart ${arguments.join(' ')} failed:\n'
+          '${result.stdout}\n${result.stderr}',
+    );
+  }
+}
+
+Future<void> _runGeneratedGenericJsonContract(Directory root) async {
+  await Directory('${root.path}/bin').create();
+  await File('${root.path}/bin/generic_json_contract.dart').writeAsString(r'''
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+import 'package:model_fixture/payload.dart';
+
+void expectContract(bool condition, String message) {
+  if (!condition) throw StateError(message);
+}
+
+void main() {
+  const codec = PayloadDartitectJsonCodec<String>(
+    codecT: DartitectStringJsonCodec(),
+  );
+  expectContract(codec.defaultLimits.trusted, 'trusted default');
+  final decoded = codec.decode(<String, Object?>{
+    'value': 'generic',
+    'numbers': List<Object?>.filled(10001, 1),
+    'created_at': '2026-08-27T00:00:00.000Z',
+  });
+  switch (decoded) {
+    case Ok<dynamic>(:final value):
+      final payload = value as Payload<String>;
+      expectContract(payload.value == 'generic', 'generic codec');
+      expectContract(payload.numbers.length == 10001, 'trusted collection');
+      expectContract(payload.label == 'default', 'omitted default');
+    case Err<Object>(:final failure):
+      throw StateError('unexpected failure: $failure');
+  }
+  final unknown = codec.decode(<String, Object?>{
+    'value': 'generic',
+    'numbers': <Object?>[],
+    'created_at': '2026-08-27T00:00:00.000Z',
+    'extra': true,
+  });
+  expectContract(unknown is Err<DartitectJsonFailure>, 'unknown key');
+}
+''');
+  for (final arguments in <List<String>>[
+    <String>['analyze'],
+    <String>['run', 'bin/generic_json_contract.dart'],
   ]) {
     final result = await Process.run(
       Platform.resolvedExecutable,

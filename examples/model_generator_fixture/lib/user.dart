@@ -4,6 +4,7 @@ part 'user.dartitect.g.dart';
 
 /// Fixture proving checkout-time generated equality and copyWith behavior.
 @DartitectValue()
+@DartitectJson()
 final class const User({
   /// Stable identifier.
   required final String id,
