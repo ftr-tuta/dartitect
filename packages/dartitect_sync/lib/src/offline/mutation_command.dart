@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_resilience/dartitect_resilience.dart';
 
 /// Durable disposition of one local-first mutation attempt.
 enum CommitDisposition {
@@ -296,6 +297,7 @@ final class MutationCommand<A, K, T, F extends Object>
     MutationFailurePolicy Function(F failure)? classifyFailure,
     Future<void> Function(Duration delay, CancellationSignal signal)?
     waitBeforeRetry,
+    RetryExecutor? retryExecutor,
     CommandCrashReporter reporter = const NoOpCommandCrashReporter(),
     ReactiveObserverRegistration observer =
         const ReactiveObserverRegistration.borrowed(NoOpReactiveObserver()),
@@ -310,7 +312,13 @@ final class MutationCommand<A, K, T, F extends Object>
            ? idGenerator ?? SecureUuidV4Generator()
            : idGenerator,
        _classifyFailure = classifyFailure ?? _manualQueue,
-       _waitBeforeRetry = waitBeforeRetry ?? _systemRetryWait,
+       _retryExecutor =
+           retryExecutor ??
+           RetryExecutor(
+             scheduler: _MutationRetryScheduler(
+               waitBeforeRetry ?? _systemRetryWait,
+             ),
+           ),
        _reporter = reporter,
        _observerRegistration = observer,
        _causeRegistry = causeRegistry ?? ChangeCauseRegistry(),
@@ -359,8 +367,7 @@ final class MutationCommand<A, K, T, F extends Object>
   final String Function(K key, A argument)? _createIdempotencyKey;
   final IdGenerator? _idGenerator;
   final MutationFailurePolicy Function(F failure) _classifyFailure;
-  final Future<void> Function(Duration delay, CancellationSignal signal)
-  _waitBeforeRetry;
+  final RetryExecutor _retryExecutor;
   final CommandCrashReporter _reporter;
   final ReactiveObserverRegistration _observerRegistration;
   final ChangeCauseRegistry _causeRegistry;
@@ -585,135 +592,160 @@ final class MutationCommand<A, K, T, F extends Object>
         localAccepted = true;
       }
 
-      while (true) {
-        operation = operation.withState(
-          attempt: operation.attempt + 1,
-          syncState: EntitySyncState.syncing,
-        );
-        final markedSyncing = await _store.markState(operation, signal);
-        signal.throwIfCancelled();
-        if (markedSyncing case Err<Object>(:final failure, :final stackTrace)) {
-          final pending = operation.withState(
-            syncState: EntitySyncState.pending,
-          );
-          await _markBestEffort(pending);
-          return Ok<MutationExecution<A, K, T, F>>(
-            _execution(
-              pending,
-              CommitDisposition.queued,
-              EntitySyncState.pending,
-              syncFailure: failure as F,
-              syncFailureStackTrace: stackTrace,
-            ),
-          );
-        }
-
-        deliveryMayHaveCommitted = true;
-        final synchronized = await _synchronize(operation, signal);
-        signal.throwIfCancelled();
-        switch (synchronized) {
-          case Ok<dynamic>(:final value):
-            final synced = operation.withState(
-              syncState: EntitySyncState.synced,
-            );
-            final marked = await _store.markState(synced, signal);
-            signal.throwIfCancelled();
-            if (marked case Err<Object>(:final failure, :final stackTrace)) {
-              final uncertain = operation.withState(
-                syncState: EntitySyncState.uncertain,
+      var latestRetry = const RetryClassification.manual();
+      final delivered = await _retryExecutor
+          .execute<T, _MutationRetryFailure<F>>(
+            operation: (_, cancellation) async {
+              operation = operation.withState(
+                attempt: operation.attempt + 1,
+                syncState: EntitySyncState.syncing,
               );
-              await _markBestEffort(uncertain);
-              return Ok<MutationExecution<A, K, T, F>>(
-                _execution(
-                  uncertain,
-                  CommitDisposition.uncertain,
-                  EntitySyncState.uncertain,
-                  syncFailure: failure as F,
-                  syncFailureStackTrace: stackTrace,
-                ),
+              final markedSyncing = await _store.markState(
+                operation,
+                cancellation,
               );
-            }
-            deliveryMayHaveCommitted = false;
-            return Ok<MutationExecution<A, K, T, F>>(
-              _execution(
-                synced,
-                CommitDisposition.committed,
-                EntitySyncState.synced,
-                hasRemoteValue: true,
-                remoteValue: value as T,
-              ),
-            );
-          case Err<Object>(:final failure, :final stackTrace):
-            deliveryMayHaveCommitted = false;
-            final typedFailure = failure as F;
-            final policy = _classifyFailure(typedFailure);
-            final retry = policy.retry;
-            if (retry.kind == RetryKind.transient &&
-                operation.attempt < retry.maxAttempts) {
-              final pending = operation.withState(
-                syncState: EntitySyncState.pending,
-              );
-              final marked = await _store.markState(pending, signal);
-              signal.throwIfCancelled();
-              if (marked case Err<Object>(:final failure, :final stackTrace)) {
-                final uncertain = operation.withState(
-                  syncState: EntitySyncState.uncertain,
-                );
-                await _markBestEffort(uncertain);
-                return Ok<MutationExecution<A, K, T, F>>(
-                  _execution(
-                    uncertain,
-                    CommitDisposition.uncertain,
-                    EntitySyncState.uncertain,
-                    syncFailure: failure as F,
-                    syncFailureStackTrace: stackTrace,
-                  ),
+              cancellation.throwIfCancelled();
+              if (markedSyncing case Err<Object>(
+                :final failure,
+                :final stackTrace,
+              )) {
+                return Err<_MutationRetryFailure<F>>(
+                  _MutationRetryFailure<F>.stateWrite(failure as F, stackTrace),
+                  stackTrace,
                 );
               }
-              operation = pending;
-              await _waitBeforeRetry(
-                retry.delayAfter(operation.attempt),
-                signal,
-              );
-              signal.throwIfCancelled();
-              continue;
-            }
 
-            final finalPolicy =
-                retry.kind == RetryKind.transient &&
-                    operation.attempt >= retry.maxAttempts
-                ? const MutationFailurePolicy.queued()
-                : policy;
-            final finalOperation = operation.withState(
-              syncState: finalPolicy.syncState,
+              deliveryMayHaveCommitted = true;
+              final synchronized = await _synchronize(operation, cancellation);
+              cancellation.throwIfCancelled();
+              return switch (synchronized) {
+                Ok<dynamic>(:final value) => Ok<T>(value as T),
+                Err<Object>(:final failure, :final stackTrace) =>
+                  await _prepareRetryFailure(
+                    operation: operation,
+                    failure: failure as F,
+                    stackTrace: stackTrace,
+                    cancellation: cancellation,
+                    onPending: (pending, retry) {
+                      operation = pending;
+                      latestRetry = retry;
+                    },
+                    onDeliveryRejected: () {
+                      deliveryMayHaveCommitted = false;
+                    },
+                  ),
+              };
+            },
+            policy: RetryPolicy<_MutationRetryFailure<F>>(
+              classify: (failure) {
+                final policy = failure.policy;
+                if (failure.isStateWrite || policy == null) {
+                  return const RetryDecision.stop();
+                }
+                final retry = policy.retry;
+                if (retry.kind == RetryKind.transient &&
+                    operation.attempt < retry.maxAttempts) {
+                  return const RetryDecision.retry();
+                }
+                return policy.disposition == CommitDisposition.uncertain
+                    ? const RetryDecision.uncertain()
+                    : const RetryDecision.stop();
+              },
+              maxAttempts: 0x7fffffff,
+              maxElapsed: const Duration(days: 3650),
+              backoff: _MutationRetryBackoff(
+                (_) => latestRetry.delayAfter(operation.attempt),
+              ),
+            ),
+            cancellation: signal,
+          );
+
+      switch (delivered) {
+        case Ok<dynamic>(:final value):
+          final synced = operation.withState(syncState: EntitySyncState.synced);
+          final marked = await _store.markState(synced, signal);
+          signal.throwIfCancelled();
+          if (marked case Err<Object>(:final failure, :final stackTrace)) {
+            final uncertain = operation.withState(
+              syncState: EntitySyncState.uncertain,
             );
-            final marked = await _store.markState(finalOperation, signal);
-            signal.throwIfCancelled();
-            if (marked case Err<Object>(:final failure, :final stackTrace)) {
-              final uncertain = operation.withState(
-                syncState: EntitySyncState.uncertain,
-              );
-              await _markBestEffort(uncertain);
-              return Ok<MutationExecution<A, K, T, F>>(
-                _execution(
-                  uncertain,
-                  CommitDisposition.uncertain,
-                  EntitySyncState.uncertain,
-                  syncFailure: failure as F,
-                  syncFailureStackTrace: stackTrace,
-                ),
-              );
-            }
+            await _markBestEffort(uncertain);
             return Ok<MutationExecution<A, K, T, F>>(
               _execution(
-                finalOperation,
-                finalPolicy.disposition,
-                finalPolicy.syncState,
-                syncFailure: typedFailure,
+                uncertain,
+                CommitDisposition.uncertain,
+                EntitySyncState.uncertain,
+                syncFailure: failure as F,
                 syncFailureStackTrace: stackTrace,
               ),
             );
-        }
+          }
+          deliveryMayHaveCommitted = false;
+          return Ok<MutationExecution<A, K, T, F>>(
+            _execution(
+              synced,
+              CommitDisposition.committed,
+              EntitySyncState.synced,
+              hasRemoteValue: true,
+              remoteValue: value as T,
+            ),
+          );
+        case Err<Object>(:final failure):
+          final retryFailure = failure as _MutationRetryFailure<F>;
+          if (retryFailure.isStateWrite) {
+            final state = retryFailure.requiresAudit
+                ? EntitySyncState.uncertain
+                : EntitySyncState.pending;
+            final durable = operation.withState(syncState: state);
+            await _markBestEffort(durable);
+            return Ok<MutationExecution<A, K, T, F>>(
+              _execution(
+                durable,
+                retryFailure.requiresAudit
+                    ? CommitDisposition.uncertain
+                    : CommitDisposition.queued,
+                state,
+                syncFailure: retryFailure.failure,
+                syncFailureStackTrace: retryFailure.stackTrace,
+              ),
+            );
+          }
+          final policy = retryFailure.policy!;
+          final retry = policy.retry;
+          final finalPolicy =
+              retry.kind == RetryKind.transient &&
+                  operation.attempt >= retry.maxAttempts
+              ? const MutationFailurePolicy.queued()
+              : policy;
+          final finalOperation = operation.withState(
+            syncState: finalPolicy.syncState,
+          );
+          final marked = await _store.markState(finalOperation, signal);
+          signal.throwIfCancelled();
+          if (marked case Err<Object>(:final failure, :final stackTrace)) {
+            final uncertain = operation.withState(
+              syncState: EntitySyncState.uncertain,
+            );
+            await _markBestEffort(uncertain);
+            return Ok<MutationExecution<A, K, T, F>>(
+              _execution(
+                uncertain,
+                CommitDisposition.uncertain,
+                EntitySyncState.uncertain,
+                syncFailure: failure as F,
+                syncFailureStackTrace: stackTrace,
+              ),
+            );
+          }
+          return Ok<MutationExecution<A, K, T, F>>(
+            _execution(
+              finalOperation,
+              finalPolicy.disposition,
+              finalPolicy.syncState,
+              syncFailure: retryFailure.failure,
+              syncFailureStackTrace: retryFailure.stackTrace,
+            ),
+          );
       }
     } on CancellationException {
       if (localAccepted) {
@@ -732,6 +764,44 @@ final class MutationCommand<A, K, T, F extends Object>
       }
       Error.throwWithStackTrace(error, stackTrace);
     }
+  }
+
+  Future<Result<T, _MutationRetryFailure<F>>> _prepareRetryFailure({
+    required OutboxOperation<K, A> operation,
+    required F failure,
+    required StackTrace stackTrace,
+    required CancellationSignal cancellation,
+    required void Function(
+      OutboxOperation<K, A> pending,
+      RetryClassification retry,
+    )
+    onPending,
+    required void Function() onDeliveryRejected,
+  }) async {
+    onDeliveryRejected();
+    final policy = _classifyFailure(failure);
+    final retry = policy.retry;
+    if (retry.kind == RetryKind.transient &&
+        operation.attempt < retry.maxAttempts) {
+      final pending = operation.withState(syncState: EntitySyncState.pending);
+      final marked = await _store.markState(pending, cancellation);
+      cancellation.throwIfCancelled();
+      if (marked case Err<Object>(:final failure, :final stackTrace)) {
+        return Err<_MutationRetryFailure<F>>(
+          _MutationRetryFailure<F>.stateWrite(
+            failure as F,
+            stackTrace,
+            requiresAudit: true,
+          ),
+          stackTrace,
+        );
+      }
+      onPending(pending, retry);
+    }
+    return Err<_MutationRetryFailure<F>>(
+      _MutationRetryFailure<F>.synchronization(failure, stackTrace, policy),
+      stackTrace,
+    );
   }
 
   MutationExecution<A, K, T, F> _execution(
@@ -850,4 +920,64 @@ final class _MutationRequest<K, A> {
   final OutboxOperation<K, A> operation;
   final bool applyLocal;
   final ChangeCause cause;
+}
+
+final class _MutationRetryFailure<F extends Object> {
+  const _MutationRetryFailure._({
+    required this.failure,
+    required this.stackTrace,
+    required this.policy,
+    required this.isStateWrite,
+    required this.requiresAudit,
+  });
+
+  const _MutationRetryFailure.synchronization(
+    F failure,
+    StackTrace stackTrace,
+    MutationFailurePolicy policy,
+  ) : this._(
+        failure: failure,
+        stackTrace: stackTrace,
+        policy: policy,
+        isStateWrite: false,
+        requiresAudit: false,
+      );
+
+  const _MutationRetryFailure.stateWrite(
+    F failure,
+    StackTrace stackTrace, {
+    bool requiresAudit = false,
+  }) : this._(
+         failure: failure,
+         stackTrace: stackTrace,
+         policy: null,
+         isStateWrite: true,
+         requiresAudit: requiresAudit,
+       );
+
+  final F failure;
+  final StackTrace stackTrace;
+  final MutationFailurePolicy? policy;
+  final bool isStateWrite;
+  final bool requiresAudit;
+}
+
+final class _MutationRetryScheduler implements ResilienceScheduler {
+  const _MutationRetryScheduler(this._wait);
+
+  final Future<void> Function(Duration delay, CancellationSignal cancellation)
+  _wait;
+
+  @override
+  Future<void> wait(Duration delay, CancellationSignal cancellation) =>
+      _wait(delay, cancellation);
+}
+
+final class _MutationRetryBackoff implements BackoffStrategy {
+  const _MutationRetryBackoff(this.compute);
+
+  final Duration Function(int failedAttempt) compute;
+
+  @override
+  Duration delayAfter(int failedAttempt) => compute(failedAttempt);
 }

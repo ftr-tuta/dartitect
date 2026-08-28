@@ -12,6 +12,7 @@ environment:
 dependencies:
   dartitect: '>=1.0.0-rc.4 <1.0.0'
   dartitect_jobs: '>=1.0.0-rc.4 <1.0.0'
+  dartitect_resilience: '>=1.0.0-rc.4 <1.0.0'
 
 dev_dependencies:
   test: ^1.26.3
