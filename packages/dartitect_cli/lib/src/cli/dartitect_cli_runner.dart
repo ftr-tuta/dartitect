@@ -190,8 +190,16 @@ final class DartitectCliRunner {
       'observability',
       'adapters',
       'blueprint',
+      'profile',
+      'persistence',
+      'transport',
+      'pagination',
+      'cursor-pagination',
+      'headless-sync',
+      'diagnostics',
     });
     if (kind == 'app') {
+      _rejectFeatureOptions(arguments);
       if (arguments.flags.contains('domain')) {
         throw const _UsageException(
           '--domain is valid only for create feature.',
@@ -213,7 +221,45 @@ final class DartitectCliRunner {
     final scaffold = ScaffoldFactory(
       packageName: scan.packageName ?? 'application',
     );
+    final profileName = arguments.options['profile'];
+    final hasFeatureOptions =
+        profileName != null ||
+        arguments.options['persistence'] != null ||
+        arguments.options['transport'] != null ||
+        arguments.options['pagination'] != null ||
+        arguments.options['diagnostics'] != null ||
+        arguments.flags.contains('cursor-pagination') ||
+        arguments.flags.contains('headless-sync');
+    if (kind != 'feature' && hasFeatureOptions) {
+      throw const _UsageException(
+        'Feature profile options are valid only for create feature.',
+      );
+    }
+    if (kind == 'feature' && hasFeatureOptions && profileName == null) {
+      throw const _UsageException(
+        '--profile is required when feature profile options are used.',
+      );
+    }
+    final pagination =
+        arguments.options['pagination'] ??
+        (arguments.flags.contains('cursor-pagination') ? 'cursor' : 'none');
+    if (!const <String>{'none', 'cursor'}.contains(pagination)) {
+      throw _UsageException('Unsupported pagination mode "$pagination".');
+    }
     final operations = switch (kind) {
+      'feature' when profileName != null => scaffold.profile(
+        FeatureScaffoldOptions(
+          profile: FeatureProfile.parse(profileName),
+          persistence: arguments.options['persistence'],
+          transport: arguments.options['transport'],
+          cursorPagination: pagination == 'cursor',
+          headlessSync: arguments.flags.contains('headless-sync'),
+          diagnostics: FeatureDiagnosticsLevel.parse(
+            arguments.options['diagnostics'] ?? 'basic',
+          ),
+        ),
+        name,
+      ),
       'feature' => scaffold.feature(
         name,
         includeDomain: arguments.flags.contains('domain'),
@@ -800,6 +846,24 @@ final class ${name.pascal}App extends StatelessWidget {
       ..sort();
   }
 
+  static void _rejectFeatureOptions(_CliArguments arguments) {
+    const optionNames = <String>{
+      'profile',
+      'persistence',
+      'transport',
+      'pagination',
+      'cursor-pagination',
+      'headless-sync',
+      'diagnostics',
+    };
+    final used = arguments.flags.intersection(optionNames);
+    if (used.isNotEmpty) {
+      throw _UsageException(
+        '--${used.first} is valid only for create feature.',
+      );
+    }
+  }
+
   void _writeEnvelope(CommandEnvelope envelope, {required bool json}) {
     if (json) {
       _stdout.writeln(jsonEncode(envelope.toJson()));
@@ -964,6 +1028,10 @@ Mutating commands (all accept --dry-run):
   create app <name> [--observability=MODE] [--adapters=a,b] [--blueprint=NAME]
                                     Create a six-platform Flutter app.
   create feature <name> [--domain] Create a feature-first vertical slice.
+  create feature <name> --profile=PROFILE [--persistence=PROVIDER]
+                       [--transport=PROVIDER] [--pagination=cursor]
+                       [--headless-sync] [--diagnostics=off|basic|full]
+                                    Create online/cache/replica/offline-full wiring.
   create simple <name>             Create an immutable MVVM slice.
   create remote-read <name>        Add a typed remote port and mapper.
   create local-first <name>        Add local authority and pull reactivity.

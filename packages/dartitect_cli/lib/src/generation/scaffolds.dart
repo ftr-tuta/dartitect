@@ -30,6 +30,59 @@ enum ScaffoldBlueprint {
     }
     throw FormatException('Unknown scaffold blueprint "$value".');
   }
+
+  /// Canonical paved-road profile represented by this compatibility alias.
+  FeatureProfile? get profileAlias => switch (this) {
+    simple => null,
+    remoteRead => FeatureProfile.online,
+    localFirst => FeatureProfile.cache,
+    offlineMutation => FeatureProfile.offlineFull,
+    syncDataset => FeatureProfile.replica,
+  };
+}
+
+/// Validated options for paved-road feature generation.
+final class FeatureScaffoldOptions {
+  /// Creates profile/provider options and validates their compatibility.
+  FeatureScaffoldOptions({
+    required this.profile,
+    String? persistence,
+    String? transport,
+    this.cursorPagination = false,
+    this.headlessSync = false,
+    this.diagnostics = FeatureDiagnosticsLevel.basic,
+  }) : persistence = persistence ?? _defaultPersistence(profile),
+       transport = transport ?? 'consumer' {
+    DartitectFeatureDeclaration(
+      profile: profile,
+      persistence: this.persistence,
+      transport: this.transport,
+      cursorPagination: cursorPagination,
+      headlessSync: headlessSync,
+      diagnostics: diagnostics,
+    );
+  }
+
+  /// Public behavior profile.
+  final FeatureProfile profile;
+
+  /// Consumer-selected persistence provider.
+  final String persistence;
+
+  /// Consumer-selected transport provider.
+  final String transport;
+
+  /// Whether cursor pagination contracts are generated.
+  final bool cursorPagination;
+
+  /// Whether headless sync wiring is declared.
+  final bool headlessSync;
+
+  /// Generated payload-free diagnostics level.
+  final FeatureDiagnosticsLevel diagnostics;
+
+  static String _defaultPersistence(FeatureProfile profile) =>
+      profile == FeatureProfile.online ? 'none' : 'consumer';
 }
 
 /// Validated Dart identifier naming pair.
@@ -105,14 +158,55 @@ final class ScaffoldFactory {
     };
   }
 
-  /// Default Dartitect configuration file.
-  List<FileGenerationOperation> init({DartitectConfig? config}) =>
-      <FileGenerationOperation>[
+  /// Renders one public paved-road profile plus generated-once wiring.
+  List<FileGenerationOperation> profile(
+    FeatureScaffoldOptions options,
+    String input,
+  ) {
+    final name = ScaffoldName(input);
+    final operations = switch (options.profile) {
+      FeatureProfile.online => blueprint(ScaffoldBlueprint.remoteRead, input),
+      FeatureProfile.cache => blueprint(ScaffoldBlueprint.localFirst, input),
+      FeatureProfile.replica => blueprint(ScaffoldBlueprint.syncDataset, input),
+      FeatureProfile.offlineFull => <FileGenerationOperation>[
+        ...blueprint(ScaffoldBlueprint.offlineMutation, input),
+        ..._remoteReadBlueprint(name),
+        ..._localFirstBlueprint(name),
+        ..._syncDatasetBlueprint(name),
+      ],
+    };
+    return <FileGenerationOperation>[
+      ...operations,
+      FileGenerationOperation(
+        relativePath:
+            'lib/features/${name.snake}/composition/${name.snake}_feature_profile.dart',
+        content: _featureProfile(name, options),
+      ),
+      if (options.cursorPagination)
         FileGenerationOperation(
-          relativePath: 'dartitect.json',
-          content: (config ?? DartitectConfig()).encode(),
+          relativePath:
+              'lib/features/${name.snake}/application/${name.snake}_cursor_page.dart',
+          content: _cursorPage(name),
         ),
-      ];
+      if (options.headlessSync)
+        FileGenerationOperation(
+          relativePath:
+              'lib/features/${name.snake}/composition/${name.snake}_headless_sync.dart',
+          content: _headlessSync(name),
+        ),
+    ];
+  }
+
+  /// Default Dartitect configuration file.
+  List<FileGenerationOperation> init({
+    DartitectConfig? config,
+  }) => <FileGenerationOperation>[
+    FileGenerationOperation(
+      relativePath: 'dartitect.json',
+      content: (config ?? DartitectConfig(features: DartitectFeaturesConfig()))
+          .encode(),
+    ),
+  ];
 
   /// Local, concise instructions for coding agents.
   List<FileGenerationOperation> agents() => <FileGenerationOperation>[
@@ -321,6 +415,61 @@ final class ${name.pascal}Service {
       ),
     ];
   }
+
+  String _featureProfile(ScaffoldName name, FeatureScaffoldOptions options) =>
+      '''/// Generated-once declarative wiring for the ${name.pascal} feature.
+///
+/// Provider construction remains in this composition directory. This record
+/// contains no credentials, URLs, schemas, entities, or migration behavior.
+abstract final class ${name.pascal}FeatureProfile {
+  static const String profile = '${options.profile.wireName}';
+  static const String persistence = '${options.persistence}';
+  static const String transport = '${options.transport}';
+  static const bool cursorPagination = ${options.cursorPagination};
+  static const bool headlessSync = ${options.headlessSync};
+  static const String diagnostics = '${options.diagnostics.wireName}';
+}
+''';
+
+  String _cursorPage(ScaffoldName name) =>
+      '''import 'package:dartitect/dartitect.dart';
+
+/// Consumer-decoded cursor page; cursors remain opaque to Dartitect.
+final class ${name.pascal}CursorPage<T> {
+  const ${name.pascal}CursorPage({
+    required this.items,
+    required this.nextCursor,
+  });
+
+  final List<T> items;
+  final String? nextCursor;
+}
+
+/// Consumer-owned cursor transport boundary.
+abstract interface class ${name.pascal}CursorReader<T, F extends Object> {
+  Future<Result<${name.pascal}CursorPage<T>, F>> read({
+    required String? cursor,
+    required CancellationSignal cancellation,
+  });
+}
+''';
+
+  String _headlessSync(ScaffoldName name) =>
+      '''import 'package:dartitect/dartitect.dart';
+
+/// Consumer-owned payload accepted by the generated headless composition.
+final class ${name.pascal}HeadlessPayload {
+  const ${name.pascal}HeadlessPayload();
+}
+
+/// Composition seam adapted to dartitect_jobs by application wiring.
+abstract interface class ${name.pascal}HeadlessSync {
+  Future<void> run(
+    ${name.pascal}HeadlessPayload payload,
+    CancellationSignal cancellation,
+  );
+}
+''';
 
   String _immutableModel(ScaffoldName name) =>
       '''import 'package:dartitect/dartitect.dart';
