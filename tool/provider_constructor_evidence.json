@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "policy": {
+    "providerOwnedPrimaryDeclaringVar": "allowed",
+    "traditionalConstructor": "denied_without_specific_generator_or_runtime_failure",
+    "exceptionScope": "exact_provider_generator_version_and_fixture"
+  },
+  "entries": [
+    {
+      "provider": "objectbox",
+      "providerVersion": "5.3.2",
+      "generator": "objectbox_generator",
+      "generatorVersion": "5.3.2",
+      "resolvedAnalyzerVersion": "10.2.0",
+      "resolvedAnalyzerLanguageVersion": "3.12.0",
+      "decision": "traditional_constructor_exception",
+      "reasonCode": "generator_rejects_primary_constructor_language_feature",
+      "scope": {
+        "annotation": "Entity",
+        "entity": "FixtureEntity",
+        "fixture": "tool/objectbox_native_fixture"
+      },
+      "primaryCandidate": {
+        "path": "tool/provider_constructor_evidence/objectbox_5_3_2_primary.dart.fixture",
+        "sha256": "4cc8accebc31a14641eb0df6449b78bc95e2d7452bacf2eb99b2aa74229f3d42",
+        "constructorForm": "primary_declaring_var"
+      },
+      "failureEvidence": {
+        "path": "tool/provider_constructor_evidence/objectbox_5_3_2_primary.failure.txt",
+        "sha256": "e558acc518b1e3ed9bbc663a2584763960ad7e7c8773a7ccdb09ae30beb92271",
+        "phase": "objectbox_generator:resolver",
+        "diagnostic": "This requires the primary-constructors language feature to be enabled."
+      },
+      "acceptedFixture": {
+        "sourcePath": "tool/objectbox_native_fixture/lib/fixture_entity.dart",
+        "sourceSha256": "a8e79480882db2f71af00da62b74fb441ed5df3b62f075adc23f14f1c8018b36",
+        "constructorForm": "traditional_named_properties",
+        "generatedPath": "tool/objectbox_native_fixture/lib/objectbox.g.dart",
+        "generatedSha256": "6d6ee71eaf4764a1f95f14bdb637eacceb5ac2cc7788aae63f020f4253ba5e10",
+        "modelPath": "tool/objectbox_native_fixture/lib/objectbox-model.json",
+        "modelSha256": "d803a797a689830fde8f41cab7d8f0264e6206965db8f9129adbb640a71696ca"
+      },
+      "runtimeEvidence": {
+        "path": "tool/objectbox_native_fixture/test/native_store_test.dart",
+        "sha256": "c74b8511ace3fed394840ed4e0695ee07ac5b58d3a7e086395f5025facadd3b7",
+        "command": "flutter test test/native_store_test.dart",
+        "required": true
+      }
+    }
+  ]
+}

@@ -99,7 +99,11 @@ reutilizáveis precisam de fixture real gerada.
 Execute `flutter test` e `tool/objectbox_native_fixture`. A fixture valida
 `Query.findAsync`, projection background, cleanup de Store local ao isolate,
 commit/rollback reais de domínio/outbox e teardown de watcher; não substitua
-essa cobertura somente por mocks.
+essa cobertura somente por mocks. A registry versionada de constructors de
+providers também registra por que ObjectBox Generator 5.3.2 mantém um
+constructor tradicional limitado: seu resolver Analyzer 10.2 rejeita primary
+constructors do Dart 3.13. Upgrades do provider devem repetir o probe primary
+com `var` antes de preservar a exceção.
 
 ## Links
 

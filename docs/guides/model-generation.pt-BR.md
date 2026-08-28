@@ -38,6 +38,16 @@ compartilhado, grava o journal próprio de source, revalida os bytes e commit ou
 faz rollback da edição completa. Classes comportamentais e construtores
 ambíguos exigem revisão do consumidor e nunca são reescritos por heurística.
 
+Entidades mutáveis provider-owned permanecem fora do ownership dos modelos
+Dartitect. Elas podem usar primary constructors com parâmetros declarantes
+`var`. Um constructor tradicional de provider é negado salvo quando a versão
+exata de provider/generator possui evidência específica de generator ou runtime
+em `tool/provider_constructor_evidence.json`. ObjectBox 5.3.2 possui atualmente
+a única exceção limitada: seu generator resolve Analyzer 10.2.0/linguagem 3.12
+e rejeita o candidate primary válido em Dart 3.13. Qualquer upgrade do provider
+exige repetir essa evidência; a exceção nunca se aplica aos modelos imutáveis
+Dartitect.
+
 ## Equality gerada e `copyWith`
 
 O mixin emite getters abstratos, `equalityFields` completo e `copyWith` tipado:

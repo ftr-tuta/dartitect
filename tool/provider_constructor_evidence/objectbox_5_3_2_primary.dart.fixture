@@ -1,0 +1,7 @@
+import 'package:objectbox/objectbox.dart';
+
+@Entity()
+final class FixtureEntity({
+  @Id() var id = 0,
+  var value = '',
+});

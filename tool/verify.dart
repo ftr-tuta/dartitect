@@ -26,6 +26,10 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>['run', 'tool/check_package_topology.dart']),
     const _Command('dart', <String>[
       'run',
+      'tool/check_provider_constructor_evidence.dart',
+    ]),
+    const _Command('dart', <String>[
+      'run',
       'tool/check_package_release_contract.dart',
     ]),
     if (!stableCohort)
@@ -114,6 +118,10 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>[
       'test',
       'tool/setup_objectbox_vm_test.dart',
+    ]),
+    const _Command('dart', <String>[
+      'test',
+      'tool/check_provider_constructor_evidence_test.dart',
     ]),
     const _Command('dart', <String>['test', 'tool/release_audit_test.dart']),
     const _Command('dart', <String>[

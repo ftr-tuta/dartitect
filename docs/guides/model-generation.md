@@ -37,6 +37,16 @@ lock, writes the dedicated source journal, revalidates bytes, and commits or
 rolls back the complete edit. Behavioral classes and ambiguous constructors are
 reported for consumer review and are never rewritten heuristically.
 
+Provider-owned mutable entities remain outside Dartitect model ownership. They
+may use primary constructors with declaring `var` parameters. A traditional
+provider constructor is denied unless the exact provider/generator version has
+specific generator or runtime evidence in
+`tool/provider_constructor_evidence.json`. ObjectBox 5.3.2 currently has the
+only scoped exception: its generator resolves Analyzer 10.2.0/language 3.12 and
+rejects the otherwise-valid Dart 3.13 primary candidate. Any provider upgrade
+requires this evidence to be rerun; the exception never applies to immutable
+Dartitect models.
+
 ## Generated equality and `copyWith`
 
 The mixin emits abstract getters, complete `equalityFields`, and typed
