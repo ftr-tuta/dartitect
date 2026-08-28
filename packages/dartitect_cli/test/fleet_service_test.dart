@@ -54,6 +54,61 @@ dependencies:
   });
 
   test(
+    'fleet report aggregates profiles, providers, and matrix coverage',
+    () async {
+      final fleet = await _fleet();
+      final app = await _project(fleet, 'app', '^1.0.0-rc.4');
+      await File('${app.path}/dartitect.json').writeAsString('''{
+  "configVersion": 1,
+  "profile": "native_strict",
+  "layers": {
+    "domain": ["**/domain/**"],
+    "application": ["**/application/**"],
+    "data": ["**/data/**"],
+    "infrastructure": ["**/infrastructure/**"],
+    "presentation": ["**/presentation/**"]
+  },
+  "compositionRoots": ["lib/main.dart", "test/**"],
+  "generatedInfrastructure": ["**/infrastructure/**/*.g.dart"],
+  "suppressions": [],
+  "scaffolds": {
+    "layout": "feature_first",
+    "blueprints": ["simple", "remote-read", "local-first", "offline-mutation", "sync-dataset"]
+  },
+  "features": {
+    "declarations": {
+      "orders": {
+        "profile": "offline-full",
+        "persistence": "drift",
+        "transport": "dio",
+        "cursorPagination": true,
+        "headlessSync": true,
+        "diagnostics": "full"
+      }
+    }
+  }
+}
+''');
+      final tests = Directory('${app.path}/test')..createSync();
+      await File('${tests.path}/contracts_test.dart').writeAsString('''
+void registerMatrix() {
+  FeatureContractMatrix.offlineFull(fixtures: fixtures);
+}
+''');
+
+      final report = await DartitectFleetService(fleet).report(<String>['app']);
+      final project = report.projects.single;
+      expect(report.command, 'fleet report');
+      expect(project['profiles'], <String>['offline-full']);
+      expect(project['providers'], <String, Object?>{
+        'persistence': <String>['drift'],
+        'transport': <String>['dio'],
+      });
+      expect(project['contractMatrices'], containsPair('status', 'covered'));
+    },
+  );
+
+  test(
     'fleet roots reject traversal, duplicates, and symlink escape',
     () async {
       final fleet = await _fleet();

@@ -1,6 +1,20 @@
 {
   "configVersion": 1,
   "profile": "native_strict",
+  "layers": {
+    "domain": ["**/domain/**"],
+    "application": ["**/application/**"],
+    "data": ["**/data/**"],
+    "infrastructure": ["**/infrastructure/**"],
+    "presentation": ["**/presentation/**"]
+  },
+  "compositionRoots": ["lib/main.dart", "test/**"],
+  "generatedInfrastructure": ["**/infrastructure/**/*.g.dart"],
+  "suppressions": [],
+  "scaffolds": {
+    "layout": "feature_first",
+    "blueprints": ["simple", "remote-read", "local-first", "offline-mutation", "sync-dataset"]
+  },
   "features": {
     "declarations": {
       "paved_road": {

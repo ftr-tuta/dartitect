@@ -747,7 +747,8 @@ final class ${name.pascal}App extends StatelessWidget {
   Future<int> _fleet(Directory root, _CliArguments arguments) async {
     if (arguments.positionals.length < 2) {
       throw const _UsageException(
-        'Usage: dartitect fleet <versions|check|policy|upgrade> <project-root...>.',
+        'Usage: dartitect fleet <report|versions|check|policy|upgrade> '
+        '<project-root...>.',
       );
     }
     final command = arguments.positionals.first;
@@ -755,6 +756,9 @@ final class ${name.pascal}App extends StatelessWidget {
     final service = DartitectFleetService(root);
     late final DartitectFleetReport report;
     switch (command) {
+      case 'report':
+        arguments.requireOnlyFlags(<String>{'json', 'verbose'});
+        report = await service.report(roots);
       case 'versions':
         arguments.requireOnlyFlags(<String>{'json', 'verbose'});
         report = await service.versions(roots);
@@ -821,7 +825,11 @@ final class ${name.pascal}App extends StatelessWidget {
       return (plan['operations']! as List<Object?>).join(', ');
     }
     if (project['dependencies'] case final List<Object?> dependencies) {
-      return '${dependencies.length} Dartitect dependencies';
+      final profiles = project['profiles'] as List<Object?>?;
+      return profiles == null
+          ? '${dependencies.length} Dartitect dependencies'
+          : '${dependencies.length} Dartitect dependencies, '
+                '${profiles.length} profiles';
     }
     if (project['diagnostics'] case final List<Object?> diagnostics) {
       return diagnostics.isEmpty
