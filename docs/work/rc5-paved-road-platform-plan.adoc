@@ -1,0 +1,281 @@
+= RC5 paved-road platform plan
+:toc:
+:toclevels: 3
+
+Status:: Approved implementation authority for +1.0.0-rc.5+ development
+Branch:: +feat/rc5-paved-road-platform+
+Delivery:: One pull request, squash merged under repository policy
+Release authority:: None; this plan does not authorize a tag, release, or publication
+
+== Outcome
+
+RC5 turns the existing Native Strict primitives into complete, locally
+verifiable paths for online, cached, replicated, and offline mutation
+features. It activates the five optional Goal 08 slices and adds bounded
+resilience, jobs, transfer, application/session hosts, contract matrices, a
+payload-free diagnostics protocol, an optional read-only DevTools extension,
+and an isolated fleet canary runner.
+
+All public code and documentation remain English-only. Consumer domain models,
+schemas, migrations, endpoints, credentials, retry classification, conflict
+policy, navigation, authentication, scheduling, and durable storage remain
+outside Dartitect.
+
+The five Goal 08 deferrals never blocked stable 1.0
+(+blocksStable1: false+). They were blocked only from public exposure without
+an ADR, a consumer workload, a benchmark, and a package-boundary review. ADR
+0043 accepts the dedicated synthetic paved-road canary as the consumer workload
+for RC5 and activates all five slices together. Each slice still has an
+independent benchmark and boundary record.
+
+== Existing authority retained
+
+* +ResourceTransaction+, +OwnedGraph+, and +OwnedRuntimeSlot+ are extended;
+  no parallel ownership container is introduced.
+* +DartitectFleetReport+ and +DartitectFleetService+ remain read-only. Canary
+  execution belongs to the separate +DartitectFleetCanaryService+.
+* Existing diagnostics are reviewed before adding Analyzer rules. No rule is
+  added for bounded +ResourceFamily+ use because it is already bounded by
+  construction.
+* Dataset sync and headless execution remain separate. Jobs generalize the
+  current headless endpoint without hiding retries or defining a universal
+  remote protocol.
+* Provider objects remain in infrastructure/composition roots and are always
+  explicitly owned or borrowed.
+
+== Activated optional slices
+
+=== Explicit lazy computed
+
++ReactiveLazyComputed<T>+ belongs to the existing
++dartitect_flutter_reactive.dart+ entrypoint. Dependencies are explicit,
+identity-unique, and owned by the same +ReactiveOwner+; there is no global or
+implicit read tracking. The first value read or first listener performs the
+initial computation. Once evaluated, dependency notifications mark an
+unobserved node dirty. An observed dirty node recomputes against one committed
+owner revision and publishes only after the complete value is available.
+
+An unexpected compute failure is reported with its original stack, preserves
+the last valid value, and leaves the node dirty for explicit or dependency-
+driven retry. Equality is explicit and defaults to +==+. Reentrant evaluation
+and dependency cycles fail deterministically. Owner disposal detaches every
+dependency and listener. A compatible rebind refreshes closures for Flutter
+hot reload without replacing the retained value.
+
+=== Typed command progress
+
++OperationProgress<P>+ carries an accepted +executionId+, a positive
+execution-local monotonic sequence, and a typed payload. +ProgressReporter<P>+
+is synchronous and failure-isolated. +BoundedProgressReporter<P>+ retains a
+bounded local ring, accepts only its current execution, rejects non-monotonic
+or late events, and clears on disposal.
+
++CommandExecutionContext<P>+ combines the accepted execution identity,
+cooperative cancellation, an optional UTC deadline, and bounded progress
+publication. Existing command constructors remain source compatible; explicit
+context-aware constructors are additive. Sync, jobs, transfer, and commands
+reuse the envelope while retaining specific payload types.
+
+=== Versioned UI restoration
+
++VersionedRestorationCodec<T, F>+ uses an exact +version/payload+ envelope,
+consumer codecs, and explicit one-version-at-a-time migrations. Unsupported
+versions, malformed envelopes, missing migrations, and invalid payloads map to
+typed +F+ values. The Flutter restorable property records the last failure and
+falls back to a consumer-provided initial state.
+
+Restoration is ephemeral UI reconstruction. It must not contain credentials,
+complete domain entities, durable outbox state, or replace a repository or
+database. Flutter restoration buckets remain the storage owner.
+
+=== Bounded local history
+
++BoundedLocalHistory<T>+ is a pure-Dart value history. It supports local
+undo/redo, a positive entry bound, and an optional positive weight bound. A new
+edit after undo clears redo. Its API accepts values only: no callbacks, effects,
+futures, streams, HTTP operations, uploads, or sync work are executable history
+entries. +LocalHistoryListenable<T>+ is a separate Flutter adapter that borrows
+the history.
+
+=== Read-only DevTools diagnostics
+
+The optional +dartitect_devtools+ package registers only isolate-local service
+extensions:
+
+* +ext.dartitect.capabilities+
+* +ext.dartitect.snapshot+
+* +ext.dartitect.events+
+
+There is no retry, cancellation, clearing, mutation, arbitrary evaluation, or
+domain-payload RPC. Registration is explicit in a development entrypoint and
+is unavailable in product mode. Protocol buffers are bounded, memory-only, and
+cleared on disposal. The Flutter Web extension follows the official DevTools
+package hierarchy and consumes only those three RPCs.
+
+== Feature profiles and generated ownership
+
+The public profiles are +online+, +cache+, +replica+, and +offline-full+.
+Existing blueprint names remain aliases:
+
+[cols="1,1"]
+|===
+|Legacy blueprint |Public profile
+
+|+remote-read+ |+online+
+|+local-first+ |+cache+
+|+sync-dataset+ |+replica+
+|+offline-mutation+ |base of +offline-full+
+|+simple+ |legacy, still supported
+|===
+
+The CLI accepts:
+
+[source,console]
+----
+dartitect create feature <name> \
+  --profile=<profile> \
+  --persistence=<provider> \
+  --transport=<provider>
+----
+
+Optional flags select cursor pagination, headless sync, and diagnostics detail.
+Stable config v1 gains an additive +features+ block and continues to preserve
+unknown top-level and block fields. Profile/provider compatibility is checked
+by read-only +verify+.
+
+Generated-once files become consumer-owned immediately. They include domain
+contracts, models, schemas, migrations, provider policy, and business rules.
+Fully managed output is limited to manifests, contract registries, and
+mechanical composition wiring covered by a generation namespace and semantic
+digest. Generated updates never overwrite consumer-owned entities, schemas,
+migrations, or rules.
+
+== Runtime hosts
+
++BootstrapCoordinator+ executes named steps over one +ResourceTransaction+
+with typed failures, cancellation, deadlines, progress, rollback, and a typed
+report. Unexpected crashes roll back and retain their original stack.
+
++ApplicationHost+ owns loading, failure, retry, atomic publication, and final
+application teardown. +SessionRuntimeController+ owns session generations for
+login, forced logout, tenant switch, and replacement. Application resources
+outlive sessions. A prior session graph is never closed until a route owner
+explicitly confirms that every route borrowing it has been removed.
++SessionHost+ observes the controller but never passes +BuildContext+ into a
+domain API or uses a router/service locator as a dependency.
+
+== Resilience boundary
+
++dartitect_resilience+ depends only on +dartitect+ and contains:
+
+* +RetryExecutor+, +RetryPolicy+, +RetryDecision+, bounded backoff, and jitter;
+* injected clock, scheduler, and randomness plus attempt, budget, and deadline
+  bounds;
+* +SingleFlight+, circuit breaker, bulkhead, and rate limiter primitives.
+
+Only expected typed failures are classified. Unexpected exceptions remain
+crashes and are rethrown. An uncertain mutation result can never be classified
+for automatic retry. Cancelling a single-flight waiter detaches only that
+waiter; shared work is cancelled only when its owner closes or no waiters
+remain. +MutationCommand+ reuses the retry executor without changing its
+existing constructors or durable uncertainty rules.
+
+== Jobs and transfer
+
++dartitect_jobs+ defines versioned envelopes, definitions, handlers,
+dispatchers, acceptance/terminal receipts, and optional store/lease/fencing
+ports. Each admitted job creates and owns a fresh +OwnedGraph+, cancellation
+source, deadline timer, deduplication entry, and typed progress stream.
+Concurrency and remembered receipts are bounded. Native scheduling,
+recurrence, credentials, payload schema, and retries remain consumer policy.
+
+The existing +HeadlessSyncEndpoint+ becomes a compatibility adapter over jobs.
+It preserves protocol validation, duplicate receipts, fresh-graph ownership,
+typed failures, crash rethrow, and drain-on-dispose behavior. It adds no retry.
+
++dartitect_transfer+ defines source, sink, transport, chunks, checksums,
+checkpoints, pause/resume/cancel, and typed progress. A checkpoint is persisted
+only after the sink confirms a durable chunk commit. ETag, HTTP Range,
+idempotency, authentication, and remote protocol remain explicit consumer
+policies. +DioTransferTransport+ uses the real Dio boundary and never records a
+URL, headers, body, query, credentials, or domain identifiers.
+
+== Contract matrices and diagnostics
+
++dartitect_testing+ exposes +FeatureContractMatrix.online+,
++FeatureContractMatrix.cache+, +FeatureContractMatrix.replica+, and
++FeatureContractMatrix.offlineFull+. Typed fixtures return framework-neutral
+contract results; package consumers may bridge those results into
++package:test+ or another test framework. Existing ownership, sync, repository,
+and diagnostics harnesses remain authoritative.
+
+Diagnostics protocol v2 covers owners, graphs, nodes, commands, resources,
+families, effects, sync, isolates, jobs, transfer, and hosts. Events contain
+only fixed enums, emitter-owned opaque IDs, monotonic sequence/time, counters,
+generations, and revisions. The exact decoder rejects arbitrary metadata,
+URLs, domain keys, dynamic error messages, stack traces, and user identifiers.
+All participating subsystems accept explicit off/lifecycle/topology
+instrumentation; the protocol is not considered DevTools-ready until the
+paved-road canary observes every category and proves complete disposal.
+
+== Paved-road canary and fleet
+
++examples/paved_road_canary+ is synthetic and credential-free. It covers all
+four profiles plus hosts, progress, lazy computed, restoration, history,
+resilience, jobs, transfer, and diagnostics. It validates per-isolate discovery,
+the three read-only RPCs, ring bounds, complete disposal, and diagnostics-off
+versus topology overhead.
+
++DartitectFleetService+ remains read-only and never starts a process.
++DartitectFleetCanaryService+ requires an exact candidate commit or verified
+archive, copies each selected consumer into a temporary directory, injects the
+candidate path/SHA only in that copy, runs only reviewed commands, sanitizes
+logs, writes bounded receipts, verifies the original SHA and worktree bytes did
+not change, and removes the copy in +finally+.
+
+Fleet reports aggregate package versions, feature profiles, persistence and
+transport providers, and declared contract-matrix coverage. They never infer a
+behavioral guarantee from configuration alone.
+
+== Analyzer policy
+
+Only low-false-positive lifecycle findings are added. RC5 detects a temporary
+disposable value constructed directly for a borrowed host +.value+
+constructor. Profile/provider compatibility and contract coverage remain
++verify+ findings, not Analyzer lints. CLI and Analyzer codes remain stable and
+share the parity corpus; fixes are registered only when deterministic.
+
+== Commit and validation sequence
+
+The pull request uses focused Conventional Commits in dependency order:
+
+. +docs: define RC5 paved-road architecture+
+. +feat(core): add typed progress and bounded local history+
+. +feat(reactive): add explicit lazy computed+
+. +feat(flutter): add versioned UI restoration+
+. +feat(resilience): add bounded resilience primitives+
+. +feat(jobs): add generic headless job runtime+
+. +refactor(sync): run headless sync through jobs+
+. +feat(transfer): add resumable transfer contracts+
+. +feat(adapters): add Dio transfer transport+
+. +feat(runtime): add application and session hosts+
+. +feat(cli): add feature profiles and generated wiring+
+. +feat(testing): add feature contract matrices+
+. +feat(analyzer): add lifecycle and profile diagnostics+
+. +feat(diagnostics): instrument protocol v2+
+. +feat(devtools): add read-only inspector and paved-road canary+
+. +feat(fleet): add profile report and isolated canary runner+
+. +docs: update catalogs guides skills and examples+
+. +chore: align RC5 release authorities+
+
+Focused formatting, analysis, and tests run before each commit. Final local
+evidence includes formatting, analysis, every package/example test, boundary
+parity, generated-consumer matrices, DevTools build/validation, benchmarks,
+native/web fixtures, documentation and supply-chain audits, publication
+dry-runs, API snapshot, and release contracts. Verification must leave the
+tracked tree unchanged.
+
+Only after local evidence is complete may the branch be pushed and the single
+pull request +feat: add RC5 paved-road platform+ be opened. GitHub Actions runs
+on that merge candidate. This plan does not authorize a tag, release, package
+publication, ruleset bypass, or direct update to +main+.

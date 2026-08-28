@@ -1,0 +1,81 @@
+= ADR 0043: Activate the RC5 paved-road platform
+
+Status:: Accepted for +1.0.0-rc.5+ development; supersedes the optional-slice
+deferral in ADR 0035 and the diagnostics construction deferral in ADR 0034
+
+== Context
+
+ADR 0035 correctly prevented five optional capabilities from becoming public
+without a dedicated decision, consumer evidence, benchmarks, and a package
+boundary review. Its machine-readable authority explicitly recorded
++blocksStable1: false+: the slices did not block stable 1.0, but public exposure
+was gated. ADR 0034 likewise kept diagnostics construction experimental until
+real use, performance, ownership, and discard evidence existed.
+
+RC5 now has one end-to-end consumer workload: the credential-free
++paved_road_canary+. The workload exercises online, cached, replicated, and
+offline-full paths without a commercial application, private API, token, or
+domain rule. A synthetic workload is preferable evidence for this boundary
+because it can deterministically force every lifecycle, cancellation, stale
+completion, retention, protocol, and disposal case while remaining publishable
+and reproducible.
+
+== Decision
+
+Activate +explicit-lazy-computed+, +typed-command-progress+,
++versioned-ui-restoration+, +bounded-local-history+, and
++readonly-devtools-diagnostics+ for RC5. The canary is accepted as the consumer
+evidence field for all five slices. Each slice retains its own benchmark and
+package-boundary evidence in +tool/optional_slice_gate.json+.
+
++ReactiveLazyComputed+ reuses +ReactiveOwner+ and explicit listenable
+dependencies. It adds no implicit/global dependency tracking. Typed progress
+uses +OperationProgress+, +ProgressReporter+, and
++CommandExecutionContext+; it is a bounded execution-scoped channel, not an
+event bus. Restoration is a versioned Flutter UI envelope with consumer codecs
+and migrations, never durable repository state. Local history accepts values
+only and cannot execute or reverse external effects.
+
+Diagnostics advance to exact protocol v2 and are instrumented across the
+paved-road subsystems before DevTools activation. The optional
++dartitect_devtools+ package registers only +capabilities+, +snapshot+, and
++events+ service extensions in each explicitly enabled development isolate.
+It exposes no command, mutation, arbitrary metadata, domain payload, or product
+mode registration.
+
+The four new packages have narrow boundaries:
+
+* +dartitect_resilience+ is pure Dart and depends only on core;
+* +dartitect_jobs+ owns generic headless execution, not native scheduling;
+* +dartitect_transfer+ owns resumable local mechanics, not a remote protocol;
+* +dartitect_devtools+ owns optional read-only development inspection.
+
+The existing +ResourceTransaction+, +OwnedGraph+, +OwnedRuntimeSlot+,
++ResourceFamily+, +DartitectFleetReport+, and read-only fleet service remain
+authoritative. No replacement container, unbounded cache, second fleet writer,
+universal repository, authentication layer, router, database, or utility
+package is introduced.
+
+== Evidence and promotion gate
+
+RC5 evidence requires public-entrypoint tests, deterministic clocks/schedulers,
+bounded overflow, cancellation, stale-execution rejection, rollback, reverse
+disposal, diagnostics-off allocation, protocol exactness, Flutter restoration,
+the built/validated web extension, and the paved-road canary. Benchmarks cover
+lazy compute and diagnostics/DevTools overhead. Boundary review verifies the
+23-package/24-entrypoint topology and all consumer-owned exclusions.
+
+No slice is stable merely because this ADR activates it for RC5. Promotion to
+1.0 requires the complete release gates. A slice is removed before stable if it
+requires implicit tracking, arbitrary diagnostics metadata, hidden retries,
+unbounded retention, product-mode DevTools registration, provider leakage, or
+ownership that the canary cannot drain.
+
+== Consequences
+
+ADR 0035 remains the historical explanation for the original gate, but its
+five +DEFERRED+ decisions are replaced by this activation. ADR 0034 remains the
+authority for explicit derived resources and payload-free diagnostics; only its
+construction/consumer deferral is replaced. The activation is a development
+reference and does not authorize a tag, GitHub release, pub.dev publication, or
+early package rollout.

@@ -1,6 +1,6 @@
 = ADR-0034: Derived async resources and diagnostics protocol v1
 
-Status:: ACCEPTED; public construction APIs remain EXPERIMENTAL
+Status:: ACCEPTED; diagnostics construction deferral superseded by ADR 0043
 
 Context:: Features that derive asynchronous data from multiple Flutter
 listenables otherwise repeat subscription, cancellation, stale-result, and
@@ -62,21 +62,19 @@ payload-free diagnostics. `benchmark_diagnostics.dart` executes five debug and
 profile samples, enforces off/topology budgets, fills the bounded ring, and
 requires zero retained events after disposal.
 
-Experimental and discard contract:: `DerivedAsyncResource`, the new stale and
-restart policies, and diagnostics construction/reporting APIs carry
-`experimentalDartitectApi`. Protocol schema 1 is versioned and must not be
-silently reinterpreted, but public construction APIs are not stable until a
-real application use and package/API review are recorded. Before stable 1.0,
-remove the experimental surface without compatibility migration if no real use
-exists, the generation/leak gates fail, diagnostics require domain payload, or
-the capability requires implicit dependency tracking/global hooks. Promotion
-requires preserving this discard decision, benchmark budgets, and ownership
-tests in a dedicated review.
+Experimental and discard contract:: `DerivedAsyncResource` retains its
+experimental marker and discard contract. ADR 0043 accepts the dedicated RC5
+paved-road canary, performance gate, ownership evidence, and package review for
+diagnostics construction, and advances that exact payload-free protocol to
+version 2. Before stable 1.0, remove any surface whose generation/leak gates
+fail, requires domain payload, or requires implicit dependency tracking/global
+hooks. Promotion requires preserving the benchmark budgets and ownership tests
+in a dedicated review.
 
 Consequences:: Derived asynchronous wiring reuses one authoritative resource
 lifecycle and one bounded family implementation. Restart-latest deliberately
 waits for non-cooperative work to drain, so a provider that never completes can
 delay teardown but still cannot publish stale data. Diagnostics can be absent,
 reduced, buffered locally, or routed to an injected destination without
-changing application outcomes. There is no DevTools mutation surface or remote
-destination in this decision.
+changing application outcomes. ADR 0043 adds an optional read-only DevTools
+consumer; there is still no DevTools mutation surface or remote destination.

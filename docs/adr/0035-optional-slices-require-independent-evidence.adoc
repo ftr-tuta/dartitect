@@ -1,6 +1,6 @@
 = ADR-0035: Optional slices require independent evidence
 
-Status:: ACCEPTED
+Status:: SUPERSEDED by ADR 0043 for RC5 activation
 
 Context:: Goal 08 lists five possible capabilities but explicitly defines the
 list as a gated backlog, not sequential implementation authority. Each slice
@@ -30,7 +30,8 @@ printing, or any external effect. A first DevTools slice must be read-only.
 Changing one slice to active requires a dedicated decision/evidence change; it
 does not authorize any sibling slice.
 
-Consequences:: These deferrals do not block stable 1.0 and add no public API,
-package, dependency, persistence format, or DevTools integration. The release
-candidate remains honest about missing evidence instead of silently presenting
-the backlog as implemented scope.
+Consequences:: These deferrals did not block stable 1.0
+(+blocksStable1: false+). ADR 0043 records the dedicated synthetic canary,
+benchmark, and package-boundary evidence that activates all five slices for
+RC5. This ADR remains the historical authority for why none could be exposed
+before that evidence existed.
