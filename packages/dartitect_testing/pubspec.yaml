@@ -12,9 +12,12 @@ environment:
 dependencies:
   dartitect: '>=1.0.0-rc.4 <1.0.0'
   dartitect_isolates: '>=1.0.0-rc.4 <1.0.0'
+  dartitect_jobs: '>=1.0.0-rc.4 <1.0.0'
   dartitect_modeling: '>=1.0.0-rc.4 <1.0.0'
   dartitect_observability: '>=1.0.0-rc.4 <1.0.0'
+  dartitect_resilience: '>=1.0.0-rc.4 <1.0.0'
   dartitect_sync: '>=1.0.0-rc.4 <1.0.0'
+  dartitect_transfer: '>=1.0.0-rc.4 <1.0.0'
 
 dev_dependencies:
   test: ^1.26.3
