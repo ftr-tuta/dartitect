@@ -126,6 +126,14 @@ final class DartitectModelingRule extends MultiAnalysisRule {
     uniqueName: 'DartitectModelingRule.DT1043',
   );
 
+  /// Mapper target, compatibility, or consumer hook cannot be proven safe.
+  static const mapperContract = LintCode(
+    'dartitect_dt1044',
+    'DT1044: Mapper fields require lossless compatibility or explicit hooks.',
+    correctionMessage: 'Use semantically assignable fields or exact consumer-owned converters.',
+    uniqueName: 'DartitectModelingRule.DT1044',
+  );
+
   /// Stable compiler-rule to Analyzer-code mapping.
   static const Map<String, LintCode> codes = <String, LintCode>{
     'DT1030': primaryConstructor,
@@ -141,6 +149,7 @@ final class DartitectModelingRule extends MultiAnalysisRule {
     'DT1041': bodyState,
     'DT1042': analyzerError,
     'DT1043': jsonCodecContract,
+    'DT1044': mapperContract,
   };
 
   @override

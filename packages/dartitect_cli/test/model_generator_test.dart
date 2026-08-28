@@ -104,6 +104,7 @@ part 'more_models.dart';
 part 'models.dartitect.g.dart';
 
 @DartitectValue()
+@DartitectProjection(name: 'value_only', fields: <String>['value'])
 final class const Box<T extends Object>({
   required final T value,
   final (int, {String label}) metadata = (0, label: ''),
@@ -135,6 +136,10 @@ final class const Pair({
       expect(output, contains('mixin _\$BoxDartitect<T extends Object>'));
       expect(output, contains('(int, {String label}) get metadata'));
       expect(output, contains('mixin _\$PairDartitect'));
+      expect(
+        output,
+        contains('typedef BoxValueOnlyDartitectProjection<T extends Object>'),
+      );
 
       await generator.apply();
       final analyzed = await Process.run(Platform.resolvedExecutable, <String>[
@@ -416,6 +421,88 @@ abstract final class PayloadHooks {
     },
   );
 
+  test(
+    'generated projections lenses and mappers execute typed contracts',
+    () async {
+      final root = await _modelPackage();
+      addTearDown(() => root.delete(recursive: true));
+      await File('${root.path}/lib/profile.dart').writeAsString(r'''
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+part 'profile.dartitect.g.dart';
+
+final class ProfileDto {
+  const ProfileDto({
+    required this.id,
+    required this.displayName,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String displayName;
+  final String createdAt;
+}
+
+final class AuditDto {
+  const AuditDto({required this.id, this.note = 'default'});
+
+  final String id;
+  final String note;
+}
+
+@DartitectMapper(AuditDto)
+final class const Audit({required final String id});
+
+@DartitectValue()
+@DartitectProjection(name: 'summary', fields: <String>['id', 'label'])
+@DartitectMapper(ProfileDto, bidirectional: true)
+final class const Profile({
+  required final String id,
+  @DartitectField(targetName: 'displayName') required final String label,
+  @DartitectField(
+    mapToWith: 'ProfileHooks.dateToString',
+    mapFromWith: 'ProfileHooks.stringToDate',
+  )
+  required final DateTime createdAt,
+}) extends ValueEquality with _$ProfileDartitect;
+
+abstract final class ProfileHooks {
+  static Result<String, DartitectMappingFailure> dateToString(
+    DateTime value,
+    DartitectMappingPath path,
+  ) => Ok<String>(value.toIso8601String());
+
+  static Result<DateTime, DartitectMappingFailure> stringToDate(
+    String value,
+    DartitectMappingPath path,
+  ) {
+    final parsed = DateTime.tryParse(value);
+    return parsed == null
+        ? DartitectMappingFailure.result<DateTime>(
+            DartitectMappingFailureKind.converterRejected,
+            path,
+          )
+        : Ok<DateTime>(parsed);
+  }
+}
+''');
+      final generator = DartitectModelGenerator(root);
+
+      await generator.apply();
+      final output = await File('${root.path}/lib/profile.dartitect.g.dart')
+          .readAsString();
+
+      expect(output, contains('final class ProfileDartitectFields'));
+      expect(output, contains('typedef ProfileSummaryDartitectProjection'));
+      expect(
+        output,
+        contains('final class ProfileToProfileDtoDartitectMapper'),
+      );
+      expect(output, contains('final class AuditToAuditDtoDartitectMapper'));
+      expect(output, contains('ProfileHooks.dateToString'));
+      await _runGeneratedProjectionMappingContract(root);
+    },
+  );
+
   test('CLI sync previews by default and check remains read-only', () async {
     final root = await _modelPackage();
     addTearDown(() => root.delete(recursive: true));
@@ -677,6 +764,93 @@ void main() {
   for (final arguments in <List<String>>[
     <String>['analyze'],
     <String>['run', 'bin/generic_json_contract.dart'],
+  ]) {
+    final result = await Process.run(
+      Platform.resolvedExecutable,
+      arguments,
+      workingDirectory: root.path,
+    );
+    expect(
+      result.exitCode,
+      0,
+      reason:
+          'dart ${arguments.join(' ')} failed:\n'
+          '${result.stdout}\n${result.stderr}',
+    );
+  }
+}
+
+Future<void> _runGeneratedProjectionMappingContract(Directory root) async {
+  await Directory('${root.path}/bin').create();
+  await File('${root.path}/bin/projection_mapping_contract.dart')
+      .writeAsString(r'''
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+import 'package:model_fixture/profile.dart';
+
+void expectContract(bool condition, String message) {
+  if (!condition) throw StateError(message);
+}
+
+void main() {
+  final instant = DateTime.utc(2026, 8, 27);
+  final profile = Profile(id: 'one', label: 'Ada', createdAt: instant);
+  final summary = selectProfileSummary(profile);
+  expectContract(summary.id == 'one' && summary.label == 'Ada', 'projection');
+
+  final updated = profileDartitectFields.label.write(profile, 'Grace');
+  expectContract(updated.label == 'Grace', 'lens writes replacement');
+  expectContract(profile.label == 'Ada', 'lens preserves source');
+  expectContract(
+    profileDartitectFields.id.descriptor.name == 'id',
+    'descriptor name',
+  );
+
+  final mapped = profileToProfileDtoDartitectMapper.toTarget(profile);
+  switch (mapped) {
+    case Ok<dynamic>(:final value):
+      final target = value as ProfileDto;
+      expectContract(target.id == 'one', 'automatic mapping');
+      expectContract(target.displayName == 'Ada', 'explicit rename');
+      expectContract(target.createdAt == instant.toIso8601String(), 'hook');
+    case Err<Object>(:final failure):
+      throw StateError('unexpected forward failure: $failure');
+  }
+
+  final oneWay = auditToAuditDtoDartitectMapper.toTarget(
+    const Audit(id: 'audit'),
+  );
+  switch (oneWay) {
+    case Ok<dynamic>(:final value):
+      final audit = value as AuditDto;
+      expectContract(audit.id == 'audit', 'one-way mapping');
+      expectContract(audit.note == 'default', 'target optional default');
+    case Err<Object>(:final failure):
+      throw StateError('unexpected one-way failure: $failure');
+  }
+
+  final reversed = profileToProfileDtoDartitectMapper.fromTarget(
+    const ProfileDto(id: 'two', displayName: 'Lin', createdAt: 'invalid'),
+  );
+  switch (reversed) {
+    case Ok<dynamic>():
+      throw StateError('invalid converter input was accepted');
+    case Err<Object>(:final failure):
+      final mappingFailure = failure as DartitectMappingFailure;
+      expectContract(
+        mappingFailure.kind == DartitectMappingFailureKind.converterRejected,
+        'failure kind',
+      );
+      expectContract(
+        mappingFailure.path.sourceField == 'createdAt' &&
+            mappingFailure.path.targetField == 'createdAt',
+        'failure path',
+      );
+  }
+}
+''');
+  for (final arguments in <List<String>>[
+    <String>['analyze'],
+    <String>['run', 'bin/projection_mapping_contract.dart'],
   ]) {
     final result = await Process.run(
       Platform.resolvedExecutable,

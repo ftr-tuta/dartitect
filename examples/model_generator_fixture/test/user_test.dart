@@ -42,4 +42,29 @@ void main() {
       ),
     );
   });
+
+  test('generated descriptor projection lens and mapper stay typed', () {
+    const user = User(id: '1', email: 'old@example.test');
+
+    expect(userDartitectFields.id.read(user), '1');
+    expect(
+      userDartitectFields.email.write(user, 'new@example.test'),
+      const User(id: '1', email: 'new@example.test'),
+    );
+    expect(selectUserSummary(user), (id: '1'));
+    expect(
+      userToUserDtoDartitectMapper.toTarget(user),
+      isA<Ok<UserDto>>().having(
+        (result) => result.value.identifier,
+        'identifier',
+        '1',
+      ),
+    );
+    expect(
+      userToUserDtoDartitectMapper.fromTarget(
+        const UserDto(identifier: '2', email: null),
+      ),
+      const Ok<User>(User(id: '2', email: null)),
+    );
+  });
 }

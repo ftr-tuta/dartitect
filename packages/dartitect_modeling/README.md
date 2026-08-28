@@ -35,3 +35,26 @@ The generator handles only lossless scalar, generic-codec, and immutable
 collection composition. Dates, enums, identifiers, records, narrowing, and
 other semantic conversions require a consumer-owned static decoder/encoder
 pair named by `DartitectField`.
+
+## Projections and lenses
+
+`@DartitectProjection(name: ..., fields: ...)` generates a named-record typedef,
+a pure selector, and typed field descriptors/lenses. An empty `fields` list
+selects every primary-constructor field; otherwise declaration order is the
+explicit list order. A lens reconstructs the immutable model and never exposes
+mutation or reflection. Projection support does not enable value equality,
+JSON, or mappers.
+
+## Boundary mappers
+
+`@DartitectMapper(Target)` generates a pure mapper returning
+`Result<Target, DartitectMappingFailure>`. Set `bidirectional: true` only when
+every reverse field is independently lossless. `DartitectField(targetName: ...)`
+is the only automatic rename metadata. Exact consumer-owned static
+`mapToWith`/`mapFromWith` hooks make semantic conversion visible and retain a
+payload-free declared-field path on expected failures.
+
+Automatic mapping is restricted to semantically assignable, lossless scalars
+and Dartitect immutable collections. Narrowing, enum/string, dates, IDs,
+relations, flattening, and provider schemas are never inferred. Mapper targets
+and hooks remain consumer-owned.

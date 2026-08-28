@@ -153,7 +153,7 @@
       "entrypoints": [
         "dartitect_modeling.dart"
       ],
-      "publicSymbolCount": 39
+      "publicSymbolCount": 50
     },
     {
       "name": "dartitect_modeling_analyzer",
@@ -242,13 +242,14 @@
       "runtimeDependencies": [
         "dartitect",
         "dartitect_isolates",
+        "dartitect_modeling",
         "dartitect_observability",
         "dartitect_sync"
       ],
       "entrypoints": [
         "dartitect_testing.dart"
       ],
-      "publicSymbolCount": 44
+      "publicSymbolCount": 48
     }
   ]
 }

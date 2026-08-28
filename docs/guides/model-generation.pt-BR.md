@@ -4,14 +4,15 @@
 
 ## Escopo 1.0 e contrato do source
 
-A geração de modelos se limita a boilerplate opt-in de values imutáveis e JSON. O gerador
+A geração de modelos se limita a boilerplate opt-in de values imutáveis, JSON,
+projections e mapping de boundary. O gerador
 varre `lib/**` e cada árvore imediata `packages/*/lib/**` sem seguir symlinks.
 Uma library anotada pode conter modelos na unit de definição e em parts; todos
 os modelos compartilham um único part Dartitect determinístico.
 
 | Contrato | Forma suportada em 1.0 | Forma rejeitada |
 |---|---|---|
-| Annotation | Elementos independentes `@DartitectValue()` e `@DartitectJson()` resolvidos de `package:dartitect_modeling`, inclusive por prefixo e reexport | Capabilities homônimas, não resolvidas ou ativadas implicitamente |
+| Annotation | Elementos independentes `@DartitectValue()`, `@DartitectJson()`, `@DartitectProjection(...)` e `@DartitectMapper(...)` resolvidos de `package:dartitect_modeling`, inclusive por prefixo e reexport | Capabilities homônimas, não resolvidas ou ativadas implicitamente |
 | Classe | `final` concreta, estende `ValueEquality` e aplica `_$TypeDartitect` | Abstrata, não final ou com herança complexa |
 | Part | Exatamente um `part '<source>.dartitect.g.dart';` | Part ausente, duplicado ou incompatível |
 | Campos | Ao menos um campo público, tipado, nomeado e `final` no primary constructor | Campos privados, inferidos, positional, late ou mutáveis |
@@ -77,6 +78,22 @@ call site. Desativar limites numéricos exige metadata explícita na annotation
 ou `DartitectJsonLimits.trusted`; validação de forma JSON, números finitos e
 ciclos continua habilitada. Trusted mode nunca altera a policy de unknown keys.
 
+## Projections, descriptors e mappers gerados
+
+`@DartitectProjection` emite descriptors/lenses tipados e um selector de record
+nomeado explicitamente. Os campos selecionados são explícitos e ordenados; uma
+lista vazia seleciona visivelmente todos os campos. Lenses reconstroem pelo
+primary constructor validado e não expõem interface mutável.
+
+`@DartitectMapper(Target)` emite mapper puro one-way que retorna `Result`.
+Geração bidirecional exige `bidirectional: true` e compatibilidade reversa
+comprovada separadamente. Decisões automáticas se limitam a campos escalares e
+de collections imutáveis semanticamente assignable/lossless. Metadata explícita
+`targetName`, `mapToWith` e `mapFromWith` possui renames e hooks estáticos exatos.
+`DT1044` rejeita target ou campo inseguro antes do renderer. Narrowing,
+enum/string, datas, IDs, relations, flattening e schemas provider-owned nunca
+são inferidos.
+
 ## Commands, freshness e ownership no Git
 
 | Command | Escreve | Recovery | Comportamento de saída |
@@ -118,7 +135,7 @@ registrado.
 
 | Artefato | Schema 1.0 | Regra de compatibilidade |
 |---|---:|---|
-| Assinatura semântica de input do modelo | 3 | Inclui identidade da library, capabilities, generics, defaults, types, policy JSON, renames, hooks e todos os modelos do part gerado |
+| Assinatura semântica de input do modelo | 4 | Inclui identidade da library, capabilities, generics, defaults, types, policy JSON, projections, decisões de compatibilidade de mappers, renames, hooks e todos os modelos do part gerado |
 | Relatório JSON do command | 1 | Consumidores devem selecionar explicitamente o schema suportado |
 | `.dartitect/model-outputs.json` | 1 | Ownership ausente conflita com outputs candidatos; schemas malformados, anteriores ou futuros falham fechado |
 | `.dartitect/generation-journal.json` | 2 | Schemas malformados, anteriores ou futuros interrompem recovery e preservam resíduos para diagnóstico |

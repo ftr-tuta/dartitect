@@ -37,10 +37,18 @@ final class DartitectJson {
 /// Opts one model into generated record projections and typed lenses.
 final class DartitectProjection {
   /// Creates a named projection capability.
-  const DartitectProjection({this.name = 'default'});
+  const DartitectProjection({
+    this.name = 'default',
+    this.fields = const <String>[],
+  });
 
   /// Stable projection name used in generated symbols and metadata.
   final String name;
+
+  /// Ordered model fields selected into the record.
+  ///
+  /// An empty list explicitly selects all fields.
+  final List<String> fields;
 }
 
 /// Opts one source model into an explicit boundary mapper.

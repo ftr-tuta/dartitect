@@ -466,9 +466,12 @@ final class ModelingCompiler {
         .toList(growable: false);
     final projections = <ModelingProjectionIr>[];
     final projectionNames = <String>{};
+    final projectionSymbols = <String>{};
     for (final annotation in projectionAnnotations) {
       final name = _stringField(annotation, 'name') ?? 'default';
-      if (name.isEmpty || !projectionNames.add(name)) {
+      if (name.isEmpty ||
+          !projectionNames.add(name) ||
+          !projectionSymbols.add(_generatedSuffix(name))) {
         reject(
           'DT1040',
           'Projection names must be non-empty and unique.',
@@ -476,14 +479,31 @@ final class ModelingCompiler {
         );
         continue;
       }
+      final requested = _stringListField(annotation, 'fields');
+      final selected = requested.isEmpty
+          ? <String>[for (final field in fields) field.name]
+          : requested;
+      final available = <String>{for (final field in fields) field.name};
+      if (!_validGeneratedName(name) ||
+          selected.isEmpty ||
+          selected.toSet().length != selected.length ||
+          selected.any((field) => !available.contains(field))) {
+        reject(
+          'DT1040',
+          'Projection names and selected fields must be valid and unique.',
+          annotation,
+        );
+        continue;
+      }
       projections.add(
         ModelingProjectionIr(
           name: name,
-          fields: <String>[for (final field in fields) field.name],
+          fields: List<String>.unmodifiable(selected),
         ),
       );
     }
     final mappers = <ModelingMapperIr>[];
+    final mapperSymbols = <String>{};
     for (final annotation in mapperAnnotations) {
       final target = annotation.elementAnnotation
           ?.computeConstantValue()
@@ -497,11 +517,149 @@ final class ModelingCompiler {
         );
         continue;
       }
+      final targetInterface = target is InterfaceType ? target : null;
+      final targetElement = targetInterface?.element;
+      final targetClass = targetElement is ClassElement ? targetElement : null;
+      final targetConstructor = targetClass?.unnamedConstructor;
+      final bidirectional = _boolField(annotation, 'bidirectional') ?? false;
+      if (targetInterface == null ||
+          targetClass == null ||
+          targetClass.typeParameters.isNotEmpty ||
+          targetConstructor == null ||
+          targetConstructor.formalParameters.any(
+            (parameter) => !parameter.isNamed || parameter.name == null,
+          )) {
+        reject(
+          'DT1044',
+          'Mapper targets require a non-generic class with an unnamed named-parameter constructor.',
+          annotation,
+        );
+        continue;
+      }
+      final targetName = targetClass.name;
+      if (targetName == null ||
+          targetName.isEmpty ||
+          !mapperSymbols.add(targetName)) {
+        reject(
+          'DT1044',
+          'Mapper targets must produce unique generated mapper symbols.',
+          annotation,
+        );
+        continue;
+      }
+      final targetParameters = <String, FormalParameterElement>{
+        for (final parameter in targetConstructor.formalParameters)
+          parameter.name!: parameter,
+      };
+      final decisions = <ModelingCompatibilityDecisionIr>[];
+      final mappedTargets = <String>{};
+      for (final field in fields) {
+        final targetName = field.targetName ?? field.name;
+        final parameter = targetParameters[targetName];
+        final targetField = targetClass.getField(targetName);
+        final sourceType = fieldTypes[field.name]!;
+        if (parameter == null ||
+            targetField == null ||
+            targetField.isStatic ||
+            targetField.name?.startsWith('_') == true ||
+            !_sameType(
+              classElement.library,
+              parameter.type,
+              targetField.type,
+            ) ||
+            !mappedTargets.add(targetName)) {
+          reject(
+            'DT1044',
+            'Every mapper field requires one readable constructor-owned target field.',
+            annotation,
+          );
+          continue;
+        }
+        final mapToHook = field.mapToHook;
+        final mapFromHook = field.mapFromHook;
+        final hasAnyHook = mapToHook != null || mapFromHook != null;
+        final validHookShape =
+            _validHookName(mapToHook) &&
+            _validHookName(mapFromHook) &&
+            mapToHook != null &&
+            (!bidirectional || mapFromHook != null) &&
+            (bidirectional || mapFromHook == null);
+        if (hasAnyHook &&
+            (!validHookShape ||
+                !_validMappingHooks(
+                  classElement.library,
+                  sourceType,
+                  parameter.type,
+                  mapToHook,
+                  mapFromHook,
+                  bidirectional: bidirectional,
+                ))) {
+          reject(
+            'DT1044',
+            'Mapper hooks must be consumer-owned static Result converters with exact signatures.',
+            annotation,
+          );
+          continue;
+        }
+        if (!hasAnyHook &&
+            !_automaticMappingIsLossless(
+              classElement.library,
+              sourceType,
+              parameter.type,
+              bidirectional: bidirectional,
+            )) {
+          reject(
+            'DT1044',
+            'Mapper fields must be semantically assignable and lossless or use explicit converters.',
+            annotation,
+          );
+          continue;
+        }
+        decisions.add(
+          ModelingCompatibilityDecisionIr(
+            sourceField: field.name,
+            targetField: targetName,
+            sourceType: _typeIr(sourceType),
+            targetType: _typeIr(parameter.type),
+            compatibility: hasAnyHook
+                ? ModelingCompatibility.explicitConverter
+                : ModelingCompatibility.assignableLossless,
+            reason: hasAnyHook
+                ? 'consumer-owned-static-converter'
+                : 'semantic-assignable-lossless',
+            mapToHook: mapToHook,
+            mapFromHook: mapFromHook,
+          ),
+        );
+      }
+      final missingRequired = targetParameters.values.where(
+        (parameter) =>
+            parameter.isRequiredNamed &&
+            !mappedTargets.contains(parameter.name),
+      );
+      if (missingRequired.isNotEmpty ||
+          (bidirectional && mappedTargets.length != targetParameters.length)) {
+        reject(
+          'DT1044',
+          'Mapper target constructor fields are not covered losslessly.',
+          annotation,
+        );
+        continue;
+      }
+      if (decisions.length != fields.length) continue;
+      final targetReference = annotation.arguments?.arguments.first.toSource();
+      if (targetReference == null || targetReference.isEmpty) {
+        reject('DT1044', 'Mapper target source reference is unavailable.');
+        continue;
+      }
       mappers.add(
         ModelingMapperIr(
           targetType: _typeIr(target),
-          bidirectional: _boolField(annotation, 'bidirectional') ?? false,
-          decisions: const <ModelingCompatibilityDecisionIr>[],
+          targetReference: targetReference,
+          bidirectional: bidirectional,
+          decisions: List<ModelingCompatibilityDecisionIr>.unmodifiable(
+            decisions,
+          ),
         ),
       );
     }
@@ -661,6 +819,16 @@ String? _stringField(Annotation? annotation, String field) => annotation
     ?.getField(field)
     ?.toStringValue();
 
+List<String> _stringListField(Annotation annotation, String field) =>
+    annotation.elementAnnotation
+        ?.computeConstantValue()
+        ?.getField(field)
+        ?.toListValue()
+        ?.map((value) => value.toStringValue())
+        .whereType<String>()
+        .toList(growable: false) ??
+    const <String>[];
+
 bool? _boolField(Annotation annotation, String field) => annotation
     .elementAnnotation
     ?.computeConstantValue()
@@ -710,6 +878,15 @@ bool _validHookName(String? name) {
       .hasMatch(name);
 }
 
+bool _validGeneratedName(String name) =>
+    RegExp(r'^[A-Za-z][A-Za-z0-9_]*$').hasMatch(name);
+
+String _generatedSuffix(String value) => value
+    .split('_')
+    .where((segment) => segment.isNotEmpty)
+    .map((segment) => '${segment[0].toUpperCase()}${segment.substring(1)}')
+    .join();
+
 bool _validJsonHookPair(
   LibraryElement library,
   DartType fieldType,
@@ -732,6 +909,125 @@ bool _validJsonHookPair(
         first: (type) => _sameType(library, type, fieldType),
       ) &&
       _isJsonResult(encode.returnType, _isObjectQuestion);
+}
+
+bool _validMappingHooks(
+  LibraryElement library,
+  DartType sourceType,
+  DartType targetType,
+  String? mapToName,
+  String? mapFromName, {
+  required bool bidirectional,
+}) {
+  if (mapToName == null) return false;
+  final mapTo = _lookupHook(library, mapToName);
+  if (mapTo == null ||
+      !_validMappingHook(
+        mapTo,
+        inputType: sourceType,
+        outputType: targetType,
+        library: library,
+      )) {
+    return false;
+  }
+  if (!bidirectional) return mapFromName == null;
+  if (mapFromName == null) return false;
+  final mapFrom = _lookupHook(library, mapFromName);
+  return mapFrom != null &&
+      _validMappingHook(
+        mapFrom,
+        inputType: targetType,
+        outputType: sourceType,
+        library: library,
+      );
+}
+
+bool _validMappingHook(
+  ExecutableElement hook, {
+  required DartType inputType,
+  required DartType outputType,
+  required LibraryElement library,
+}) {
+  final parameters = hook.formalParameters;
+  return parameters.length == 2 &&
+      parameters.every((parameter) => parameter.isRequiredPositional) &&
+      _sameType(library, parameters.first.type, inputType) &&
+      _isInterface(
+        parameters.last.type,
+        'DartitectMappingPath',
+        'package:dartitect_modeling/src/projection_mapping.dart',
+      ) &&
+      _isMappingResult(
+        hook.returnType,
+        (type) => _sameType(library, type, outputType),
+      );
+}
+
+bool _isMappingResult(DartType type, bool Function(DartType type) valueType) {
+  final erased = type.extensionTypeErasure;
+  return erased is InterfaceType &&
+      erased.element.name == 'Result' &&
+      erased.element.library.uri.toString() ==
+          'package:dartitect/src/result.dart' &&
+      erased.typeArguments.length == 2 &&
+      valueType(erased.typeArguments.first) &&
+      _isInterface(
+        erased.typeArguments.last,
+        'DartitectMappingFailure',
+        'package:dartitect_modeling/src/projection_mapping.dart',
+      );
+}
+
+bool _automaticMappingIsLossless(
+  LibraryElement library,
+  DartType source,
+  DartType target, {
+  required bool bidirectional,
+}) {
+  if (!library.typeSystem.isSubtypeOf(source, target) ||
+      (bidirectional && !library.typeSystem.isSubtypeOf(target, source))) {
+    return false;
+  }
+  if (source.element is ExtensionTypeElement ||
+      target.element is ExtensionTypeElement) {
+    return false;
+  }
+  final sourceInterface = source is InterfaceType ? source : null;
+  final targetInterface = target is InterfaceType ? target : null;
+  if (sourceInterface == null || targetInterface == null) return false;
+  const scalars = <String>{'String', 'bool', 'int', 'double', 'num', 'Null'};
+  final sourceUri = sourceInterface.element.library.uri.toString();
+  final targetUri = targetInterface.element.library.uri.toString();
+  if (sourceUri == 'dart:core' &&
+      targetUri == 'dart:core' &&
+      scalars.contains(sourceInterface.element.name) &&
+      scalars.contains(targetInterface.element.name)) {
+    return true;
+  }
+  const collectionsUri =
+      'package:dartitect_modeling/src/value_collections.dart';
+  if (sourceUri != collectionsUri ||
+      targetUri != collectionsUri ||
+      sourceInterface.element.name != targetInterface.element.name ||
+      sourceInterface.typeArguments.length !=
+          targetInterface.typeArguments.length) {
+    return false;
+  }
+  for (
+    var index = 0;
+    index < sourceInterface.typeArguments.length;
+    index += 1
+  ) {
+    if (!_automaticMappingIsLossless(
+      library,
+      sourceInterface.typeArguments[index],
+      targetInterface.typeArguments[index],
+      bidirectional: bidirectional,
+    )) {
+      return false;
+    }
+  }
+  return true;
 }
 
 ExecutableElement? _lookupHook(LibraryElement library, String name) {

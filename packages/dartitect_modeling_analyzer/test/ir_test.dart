@@ -10,11 +10,31 @@ void main() {
       nullable: false,
     );
     const field = ModelingFieldIr(name: 'name', type: type);
+    const decision = ModelingCompatibilityDecisionIr(
+      sourceField: 'name',
+      targetField: 'displayName',
+      sourceType: type,
+      targetType: type,
+      compatibility: ModelingCompatibility.assignableLossless,
+      reason: 'semantic-assignable-lossless',
+    );
+    const mapper = ModelingMapperIr(
+      targetType: ModelingTypeIr(
+        displayName: 'ProfileDto',
+        declarationName: 'ProfileDto',
+        libraryUri: 'package:app/profile.dart',
+        nullable: false,
+      ),
+      targetReference: 'ProfileDto',
+      bidirectional: true,
+      decisions: <ModelingCompatibilityDecisionIr>[decision],
+    );
     const model = ModelingModelIr(
       name: 'Profile',
       sourcePath: 'lib/profile.dart',
       fields: <ModelingFieldIr>[field],
       capabilities: <ModelingCapability>{ModelingCapability.value},
+      mappers: <ModelingMapperIr>[mapper],
     );
     const workspace = ModelingWorkspaceIr(
       root: '/workspace',
@@ -30,6 +50,11 @@ void main() {
 
     expect(workspace.libraries.single.models.single.name, 'Profile');
     expect(model.capabilities, <ModelingCapability>{ModelingCapability.value});
+    expect(model.mappers.single.targetReference, 'ProfileDto');
+    expect(
+      model.mappers.single.decisions.single.compatibility,
+      ModelingCompatibility.assignableLossless,
+    );
   });
 
   test('diagnostic schema uses rule, severity, path, line, and fixId', () {

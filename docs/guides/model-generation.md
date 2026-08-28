@@ -4,14 +4,15 @@
 
 ## 1.0 scope and source contract
 
-Model generation is limited to opt-in immutable value and JSON boilerplate. The generator scans
+Model generation is limited to opt-in immutable value, JSON, projection, and
+boundary-mapping boilerplate. The generator scans
 `lib/**` and each immediate `packages/*/lib/**` tree without following symlinks.
 An annotated source library may contain models in its defining unit and parts;
 all models share one deterministic Dartitect part.
 
 | Contract | Supported 1.0 form | Rejected form |
 |---|---|---|
-| Annotation | Independent `@DartitectValue()` and `@DartitectJson()` elements resolved from `package:dartitect_modeling`, including prefixes and reexports | Homonymous, unresolved, or implicitly enabled capabilities |
+| Annotation | Independent `@DartitectValue()`, `@DartitectJson()`, `@DartitectProjection(...)`, and `@DartitectMapper(...)` elements resolved from `package:dartitect_modeling`, including prefixes and reexports | Homonymous, unresolved, or implicitly enabled capabilities |
 | Class | Concrete `final`, extends `ValueEquality`, mixes in `_$TypeDartitect` | Abstract, non-final, or complex inheritance |
 | Part | Exactly one `part '<source>.dartitect.g.dart';` | Missing, duplicate, or mismatched part |
 | Fields | At least one public, typed, named `final` primary-constructor field | Private, inferred, positional, late, or mutable fields |
@@ -77,6 +78,22 @@ the call site. Disabling numeric limits requires either explicit annotation
 metadata or `DartitectJsonLimits.trusted`; JSON shape, finite-number, and cycle
 validation remain enabled. Trusted mode never changes unknown-key policy.
 
+## Generated projections, descriptors, and mappers
+
+`@DartitectProjection` emits typed descriptors/lenses plus an explicitly named
+record selector. Selected fields are explicit and ordered; an empty field list
+visibly selects all fields. Lenses reconstruct through the validated primary
+constructor and do not expose a mutable interface.
+
+`@DartitectMapper(Target)` emits a pure one-way mapper returning `Result`.
+Bidirectional generation requires `bidirectional: true` and separately proven
+reverse compatibility. Automatic decisions are limited to semantically
+assignable, lossless scalar and immutable-collection fields. Explicit
+`targetName`, `mapToWith`, and `mapFromWith` metadata owns renames and exact
+static converter hooks. `DT1044` rejects an unsafe target or field before
+rendering. Narrowing, enum/string, dates, IDs, relations, flattening, and
+provider-owned schemas are never inferred.
+
 ## Commands, freshness, and Git ownership
 
 | Command | Writes | Recovery | Exit behavior |
@@ -117,7 +134,7 @@ Updates and deletes require the existing bytes to match the recorded digest.
 
 | Artifact | 1.0 schema | Compatibility rule |
 |---|---:|---|
-| Semantic model input signature | 3 | Includes library identity, capabilities, generics, defaults, types, JSON policy, renames, hooks, and all models in the generated part |
+| Semantic model input signature | 4 | Includes library identity, capabilities, generics, defaults, types, JSON policy, projections, mapper compatibility decisions, renames, hooks, and all models in the generated part |
 | JSON command report | 1 | Consumers must select the supported schema explicitly |
 | `.dartitect/model-outputs.json` | 1 | Missing ownership conflicts with candidate outputs; malformed, older, or future schemas fail closed |
 | `.dartitect/generation-journal.json` | 2 | Malformed, older, or future schemas stop recovery and preserve residue for diagnosis |

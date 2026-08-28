@@ -69,6 +69,7 @@ void main() {
         'dartitect_dt1041',
         'dartitect_dt1042',
         'dartitect_dt1043',
+        'dartitect_dt1044',
       ],
     );
     expect(registry.registeredFixes, 1);

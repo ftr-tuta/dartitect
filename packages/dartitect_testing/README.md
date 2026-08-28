@@ -49,6 +49,8 @@ assert(order.single == 'database:disposeAsync');
 - `ManualClock` and `DeterministicTraceIdGenerator` remove time/ID randomness.
 - recording sinks/reporters/tracers/spans expose telemetry assertions.
 - `RepositoryContractHarness` runs reusable repository contract cases.
+- `ProjectionContractHarness` records deterministic generated-selector evidence.
+- `MapperContractHarness` records forward results and bidirectional round trips.
 - `collectStreamEvents` and `waitForStreamEvent` bound async stream tests.
 - `DiagnosticsTopologyHarness` reconstructs protocol-v1 topology, generation,
   revision, and terminal lifecycle using only opaque payload-free events.

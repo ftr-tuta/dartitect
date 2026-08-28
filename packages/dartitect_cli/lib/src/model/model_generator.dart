@@ -232,7 +232,7 @@ final class DartitectModelGenerator {
           content: _render(library),
           ownership: GeneratedOwnership.fullyGenerated,
           sourcePath: library.path,
-          inputSchemaVersion: 3,
+          inputSchemaVersion: 4,
           inputSignature: _semanticSignature(library),
         ),
       );
@@ -249,7 +249,7 @@ final class DartitectModelGenerator {
 
 String _semanticSignature(ModelingLibraryIr library) => jsonEncode(
   <String, Object?>{
-    'schemaVersion': 3,
+    'schemaVersion': 4,
     'library': library.uri,
     'source': library.path,
     'part': library.outputPath,
@@ -281,6 +281,9 @@ String _semanticSignature(ModelingLibraryIr library) => jsonEncode(
                 if (field.jsonName != null) 'jsonName': field.jsonName,
                 if (field.decodeHook != null) 'decodeHook': field.decodeHook,
                 if (field.encodeHook != null) 'encodeHook': field.encodeHook,
+                if (field.targetName != null) 'targetName': field.targetName,
+                if (field.mapToHook != null) 'mapToHook': field.mapToHook,
+                if (field.mapFromHook != null) 'mapFromHook': field.mapFromHook,
               },
           ],
           if (model.json case final json?)
@@ -288,6 +291,37 @@ String _semanticSignature(ModelingLibraryIr library) => jsonEncode(
               'rejectUnknownKeys': json.rejectUnknownKeys,
               'trusted': json.trusted,
             },
+          'projections': <Object?>[
+            for (final projection in model.projections)
+              <String, Object?>{
+                'name': projection.name,
+                'fields': projection.fields,
+              },
+          ],
+          'mappers': <Object?>[
+            for (final mapper in model.mappers)
+              <String, Object?>{
+                'target': mapper.targetType.displayName,
+                'targetLibrary': mapper.targetType.libraryUri,
+                'targetReference': mapper.targetReference,
+                'bidirectional': mapper.bidirectional,
+                'decisions': <Object?>[
+                  for (final decision in mapper.decisions)
+                    <String, Object?>{
+                      'sourceField': decision.sourceField,
+                      'targetField': decision.targetField,
+                      'sourceType': decision.sourceType.displayName,
+                      'targetType': decision.targetType.displayName,
+                      'compatibility': decision.compatibility.name,
+                      'reason': decision.reason,
+                      if (decision.mapToHook != null)
+                        'mapToHook': decision.mapToHook,
+                      if (decision.mapFromHook != null)
+                        'mapFromHook': decision.mapFromHook,
+                    },
+                ],
+              },
+          ],
         },
     ],
     'configuration': <String, Object?>{
@@ -302,7 +336,7 @@ String _render(ModelingLibraryIr library) {
   final partName = _basename(library.outputPath);
   final buffer = StringBuffer()
     ..writeln('// GENERATED CODE - DO NOT EDIT BY HAND.')
-    ..writeln('// Dartitect model generator 1.0.0-rc.3, input schema 3.')
+    ..writeln('// Dartitect model generator 1.0.0-rc.3, input schema 4.')
     ..writeln()
     ..writeln("part of '$sourceName';");
   for (final model in library.models.where(
@@ -371,10 +405,190 @@ String _render(ModelingLibraryIr library) {
   )) {
     _renderJsonCodec(buffer, model);
   }
+  for (final model in library.models.where(
+    (model) => model.capabilities.contains(ModelingCapability.projection),
+  )) {
+    _renderProjections(buffer, model);
+  }
+  for (final model in library.models.where(
+    (model) => model.capabilities.contains(ModelingCapability.mapper),
+  )) {
+    for (final mapper in model.mappers) {
+      _renderMapper(buffer, model, mapper);
+    }
+  }
   return DartFormatter(
     languageVersion: DartFormatter.latestLanguageVersion,
     lineEnding: '\n',
   ).format(buffer.toString(), uri: partName);
+}
+
+void _renderProjections(StringBuffer buffer, ModelingModelIr model) {
+  final declaration = _typeParameterDeclaration(model);
+  final use = _typeParameterUse(model);
+  final fieldsName = '${model.name}DartitectFields';
+  buffer
+    ..writeln()
+    ..writeln('/// Generated typed descriptors and lenses for [${model.name}].')
+    ..writeln('final class $fieldsName$declaration {')
+    ..writeln('  /// Creates the generated field registry.')
+    ..writeln('  const $fieldsName();');
+  for (final field in model.fields) {
+    buffer
+      ..writeln()
+      ..writeln('  /// Descriptor and immutable lens for `${field.name}`.')
+      ..writeln(
+        '  DartitectLens<${model.name}$use, ${field.type.displayName}> '
+        'get ${field.name} => DartitectLens<${model.name}$use, ${field.type.displayName}>(',
+      )
+      ..writeln(
+        '    descriptor: DartitectFieldDescriptor<${model.name}$use, ${field.type.displayName}>(',
+      )
+      ..writeln("      name: '${field.name}',")
+      ..writeln('      select: (model) => model.${field.name},')
+      ..writeln('    ),')
+      ..writeln('    write: (model, value) => ${model.name}$use(');
+    for (final constructorField in model.fields) {
+      final value = constructorField.name == field.name
+          ? 'value'
+          : 'model.${constructorField.name}';
+      buffer.writeln('      ${constructorField.name}: $value,');
+    }
+    buffer
+      ..writeln('    ),')
+      ..writeln('  );');
+  }
+  buffer.writeln('}');
+  if (model.typeParameters.isEmpty) {
+    buffer
+      ..writeln()
+      ..writeln('/// Shared generated field registry for [${model.name}].')
+      ..writeln(
+        'const ${_lowerFirst(model.name)}DartitectFields = $fieldsName();',
+      );
+  }
+  final byName = <String, ModelingFieldIr>{
+    for (final field in model.fields) field.name: field,
+  };
+  for (final projection in model.projections) {
+    final projectionSuffix = _upperCamel(projection.name);
+    final projectionName =
+        '${model.name}${projectionSuffix}DartitectProjection';
+    final selectorName = 'select${model.name}$projectionSuffix';
+    final record = projection.fields
+        .map((name) => '${byName[name]!.type.displayName} $name')
+        .join(', ');
+    final values = projection.fields
+        .map((name) => '$name: model.$name')
+        .join(', ');
+    buffer
+      ..writeln()
+      ..writeln(
+        '/// Generated `${projection.name}` record projection for [${model.name}].',
+      )
+      ..writeln('typedef $projectionName$declaration = ({$record});')
+      ..writeln()
+      ..writeln('/// Selects the generated `${projection.name}` projection.')
+      ..writeln(
+        '$projectionName$use $selectorName$declaration('
+        '${model.name}$use model) => ($values);',
+      );
+  }
+}
+
+void _renderMapper(
+  StringBuffer buffer,
+  ModelingModelIr model,
+  ModelingMapperIr mapper,
+) {
+  final declaration = _typeParameterDeclaration(model);
+  final use = _typeParameterUse(model);
+  final target = mapper.targetReference;
+  final mapperName =
+      '${model.name}To${mapper.targetType.declarationName}DartitectMapper';
+  final contract = mapper.bidirectional
+      ? 'DartitectBidirectionalBoundaryMapper'
+      : 'DartitectBoundaryMapper';
+  buffer
+    ..writeln()
+    ..writeln(
+      '/// Generated pure boundary mapper from [${model.name}] to [$target].',
+    )
+    ..writeln(
+      'final class $mapperName$declaration '
+      'implements $contract<${model.name}$use, $target> {',
+    )
+    ..writeln('  /// Creates the generated mapper.')
+    ..writeln('  const $mapperName();')
+    ..writeln()
+    ..writeln('  @override')
+    ..writeln(
+      '  Result<$target, DartitectMappingFailure> '
+      'toTarget(${model.name}$use source) =>',
+    )
+    ..writeln('      ${_mappingChain(model, mapper, forward: true)};');
+  if (mapper.bidirectional) {
+    buffer
+      ..writeln()
+      ..writeln('  @override')
+      ..writeln(
+        '  Result<${model.name}$use, DartitectMappingFailure> '
+        'fromTarget($target target) =>',
+      )
+      ..writeln('      ${_mappingChain(model, mapper, forward: false)};');
+  }
+  buffer.writeln('}');
+  if (model.typeParameters.isEmpty) {
+    buffer
+      ..writeln()
+      ..writeln(
+        '/// Shared generated mapper from [${model.name}] to [$target].',
+      )
+      ..writeln('const ${_lowerFirst(mapperName)} = $mapperName();');
+  }
+}
+
+String _mappingChain(
+  ModelingModelIr model,
+  ModelingMapperIr mapper, {
+  required bool forward,
+  int index = 0,
+}) {
+  if (index == mapper.decisions.length) {
+    if (forward) {
+      final arguments = mapper.decisions
+          .map(
+            (decision) =>
+                '${decision.targetField}: _${decision.sourceField}Mapped',
+          )
+          .join(', ');
+      return 'Ok<${mapper.targetReference}>('
+          '${mapper.targetReference}($arguments))';
+    }
+    final use = _typeParameterUse(model);
+    final arguments = mapper.decisions
+        .map(
+          (decision) =>
+              '${decision.sourceField}: _${decision.sourceField}Mapped',
+        )
+        .join(', ');
+    return 'Ok<${model.name}$use>(${model.name}$use($arguments))';
+  }
+  final decision = mapper.decisions[index];
+  final input = forward
+      ? 'source.${decision.sourceField}'
+      : 'target.${decision.targetField}';
+  final outputType = forward
+      ? decision.targetType.displayName
+      : decision.sourceType.displayName;
+  final hook = forward ? decision.mapToHook : decision.mapFromHook;
+  final conversion = hook == null
+      ? 'DartitectMappingResults.success<$outputType>($input)'
+      : '$hook($input, const DartitectMappingPath('
+            "sourceField: '${decision.sourceField}', "
+            "targetField: '${decision.targetField}'))";
+  return '$conversion.flatMap((_${decision.sourceField}Mapped) => '
+      '${_mappingChain(model, mapper, forward: forward, index: index + 1)})';
 }
 
 void _renderJsonCodec(StringBuffer buffer, ModelingModelIr model) {
@@ -551,6 +765,12 @@ String _typeParameterCodecName(ModelingTypeParameterIr parameter) =>
 
 String _lowerFirst(String value) =>
     '${value[0].toLowerCase()}${value.substring(1)}';
+
+String _upperCamel(String value) => value
+    .split('_')
+    .where((segment) => segment.isNotEmpty)
+    .map((segment) => '${segment[0].toUpperCase()}${segment.substring(1)}')
+    .join();
 
 String _dartStringLiteral(String value) {
   var content = jsonEncode(value);

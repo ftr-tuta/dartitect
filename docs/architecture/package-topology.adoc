@@ -13,7 +13,7 @@ dartitect
 ├── dartitect_drift (+ observability, sync)
 ├── dartitect_objectbox (+ flutter, observability, sync)
 ├── dartitect_media
-└── dartitect_testing (+ observability, sync)
+└── dartitect_testing (+ isolates, modeling, observability, sync)
 
 dartitect_privacy
 dartitect_locale_br

@@ -152,8 +152,12 @@ final class ModelingCompatibilityDecisionIr {
   const ModelingCompatibilityDecisionIr({
     required this.sourceField,
     required this.targetField,
+    required this.sourceType,
+    required this.targetType,
     required this.compatibility,
     required this.reason,
+    this.mapToHook,
+    this.mapFromHook,
   });
 
   /// Source-model field.
@@ -162,11 +166,23 @@ final class ModelingCompatibilityDecisionIr {
   /// Target-boundary field.
   final String targetField;
 
+  /// Semantic source field type.
+  final ModelingTypeIr sourceType;
+
+  /// Semantic target field type.
+  final ModelingTypeIr targetType;
+
   /// Validated compatibility class.
   final ModelingCompatibility compatibility;
 
   /// Stable payload-free explanation.
   final String reason;
+
+  /// Validated consumer-owned source-to-target hook.
+  final String? mapToHook;
+
+  /// Validated consumer-owned target-to-source hook.
+  final String? mapFromHook;
 }
 
 /// Validated mapper capability.
@@ -174,12 +190,16 @@ final class ModelingMapperIr {
   /// Creates a validated mapper capability.
   const ModelingMapperIr({
     required this.targetType,
+    required this.targetReference,
     required this.bidirectional,
     required this.decisions,
   });
 
   /// Resolved consumer-owned target type.
   final ModelingTypeIr targetType;
+
+  /// Validated source spelling of the target type in the model library.
+  final String targetReference;
 
   /// Whether reverse mapping was independently validated.
   final bool bidirectional;

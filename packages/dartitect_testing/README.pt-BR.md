@@ -48,6 +48,8 @@ assert(order.single == 'database:disposeAsync');
 - `ManualClock` e `DeterministicTraceIdGenerator` removem aleatoriedade.
 - sinks/reporters/tracers/spans graváveis tornam telemetria observável.
 - `RepositoryContractHarness` executa casos reutilizáveis.
+- `ProjectionContractHarness` registra evidência determinística de selectors gerados.
+- `MapperContractHarness` registra resultados forward e round-trips bidirecionais.
 - helpers de stream limitam testes assíncronos.
 - `DiagnosticsTopologyHarness` reconstrói topology, generation, revision e
   lifecycle terminal do protocolo v1 usando somente eventos opacos sem payload.

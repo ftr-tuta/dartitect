@@ -21,7 +21,7 @@ part 'models.dartitect.g.dart';
 
 @DartitectValue()
 @DartitectJson()
-@DartitectProjection(name: 'summary')
+@DartitectProjection(name: 'summary', fields: <String>['id'])
 final class const Envelope<T extends Object>({
   @DartitectField(jsonName: 'record_id') required final T id,
   @DartitectField(
@@ -79,6 +79,7 @@ final class const Detail({
       });
       expect(envelope.json?.rejectUnknownKeys, isTrue);
       expect(envelope.projections.single.name, 'summary');
+      expect(envelope.projections.single.fields, <String>['id']);
       expect(envelope.fields.first.jsonName, 'record_id');
       expect(envelope.fields.last.type.isRecord, isTrue);
       expect(envelope.fields.last.hasDefault, isTrue);
@@ -187,6 +188,118 @@ final class const BadId({
       result.workspace.libraries.map((library) => library.path),
       contains('lib/good.dart'),
     );
+  });
+
+  test('mappers admit only lossless fields or exact converter hooks', () async {
+    final root = await _modelPackage();
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/lib/good_mapper.dart').writeAsString(r'''
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+part 'good_mapper.dartitect.g.dart';
+
+final class MapperTarget {
+  const MapperTarget({
+    required this.id,
+    required this.score,
+    required this.createdAt,
+  });
+
+  final String id;
+  final int score;
+  final String createdAt;
+}
+
+@DartitectMapper(MapperTarget, bidirectional: true)
+final class const MapperSource({
+  required final String id,
+  required final int score,
+  @DartitectField(
+    mapToWith: 'MapperHooks.dateToString',
+    mapFromWith: 'MapperHooks.stringToDate',
+  )
+  required final DateTime createdAt,
+});
+
+abstract final class MapperHooks {
+  static Result<String, DartitectMappingFailure> dateToString(
+    DateTime value,
+    DartitectMappingPath path,
+  ) => Ok<String>(value.toIso8601String());
+
+  static Result<DateTime, DartitectMappingFailure> stringToDate(
+    String value,
+    DartitectMappingPath path,
+  ) => Ok<DateTime>(DateTime.parse(value));
+}
+''');
+    await File('${root.path}/lib/bad_mapper.dart').writeAsString(r'''
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+part 'bad_mapper.dartitect.g.dart';
+
+enum Status { active }
+
+extension type const UserId(String value) {}
+
+final class Relation {
+  const Relation(this.id);
+  final String id;
+}
+
+final class BadTarget {
+  const BadTarget({required this.status});
+  final String status;
+}
+
+@DartitectMapper(BadTarget)
+final class const BadSource({required final Status status});
+
+final class BadIdTarget {
+  const BadIdTarget({required this.id});
+  final UserId id;
+}
+
+@DartitectMapper(BadIdTarget)
+final class const BadIdSource({required final UserId id});
+
+final class BadRelationTarget {
+  const BadRelationTarget({required this.relation});
+  final Relation relation;
+}
+
+@DartitectMapper(BadRelationTarget)
+final class const BadRelationSource({required final Relation relation});
+
+final class BadNarrowingTarget {
+  const BadNarrowingTarget({required this.score});
+  final int score;
+}
+
+@DartitectMapper(BadNarrowingTarget)
+final class const BadNarrowingSource({required final num score});
+''');
+
+    final result = await ModelingCompiler(root).compile();
+
+    final good = result.workspace.libraries
+        .singleWhere((library) => library.path == 'lib/good_mapper.dart')
+        .models
+        .single;
+    final mapper = good.mappers.single;
+    expect(mapper.targetReference, 'MapperTarget');
+    expect(mapper.bidirectional, isTrue);
+    expect(mapper.decisions, hasLength(3));
+    expect(
+      mapper.decisions
+          .singleWhere((decision) => decision.sourceField == 'createdAt')
+          .compatibility,
+      ModelingCompatibility.explicitConverter,
+    );
+    final rejected = result.diagnostics.where(
+      (diagnostic) =>
+          diagnostic.path == 'lib/bad_mapper.dart' &&
+          diagnostic.rule == 'DT1044',
+    );
+    expect(rejected, hasLength(4));
   });
 }
 

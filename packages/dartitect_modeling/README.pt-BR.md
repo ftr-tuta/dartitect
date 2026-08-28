@@ -35,3 +35,26 @@ O gerador compõe automaticamente somente escalares lossless, codecs de
 generics e collections imutáveis. Datas, enums, IDs, records, narrowing e
 outras conversões semânticas exigem um par decoder/encoder estático pertencente
 ao consumidor e nomeado por `DartitectField`.
+
+## Projections e lenses
+
+`@DartitectProjection(name: ..., fields: ...)` gera typedef de record nomeado,
+selector puro e descriptors/lenses de campos tipados. Uma lista `fields` vazia
+seleciona todos os campos do primary constructor; caso contrário, a ordem é a
+ordem explícita da lista. A lens reconstrói o modelo imutável e nunca expõe
+mutação ou reflexão. Projection não habilita value equality, JSON ou mappers.
+
+## Mappers de boundary
+
+`@DartitectMapper(Target)` gera mapper puro que retorna
+`Result<Target, DartitectMappingFailure>`. Use `bidirectional: true` somente
+quando cada campo reverso for independentemente lossless.
+`DartitectField(targetName: ...)` é a única metadata de rename automático.
+Hooks estáticos exatos e consumer-owned em `mapToWith`/`mapFromWith` tornam a
+conversão semântica visível e preservam path sem payload dos campos declarados
+nas falhas esperadas.
+
+Mapping automático se restringe a escalares semanticamente assignable/lossless
+e collections imutáveis Dartitect. Narrowing, enum/string, datas, IDs,
+relations, flattening e schemas de providers nunca são inferidos. Targets e
+hooks continuam consumer-owned.

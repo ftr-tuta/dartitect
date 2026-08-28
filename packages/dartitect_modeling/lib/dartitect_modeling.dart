@@ -6,4 +6,5 @@ export 'package:dartitect/dartitect.dart'
 
 export 'src/annotations.dart';
 export 'src/json_codec.dart';
+export 'src/projection_mapping.dart';
 export 'src/value_collections.dart';
