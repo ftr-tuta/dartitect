@@ -179,6 +179,252 @@ final class ReactiveComputed<T> extends ReactiveNode<T> {
   T Function(ReactiveRead read) _compute;
 }
 
+/// Read-only access to the explicit dependencies of a lazy computed value.
+final class ReactiveLazyRead {
+  ReactiveLazyRead._(this._owner, this._allowed);
+
+  final ReactiveOwner _owner;
+  final Set<ValueListenable<Object?>> _allowed;
+
+  /// Reads one explicitly declared dependency.
+  T read<T>(ValueListenable<T> dependency) {
+    if (!_allowed.any((candidate) => identical(candidate, dependency))) {
+      throw ArgumentError.value(
+        dependency,
+        'dependency',
+        'A lazy computed may read only an explicitly declared dependency.',
+      );
+    }
+    if (dependency case final ReactiveNode<T> node) {
+      return _owner._read(node) as T;
+    }
+    return dependency.value;
+  }
+}
+
+/// An owner-bound computed value evaluated only after first use.
+///
+/// Dependencies are supplied explicitly and resolved on first read or
+/// observation. Once evaluated, this node listens only to those dependencies:
+/// while unobserved it marks itself dirty, and while observed it recomputes
+/// against the owner's complete committed revision. A failed computation
+/// preserves the last valid value and remains dirty.
+final class ReactiveLazyComputed<T> implements ValueListenable<T> {
+  ReactiveLazyComputed._({
+    required ReactiveOwner owner,
+    required this.label,
+    required Iterable<ValueListenable<Object?>> Function() dependencies,
+    required T Function(ReactiveLazyRead read) compute,
+    required Equality<T> equality,
+    required this.usesDefaultEquality,
+  }) : _owner = owner,
+       _dependenciesProvider = dependencies,
+       _compute = compute,
+       equality = equality;
+
+  final ReactiveOwner _owner;
+
+  /// Static, payload-free definition label used for cycle diagnostics.
+  final String label;
+
+  /// Equality used to suppress unchanged publication.
+  final Equality<T> equality;
+
+  /// Whether equality uses the documented `==` default.
+  final bool usesDefaultEquality;
+
+  Iterable<ValueListenable<Object?>> Function() _dependenciesProvider;
+  T Function(ReactiveLazyRead read) _compute;
+  final List<ValueListenable<Object?>> _dependencies =
+      <ValueListenable<Object?>>[];
+  final List<VoidCallback> _listeners = <VoidCallback>[];
+  Object? _stableValue;
+  var _hasValue = false;
+  var _dirty = true;
+  var _bound = false;
+  var _evaluating = false;
+  var _disposed = false;
+  var _revision = 0;
+
+  /// Owner revision at which this node last published a changed value.
+  int get revision => _revision;
+
+  /// Whether a dependency changed after the last successful evaluation.
+  bool get isDirty => _dirty;
+
+  /// Number of callbacks currently observing this node.
+  int get listenerCount => _listeners.length;
+
+  /// Number of explicitly bound dependencies, or zero before first use.
+  int get dependencyCount => _dependencies.length;
+
+  /// Whether a valid value has been computed at least once.
+  bool get hasValue => _hasValue;
+
+  @override
+  T get value {
+    _ensureActive();
+    _evaluate(throwOnFailure: true);
+    return _stableValue as T;
+  }
+
+  @override
+  void addListener(VoidCallback listener) {
+    _ensureActive();
+    if (_listeners.contains(listener)) return;
+    _evaluate(throwOnFailure: true);
+    _listeners.add(listener);
+  }
+
+  @override
+  void removeListener(VoidCallback listener) {
+    _listeners.remove(listener);
+  }
+
+  /// Refreshes dependency and compute closures for Flutter hot reload.
+  ///
+  /// The retained value and equality policy remain unchanged. The node is
+  /// marked dirty and an observed node recomputes immediately.
+  void rebind({
+    required Iterable<ValueListenable<Object?>> Function() dependencies,
+    required T Function(ReactiveLazyRead read) compute,
+  }) {
+    _ensureActive();
+    _owner._ensureDefinitionRegistrationAllowed();
+    _detachDependencies();
+    _dependenciesProvider = dependencies;
+    _compute = compute;
+    _dirty = true;
+    if (_listeners.isNotEmpty) _evaluate(throwOnFailure: false);
+  }
+
+  void _bindDependencies() {
+    if (_bound) return;
+    final declared = _dependenciesProvider().toList(growable: false);
+    if (declared.isEmpty) {
+      throw ArgumentError.value(
+        declared,
+        'dependencies',
+        'A lazy computed requires at least one explicit dependency.',
+      );
+    }
+    if (_identityCount(declared) != declared.length) {
+      throw ArgumentError.value(
+        declared,
+        'dependencies',
+        'Dependencies must be identity-unique.',
+      );
+    }
+    for (final dependency in declared) {
+      final belongsToOwner = switch (dependency) {
+        ReactiveNode<Object?>(:final owner) => identical(owner, _owner),
+        ReactiveLazyComputed<Object?>() => identical(dependency._owner, _owner),
+        _ => false,
+      };
+      if (!belongsToOwner) {
+        throw ArgumentError.value(
+          dependency,
+          'dependencies',
+          'Every dependency must belong to the same ReactiveOwner.',
+        );
+      }
+    }
+    _dependencies.addAll(declared);
+    _bound = true;
+    try {
+      for (final dependency in _dependencies) {
+        dependency.addListener(_dependencyChanged);
+      }
+    } catch (_) {
+      _detachDependencies();
+      rethrow;
+    }
+  }
+
+  void _dependencyChanged() {
+    if (_disposed || _owner.isDisposed) return;
+    _dirty = true;
+    if (_listeners.isNotEmpty) _evaluate(throwOnFailure: false);
+  }
+
+  void _evaluate({required bool throwOnFailure}) {
+    if (_evaluating) {
+      throw ReactiveCycleException(<String>[label, label]);
+    }
+    final previousPhase = _owner._phase;
+    final hadValue = _hasValue;
+    final previous = _stableValue;
+    _evaluating = true;
+    try {
+      _bindDependencies();
+      if (!_dirty) return;
+      if (_owner.phase == ReactiveOwnerPhase.write ||
+          _owner.phase == ReactiveOwnerPhase.compute ||
+          _owner.phase == ReactiveOwnerPhase.commit) {
+        throw StateError(
+          'A dirty lazy computed cannot evaluate during '
+          '${_owner.phase.name}.',
+        );
+      }
+      _owner._phase = ReactiveOwnerPhase.compute;
+      final next = _compute(ReactiveLazyRead._(_owner, _dependencies.toSet()));
+      final changed = !hadValue || !equality(previous as T, next);
+      _stableValue = next;
+      _hasValue = true;
+      _dirty = false;
+      if (changed) {
+        _revision = _owner.revision;
+        if (hadValue) _notifyListeners();
+      }
+    } catch (error, stackTrace) {
+      _dirty = true;
+      _owner._report(error, stackTrace);
+      if (!hadValue || throwOnFailure) {
+        Error.throwWithStackTrace(error, stackTrace);
+      }
+    } finally {
+      _evaluating = false;
+      if (!_owner.isDisposed) _owner._phase = previousPhase;
+    }
+  }
+
+  void _notifyListeners() {
+    final snapshot = List<VoidCallback>.of(_listeners);
+    for (final listener in snapshot) {
+      if (_disposed || _owner.isDisposed) break;
+      if (!_listeners.contains(listener)) continue;
+      try {
+        listener();
+      } catch (error, stackTrace) {
+        _owner._report(error, stackTrace);
+      }
+    }
+  }
+
+  void _detachDependencies() {
+    for (final dependency in _dependencies) {
+      dependency.removeListener(_dependencyChanged);
+    }
+    _dependencies.clear();
+    _bound = false;
+  }
+
+  void _dispose() {
+    if (_disposed) return;
+    _disposed = true;
+    _detachDependencies();
+    _listeners.clear();
+    _stableValue = null;
+    _hasValue = false;
+    _dirty = true;
+  }
+
+  void _ensureActive() {
+    _owner._ensureActive();
+    if (_disposed) throw StateError('ReactiveLazyComputed is disposed.');
+  }
+}
+
 /// Read-only access supplied to a computed callback.
 final class ReactiveRead {
   ReactiveRead._(this._owner, this._allowed);
@@ -308,6 +554,8 @@ final class ReactiveOwner {
   final Stopwatch _eventStopwatch = Stopwatch();
   late final SafeReactiveObserver _events;
   final List<_ReactiveNodeBase> _nodes = <_ReactiveNodeBase>[];
+  final List<ReactiveLazyComputed<Object?>> _lazyComputeds =
+      <ReactiveLazyComputed<Object?>>[];
   final Map<Object, _ReactiveNodeBase> _keyed = <Object, _ReactiveNodeBase>{};
   Map<_ReactiveNodeBase, Object?>? _activeWrites;
   final Map<_ReactiveNodeBase, Object?> _deferredWrites =
@@ -337,15 +585,22 @@ final class ReactiveOwner {
 
   /// Current counters suitable for deterministic leak assertions.
   ReactiveOwnerDiagnostics get diagnostics => ReactiveOwnerDiagnostics(
-    nodeCount: _nodes.length,
-    edgeCount: _nodes.whereType<ReactiveComputed<Object?>>().fold<int>(
-      0,
-      (count, node) => count + node._dependencies.length,
-    ),
-    listenerCount: _nodes.fold<int>(
-      0,
-      (count, node) => count + node.listeners.length,
-    ),
+    nodeCount: _nodes.length + _lazyComputeds.length,
+    edgeCount:
+        _nodes.whereType<ReactiveComputed<Object?>>().fold<int>(
+          0,
+          (count, node) => count + node._dependencies.length,
+        ) +
+        _lazyComputeds.fold<int>(
+          0,
+          (count, node) => count + node.dependencyCount,
+        ),
+    listenerCount:
+        _nodes.fold<int>(0, (count, node) => count + node.listeners.length) +
+        _lazyComputeds.fold<int>(
+          0,
+          (count, node) => count + node.listenerCount,
+        ),
     pendingWriteCount: (_activeWrites?.length ?? 0) + _deferredWrites.length,
     disposed: _disposed,
   );
@@ -475,6 +730,30 @@ final class ReactiveOwner {
     return node;
   }
 
+  /// Creates a lazily evaluated value with explicit owner-local dependencies.
+  ReactiveLazyComputed<T> lazyComputed<T>({
+    required String label,
+    required Iterable<ValueListenable<Object?>> Function() dependencies,
+    required T Function(ReactiveLazyRead read) compute,
+    Equality<T>? equality,
+  }) {
+    _ensureActive();
+    _ensureDefinitionRegistrationAllowed();
+    if (label.trim().isEmpty) {
+      throw ArgumentError.value(label, 'label', 'Must not be empty.');
+    }
+    final node = ReactiveLazyComputed<T>._(
+      owner: this,
+      label: label,
+      dependencies: dependencies,
+      compute: compute,
+      equality: equality ?? _defaultEquality,
+      usesDefaultEquality: equality == null,
+    );
+    _lazyComputeds.add(node as ReactiveLazyComputed<Object?>);
+    return node;
+  }
+
   /// Stages writes and publishes them as one atomic outer transaction.
   R update<R>(
     R Function(ReactiveWriter write) body, {
@@ -564,6 +843,10 @@ final class ReactiveOwner {
       disposeGroup();
     }
     _invalidationGroupDisposers.clear();
+    for (final computed in _lazyComputeds.reversed) {
+      computed._dispose();
+    }
+    _lazyComputeds.clear();
     for (final node in _nodes.reversed) {
       node.listeners.clear();
     }
@@ -797,4 +1080,14 @@ bool _sameNodes(List<_ReactiveNodeBase> left, List<_ReactiveNodeBase> right) {
     if (!identical(left[index], right[index])) return false;
   }
   return true;
+}
+
+int _identityCount(List<Object?> values) {
+  final unique = <Object?>[];
+  for (final value in values) {
+    if (!unique.any((candidate) => identical(candidate, value))) {
+      unique.add(value);
+    }
+  }
+  return unique.length;
 }
