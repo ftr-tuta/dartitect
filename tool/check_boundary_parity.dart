@@ -129,6 +129,22 @@ Future<Directory> _prepareFixture(
 ) async {
   final fixture = Directory('${sandbox.path}/fixture');
   await _copyDirectory(sourceFixture, fixture);
+  final copiedToolState = Directory('${fixture.path}/.dart_tool');
+  if (await copiedToolState.exists()) {
+    await copiedToolState.delete(recursive: true);
+  }
+  final resolve = await Process.run(Platform.resolvedExecutable, const <String>[
+    'pub',
+    'get',
+    '--offline',
+    '--enforce-lockfile',
+  ], workingDirectory: fixture.path);
+  if (resolve.exitCode != 0) {
+    stderr
+      ..write(resolve.stdout)
+      ..write(resolve.stderr);
+    throw StateError('Could not resolve the isolated parity fixture.');
+  }
   final lints = Directory(
     '${root.path}/tool/analyzer_plugin_workspace/dartitect_lints',
   );
@@ -187,14 +203,25 @@ List<Object?> _list(Object? value) {
 /// both forms avoids interpreting the URI text as a relative Windows path.
 String boundaryParityRelativePath(Directory root, String path) {
   final uri = Uri.tryParse(path);
+  final normalizedInput = _normalizedBoundaryPath(path);
   final file = switch (uri) {
     Uri(scheme: 'file') => File.fromUri(uri),
-    _ when File(path).isAbsolute => File(path),
-    _ => File.fromUri(root.absolute.uri.resolve(path.replaceAll('\\', '/'))),
+    _ when File(normalizedInput).isAbsolute => File(normalizedInput),
+    _ => File.fromUri(root.absolute.uri.resolve(normalizedInput)),
   };
-  final rootPath = _normalizedBoundaryPath(root.absolute.path);
+  late final String rootPath;
+  late final String filePath;
+  try {
+    rootPath = _normalizedBoundaryPath(root.resolveSymbolicLinksSync());
+    filePath = _normalizedBoundaryPath(file.resolveSymbolicLinksSync());
+  } on FileSystemException catch (error) {
+    throw FormatException(
+      'Analyzer path could not be resolved for parity containment: '
+      'root=${root.absolute.uri}, input=${jsonEncode(path)}, '
+      'resolved=${file.absolute.uri}, error=${error.message}.',
+    );
+  }
   final prefix = rootPath.endsWith('/') ? rootPath : '$rootPath/';
-  final filePath = _normalizedBoundaryPath(file.absolute.path);
   final comparedPrefix = Platform.isWindows ? prefix.toLowerCase() : prefix;
   final comparedFilePath = Platform.isWindows
       ? filePath.toLowerCase()

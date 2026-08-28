@@ -12,10 +12,10 @@ void main() {
       root,
       const <String>['dartitect_flutter'],
       repository: 'https://example.invalid/dartitect.git',
-      ref: 'v1.0.0-rc.3',
+      ref: 'v1.0.0-rc.4',
     );
     expect(_packages(output), <String>['dartitect', 'dartitect_flutter']);
-    expect(output, contains('ref: v1.0.0-rc.3'));
+    expect(output, contains('ref: v1.0.0-rc.4'));
   });
 
   test('computes deeper adapter closure in publication order', () {
@@ -32,7 +32,7 @@ void main() {
     ]);
   });
 
-  test('supports any combination of the complete seventeen-package cohort', () {
+  test('supports any combination of the complete nineteen-package cohort', () {
     final contract = File('${root.path}/tool/package_release_contract.json')
         .readAsStringSync();
     final names = RegExp(
@@ -43,9 +43,9 @@ void main() {
       root,
       names,
       repository: 'https://example.invalid/dartitect.git',
-      ref: 'v1.0.0-rc.3',
+      ref: 'v1.0.0-rc.4',
     );
-    expect(_packages(output).toSet(), hasLength(17));
+    expect(_packages(output).toSet(), hasLength(19));
   });
 
   test('rejects packages outside the public cohort', () {
@@ -54,7 +54,7 @@ void main() {
         root,
         const <String>['not_dartitect'],
         repository: 'https://example.invalid/dartitect.git',
-        ref: 'v1.0.0-rc.3',
+        ref: 'v1.0.0-rc.4',
       ),
       throwsArgumentError,
     );

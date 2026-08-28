@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-rc.4
+
+- Keep the core free of modeling annotations while retaining the shared
+  `ValueEquality` and `Result` primitives reexported by `dartitect_modeling`.
+
 ## 1.0.0-rc.3
 
 - Add experimental diagnostics protocol v1 with fixed payload-free subjects

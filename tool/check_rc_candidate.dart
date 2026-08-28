@@ -16,13 +16,13 @@ void main() {
           .readAsStringSync(),
     ),
   );
-  const cohort = '1.0.0-rc.3';
+  const cohort = '1.0.0-rc.4';
   if (candidate['schemaVersion'] != 1 ||
       candidate['cohortVersion'] != cohort ||
-      candidate['candidateState'] != 'GIT_CANDIDATE_ASSEMBLED' ||
-      candidate['targetChannel'] != 'PROTECTED_GIT_TAG' ||
-      candidate['packageCount'] != 17 ||
-      candidate['publicEntrypointCount'] != 18) {
+      candidate['candidateState'] != 'SOURCE_CANDIDATE_ASSEMBLED' ||
+      candidate['targetChannel'] != 'UNMATERIALIZED' ||
+      candidate['packageCount'] != 19 ||
+      candidate['publicEntrypointCount'] != 20) {
     errors.add('RC candidate metadata is incomplete or overstates readiness.');
   }
   if (release['cohortVersion'] != cohort) {
@@ -51,7 +51,8 @@ void main() {
   }
   final git = _object(candidate['gitConsumption']);
   if (git['repository'] != 'https://github.com/ftr-tuta/dartitect.git' ||
-      git['tag'] != 'v1.0.0-rc.3' ||
+      git['tag'] != 'v1.0.0-rc.4' ||
+      git['materialized'] != false ||
       git['annotated'] != true ||
       git['signed'] != false ||
       git['protectedAgainstUpdateAndDeletion'] != true ||
@@ -93,8 +94,8 @@ void main() {
       errors.add('$name changelog does not begin with $cohort.');
     }
   }
-  if (packages.length != 17 || !packages.containsAll(order)) {
-    errors.add('The candidate does not contain the exact 17-package cohort.');
+  if (packages.length != 19 || !packages.containsAll(order)) {
+    errors.add('The candidate does not contain the exact 19-package cohort.');
   }
 
   final snapshot = _object(
@@ -103,9 +104,9 @@ void main() {
     ),
   );
   if (snapshot['sdkVersion'] != cohort ||
-      _object(snapshot['entrypoints']).length != 18) {
+      _object(snapshot['entrypoints']).length != 20) {
     errors.add(
-      'The public API snapshot is not an RC snapshot of 18 entrypoints.',
+      'The public API snapshot is not an RC snapshot of 20 entrypoints.',
     );
   }
   final inventory = _object(
@@ -113,7 +114,7 @@ void main() {
   );
   final inventoryPackages = inventory['packages'];
   if (inventoryPackages is! List<Object?> ||
-      inventoryPackages.length != 17 ||
+      inventoryPackages.length != 19 ||
       inventoryPackages.whereType<Map<String, Object?>>().any(
         (package) => package['version'] != cohort,
       )) {
@@ -148,8 +149,9 @@ void main() {
     return;
   }
   stdout.writeln(
-    'RC candidate assembly contract passed for 17 packages at $cohort; '
-    'Git consumption is assembled and formal publication remains fail-closed.',
+    'RC source candidate passed for 19 packages at $cohort; no tag, release, '
+    'or publication is materialized and every external channel remains '
+    'fail-closed.',
   );
 }
 

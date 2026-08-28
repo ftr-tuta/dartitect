@@ -4,7 +4,7 @@
 
 ## Escopo
 
-`dartitect_mcp 1.0.0-rc.3` é local e somente STDIO. Usa
+`dartitect_mcp 1.0.0-rc.4` é local e somente STDIO. Usa
 `dart_mcp 0.5.2`. Streamable HTTP, OAuth/autorização, plugins ChatGPT remotos,
 UI MCP, shell/arquivos arbitrários, scaffolding `create` e acesso a apps em
 execução estão fora do escopo.
@@ -12,7 +12,7 @@ execução estão fora do escopo.
 ## Configuração read-only
 
 O candidato não está no pub.dev. Declare
-`dartitect_mcp: 1.0.0-rc.3` em `dev_dependencies`, aplique o fechamento Git
+`dartitect_mcp: 1.0.0-rc.4` em `dev_dependencies`, aplique o fechamento Git
 completo do [guia de consumo do candidato](git-candidate-consumption.pt-BR.md)
 e execute `dart run dartitect_mcp:dartitect_mcp --root .`.
 

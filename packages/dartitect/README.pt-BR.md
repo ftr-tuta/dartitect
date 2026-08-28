@@ -31,7 +31,7 @@ e as [receitas de implementação](https://github.com/ftr-tuta/dartitect/blob/ma
 ## Instalação
 
 Este candidato não está publicado no pub.dev. Declare
-`dartitect: 1.0.0-rc.3` e siga o
+`dartitect: 1.0.0-rc.4` e siga o
 [guia de consumo do candidato Git](../../docs/guides/git-candidate-consumption.pt-BR.md)
 para fixar o pacote e suas dependências Dartitect transitivas na tag protegida.
 

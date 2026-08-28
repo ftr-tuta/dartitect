@@ -29,7 +29,7 @@ e as [receitas de implementação](https://github.com/ftr-tuta/dartitect/blob/ma
 ## Instalação
 
 Este candidato não está publicado no pub.dev. Declare
-`dartitect_objectbox: 1.0.0-rc.3` e use o
+`dartitect_objectbox: 1.0.0-rc.4` e use o
 [guia de consumo do candidato Git](../../docs/guides/git-candidate-consumption.pt-BR.md)
 para gerar o fechamento completo de overrides.
 

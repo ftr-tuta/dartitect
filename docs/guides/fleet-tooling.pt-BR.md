@@ -8,7 +8,7 @@ Execute a CLI pela versão exata em dev dependency ou ative-a separadamente:
 
 ```console
 dart run dartitect_cli:dartitect --version
-dart pub global activate dartitect_cli 1.0.0-rc.3
+dart pub global activate dartitect_cli 1.0.0-rc.4
 ```
 
 Não adicione `dartitect_cli` às dependências de runtime da aplicação. Analyze e
@@ -52,7 +52,7 @@ O upgrade de frota é intencionalmente apenas preview:
 
 ```console
 dartitect fleet upgrade apps/a apps/b \
-  --root . --dry-run --to=1.0.0-rc.3 --json
+  --root . --dry-run --to=1.0.0-rc.4 --json
 ```
 
 Cada resultado inclui operações sanitizadas, coorte alvo, manifest de inputs

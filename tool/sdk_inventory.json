@@ -4,7 +4,7 @@
   "packages": [
     {
       "name": "dartitect",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "keep-minimal-core",
       "runtimeDependencies": [],
       "entrypoints": [
@@ -14,7 +14,7 @@
     },
     {
       "name": "dartitect_cli",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "keep-host-tooling",
       "runtimeDependencies": [
         "analyzer",
@@ -29,7 +29,7 @@
     },
     {
       "name": "dartitect_dio",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "keep-optional-adapter",
       "runtimeDependencies": [
         "dartitect",
@@ -43,7 +43,7 @@
     },
     {
       "name": "dartitect_drift",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "add-consumer-owned-drift-sync-adapter",
       "runtimeDependencies": [
         "dartitect",
@@ -58,7 +58,7 @@
     },
     {
       "name": "dartitect_flutter",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "keep-headless-and-widgets-no-material-entrypoint",
       "runtimeDependencies": [
         "dartitect",
@@ -72,7 +72,7 @@
     },
     {
       "name": "dartitect_geometry",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "add-attributed-pure-dart-geometry",
       "runtimeDependencies": [],
       "entrypoints": [
@@ -82,7 +82,7 @@
     },
     {
       "name": "dartitect_isolates",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "add-pure-dart-worker-lifecycle",
       "runtimeDependencies": [
         "dartitect"
@@ -94,7 +94,7 @@
     },
     {
       "name": "dartitect_lints",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "keep-analyzer-host",
       "runtimeDependencies": [
         "analysis_server_plugin",
@@ -109,7 +109,7 @@
     },
     {
       "name": "dartitect_locale_br",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "add-pure-dart-brazilian-values",
       "runtimeDependencies": [],
       "entrypoints": [
@@ -119,7 +119,7 @@
     },
     {
       "name": "dartitect_mcp",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "keep-local-reviewed-tooling",
       "runtimeDependencies": [
         "dart_mcp",
@@ -132,7 +132,7 @@
     },
     {
       "name": "dartitect_media",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "add-explicit-gallery-boundary",
       "runtimeDependencies": [
         "dartitect",
@@ -145,7 +145,7 @@
     },
     {
       "name": "dartitect_modeling",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "add-opt-in-modeling-runtime",
       "runtimeDependencies": [
         "dartitect"
@@ -157,7 +157,7 @@
     },
     {
       "name": "dartitect_modeling_analyzer",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "add-shared-read-only-semantic-compiler",
       "runtimeDependencies": [
         "analyzer",
@@ -170,7 +170,7 @@
     },
     {
       "name": "dartitect_objectbox",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "keep-optional-native-adapter",
       "runtimeDependencies": [
         "dartitect",
@@ -188,7 +188,7 @@
     },
     {
       "name": "dartitect_observability",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "keep-provider-neutral-core",
       "runtimeDependencies": [
         "dartitect"
@@ -200,7 +200,7 @@
     },
     {
       "name": "dartitect_privacy",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "add-explicit-tracking-authorization-boundary",
       "runtimeDependencies": [
         "flutter"
@@ -212,7 +212,7 @@
     },
     {
       "name": "dartitect_sentry",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "keep-optional-borrowed-hub-adapter",
       "runtimeDependencies": [
         "dartitect_observability",
@@ -225,7 +225,7 @@
     },
     {
       "name": "dartitect_sync",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "keep-offline-and-sync-owner",
       "runtimeDependencies": [
         "dartitect"
@@ -237,7 +237,7 @@
     },
     {
       "name": "dartitect_testing",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "decision": "keep-dev-only-contract-sdk",
       "runtimeDependencies": [
         "dartitect",

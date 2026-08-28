@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-rc.4
+
+- Add the shared semantic modeling pipeline, primary-constructor migration,
+  namespaced generation transactions, aggregate read-only verify/SARIF, and
+  modular fleet adoption previews.
+
 ## 1.0.0-rc.3
 
 - Bind every reviewed project change to a sorted semantic-input manifest and

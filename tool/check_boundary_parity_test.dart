@@ -12,6 +12,8 @@ void main() {
       '${root.path}${Platform.pathSeparator}lib'
       '${Platform.pathSeparator}feature.dart',
     );
+    await source.parent.create(recursive: true);
+    await source.writeAsString('final feature = true;\n');
 
     expect(
       boundaryParityRelativePath(root, source.absolute.path),
@@ -52,6 +54,23 @@ void main() {
     }
   });
 
+  test('uses canonical filesystem identity for containment', () async {
+    if (Platform.isWindows) return;
+    final parent = await Directory.systemTemp.createTemp('boundary-canonical-');
+    final physical = Directory('${parent.path}/physical');
+    final alias = Link('${parent.path}/alias');
+    final source = File('${physical.path}/lib/feature.dart');
+    addTearDown(() => parent.delete(recursive: true));
+    await source.parent.create(recursive: true);
+    await source.writeAsString('final feature = true;\n');
+    await alias.create(physical.path);
+
+    expect(
+      boundaryParityRelativePath(Directory(alias.path), source.path),
+      'lib/feature.dart',
+    );
+  });
+
   test('rejects analyzer paths outside the fixture', () async {
     final root = await Directory.systemTemp.createTemp('boundary-parity-');
     final outside = await Directory.systemTemp.createTemp(
@@ -59,12 +78,11 @@ void main() {
     );
     addTearDown(() => root.delete(recursive: true));
     addTearDown(() => outside.delete(recursive: true));
+    final outsideFile = File('${outside.path}/feature.dart');
+    await outsideFile.writeAsString('final feature = false;\n');
 
     expect(
-      () => boundaryParityRelativePath(
-        root,
-        File('${outside.path}/feature.dart').uri.toString(),
-      ),
+      () => boundaryParityRelativePath(root, outsideFile.uri.toString()),
       throwsFormatException,
     );
     expect(

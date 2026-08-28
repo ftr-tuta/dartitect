@@ -29,7 +29,7 @@ e as [receitas de implementação](https://github.com/ftr-tuta/dartitect/blob/ma
 ## Instalação
 
 ```console
-dart pub global activate dartitect_cli 1.0.0-rc.3
+dart pub global activate dartitect_cli 1.0.0-rc.4
 ```
 
 ## Exemplo mínimo

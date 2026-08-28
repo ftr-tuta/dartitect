@@ -31,7 +31,7 @@ and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/doc
 ## Install
 
 ```console
-dart pub global activate dartitect_cli 1.0.0-rc.3
+dart pub global activate dartitect_cli 1.0.0-rc.4
 ```
 
 ## Minimal example

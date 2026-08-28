@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-rc.4
+
+- Reuse the shared semantic modeling compiler for granular `DT1030+`
+  diagnostics and retain provider-overlap warnings with concrete leakage errors.
+
 ## 1.0.0-rc.3
 
 - Prefer resolved element/library identity over textual type and locator names.

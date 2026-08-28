@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-rc.4
+
+- Add aggregate verify and reviewed modeling/migration previews, retain the
+  generic write approval gate, and refresh the 19-package public catalog.
+
 ## 1.0.0-rc.3
 
 - Promote the lockstep hardening candidate and refresh its reviewed local

@@ -1,3 +1,8 @@
+## 1.0.0-rc.4
+
+- Preserve consumer-owned Drift schemas in the modular cohort and add mixed
+  bounded-context verification alongside Dartitect and ObjectBox.
+
 ## 1.0.0-rc.3
 
 - Add consumer-owned Drift database lifecycle, transaction, checkpoint, journal,

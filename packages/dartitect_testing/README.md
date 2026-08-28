@@ -30,7 +30,7 @@ and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/doc
 ## Install
 
 This candidate is not published on pub.dev. Declare
-`dartitect_testing: 1.0.0-rc.3` under `dev_dependencies` and use the
+`dartitect_testing: 1.0.0-rc.4` under `dev_dependencies` and use the
 [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md)
 to generate the complete override closure.
 
