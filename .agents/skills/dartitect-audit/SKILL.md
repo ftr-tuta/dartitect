@@ -1,6 +1,6 @@
 ---
 name: dartitect-audit
-description: Audit an existing Dart or Flutter codebase for Native Strict conformance without changing it. Use for read-only evidence; Dartitect 1.0 is greenfield-only and provides no migration or coexistence workflow.
+description: Audit an existing Dart or Flutter codebase for Native Strict conformance and incremental adoption without changing it. Use for read-only evidence and overlap classification.
 ---
 
 # Audit Dartitect conformance
@@ -12,17 +12,18 @@ lifecycle assumptions must be assessed against Native Strict boundaries.
 
 ## When not to use
 
-Use `$dartitect-design` for a new application or feature. Do not use this skill
-to convert an existing runtime, plan staged migration, or authorize coexistence
-with another DI or application-state runtime.
+Use `$dartitect-design` for implementation choices. Do not use this skill to
+perform migration or authorize provider leakage, service location, duplicate
+ownership, or concrete runtime boundaries.
 
 ## Invariants
 
 Inspection is read-only. Report evidence without modifying code, dependencies,
-configuration, baselines, or generated files. Treat `scan --no-baseline` as the
-canonical conformance gate. Existing projects may be audited, but Dartitect 1.0
-does not support runtime migration, compatibility shims, or coexistence with a
-competing DI/application-state architecture.
+configuration, baselines, or generated files. Treat `dartitect verify` and
+`scan --no-baseline` as canonical read-only evidence. Installed Riverpod, BLoC,
+Provider, GetIt, MobX, Signals, or equivalent runtimes are overlap warnings by
+themselves. Escalate to an error only on evidenced leakage, service location,
+duplicate ownership, dual-write, or a concrete boundary crossing.
 
 ## Workflow
 
@@ -32,8 +33,8 @@ competing DI/application-state architecture.
 3. Classify each boundary as conforming, non-conforming, or not evidenced.
 4. Record prohibited runtime packages separately from advisory alternatives and
    approved consumer-owned infrastructure.
-5. Return a conformance report and the exact commands used; do not emit a
-   conversion plan.
+5. Return a conformance report, bounded adoption observations, and the exact
+   commands used; do not mutate or claim automatic conversion.
 
 Read [references/inventory.md](references/inventory.md) for evidence collection
 and [references/conformance-audit.md](references/conformance-audit.md) for the

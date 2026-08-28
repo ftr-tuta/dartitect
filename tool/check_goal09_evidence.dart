@@ -110,8 +110,23 @@ void main() {
   );
   final canaries = _objects(canary['canaries']);
   const requiredCoverage = <String>{
+    'pure_dart_modeling',
+    'json',
+    'projection',
+    'mapper',
+    'chrome',
+    'clean_clone',
+    'interop_positive',
+    'interop_negative',
+    'overlap_warning',
+    'boundary_error',
     'flutter_simple',
+    'flutter_mvvm',
     'objectbox_local_first',
+    'objectbox_primary_evidence',
+    'drift_objectbox_bounded_contexts',
+    'mixed_dartitect_objectbox_drift',
+    'drift_provider_package',
     'outbox_sync',
     'desktop',
     'session_replacement',
@@ -126,7 +141,20 @@ void main() {
   if (!coverage.containsAll(requiredCoverage)) {
     errors.add('Goal 09 canary coverage is incomplete.');
   }
+  if (canaries.length != 6) {
+    errors.add('Goal 09 requires all six isolated packaged canaries.');
+  }
   final evidence = <String, List<String>>{
+    'examples/model_generator_fixture/test/user_test.dart': <String>[
+      'generated equality',
+      'JSON codec round-trips',
+      'descriptor projection lens and mapper',
+    ],
+    'tool/canaries/interop/test/interop_canary_test.dart': <String>[
+      'DT1019',
+      'DT1006',
+      'providerStatus',
+    ],
     'tool/canaries/minimal/lib/main.dart': <String>['CompositionRoot'],
     'tool/canaries/minimal/test/hardening_canary_test.dart': <String>[
       '8 * 1024 * 1024',
@@ -143,10 +171,16 @@ void main() {
     'examples/reference_app/test/native_objectbox_workload_test.dart': <String>[
       'ObjectBox',
     ],
+    'examples/reference_app/test/drift_objectbox_bounded_contexts_test.dart':
+        <String>['separate bounded contexts without dual writes'],
+    'tool/provider_constructor_evidence/objectbox_5_3_2_primary.dart.fixture':
+        <String>['final class FixtureEntity({', '@Id() var id'],
     '.github/workflows/ci.yaml': <String>[
       'flutter build linux',
       'flutter build windows',
       'flutter build macos',
+      'dart test --platform chrome',
+      'packages/dartitect_modeling',
     ],
   };
   for (final entry in evidence.entries) {
@@ -159,8 +193,11 @@ void main() {
   }
   if (!jsonEncode(canary).contains('flutter build host-desktop') ||
       !jsonEncode(canary)
-          .contains('dart run dartitect_cli:dartitect model sync --apply')) {
-    errors.add('Desktop or consumer-owned codegen canary command is missing.');
+          .contains('dart run dartitect_cli:dartitect model sync --apply') ||
+      !jsonEncode(canary).contains('dartitect verify --json')) {
+    errors.add(
+      'Desktop, consumer-owned codegen, or read-only verify canary is missing.',
+    );
   }
 
   final raw = _object(
@@ -198,9 +235,22 @@ void main() {
     jsonDecode(read('tool/diagnostics_benchmark_contract.json')),
   );
   final models = _object(jsonDecode(read('tool/model_benchmark.json')));
+  final modelPolicy = _object(models['policy']);
+  final baselineModels = _object(models['baseline']);
+  final candidateModels = _object(models['candidate']);
   if (lifecycle['samples'] != 5 ||
       diagnostics['samples'] != 5 ||
-      _objects(models['results']).length != 4) {
+      models['schemaVersion'] != 2 ||
+      modelPolicy['coldRuns'] != 5 ||
+      modelPolicy['warmRuns'] != 20 ||
+      modelPolicy['maxRegressionPercent'] != 10.0 ||
+      modelPolicy['cacheAuthority'] != false ||
+      baselineModels['implementation'] != 'legacy-core-modeling' ||
+      candidateModels['implementation'] != 'modular-modeling' ||
+      _objects(baselineModels['results']).length != 4 ||
+      _objects(candidateModels['results']).length != 4 ||
+      _objects(models['comparisons'])
+          .any((comparison) => comparison['status'] != 'pass')) {
     errors.add(
       'Create/dispose, diagnostics, or tooling samples are incomplete.',
     );
@@ -208,6 +258,7 @@ void main() {
 
   final distribution = read('docs/adr/0036-separate-cli-distribution.adoc');
   final cohorts = read('docs/adr/0037-release-validation-cohorts.adoc');
+  final adoption = read('docs/adr/0042-rc4-adoption-and-evidence.adoc');
   if (!distribution.contains('separate executable package') ||
       !distribution.contains('will not distribute one for 1.0') ||
       !distribution.contains('no fleet bootstrap')) {
@@ -224,6 +275,17 @@ void main() {
       errors.add('Release cohort ADR marker is missing: $marker.');
     }
   }
+  for (final marker in const <String>[
+    'recommended_complete',
+    'interop_existing_project',
+    'strictly read-only aggregate gate',
+    'twenty warm incremental runs',
+    'above 10%',
+  ]) {
+    if (!adoption.contains(marker)) {
+      errors.add('RC4 adoption ADR marker is missing: $marker.');
+    }
+  }
 
   if (errors.isNotEmpty) {
     stderr.writeln(errors.join('\n'));
@@ -232,7 +294,8 @@ void main() {
   }
   stdout.writeln(
     'Goal 09 evidence passes: confined fleet, pinned policy, recoverable '
-    'previews, nine real canary lanes, four benchmark areas, and release ADRs.',
+    'previews, six isolated canaries plus provider/workspace fixtures, '
+    'same-host 5/20 benchmarks, and release ADRs.',
   );
 }
 

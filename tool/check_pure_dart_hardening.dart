@@ -99,10 +99,14 @@ void _validateCompatibility(Object? value, List<String> errors) {
         raw.cast<int>().toSet().containsAll(expected);
   }
 
-  if (!exact('manifestAcceptedSchemas', const <int>[1]) ||
-      !exact('manifestRejectedSchemas', const <int>[0, 2]) ||
-      !exact('journalAcceptedSchemas', const <int>[2]) ||
-      !exact('journalRejectedSchemas', const <int>[1, 3])) {
+  if (!exact('legacyManifestAcceptedSchemas', const <int>[1]) ||
+      !exact('legacyManifestRejectedSchemas', const <int>[0, 2]) ||
+      !exact('namespacedManifestAcceptedSchemas', const <int>[2]) ||
+      !exact('namespacedManifestRejectedSchemas', const <int>[1, 3]) ||
+      !exact('legacyJournalAcceptedSchemas', const <int>[2]) ||
+      !exact('legacyJournalRejectedSchemas', const <int>[1, 3]) ||
+      !exact('namespacedJournalAcceptedSchemas', const <int>[3]) ||
+      !exact('namespacedJournalRejectedSchemas', const <int>[2, 4])) {
     errors.add('Generator manifest/journal compatibility matrix changed.');
   }
 }

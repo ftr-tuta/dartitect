@@ -5,23 +5,26 @@ import 'package:analysis_server_plugin/registry.dart';
 import 'package:analyzer/analysis_rule/analysis_rule.dart';
 import 'package:dartitect_lints/main.dart';
 import 'package:dartitect_lints/src/dartitect_boundary_rule.dart';
+import 'package:dartitect_lints/src/dartitect_modeling_rule.dart';
 import 'package:dartitect_lints/src/ecosystem_policy.g.dart';
 import 'package:dartitect_lints/src/generated_boundary_policy.dart';
 import 'package:dartitect_lints/src/lint_boundary_config.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('plugin registers one bounded warning rule with stable codes', () {
+  test('plugin registers boundary and modeling rules with one fix', () {
     final registry = _FakeRegistry();
 
     plugin.register(registry);
 
     expect(plugin.name, 'Dartitect architecture rules');
-    expect(registry.warningRules, hasLength(1));
+    expect(registry.warningRules, hasLength(2));
     expect(
-      registry.warningRules.single.diagnosticCodes.map(
-        (code) => code.lowerCaseName,
-      ),
+      registry.warningRules
+          .whereType<DartitectBoundaryRule>()
+          .single
+          .diagnosticCodes
+          .map((code) => code.lowerCaseName),
       <String>[
         'dartitect_domain_flutter_import',
         'dartitect_domain_infrastructure_import',
@@ -46,6 +49,30 @@ void main() {
         'dartitect_invalid_configuration',
       ],
     );
+    expect(
+      registry.warningRules
+          .whereType<DartitectModelingRule>()
+          .single
+          .diagnosticCodes
+          .map((code) => code.lowerCaseName),
+      <String>[
+        'dartitect_dt1030',
+        'dartitect_dt1032',
+        'dartitect_dt1033',
+        'dartitect_dt1034',
+        'dartitect_dt1035',
+        'dartitect_dt1036',
+        'dartitect_dt1037',
+        'dartitect_dt1038',
+        'dartitect_dt1039',
+        'dartitect_dt1040',
+        'dartitect_dt1041',
+        'dartitect_dt1042',
+        'dartitect_dt1043',
+        'dartitect_dt1044',
+      ],
+    );
+    expect(registry.registeredFixes, 1);
   });
 
   test('file-level parser recognizes only Dartitect suppressions', () {
@@ -194,6 +221,10 @@ dependencies:
       policy.explain('listen', accepted.path).decision,
       DartitectEcosystemDecision.approvedPrimitive,
     );
+    expect(
+      policy.explain('provider', accepted.path).decision,
+      DartitectEcosystemDecision.overlapWarning,
+    );
   });
 
   test('lint resolver uses nearest config with project-relative paths', () {
@@ -269,10 +300,17 @@ Map<String, Object?> _config({
 
 final class _FakeRegistry implements PluginRegistry {
   final List<AbstractAnalysisRule> warningRules = <AbstractAnalysisRule>[];
+  int registeredFixes = 0;
 
   @override
   void registerWarningRule(AbstractAnalysisRule rule) => warningRules.add(rule);
 
   @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  dynamic noSuchMethod(Invocation invocation) {
+    if (invocation.memberName == #registerFixForRule) {
+      registeredFixes += 1;
+      return null;
+    }
+    return super.noSuchMethod(invocation);
+  }
 }

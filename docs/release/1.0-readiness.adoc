@@ -1,6 +1,6 @@
 = Dartitect 1.0 Actions readiness
 
-The currently assembled lockstep cohort is `1.0.0-rc.3`. This policy must
+The currently assembled lockstep cohort is `1.0.0-rc.4`. This policy must
 authorize that exact source before the publication workflow can act on it.
 
 Status:: ACTIONS READINESS PENDING

@@ -8,13 +8,13 @@ import 'package:test/test.dart';
 void main() {
   test('fleet versions is sorted, relative, and source sanitized', () async {
     final fleet = await _fleet();
-    final beta = await _project(fleet, 'beta', '^1.0.0-rc.3');
-    final alpha = await _project(fleet, 'alpha', '1.0.0-rc.3');
+    final beta = await _project(fleet, 'beta', '^1.0.0-rc.4');
+    final alpha = await _project(fleet, 'alpha', '1.0.0-rc.4');
     await File('${beta.path}/pubspec.lock').writeAsString('''packages:
   dartitect:
     dependency: direct main
     source: hosted
-    version: "1.0.0-rc.3"
+    version: "1.0.0-rc.4"
 ''');
 
     final report = await DartitectFleetService(fleet)
@@ -28,13 +28,36 @@ void main() {
     expect(encoded, isNot(contains(fleet.path)));
     expect(encoded, isNot(contains(alpha.absolute.path)));
     expect(encoded, contains('lockedVersion'));
+    expect(report.projects.first['modelStatus'], isA<Map<String, Object?>>());
+    expect(
+      report.projects.first['providerStatus'],
+      isA<Map<String, Object?>>(),
+    );
+  });
+
+  test('fleet reports modeling and overlap provider adoption status', () async {
+    final fleet = await _fleet();
+    final app = await _project(fleet, 'app', '^1.0.0-rc.4');
+    await File('${app.path}/pubspec.yaml').writeAsString('''name: app
+dependencies:
+  dartitect: ^1.0.0-rc.4
+  dartitect_modeling: ^1.0.0-rc.4
+  provider: any
+''');
+    final report = await DartitectFleetService(fleet).versions(<String>['app']);
+    final project = report.projects.single;
+    expect(project['modelStatus'], containsPair('status', 'dependency_only'));
+    expect(
+      project['providerStatus'],
+      containsPair('status', 'overlap_warning'),
+    );
   });
 
   test(
     'fleet roots reject traversal, duplicates, and symlink escape',
     () async {
       final fleet = await _fleet();
-      await _project(fleet, 'app', '^1.0.0-rc.3');
+      await _project(fleet, 'app', '^1.0.0-rc.4');
       final service = DartitectFleetService(fleet);
 
       await expectLater(
@@ -61,7 +84,7 @@ void main() {
 
   test('fleet policy requires both bundle and policy digests', () async {
     final fleet = await _fleet();
-    await _project(fleet, 'app', '^1.0.0-rc.3');
+    await _project(fleet, 'app', '^1.0.0-rc.4');
     final policy = File('${fleet.path}/policy.json');
     await policy.writeAsString('''{
   "schemaVersion": 3,
@@ -116,7 +139,7 @@ void main() {
         'upgrade',
         'app',
         '--dry-run',
-        '--to=1.0.0-rc.3',
+        '--to=1.0.0-rc.4',
         '--json',
       ]),
       0,
@@ -131,7 +154,7 @@ void main() {
     expect(errors.toString(), isEmpty);
 
     expect(
-      await runner.run(<String>['fleet', 'upgrade', 'app', '--to=1.0.0-rc.3']),
+      await runner.run(<String>['fleet', 'upgrade', 'app', '--to=1.0.0-rc.4']),
       2,
     );
     expect(await File('${app.path}/pubspec.yaml').readAsString(), before);

@@ -29,7 +29,7 @@ e as [receitas de implementação](https://github.com/ftr-tuta/dartitect/blob/ma
 ## Instalação
 
 Este candidato não está publicado no pub.dev. Declare
-`dartitect_testing: 1.0.0-rc.3` em `dev_dependencies` e use o
+`dartitect_testing: 1.0.0-rc.4` em `dev_dependencies` e use o
 [guia de consumo do candidato Git](../../docs/guides/git-candidate-consumption.pt-BR.md)
 para gerar o fechamento completo de overrides.
 
@@ -48,6 +48,8 @@ assert(order.single == 'database:disposeAsync');
 - `ManualClock` e `DeterministicTraceIdGenerator` removem aleatoriedade.
 - sinks/reporters/tracers/spans graváveis tornam telemetria observável.
 - `RepositoryContractHarness` executa casos reutilizáveis.
+- `ProjectionContractHarness` registra evidência determinística de selectors gerados.
+- `MapperContractHarness` registra resultados forward e round-trips bidirecionais.
 - helpers de stream limitam testes assíncronos.
 - `DiagnosticsTopologyHarness` reconstrói topology, generation, revision e
   lifecycle terminal do protocolo v1 usando somente eventos opacos sem payload.

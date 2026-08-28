@@ -5,7 +5,7 @@ Snapshot:: 2026-08-27
 Release status:: *ACTIONS READINESS PENDING*
 Feature policy:: *FEATURE FREEZE*
 Toolchain floor:: Dart 3.13 / Flutter 3.47.1 stable
-Target topology:: 17 packages / 18 public entrypoints
+Target topology:: 19 packages / 20 public entrypoints
 
 `tool/goal_gates.json` is the machine-readable roadmap authority. GitHub
 Actions is the only technical evidence authority. Local commands are optional
@@ -18,8 +18,8 @@ feedback and cannot declare an RC or stable candidate ready.
 | V1S-00–V1S-03
 | IMPLEMENTED_LOCAL
 | Roadmap, privacy/consumer-neutrality, ecosystem, generator recovery, media,
-geometry, Drift, and public API guards are implemented for the seventeen-package
-topology.
+geometry, Drift, modular modeling/compiler, and public API guards are
+implemented for the nineteen-package topology.
 
 | V1S-04
 | IN_PROGRESS

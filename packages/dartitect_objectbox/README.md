@@ -30,7 +30,7 @@ and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/doc
 ## Install
 
 This candidate is not published on pub.dev. Declare
-`dartitect_objectbox: 1.0.0-rc.3` and use the
+`dartitect_objectbox: 1.0.0-rc.4` and use the
 [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md)
 to generate the complete override closure.
 
@@ -98,7 +98,11 @@ Reusable integration proposals must include a real generated fixture.
 Run `flutter test` and the native fixture in `tool/objectbox_native_fixture`.
 The fixture verifies `Query.findAsync`, background projection, isolate-local
 Store cleanup, real domain/outbox commit and rollback, and watcher teardown; do
-not replace it with mocks alone.
+not replace it with mocks alone. The versioned provider-constructor registry
+also records why ObjectBox Generator 5.3.2 retains one scoped traditional
+constructor: its Analyzer 10.2 resolver rejects Dart 3.13 primary constructors.
+Provider upgrades must rerun the primary-`var` probe before preserving that
+exception.
 
 ## Links
 

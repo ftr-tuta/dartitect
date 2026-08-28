@@ -3,8 +3,10 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 
+import '../config/dartitect_config.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
+import '../verification/verification_service.dart';
 
 /// One deterministic, path-sanitized result from a fleet operation.
 final class DartitectFleetReport {
@@ -58,6 +60,7 @@ final class DartitectFleetService {
       final source = await pubspec.readAsString();
       final dependencies = _declaredDartitectDependencies(source);
       final locked = await _lockedVersions(project.directory);
+      final adoption = await _versionAdoptionStatus(project.directory, source);
       results.add(<String, Object?>{
         'root': project.label,
         if (_packageName(source) case final name?) 'name': name,
@@ -69,6 +72,7 @@ final class DartitectFleetService {
                 'lockedVersion': version,
             },
         ],
+        ...adoption,
       });
     }
     return DartitectFleetReport(
@@ -84,13 +88,16 @@ final class DartitectFleetService {
     final results = <Map<String, Object?>>[];
     var exitCode = 0;
     for (final project in projects) {
-      final report = await DartitectProjectService(project.directory)
-          .scanArchitecture(useBaseline: false);
+      final report = await DartitectVerificationService(project.directory)
+          .verify();
       if (report.exitCode != 0) exitCode = 1;
       results.add(<String, Object?>{
         'root': project.label,
         if (report.project['name'] case final Object name) 'name': name,
         'capabilities': report.capabilities,
+        'modelStatus': report.project['modelStatus'],
+        'providerStatus': report.project['providerStatus'],
+        'ecosystem': report.project['ecosystem'],
         'findings': <Object?>[
           for (final finding in report.findings) finding.toJson(),
         ],
@@ -313,6 +320,83 @@ final class DartitectFleetService {
     });
     return dependencies;
   }
+
+  static Future<Map<String, Object?>> _versionAdoptionStatus(
+    Directory root,
+    String pubspec,
+  ) async {
+    DartitectConfig? config;
+    final configFile = File(_join(root.path, 'dartitect.json'));
+    if (await configFile.exists())
+      config = await DartitectConfig.load(configFile);
+    final packages = _declaredPackageNames(pubspec);
+    final providers = packages.where(_providerPackages.contains).toList()
+      ..sort();
+    final overlap =
+        packages
+            .where(
+              (package) =>
+                  EcosystemPolicy.bundled.explain(package).decision ==
+                  EcosystemDecision.overlapWarning,
+            )
+            .toList()
+          ..sort();
+    final modelingDependency =
+        packages.contains('dartitect_modeling') ||
+        packages.contains('dartitect_modeling_analyzer');
+    return <String, Object?>{
+      'modelStatus': <String, Object?>{
+        'configured': config?.modeling != null,
+        if (config?.modeling case final modeling?)
+          'preset': modeling.preset.wireName,
+        'enabled': config?.modeling != null || modelingDependency,
+        'status': config?.modeling != null
+            ? 'configured'
+            : modelingDependency
+            ? 'dependency_only'
+            : 'not_adopted',
+      },
+      'providerStatus': <String, Object?>{
+        'installed': providers,
+        'overlap': overlap,
+        'ownership': 'consumer_owned',
+        'writerPolicy': 'single_writer_no_dual_write',
+        'status': overlap.isNotEmpty
+            ? 'overlap_warning'
+            : providers.isNotEmpty
+            ? 'bounded'
+            : 'none',
+      },
+    };
+  }
+
+  static Set<String> _declaredPackageNames(String source) {
+    const sections = <String>{'dependencies', 'dev_dependencies'};
+    String? section;
+    final result = <String>{};
+    for (final line in source.split(RegExp(r'\r?\n'))) {
+      final top = RegExp(r'^([a-zA-Z_][a-zA-Z0-9_]*):(?:\s|$)')
+          .firstMatch(line);
+      if (top != null) {
+        section = sections.contains(top.group(1)) ? top.group(1) : null;
+        continue;
+      }
+      if (section == null) continue;
+      final package = RegExp(r'^  ([a-z_][a-z0-9_]*):').firstMatch(line);
+      if (package != null) result.add(package.group(1)!);
+    }
+    return result;
+  }
+
+  static const Set<String> _providerPackages = <String>{
+    'dartitect_drift',
+    'dartitect_objectbox',
+    'drift',
+    'drift_dev',
+    'objectbox',
+    'objectbox_flutter_libs',
+    'objectbox_generator',
+  };
 
   static String _structuredSource(String source, String package) {
     final lines = source.split(RegExp(r'\r?\n'));

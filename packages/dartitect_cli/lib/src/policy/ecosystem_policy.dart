@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import '../diagnostics/models.dart';
+
 /// Stable ecosystem disposition from the versioned offline ledger.
 enum EcosystemDecision {
   /// Approved behind its documented boundary.
@@ -17,6 +19,9 @@ enum EcosystemDecision {
 
   /// Universally forbidden in the Native Strict profile.
   prohibitedNativeStrict,
+
+  /// Installed overlap is visible, while concrete boundary leakage is invalid.
+  overlapWarning,
 
   /// Package is not present in the audited ledger.
   unreviewed,
@@ -243,7 +248,8 @@ final class EcosystemPolicy {
       final base = global.explain(package);
       if (scope == null ||
           record == null ||
-          base.decision == EcosystemDecision.prohibitedNativeStrict) {
+          base.decision == EcosystemDecision.prohibitedNativeStrict ||
+          base.decision == EcosystemDecision.overlapWarning) {
         validation.add(_invalidOverlayFinding(package));
         continue;
       }
@@ -372,7 +378,10 @@ final class EcosystemPolicy {
     DateTime now,
   ) {
     final base = explain(package);
-    if (base.decision == EcosystemDecision.prohibitedNativeStrict) return base;
+    if (base.decision == EcosystemDecision.prohibitedNativeStrict ||
+        base.decision == EcosystemDecision.overlapWarning) {
+      return base;
+    }
     for (final overlay in _overlays[package] ?? const <_OverlayRecord>[]) {
       if (overlay.scope.isExpiredAt(now)) continue;
       if (directOwners.every(overlay.scope._acceptsOwner))
@@ -430,6 +439,7 @@ final class EcosystemAuditFinding {
     required this.package,
     required this.message,
     required this.directOwners,
+    this.severity = FindingSeverity.error,
     this.dependencyPaths = const <String>[],
     this.replacement,
   });
@@ -442,6 +452,9 @@ final class EcosystemAuditFinding {
 
   /// Sanitized remediation message.
   final String message;
+
+  /// Stable severity; installed overlap is a warning, boundary leakage an error.
+  final FindingSeverity severity;
 
   /// Every direct dependency that reaches [package].
   final List<String> directOwners;
@@ -459,6 +472,7 @@ final class EcosystemAuditFinding {
   Map<String, Object?> toJson() => <String, Object?>{
     'code': code,
     'package': package,
+    'severity': severity.name,
     'message': message,
     'directOwners': directOwners,
     'dependencyPaths': dependencyPaths,
@@ -525,7 +539,11 @@ final class EcosystemDependencyAuditor {
         'directOwners': owners.toList()..sort(),
         'dependencyPaths': paths,
       });
-      void addFinding(String code, String message) {
+      void addFinding(
+        String code,
+        String message, {
+        FindingSeverity severity = FindingSeverity.error,
+      }) {
         findings.add(
           EcosystemAuditFinding(
             code: code,
@@ -534,6 +552,7 @@ final class EcosystemDependencyAuditor {
             dependencyPaths: paths,
             replacement: record.replacement,
             message: message,
+            severity: severity,
           ),
         );
       }
@@ -543,6 +562,14 @@ final class EcosystemDependencyAuditor {
           addFinding(
             'DT1017',
             'Package is universally prohibited by the Native Strict profile.',
+          );
+        case EcosystemDecision.overlapWarning:
+          addFinding(
+            'DT1019',
+            'An overlapping runtime is installed; incremental adoption is '
+                'supported only while ownership and concrete boundaries remain '
+                'consumer-controlled.',
+            severity: FindingSeverity.warning,
           );
         case EcosystemDecision.advisoryAlternative:
           final activeConflicts = record.conflictsWith
@@ -834,6 +861,7 @@ EcosystemDecision _parseDecision(String value) => switch (value) {
   'advisory_alternative' => EcosystemDecision.advisoryAlternative,
   'reviewed_exception' => EcosystemDecision.reviewedException,
   'prohibited_native_strict' => EcosystemDecision.prohibitedNativeStrict,
+  'overlap_warning' => EcosystemDecision.overlapWarning,
   _ => throw const FormatException('Unknown ecosystem policy decision.'),
 };
 
@@ -843,6 +871,7 @@ String _decisionName(EcosystemDecision value) => switch (value) {
   EcosystemDecision.advisoryAlternative => 'advisory_alternative',
   EcosystemDecision.reviewedException => 'reviewed_exception',
   EcosystemDecision.prohibitedNativeStrict => 'prohibited_native_strict',
+  EcosystemDecision.overlapWarning => 'overlap_warning',
   EcosystemDecision.unreviewed => 'unreviewed',
 };
 
@@ -915,7 +944,8 @@ bool _globMatches(String glob, String path) {
 
 const _bundledDecisions = <String, String>{
   'app_tracking_transparency': 'advisory_alternative|dartitect_privacy|',
-  'bloc': 'prohibited_native_strict|constructor injection and Dartitect Commands/resources|',
+  'bloc':
+      'overlap_warning|constructor injection and Dartitect Commands/resources|',
   'brasil_fields':
       'advisory_alternative|dartitect_locale_br for CEP-only values|',
   'build_runner': 'approved||',
@@ -927,39 +957,47 @@ const _bundledDecisions = <String, String>{
   'drift': 'approved||',
   'drift_dev': 'approved||',
   'elementary':
-      'prohibited_native_strict|constructor injection and explicit ViewModels|',
+      'overlap_warning|constructor injection and explicit ViewModels|',
   'flutter': 'approved||',
-  'flutter_bloc': 'prohibited_native_strict|constructor injection and Dartitect Commands/resources|',
+  'flutter_bloc':
+      'overlap_warning|constructor injection and Dartitect Commands/resources|',
   'flutter_image_compress': 'reviewed_exception||',
   'flutter_localizations': 'approved||',
   'flutter_mobx':
-      'prohibited_native_strict|constructor injection and Dartitect resources|',
-  'flutter_modular': 'prohibited_native_strict|constructor injection and explicit composition roots|',
+      'overlap_warning|constructor injection and Dartitect resources|',
+  'flutter_modular':
+      'overlap_warning|constructor injection and explicit composition roots|',
   'flutter_native_splash': 'advisory_alternative|consumer-owned native assets plus dartitect_flutter FirstFrameGate|',
   'flutter_pdfview': 'reviewed_exception||',
-  'flutter_riverpod': 'prohibited_native_strict|constructor injection and Dartitect Commands/resources|',
+  'flutter_riverpod':
+      'overlap_warning|constructor injection and Dartitect Commands/resources|',
   'flutter_secure_storage': 'reviewed_exception||',
   'freezed': 'advisory_alternative|dartitect model sync for bounded value boilerplate|',
   'freezed_annotation':
       'advisory_alternative|DartitectValue for bounded value boilerplate|',
   'gal': 'advisory_alternative|dartitect_media|',
-  'get': 'prohibited_native_strict|constructor injection and explicit composition roots|',
-  'get_it': 'prohibited_native_strict|constructor injection and explicit composition roots|',
-  'get_it_mixin': 'prohibited_native_strict|constructor injection and explicit composition roots|',
+  'get':
+      'overlap_warning|constructor injection and explicit composition roots|',
+  'get_it':
+      'overlap_warning|constructor injection and explicit composition roots|',
+  'get_it_mixin':
+      'overlap_warning|constructor injection and explicit composition roots|',
   'go_router': 'approved||',
-  'hooks_riverpod': 'prohibited_native_strict|constructor injection and Dartitect Commands/resources|',
-  'hydrated_bloc': 'prohibited_native_strict|consumer-owned persistence with Dartitect resources|',
+  'hooks_riverpod':
+      'overlap_warning|constructor injection and Dartitect Commands/resources|',
+  'hydrated_bloc':
+      'overlap_warning|consumer-owned persistence with Dartitect resources|',
   'image': 'reviewed_exception||',
   'image_picker': 'approved||',
-  'injectable': 'prohibited_native_strict|constructor injection and explicit composition roots|',
+  'injectable':
+      'overlap_warning|constructor injection and explicit composition roots|',
   'intl': 'approved||',
   'json_annotation': 'approved||',
   'json_serializable': 'approved||',
   'lottie': 'reviewed_exception||',
   'listen': 'approved_primitive|||nominal interoperability with Flutter listenables is not established',
   'mapbox_maps_flutter': 'approved||',
-  'mobx':
-      'prohibited_native_strict|constructor injection and Dartitect resources|',
+  'mobx': 'overlap_warning|constructor injection and Dartitect resources|',
   'objectbox': 'approved||',
   'objectbox_flutter_libs': 'approved||',
   'objectbox_generator': 'approved||',
@@ -969,28 +1007,31 @@ const _bundledDecisions = <String, String>{
   'pdf': 'reviewed_exception||',
   'printing': 'reviewed_exception||',
   'pro_image_editor': 'reviewed_exception||',
-  'provider': 'prohibited_native_strict|constructor injection and explicit composition roots|',
+  'provider':
+      'overlap_warning|constructor injection and explicit composition roots|',
   'retrofit':
       'advisory_alternative|explicit clients over dartitect_dio DioJsonClient|',
   'retrofit_generator': 'advisory_alternative|explicit endpoint clients|',
-  'riverpod': 'prohibited_native_strict|constructor injection and Dartitect Commands/resources|',
-  'riverpod_annotation': 'prohibited_native_strict|constructor injection and explicit composition roots|',
-  'riverpod_generator': 'prohibited_native_strict|constructor injection and explicit composition roots|',
+  'riverpod':
+      'overlap_warning|constructor injection and Dartitect Commands/resources|',
+  'riverpod_annotation':
+      'overlap_warning|constructor injection and explicit composition roots|',
+  'riverpod_generator':
+      'overlap_warning|constructor injection and explicit composition roots|',
   'sentry': 'approved||',
   'sentry_dio': 'advisory_alternative|one reviewed Dio instrumentation path|dartitect_dio',
   'sentry_flutter': 'approved||',
   'share_plus': 'approved||',
   'shared_preferences': 'approved||',
   'sqlite3': 'approved||',
-  'signals':
-      'prohibited_native_strict|Dartitect resources and native listenables|',
+  'signals': 'overlap_warning|Dartitect resources and native listenables|',
   'signals_flutter':
-      'prohibited_native_strict|Dartitect resources and native listenables|',
-  'stacked':
-      'prohibited_native_strict|constructor injection and explicit ViewModels|',
+      'overlap_warning|Dartitect resources and native listenables|',
+  'stacked': 'overlap_warning|constructor injection and explicit ViewModels|',
   'url_launcher': 'approved||',
   'uuid': 'advisory_alternative|SecureUuidV4Generator when only UUID v4 is required|',
-  'watch_it': 'prohibited_native_strict|constructor injection and explicit composition roots|',
+  'watch_it':
+      'overlap_warning|constructor injection and explicit composition roots|',
   'workmanager': 'advisory_alternative|consumer-owned scheduling port around the native scheduler|',
 };
 
@@ -1030,6 +1071,11 @@ const _bundledDecisions = <String, String>{
       boundary: 'application_architecture',
       maturity: 'not_applicable',
       adoptionStatus: 'not_supported_native_strict',
+    ),
+    EcosystemDecision.overlapWarning => (
+      boundary: 'incremental_adoption',
+      maturity: 'reviewed_overlap',
+      adoptionStatus: 'warning_when_installed',
     ),
     EcosystemDecision.unreviewed => (
       boundary: 'unreviewed',

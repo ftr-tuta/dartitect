@@ -1,7 +1,7 @@
 = Competitive performance and lifecycle report
 
-Generated:: 2026-08-26T15:05:13.176963Z
-Candidate cohort:: `1.0.0-rc.3`
+Generated:: 2026-08-28T03:25:12.639781Z
+Candidate cohort:: `1.0.0-rc.4`
 Evidence status:: `REFERENCE_ONLY_REPRODUCTION_REQUIRED`
 Public claim eligible:: `NO`
 Claim policy:: `INTERNAL_GATE_ONLY`
@@ -9,52 +9,49 @@ Seed:: 140013
 Warm-up / measured samples:: 3 / 15
 Gate:: PASS
 
-This tracked dataset preserves the reviewed workload thresholds but is not
-root-candidate evidence. CI reproduces the matrix externally on the exact root.
-These measurements are internal compatibility gates. They are not authorized
-for public performance claims.
+These measurements are internal compatibility gates. They are not authorized for public performance claims.
 
 == Fan-out comparison
 
 [cols="1,1,1,1,1,1",options="header"]
 |===
 | Listeners | Change | Framework | Median us | p95 us | Callbacks
-| 1 | 0% | bloc | 4.714 | 9.133 | 0
-| 1 | 0% | dartitect | 0.045 | 0.064 | 0
-| 1 | 0% | riverpod | 16.298 | 50.968 | 0
-| 1 | 10% | bloc | 5.087 | 10.661 | 1
-| 1 | 10% | dartitect | 0.102 | 0.410 | 1
-| 1 | 10% | riverpod | 10.092 | 14.031 | 1
-| 1 | 100% | bloc | 4.060 | 4.902 | 1
-| 1 | 100% | dartitect | 0.326 | 3.254 | 1
-| 1 | 100% | riverpod | 12.095 | 20.851 | 1
-| 10 | 0% | bloc | 48.848 | 91.503 | 0
-| 10 | 0% | dartitect | 0.169 | 0.950 | 0
-| 10 | 0% | riverpod | 15.410 | 21.387 | 0
-| 10 | 10% | bloc | 48.943 | 90.082 | 1
-| 10 | 10% | dartitect | 0.232 | 0.250 | 1
-| 10 | 10% | riverpod | 12.568 | 18.518 | 1
-| 10 | 100% | bloc | 56.365 | 121.555 | 10
-| 10 | 100% | dartitect | 0.820 | 2.349 | 10
-| 10 | 100% | riverpod | 13.183 | 17.418 | 10
-| 100 | 0% | bloc | 711.545 | 947.045 | 0
-| 100 | 0% | dartitect | 1.765 | 9.635 | 0
-| 100 | 0% | riverpod | 37.800 | 49.995 | 0
-| 100 | 10% | bloc | 912.300 | 1538.110 | 10
-| 100 | 10% | dartitect | 2.400 | 9.145 | 10
-| 100 | 10% | riverpod | 39.515 | 42.965 | 10
-| 100 | 100% | bloc | 982.215 | 1147.855 | 100
-| 100 | 100% | dartitect | 8.180 | 10.320 | 100
-| 100 | 100% | riverpod | 45.045 | 51.315 | 100
-| 1000 | 0% | bloc | 9932.950 | 12970.625 | 0
-| 1000 | 0% | dartitect | 18.850 | 52.350 | 0
-| 1000 | 0% | riverpod | 292.275 | 620.300 | 0
-| 1000 | 10% | bloc | 10688.200 | 12215.900 | 100
-| 1000 | 10% | dartitect | 26.525 | 86.050 | 100
-| 1000 | 10% | riverpod | 402.975 | 567.725 | 100
-| 1000 | 100% | bloc | 10391.050 | 13115.125 | 1000
-| 1000 | 100% | dartitect | 79.050 | 150.225 | 1000
-| 1000 | 100% | riverpod | 371.250 | 500.275 | 1000
+| 1 | 0% | bloc | 3.856 | 7.141 | 0
+| 1 | 0% | dartitect | 0.043 | 0.071 | 0
+| 1 | 0% | riverpod | 10.847 | 19.372 | 0
+| 1 | 10% | bloc | 3.638 | 6.333 | 1
+| 1 | 10% | dartitect | 0.101 | 0.136 | 1
+| 1 | 10% | riverpod | 8.620 | 10.290 | 1
+| 1 | 100% | bloc | 3.377 | 4.294 | 1
+| 1 | 100% | dartitect | 0.310 | 0.837 | 1
+| 1 | 100% | riverpod | 9.735 | 13.680 | 1
+| 10 | 0% | bloc | 36.903 | 39.606 | 0
+| 10 | 0% | dartitect | 0.193 | 0.453 | 0
+| 10 | 0% | riverpod | 11.374 | 16.043 | 0
+| 10 | 10% | bloc | 39.197 | 48.982 | 1
+| 10 | 10% | dartitect | 0.236 | 0.430 | 1
+| 10 | 10% | riverpod | 11.941 | 24.472 | 1
+| 10 | 100% | bloc | 38.064 | 46.642 | 10
+| 10 | 100% | dartitect | 0.740 | 1.380 | 10
+| 10 | 100% | riverpod | 11.046 | 11.437 | 10
+| 100 | 0% | bloc | 486.140 | 586.930 | 0
+| 100 | 0% | dartitect | 1.715 | 2.155 | 0
+| 100 | 0% | riverpod | 34.165 | 45.995 | 0
+| 100 | 10% | bloc | 589.285 | 709.060 | 10
+| 100 | 10% | dartitect | 2.295 | 4.215 | 10
+| 100 | 10% | riverpod | 36.120 | 42.430 | 10
+| 100 | 100% | bloc | 558.640 | 648.115 | 100
+| 100 | 100% | dartitect | 7.230 | 10.920 | 100
+| 100 | 100% | riverpod | 40.485 | 45.850 | 100
+| 1000 | 0% | bloc | 6064.700 | 6228.825 | 0
+| 1000 | 0% | dartitect | 18.775 | 21.625 | 0
+| 1000 | 0% | riverpod | 282.250 | 307.175 | 0
+| 1000 | 10% | bloc | 6151.850 | 6706.375 | 100
+| 1000 | 10% | dartitect | 24.650 | 46.600 | 100
+| 1000 | 10% | riverpod | 333.475 | 496.675 | 100
+| 1000 | 100% | bloc | 6200.825 | 6989.925 | 1000
+| 1000 | 100% | dartitect | 76.550 | 94.725 | 1000
+| 1000 | 100% | riverpod | 309.450 | 369.725 | 1000
 |===
 
 Every framework performed exactly one selection evaluation per listener and only changed selectors invoked callbacks. Dartitect must remain within `max(best * 1.10, best + 5 us)` at median and `max(best * 1.15, best + 10 us)` at p95.
@@ -64,9 +61,9 @@ Every framework performed exactly one selection evaluation per listener and only
 [cols="2,1,1,1,1",options="header"]
 | Scenario | Changed | Projected | Reduction | Median us
 |===
-| hundred-change | 100 | 100 | 99.00% | 6681.000
-| one-change | 1 | 1 | 99.99% | 9347.000
-| reorder | 0 | 0 | 100.00% | 8309.000
+| hundred-change | 100 | 100 | 99.00% | 4597.000
+| one-change | 1 | 1 | 99.99% | 5264.000
+| reorder | 0 | 0 | 100.00% | 4963.000
 |===
 
 == Workload and lifecycle gates
@@ -81,8 +78,8 @@ Every framework performed exactly one selection evaluation per listener and only
 
 == Memory census
 
-* RSS before/after/max: 210911232 / 364580864 / 404705280 bytes.
-* Heap before/after/capacity: 106693728 / 226435632 / 232185856 bytes.
+* RSS before/after/max: 211771392 / 361226240 / 398426112 bytes.
+* Heap before/after/capacity: 106559168 / 226575888 / 232730624 bytes.
 * External memory after: 131536 bytes.
 
 RSS and heap are observations, not leak thresholds; exact owned resource census is the terminal leak gate. Raw samples and the full environment manifest accompany this report.

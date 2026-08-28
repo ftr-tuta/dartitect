@@ -1,37 +1,33 @@
 import 'package:dartitect/dartitect.dart';
 
 /// Immutable catalog item projected from infrastructure DTOs.
-final class CatalogItem extends ValueEquality {
-  /// Creates a catalog value.
-  const CatalogItem({
-    required this.id,
-    required this.title,
-    required this.version,
-  });
-
+final class const CatalogItem({
   /// Stable item key.
-  final int id;
+  required final int id,
 
   /// Display title mapped from the DTO.
-  final String title;
+  required final String title,
 
   /// Projection version.
-  final int version;
+  required final int version,
+}) extends ValueEquality {
+  /// Creates a catalog value.
+  this;
 
   @override
   Iterable<Object?> get equalityFields => <Object?>[id, title, version];
 }
 
 /// Typed page/search cursor.
-final class CatalogCursor extends ValueEquality {
-  /// Creates a cursor.
-  const CatalogCursor({this.offset = 0, this.query = ''});
-
+final class const CatalogCursor({
   /// Zero-based remote offset.
-  final int offset;
+  final int offset = 0,
 
   /// Consumer search query.
-  final String query;
+  final String query = '',
+}) extends ValueEquality {
+  /// Creates a cursor.
+  this;
 
   @override
   Iterable<Object?> get equalityFields => <Object?>[offset, query];

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-rc.4
+
+- Promote primary-constructor data carriers and modular modeling adoption
+  without adding Analyzer or generator dependencies to Flutter runtime code.
+
 ## 1.0.0-rc.3
 
 - Add experimental explicit-dependency `DerivedAsyncResource`, restart-latest

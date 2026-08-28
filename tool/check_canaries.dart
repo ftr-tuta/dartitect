@@ -169,6 +169,34 @@ Future<Map<String, Object?>> _runCanary({
 
   await run('flutter', const <String>['pub', 'get']);
   switch (id) {
+    case 'modeling':
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'model',
+        'sync',
+        '--apply',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'model',
+        'check',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'verify',
+        '--json',
+      ]);
+      await run('dart', const <String>['analyze']);
+      await run('dart', const <String>['test']);
+      await run('dart', const <String>['test', '--platform', 'chrome']);
+      break;
+    case 'interop':
+      await run('dart', const <String>['analyze']);
+      await run('dart', const <String>['test']);
+      break;
     case 'minimal':
       await run('dart', const <String>[
         'run',
@@ -362,6 +390,7 @@ Future<void> _copyConsumer(
     }
     if (relative == 'pubspec.yaml' ||
         relative == 'pubspec.lock' ||
+        relative == 'pubspec_overrides.yaml' ||
         relative == '.flutter-plugins-dependencies') {
       continue;
     }
@@ -435,18 +464,33 @@ void _validateContract(
   final ids = <String>{
     for (final canary in _objects(contract['canaries'])) canary['id'] as String,
   };
-  if (ids.length != 4 ||
+  if (ids.length != 6 ||
       !ids.containsAll(const <String>{
+        'modeling',
+        'interop',
         'minimal',
         'offline_first',
         'drift_provider',
         'native_capabilities',
       })) {
-    throw StateError('All four formal canaries are required.');
+    throw StateError('All six RC4 formal canaries are required.');
   }
   const requiredCoverage = <String>{
+    'pure_dart_modeling',
+    'json',
+    'projection',
+    'mapper',
+    'chrome',
+    'clean_clone',
+    'interop_positive',
+    'interop_negative',
+    'overlap_warning',
+    'boundary_error',
     'flutter_simple',
+    'flutter_mvvm',
     'objectbox_local_first',
+    'objectbox_primary_evidence',
+    'mixed_dartitect_objectbox_drift',
     'outbox_sync',
     'desktop',
     'session_replacement',

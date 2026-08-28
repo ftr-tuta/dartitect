@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sdkVersion": "1.0.0-rc.3",
+  "sdkVersion": "1.0.0-rc.4",
   "entrypoints": {
     "packages/dartitect/lib/dartitect.dart": [
       {
@@ -138,10 +138,6 @@
       {
         "name": "DartitectDiagnosticsEmitter",
         "declaration": "final class DartitectDiagnosticsEmitter implements AsyncDisposable"
-      },
-      {
-        "name": "DartitectValue",
-        "declaration": "final class DartitectValue"
       },
       {
         "name": "Disposable",
@@ -382,6 +378,10 @@
         "declaration": "final class DartitectConfigException implements FormatException"
       },
       {
+        "name": "DartitectEcosystemConfig",
+        "declaration": "final class DartitectEcosystemConfig"
+      },
+      {
         "name": "DartitectExitCode",
         "declaration": "enum DartitectExitCode"
       },
@@ -398,8 +398,20 @@
         "declaration": "final class DartitectFleetService"
       },
       {
+        "name": "DartitectGenerationVersions",
+        "declaration": "abstract final class DartitectGenerationVersions"
+      },
+      {
         "name": "DartitectModelGenerator",
         "declaration": "final class DartitectModelGenerator"
+      },
+      {
+        "name": "DartitectModelingConfig",
+        "declaration": "final class DartitectModelingConfig"
+      },
+      {
+        "name": "DartitectModelingPreset",
+        "declaration": "enum DartitectModelingPreset"
       },
       {
         "name": "DartitectProjectService",
@@ -428,6 +440,10 @@
       {
         "name": "DartitectSuppression",
         "declaration": "final class DartitectSuppression"
+      },
+      {
+        "name": "DartitectVerificationService",
+        "declaration": "final class DartitectVerificationService"
       },
       {
         "name": "EcosystemAuditFinding",
@@ -498,6 +514,10 @@
         "declaration": "enum GenerationFaultPoint"
       },
       {
+        "name": "GenerationNamespace",
+        "declaration": "final class GenerationNamespace"
+      },
+      {
         "name": "GenerationPlan",
         "declaration": "final class GenerationPlan"
       },
@@ -520,6 +540,38 @@
       {
         "name": "PlannedFileOperation",
         "declaration": "final class PlannedFileOperation"
+      },
+      {
+        "name": "PrimaryConstructorMigration",
+        "declaration": "final class PrimaryConstructorMigration"
+      },
+      {
+        "name": "PrimaryConstructorMigrationDiagnostic",
+        "declaration": "final class PrimaryConstructorMigrationDiagnostic"
+      },
+      {
+        "name": "PrimaryConstructorMigrationException",
+        "declaration": "final class PrimaryConstructorMigrationException implements Exception"
+      },
+      {
+        "name": "PrimaryConstructorMigrationFaultEvent",
+        "declaration": "final class PrimaryConstructorMigrationFaultEvent"
+      },
+      {
+        "name": "PrimaryConstructorMigrationFaultInjector",
+        "declaration": "typedef PrimaryConstructorMigrationFaultInjector = FutureOr<void> Function(PrimaryConstructorMigrationFaultEvent)"
+      },
+      {
+        "name": "PrimaryConstructorMigrationFaultPoint",
+        "declaration": "enum PrimaryConstructorMigrationFaultPoint"
+      },
+      {
+        "name": "PrimaryConstructorMigrationOperation",
+        "declaration": "final class PrimaryConstructorMigrationOperation"
+      },
+      {
+        "name": "PrimaryConstructorMigrationReport",
+        "declaration": "final class PrimaryConstructorMigrationReport"
       },
       {
         "name": "ProjectScan",
@@ -1506,6 +1558,290 @@
         "declaration": "final class MethodChannelGalleryMediaService implements GalleryMediaService"
       }
     ],
+    "packages/dartitect_modeling/lib/dartitect_modeling.dart": [
+      {
+        "name": "CyclicValueException",
+        "declaration": "final class CyclicValueException implements Exception"
+      },
+      {
+        "name": "DartitectBidirectionalBoundaryMapper",
+        "declaration": "abstract interface class DartitectBidirectionalBoundaryMapper<Source, Target> implements DartitectBoundaryMapper<Source, Target>"
+      },
+      {
+        "name": "DartitectBoolJsonCodec",
+        "declaration": "final class DartitectBoolJsonCodec extends DartitectJsonCodec<bool>"
+      },
+      {
+        "name": "DartitectBoundaryMapper",
+        "declaration": "abstract interface class DartitectBoundaryMapper<Source, Target>"
+      },
+      {
+        "name": "DartitectDoubleJsonCodec",
+        "declaration": "final class DartitectDoubleJsonCodec extends DartitectJsonCodec<double>"
+      },
+      {
+        "name": "DartitectField",
+        "declaration": "final class DartitectField"
+      },
+      {
+        "name": "DartitectFieldDescriptor",
+        "declaration": "final class DartitectFieldDescriptor<Model, Value>"
+      },
+      {
+        "name": "DartitectHookJsonCodec",
+        "declaration": "final class DartitectHookJsonCodec<T> extends DartitectJsonCodec<T>"
+      },
+      {
+        "name": "DartitectImmutableValueListJsonCodec",
+        "declaration": "final class DartitectImmutableValueListJsonCodec<T> extends DartitectJsonCodec<ImmutableValueList<T>>"
+      },
+      {
+        "name": "DartitectImmutableValueMapJsonCodec",
+        "declaration": "final class DartitectImmutableValueMapJsonCodec<V> extends DartitectJsonCodec<ImmutableValueMap<String, V>>"
+      },
+      {
+        "name": "DartitectImmutableValueSetJsonCodec",
+        "declaration": "final class DartitectImmutableValueSetJsonCodec<T> extends DartitectJsonCodec<ImmutableValueSet<T>>"
+      },
+      {
+        "name": "DartitectIntJsonCodec",
+        "declaration": "final class DartitectIntJsonCodec extends DartitectJsonCodec<int>"
+      },
+      {
+        "name": "DartitectJson",
+        "declaration": "final class DartitectJson"
+      },
+      {
+        "name": "DartitectJsonCodec",
+        "declaration": "abstract class DartitectJsonCodec<T>"
+      },
+      {
+        "name": "DartitectJsonCodecs",
+        "declaration": "abstract final class DartitectJsonCodecs"
+      },
+      {
+        "name": "DartitectJsonDecodeHook",
+        "declaration": "typedef DartitectJsonDecodeHook<out T> = Result<T, DartitectJsonFailure> Function(Object?, DartitectJsonPath)"
+      },
+      {
+        "name": "DartitectJsonEncodeHook",
+        "declaration": "typedef DartitectJsonEncodeHook<in T> = Result<Object?, DartitectJsonFailure> Function(T, DartitectJsonPath)"
+      },
+      {
+        "name": "DartitectJsonFailure",
+        "declaration": "final class DartitectJsonFailure extends ValueEquality implements Exception"
+      },
+      {
+        "name": "DartitectJsonFailureKind",
+        "declaration": "enum DartitectJsonFailureKind"
+      },
+      {
+        "name": "DartitectJsonIndexPathSegment",
+        "declaration": "final class DartitectJsonIndexPathSegment extends DartitectJsonPathSegment"
+      },
+      {
+        "name": "DartitectJsonKeyPathSegment",
+        "declaration": "final class DartitectJsonKeyPathSegment extends DartitectJsonPathSegment"
+      },
+      {
+        "name": "DartitectJsonLimits",
+        "declaration": "final class DartitectJsonLimits extends ValueEquality"
+      },
+      {
+        "name": "DartitectJsonObjectSupport",
+        "declaration": "abstract final class DartitectJsonObjectSupport"
+      },
+      {
+        "name": "DartitectJsonPath",
+        "declaration": "final class DartitectJsonPath extends ValueEquality"
+      },
+      {
+        "name": "DartitectJsonPathSegment",
+        "declaration": "sealed class DartitectJsonPathSegment extends ValueEquality"
+      },
+      {
+        "name": "DartitectJsonValueCodec",
+        "declaration": "final class DartitectJsonValueCodec extends DartitectJsonCodec<Object?>"
+      },
+      {
+        "name": "DartitectLens",
+        "declaration": "final class DartitectLens<Model, Value>"
+      },
+      {
+        "name": "DartitectMapFromHook",
+        "declaration": "typedef DartitectMapFromHook<in Target, out Source> = Result<Source, DartitectMappingFailure> Function(Target, DartitectMappingPath)"
+      },
+      {
+        "name": "DartitectMapToHook",
+        "declaration": "typedef DartitectMapToHook<in Source, out Target> = Result<Target, DartitectMappingFailure> Function(Source, DartitectMappingPath)"
+      },
+      {
+        "name": "DartitectMapper",
+        "declaration": "final class DartitectMapper"
+      },
+      {
+        "name": "DartitectMappingFailure",
+        "declaration": "final class DartitectMappingFailure extends ValueEquality implements Exception"
+      },
+      {
+        "name": "DartitectMappingFailureKind",
+        "declaration": "enum DartitectMappingFailureKind"
+      },
+      {
+        "name": "DartitectMappingPath",
+        "declaration": "final class DartitectMappingPath extends ValueEquality"
+      },
+      {
+        "name": "DartitectMappingResults",
+        "declaration": "abstract final class DartitectMappingResults"
+      },
+      {
+        "name": "DartitectNullJsonCodec",
+        "declaration": "final class DartitectNullJsonCodec extends DartitectJsonCodec<Null>"
+      },
+      {
+        "name": "DartitectNullableJsonCodec",
+        "declaration": "final class DartitectNullableJsonCodec<T> extends DartitectJsonCodec<T?>"
+      },
+      {
+        "name": "DartitectNumJsonCodec",
+        "declaration": "final class DartitectNumJsonCodec extends DartitectJsonCodec<num>"
+      },
+      {
+        "name": "DartitectProjection",
+        "declaration": "final class DartitectProjection"
+      },
+      {
+        "name": "DartitectProjectionSelector",
+        "declaration": "typedef DartitectProjectionSelector<in Model, out Projection> = Projection Function(Model)"
+      },
+      {
+        "name": "DartitectStringJsonCodec",
+        "declaration": "final class DartitectStringJsonCodec extends DartitectJsonCodec<String>"
+      },
+      {
+        "name": "DartitectUnknownKeys",
+        "declaration": "enum DartitectUnknownKeys"
+      },
+      {
+        "name": "DartitectValue",
+        "declaration": "final class DartitectValue"
+      },
+      {
+        "name": "Err",
+        "declaration": "final class Err<F extends Object> extends Result<Never, F>"
+      },
+      {
+        "name": "ImmutableValueList",
+        "declaration": "final class ImmutableValueList<T> extends ValueEquality with Iterable<T>"
+      },
+      {
+        "name": "ImmutableValueMap",
+        "declaration": "final class ImmutableValueMap<K, V> extends ValueEquality"
+      },
+      {
+        "name": "ImmutableValueSet",
+        "declaration": "final class ImmutableValueSet<T> extends ValueEquality with Iterable<T>"
+      },
+      {
+        "name": "Ok",
+        "declaration": "final class Ok<T> extends Result<T, Never>"
+      },
+      {
+        "name": "Result",
+        "declaration": "sealed class Result<T, F extends Object> extends ValueEquality"
+      },
+      {
+        "name": "ResultOperations",
+        "declaration": "extension ResultOperations<T, F extends Object> on Result<T, F>"
+      },
+      {
+        "name": "ValueEquality",
+        "declaration": "abstract class ValueEquality"
+      }
+    ],
+    "packages/dartitect_modeling_analyzer/lib/dartitect_modeling_analyzer.dart": [
+      {
+        "name": "ModelingCapability",
+        "declaration": "enum ModelingCapability"
+      },
+      {
+        "name": "ModelingClassCompilation",
+        "declaration": "final class ModelingClassCompilation"
+      },
+      {
+        "name": "ModelingCompatibility",
+        "declaration": "enum ModelingCompatibility"
+      },
+      {
+        "name": "ModelingCompatibilityDecisionIr",
+        "declaration": "final class ModelingCompatibilityDecisionIr"
+      },
+      {
+        "name": "ModelingCompilation",
+        "declaration": "final class ModelingCompilation"
+      },
+      {
+        "name": "ModelingCompiler",
+        "declaration": "final class ModelingCompiler"
+      },
+      {
+        "name": "ModelingDiagnostic",
+        "declaration": "final class ModelingDiagnostic"
+      },
+      {
+        "name": "ModelingDiagnosticSeverity",
+        "declaration": "enum ModelingDiagnosticSeverity"
+      },
+      {
+        "name": "ModelingFieldIr",
+        "declaration": "final class ModelingFieldIr"
+      },
+      {
+        "name": "ModelingJsonIr",
+        "declaration": "final class ModelingJsonIr"
+      },
+      {
+        "name": "ModelingLibraryIr",
+        "declaration": "final class ModelingLibraryIr"
+      },
+      {
+        "name": "ModelingMapperIr",
+        "declaration": "final class ModelingMapperIr"
+      },
+      {
+        "name": "ModelingModelIr",
+        "declaration": "final class ModelingModelIr"
+      },
+      {
+        "name": "ModelingProjectionIr",
+        "declaration": "final class ModelingProjectionIr"
+      },
+      {
+        "name": "ModelingSourceEdit",
+        "declaration": "final class ModelingSourceEdit"
+      },
+      {
+        "name": "ModelingTypeIr",
+        "declaration": "final class ModelingTypeIr"
+      },
+      {
+        "name": "ModelingTypeParameterIr",
+        "declaration": "final class ModelingTypeParameterIr"
+      },
+      {
+        "name": "ModelingWorkspaceIr",
+        "declaration": "final class ModelingWorkspaceIr"
+      },
+      {
+        "name": "hasLexicalModelingAnnotation",
+        "declaration": "bool hasLexicalModelingAnnotation(ClassDeclaration declaration)"
+      },
+      {
+        "name": "primaryConstructorSourceEdits",
+        "declaration": "List<ModelingSourceEdit>? primaryConstructorSourceEdits(ClassDeclaration declaration)"
+      }
+    ],
     "packages/dartitect_objectbox/lib/dartitect_objectbox.dart": [
       {
         "name": "ObjectBoxCheckpointReader",
@@ -2082,6 +2418,14 @@
         "declaration": "final class ManualSyncLeaseStore implements SyncLeaseStore"
       },
       {
+        "name": "MapperContractHarness",
+        "declaration": "final class MapperContractHarness<Source, Target>"
+      },
+      {
+        "name": "MapperContractRun",
+        "declaration": "final class MapperContractRun<Source, Target>"
+      },
+      {
         "name": "OwnedGraphHarness",
         "declaration": "final class OwnedGraphHarness"
       },
@@ -2100,6 +2444,14 @@
       {
         "name": "OwnedScopeKind",
         "declaration": "enum OwnedScopeKind"
+      },
+      {
+        "name": "ProjectionContractHarness",
+        "declaration": "final class ProjectionContractHarness<Model, Projection>"
+      },
+      {
+        "name": "ProjectionContractRun",
+        "declaration": "final class ProjectionContractRun<Projection>"
       },
       {
         "name": "RecordingErrorReporter",

@@ -60,6 +60,7 @@ import 'package:flutter/widgets.dart';
     expect(exitCode, 1);
     expect(report[r'$schema'], contains('sarif-2.1.0'));
     expect(report['version'], '2.1.0');
+    expect(run['automationDetails'], containsPair('id', 'dartitect/scan'));
     expect(artifact['uri'], 'lib/domain/account.dart');
     expect(output.toString(), isNot(contains(root.path)));
     expect(output.toString(), isNot(contains('customer-secret-value')));

@@ -99,17 +99,6 @@ Future<Map<String, Object?>> _environment(
   if (flutter.exitCode != 0) {
     throw StateError('Could not record the Flutter environment.');
   }
-  final git = await Process.run('git', <String>[
-    'rev-parse',
-    'HEAD',
-    'HEAD^{tree}',
-  ]);
-  if (git.exitCode != 0)
-    throw StateError('Could not record the source commit.');
-  final revisions = const LineSplitter().convert('${git.stdout}'.trim());
-  if (revisions.length != 2) {
-    throw StateError('Could not record the source commit and tree.');
-  }
   final lock = await File('${root.path}/pubspec.lock').readAsString();
   final flutterEnvironment =
       (jsonDecode('${flutter.stdout}') as Map<String, Object?>)
@@ -117,10 +106,9 @@ Future<Map<String, Object?>> _environment(
   return <String, Object?>{
     'schemaVersion': 2,
     'generatedAtUtc': DateTime.now().toUtc().toIso8601String(),
-    'sourceRevision': <String, String>{
-      'recordedCommit': revisions[0],
-      'canonicalCommit': revisions[0],
-      'tree': revisions[1],
+    'sourceRevision': const <String, String>{
+      'candidateCohort': '1.0.0-rc.4',
+      'evidenceStatus': 'REFERENCE_ONLY_REPRODUCTION_REQUIRED',
     },
     'publicClaimEligible': false,
     'claimPolicy': 'INTERNAL_GATE_ONLY',
@@ -152,9 +140,8 @@ String _report(
     ..writeln('= Competitive performance and lifecycle report')
     ..writeln()
     ..writeln('Generated:: ${environment['generatedAtUtc']}')
-    ..writeln('Recorded source:: `${source['recordedCommit']}`')
-    ..writeln('Canonical source:: `${source['canonicalCommit']}`')
-    ..writeln('Source tree:: `${source['tree']}`')
+    ..writeln('Candidate cohort:: `${source['candidateCohort']}`')
+    ..writeln('Evidence status:: `${source['evidenceStatus']}`')
     ..writeln('Public claim eligible:: `NO`')
     ..writeln('Claim policy:: `INTERNAL_GATE_ONLY`')
     ..writeln('Seed:: ${result['seed']}')

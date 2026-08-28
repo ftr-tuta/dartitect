@@ -3,7 +3,7 @@
 Install `dartitect_cli`, run read-only discovery first, and review every preview:
 
 ```console
-dart pub global activate dartitect_cli 1.0.0-rc.3
+dart pub global activate dartitect_cli 1.0.0-rc.4
 dartitect inspect --json
 dartitect scan --no-baseline
 dartitect doctor
@@ -12,13 +12,14 @@ dartitect init --dry-run
 dartitect baseline create --dry-run
 dartitect codex sync --dry-run
 dartitect model check --json
+dartitect model migrate primary --json
 dartitect model sync
 dartitect dependencies audit --json
 dartitect dependencies explain uuid
 dartitect fleet versions apps/a apps/b --root . --json
 dartitect fleet check apps/a apps/b --root . --json
 dartitect fleet policy apps/a --root . --bundle=tool/fleet_policy_bundle.json --sha256=<sha256> --json
-dartitect fleet upgrade apps/a --root . --dry-run --to=1.0.0-rc.3 --json
+dartitect fleet upgrade apps/a --root . --dry-run --to=1.0.0-rc.4 --json
 ```
 
 Mutating counterparts are `init` without `--dry-run`, `baseline create` without
@@ -27,7 +28,11 @@ support `--dry-run` and are deliberately absent from MCP. Experimental configs
 have no migration; recreate and review stable v1 with `init`.
 Unlike create-only mutators, convergent `model sync` previews by default and
 only `model sync --apply` writes or recovers; `--dry-run` and `--apply` cannot
-be combined. Generated outputs and `.dartitect/model-outputs.json` are committed.
+be combined. Generated outputs and
+`.dartitect/generation/modeling/manifest.json` are committed.
+Primary-constructor migration also previews by default; only
+`model migrate primary --apply` writes source under the shared project lock and
+its namespaced source journal.
 Fleet commands never write. Upgrade has no apply mode; its preview exposes a
 state token that callers of the typed project service can review and revalidate
 under the project lock. Policy uses only a local, doubly pinned bundle.

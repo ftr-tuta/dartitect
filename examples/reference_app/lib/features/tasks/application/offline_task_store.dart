@@ -6,15 +6,15 @@ import '../domain/task.dart';
 import '../domain/task_repository.dart';
 
 /// Search and page cursor transferred across the remote/local pipeline.
-final class TaskCursor {
-  /// Creates a typed task cursor.
-  const TaskCursor({this.query = '', this.offset = 0});
-
+final class const TaskCursor({
   /// Case-insensitive title filter.
-  final String query;
+  final String query = '',
 
   /// Remote page offset.
-  final int offset;
+  final int offset = 0,
+}) {
+  /// Creates a typed task cursor.
+  this;
 }
 
 /// One store-owned query watcher session.

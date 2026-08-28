@@ -4,26 +4,49 @@
 
 ## Escopo 1.0 e contrato do source
 
-A geração de modelos se limita a boilerplate de values imutáveis. O gerador
+A geração de modelos se limita a boilerplate opt-in de values imutáveis, JSON,
+projections e mapping de boundary. O gerador
 varre `lib/**` e cada árvore imediata `packages/*/lib/**` sem seguir symlinks.
-Uma library anotada contém exatamente um modelo e seu part correspondente.
+Uma library anotada pode conter modelos na unit de definição e em parts; todos
+os modelos compartilham um único part Dartitect determinístico.
 
 | Contrato | Forma suportada em 1.0 | Forma rejeitada |
 |---|---|---|
-| Annotation | `@DartitectValue()` resolvido para o elemento de `package:dartitect`, inclusive por prefixo e reexport | Annotations homônimas ou não resolvidas |
-| Classe | `final` concreta, não genérica, estende `ValueEquality` e aplica `_$TypeDartitect` | Abstrata, não final, genérica ou com herança complexa |
+| Annotation | Elementos independentes `@DartitectValue()`, `@DartitectJson()`, `@DartitectProjection(...)` e `@DartitectMapper(...)` resolvidos de `package:dartitect_modeling`, inclusive por prefixo e reexport | Capabilities homônimas, não resolvidas ou ativadas implicitamente |
+| Classe | `final` concreta, estende `ValueEquality` e aplica `_$TypeDartitect` | Abstrata, não final ou com herança complexa |
 | Part | Exatamente um `part '<source>.dartitect.g.dart';` | Part ausente, duplicado ou incompatível |
-| Campos | Ao menos um campo público, tipado, de instância, `final`, non-late e sem initializer | Campos privados, inferidos, static, late, mutáveis ou inicializados |
+| Campos | Ao menos um campo público, tipado, nomeado e `final` no primary constructor | Campos privados, inferidos, positional, late ou mutáveis |
 | Collections | Wrappers imutáveis de classe pertencentes ao consumidor | Interfaces de collection mutáveis, inclusive aliases de `List`, `Set`, `Map`, `Iterable`, queues, collections hash/tree e listas typed-data |
-| Construtor | Exatamente um construtor generativo sem nome cujos parâmetros nomeados correspondem exatamente aos campos | Parâmetros nomeados de forma incorreta, positional, ausentes, duplicados ou com tipo divergente; construtor named, factory ou external |
+| Construtor | Um primary constructor sem nome; use `class const` quando construção constante for necessária | Formas tradicionais, primary named, somente factory, external ou positional |
+| Forma da library | Múltiplos modelos, generics com bounds, const/defaults, records e parts comuns | Um part gerado por modelo ou acesso do renderer a AST/types não resolvidos |
 
-O gerador não cria JSON, unions, schemas de DTO/entity, entities ObjectBox,
-injeção de dependência, ViewModels, rotas, clients REST, reflexão runtime nem
-modelos mutáveis. Outros geradores podem coexistir somente quando possuem
-arquivos de saída distintos.
+Geração JSON ocorre somente com `@DartitectJson()`. O gerador não cria unions,
+schemas de DTO/entity, entities ObjectBox, injeção de dependência, ViewModels,
+rotas, clients REST, reflexão runtime nem modelos mutáveis. Outros geradores
+podem coexistir somente quando possuem arquivos de saída distintos.
 
-Source inválido produz `DT1021` e nenhum output de modelo é aplicado. A
-identidade da annotation é semântica, não uma comparação de nome lexical.
+Primary constructor ausente produz `DT1030` e nenhum output de modelo é
+aplicado. A identidade da annotation é semântica, não uma comparação de nome
+lexical. O compiler read-only compartilhado possui um único lifecycle do
+Analyzer e produz o mesmo IR público, regras granulares `DT1030+`, localizações,
+severities e fix IDs para CLI e lints oficiais. O renderer recebe somente IR
+validado.
+
+Execute `dartitect model migrate primary` para um preview sem escrita da edição
+semântica de values tradicionais elegíveis. Somente `--apply` adquire o lock
+compartilhado, grava o journal próprio de source, revalida os bytes e commit ou
+faz rollback da edição completa. Classes comportamentais e construtores
+ambíguos exigem revisão do consumidor e nunca são reescritos por heurística.
+
+Entidades mutáveis provider-owned permanecem fora do ownership dos modelos
+Dartitect. Elas podem usar primary constructors com parâmetros declarantes
+`var`. Um constructor tradicional de provider é negado salvo quando a versão
+exata de provider/generator possui evidência específica de generator ou runtime
+em `tool/provider_constructor_evidence.json`. ObjectBox 5.3.2 possui atualmente
+a única exceção limitada: seu generator resolve Analyzer 10.2.0/linguagem 3.12
+e rejeita o candidate primary válido em Dart 3.13. Qualquer upgrade do provider
+exige repetir essa evidência; a exceção nunca se aplica aos modelos imutáveis
+Dartitect.
 
 ## Equality gerada e `copyWith`
 
@@ -43,10 +66,43 @@ aninhados são estruturais. Records e outros values usam seu próprio contrato d
 igualdade. Values iguais recebem hashes iguais. Grafos cíclicos de collections
 lançam `CyclicValueException` em equality e hashing.
 
-Use esse contrato para values pequenos, imutáveis e acíclicos. Use
-`immutableListCopy`, `immutableSetCopy` ou `immutableMapCopy` antes de reter
-inputs de collections. Collections grandes, entities e snapshots devem usar
-identidade, versão/projeção ou hash pré-calculado.
+Use esse contrato para values pequenos, imutáveis e acíclicos. Campos de modelo
+retêm `ImmutableValueList`, `ImmutableValueSet` ou `ImmutableValueMap`; cada um
+copia a origem e não expõe interface mutável. Collections grandes, entities e
+snapshots devem usar identidade, versão/projeção ou hash pré-calculado.
+
+## Codecs JSON gerados
+
+JSON permanece independente de value equality. Codecs gerados retornam
+`Result` tipado, rejeitam keys desconhecidas por padrão, respeitam renames
+explícitos e nunca colocam valores rejeitados em `DartitectJsonFailure`. A
+composição automática se limita a escalares JSON, codecs injetados de generics
+e collections imutáveis Dartitect. Datas, enums, IDs, records, narrowing e
+outras conversões semânticas exigem um par exato de hooks estáticos
+decoder/encoder pertencentes ao consumidor; `DT1043` rejeita pares ausentes ou
+inválidos antes do renderer.
+
+Os limites untrusted padrão são profundidade 64, 10.000 itens por collection e
+100.000 nós totais. Bounds diferentes exigem `DartitectJsonLimits.custom` no
+call site. Desativar limites numéricos exige metadata explícita na annotation
+ou `DartitectJsonLimits.trusted`; validação de forma JSON, números finitos e
+ciclos continua habilitada. Trusted mode nunca altera a policy de unknown keys.
+
+## Projections, descriptors e mappers gerados
+
+`@DartitectProjection` emite descriptors/lenses tipados e um selector de record
+nomeado explicitamente. Os campos selecionados são explícitos e ordenados; uma
+lista vazia seleciona visivelmente todos os campos. Lenses reconstroem pelo
+primary constructor validado e não expõem interface mutável.
+
+`@DartitectMapper(Target)` emite mapper puro one-way que retorna `Result`.
+Geração bidirecional exige `bidirectional: true` e compatibilidade reversa
+comprovada separadamente. Decisões automáticas se limitam a campos escalares e
+de collections imutáveis semanticamente assignable/lossless. Metadata explícita
+`targetName`, `mapToWith` e `mapFromWith` possui renames e hooks estáticos exatos.
+`DT1044` rejeita target ou campo inseguro antes do renderer. Narrowing,
+enum/string, datas, IDs, relations, flattening e schemas provider-owned nunca
+são inferidos.
 
 ## Commands, freshness e ownership no Git
 
@@ -56,12 +112,15 @@ identidade, versão/projeção ou hash pré-calculado.
 | `dartitect model sync --dry-run` | Não | Informa recovery pendente | 0 quando fresh, 1 para findings |
 | `dartitect model check` | Nunca | Informa recovery pendente | 0 quando fresh, 1 para findings |
 | `dartitect model sync --apply` | Sim, atomicamente | Recupera, redescobre, recalcula o plano e aplica | 0 no sucesso, 1 para findings de modelo |
+| `dartitect model migrate primary` | Não; preview por padrão | Informa seu próprio journal de source pendente | 0 quando não resta migração, 1 para preview/findings |
+| `dartitect model migrate primary --apply` | Sim, atomicamente | Faz rollback de source incompleto antes de redescobrir | 0 no sucesso |
 
 Os dois commands aceitam `--json`. O exit code global 2 indica falha de uso ou
 configuração, e 3 indica falha de I/O ou interna. Preview, dry-run e check nunca
 reparam arquivos nem resíduos de recovery.
 
-Versione todos os `*.dartitect.g.dart` e `.dartitect/model-outputs.json`. O CI
+Versione todos os `*.dartitect.g.dart` e
+`.dartitect/generation/modeling/manifest.json`. O CI
 executa `dartitect model check` e rejeita qualquer diff gerado. Um checkout
 limpo deve analisar, testar e compilar consumidores sem instalar nem invocar
 `dartitect_cli`.
@@ -80,20 +139,34 @@ existe flag force.
 
 ## Manifest, schemas e recovery
 
-O manifest possui somente outputs inteiramente gerados e registra source,
-versão do gerador, schema de input e digests SHA-256 canônicos de input/output.
-Updates e deletes exigem que os bytes existentes correspondam ao digest
-registrado.
+O manifest com namespace possui somente outputs inteiramente gerados e registra
+source, versão do renderer, schema semântico e digests SHA-256 canônicos de
+input/output. Updates e deletes exigem que os bytes existentes correspondam ao
+digest registrado. As versões de release, protocolo, schema semântico,
+renderer, manifest, relatório de command, journal de output e journal de source
+evoluem independentemente; o release do package nunca é chave de ownership nem
+header gerado.
 
 | Artefato | Schema 1.0 | Regra de compatibilidade |
 |---|---:|---|
-| Assinatura semântica de input do modelo | 1 | Participa do digest de input no manifest; mudança de contrato torna o output stale |
+| Assinatura semântica de input do modelo | 4 | Inclui identidade da library, capabilities, generics, defaults, types, policy JSON, projections, decisões de compatibilidade de mappers, renames, hooks e todos os modelos do part gerado |
 | Relatório JSON do command | 1 | Consumidores devem selecionar explicitamente o schema suportado |
-| `.dartitect/model-outputs.json` | 1 | Ownership ausente conflita com outputs candidatos; schemas malformados, anteriores ou futuros falham fechado |
-| `.dartitect/generation-journal.json` | 2 | Schemas malformados, anteriores ou futuros interrompem recovery e preservam resíduos para diagnóstico |
+| `.dartitect/generation/modeling/manifest.json` | 2 | Namespace e protocolo devem corresponder; ownership ausente conflita com outputs candidatos; schemas malformados, anteriores ou futuros falham fechado |
+| `.dartitect/generation/modeling/journal.json` | 3 | Namespace e protocolo devem corresponder; schemas malformados interrompem recovery e preservam resíduos para diagnóstico |
+| `.dartitect/generation/model-primary-migration/source-journal.json` | 2 | Edições de source usam namespace e transação próprios, mas o mesmo lock de projeto |
 
-Não existe migração, downgrade ou force implícito. Mudança de schema exige uma
-implementação explícita de compatibilidade e nova evidência de contrato.
+O único caminho de adoção legacy é a implementação explícita de compatibilidade
+RC3: `.dartitect/model-outputs.json` schema 1 é migrado atomicamente somente
+quando a identidade do gerador é exatamente `1.0.0-rc.3` e cada digest canônico
+do output atual corresponde. O journal legacy de output schema 2 e o journal de
+source schema 1 podem ser recuperados nos paths originais. Qualquer mismatch,
+par ambíguo de artefatos antigo/novo, downgrade ou tentativa de force falha
+fechado sem escrita.
+
+Cada `GenerationNamespace` possui manifest, journal e diretório de transação
+isolados. Scaffolds generated-once usam `scaffolding`; parts de modelo usam
+`modeling`. Todos os namespaces e edições semânticas de source compartilham
+`.dartitect/project.lock`, inclusive com serialização dentro do processo.
 
 O apply prepara a geração completa em staging, persiste um recovery journal,
 faz backup dos targets owned, substitui outputs, substitui o manifest, valida os
@@ -105,20 +178,26 @@ sem overwrite. Recovery e retry são idempotentes.
 
 ## Envelope de performance congelado
 
-O artefato de referência Linux registra cinco execuções cold por cenário. As
-medianas e o maior RSS observado são:
+`tool/model_benchmark.json` compara a baseline exata `2a8261a` e o commit RC4
+modular `0057db5` no mesmo host Linux/Dart 3.13.1/4 CPUs. Cada célula da matriz
+possui cinco runs cold isoladas (mediana e peak RSS) e vinte runs warm no mesmo
+processo (p95 e peak RSS). O sync warm alterna uma mudança semântica de campo;
+cache é descartável e nunca autoridade de ownership.
 
-| Modelos | Command | Mediana | Peak RSS | Budget rígido |
-|---:|---|---:|---:|---:|
-| 100 | sync | 4.761.902 µs | 725.803.008 B | 15 s / 1 GiB |
-| 100 | check | 2.799.851 µs | 740.970.496 B | 15 s / 1 GiB |
-| 500 | sync | 9.911.425 µs | 732.372.992 B | 60 s / 1 GiB |
-| 500 | check | 6.497.860 µs | 765.853.696 B | 60 s / 1 GiB |
+| Modelos | Command | Mediana cold RC4 | RSS cold RC4 | p95 warm RC4 | RSS warm RC4 |
+|---:|---|---:|---:|---:|---:|
+| 100 | sync | 3.564.654 µs | 728.629.248 B | 1.869.518 µs | 811.585.536 B |
+| 100 | check | 2.274.713 µs | 776.019.968 B | 1.914.912 µs | 803.418.112 B |
+| 500 | sync | 6.907.795 µs | 813.146.112 B | 4.761.429 µs | 844.062.720 B |
+| 500 | check | 6.043.847 µs | 803.332.096 B | 4.125.455 µs | 847.642.624 B |
 
-`dart run tool/check_model_benchmark.dart` aplica os budgets rígidos e a
-evidência de cinco runs. Regressão acima de 25% ou substituição de benchmark ou
-budget exige revisão registrada. O envelope de performance validado termina em
-500 modelos; workspaces maiores não possuem garantia de performance em 1.0.
+Contra a baseline legacy no mesmo host, as medianas cold melhoraram de
+20,5–27,5% e o p95 warm melhorou de 20,6–34,3%. O maior aumento de RSS foi
+5,43%, no sync warm de 500 modelos. `dart run
+tool/check_model_benchmark.dart` recalcula a comparação, aplica os budgets
+rígidos de 15/60 segundos e 1 GiB e bloqueia qualquer regressão de latência ou
+RSS acima de 10% sem aprovação registrada. O envelope validado termina em 500
+modelos; workspaces maiores não possuem garantia em 1.0.
 
 Execute `dartitect model check`, `dart analyze`, os testes dos packages e o gate
 de benchmark em checkout limpo. Confirme também que arquivos JSON/ObjectBox

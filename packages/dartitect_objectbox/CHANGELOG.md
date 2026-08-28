@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-rc.4
+
+- Pin ObjectBox 5.3.2 constructor compatibility to generated/runtime evidence
+  while keeping entities, model files, and writers consumer-owned.
+
 ## 1.0.0-rc.3
 
 - Promote the lockstep hardening candidate without package-specific public API

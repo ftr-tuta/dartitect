@@ -1,12 +1,12 @@
 = Public API review for the 1.0 release candidate
 
-Review date:: 2026-08-25
-Reviewed version:: lockstep `1.0.0-rc.3` cohort
+Review date:: 2026-08-27
+Reviewed version:: lockstep `1.0.0-rc.4` candidate cohort
 Snapshot gate:: `dart run tool/check_api_snapshot.dart`
 
 == Result
 
-The checked API snapshot covers all 18 public entrypoints and matches their
+The checked API snapshot covers all 20 public entrypoints and matches their
 source declarations. New ecosystem entrypoints are deliberately narrow;
 existing entrypoints remain source-compatible with the reviewed development
 cohort.
@@ -25,6 +25,16 @@ is explicitly experimental and payload-free.
 separate sanitized projection. Fleet roots are explicit/read-only and policy is
 local/digest-pinned; cohort upgrade is CLI preview-only and typed application is
 stale-checked, locked, and recoverable.
+
+| `package:dartitect_modeling/dartitect_modeling.dart`
+| Pure-Dart/Web-compatible opt-in value, immutable collection, JSON codec,
+projection/lens, and mapper contracts. Capabilities remain independent;
+failures are payload-free and provider schemas stay consumer-owned.
+
+| `package:dartitect_modeling_analyzer/dartitect_modeling_analyzer.dart`
+| Tooling-only shared semantic compiler and validated public IR for workspace,
+library, model, field/type, capability, JSON, projection, mapper, diagnostic,
+source edit, and compatibility decisions. It never enters an app runtime.
 
 | `package:dartitect_dio/dartitect_dio.dart`
 | Opt-in adapter exporting explicit Dio ownership, cancellation, safe failure
@@ -101,14 +111,16 @@ documentation examples are checked in the release audit. The compatibility
 entrypoint remains thin; advanced reactive APIs require a deliberate import and
 Material remains consumer-owned. No experimental API is presented as stable.
 
-The technical-hardening diff intentionally refines prerelease behavior and
+The RC4 diff intentionally refines prerelease behavior and
 surface before 1.0: typed replacement cleanup, semantic CLI manifests/locks,
 sync authority/terminal receipts, isolate protocol v2, experimental diagnostics
 and derived resources, SARIF, and fleet services. Adding the dependency-upgrade
 enum value can affect exhaustive consumer switches; protocol v1 isolate peers
 are intentionally incompatible with v2. No stable deprecation is removed and
 the Drift package/entrypoint is added without changing existing APIs. These changes require a fresh prerelease
-candidate and complete same-SHA canaries rather than a patch claim.
+candidate and complete same-SHA canaries rather than a patch claim. Moving
+`DartitectValue` into the opt-in modeling package is an intentional prerelease
+boundary correction with no core alias or legacy mode.
 
 == Decision
 

@@ -1,0 +1,31 @@
+= ADR 0040: Provider constructors require versioned fixture evidence
+
+Status:: Accepted for 1.0.0-rc.4
+
+== Decision
+
+Provider-owned mutable entities may use Dart 3.13 primary constructors with
+declaring +var+ parameters. A traditional constructor is denied by default and
+may be retained only for an exact provider/generator version after a real
+generator or runtime fixture demonstrates a specific incompatibility. The
+versioned +tool/provider_constructor_evidence.json+ registry binds each
+exception to candidate, failure, accepted source, generated model/binding, and
+native runtime evidence by SHA-256.
+
+== ObjectBox 5.3.2 evidence
+
+The preferred +@Entity+ primary-constructor probe analyzes under Dart 3.13.1.
+The real +objectbox_generator+ 5.3.2 resolver instead resolves Analyzer 10.2.0,
+whose maximum language version is 3.12, and rejects the
++primary-constructors+ language feature before emitting bindings. The exact
+traditional named-property constructor is therefore allowed only for the
++FixtureEntity+ in +tool/objectbox_native_fixture+. Regenerated bindings and the
+seven-test native Store workload pass with ObjectBox 5.3.2.
+
+== Consequences
+
+Documentation alone never creates an exception. Provider upgrades invalidate
+the version match and require the primary +var+ probe to run again. Missing,
+changed, symlinked, or traversal evidence fails closed. No exception applies to
+Dartitect-owned immutable models, which continue to require primary
+constructors.

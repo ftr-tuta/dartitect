@@ -10,6 +10,10 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>['run', 'tool/check_package_topology.dart']),
     const _Command('dart', <String>[
       'run',
+      'tool/check_provider_constructor_evidence.dart',
+    ]),
+    const _Command('dart', <String>[
+      'run',
       'tool/check_package_release_contract.dart',
     ]),
     if (!stableCohort)
@@ -83,6 +87,7 @@ Future<void> main(List<String> arguments) async {
     'docs/release/publication-runbook.adoc',
     'tool/api_surface.snapshot.json',
     'tool/package_release_contract.json',
+    'tool/provider_constructor_evidence.json',
     'tool/rc_candidate_contract.json',
     'tool/actions_readiness_policy.json',
     'tool/create_actions_readiness.dart',

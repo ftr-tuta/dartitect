@@ -8,9 +8,9 @@ falhas tipadas, contratos pequenos de observabilidade, verificações de
 arquitetura, tooling seguro e adapters opcionais de infraestrutura sem container
 global.
 
-Todos os dezessete pacotes públicos compartilham a linha candidata
-`1.0.0-rc.3`. Este cohort destina-se à tag Git protegida; a publicação no
-pub.dev não está autorizada. A API 24 Android é coberta por compatibilidade de
+Todos os dezenove pacotes públicos compartilham a linha candidata
+`1.0.0-rc.4`. Este cohort de source prepara, mas não cria, a tag Git protegida;
+a publicação no pub.dev não está autorizada. A API 24 Android é coberta por compatibilidade de
 build e o runtime Android 14/API 34 roda em emulador limpo hospedado pelo GitHub.
 iOS usa builds nos pisos e o simulador instalado no runner macOS hospedado. Não
 é necessário telefone, tablet, iPhone ou runner próprio. Comandos locais são
@@ -29,9 +29,8 @@ falhas esperadas tipadas, listenables nativos, estado reativo owned, telemetria
 privacy-first ou conformidade verificável. A arquitetura 1.0 suportada é Native
 Strict e somente greenfield: uma única composição explícita, ownership e
 runtime de application state, sem migração ou coexistência com runtimes
-concorrentes de DI/state. Ele não é ORM, cliente
-HTTP, router, backend, gerador de modelos ou promessa de suporte a todo
-fornecedor.
+concorrentes de DI/state. Ele não é ORM, cliente HTTP, router, backend, gerador
+de schemas de provider ou promessa de suporte a todo fornecedor.
 
 ## Princípios
 
@@ -54,23 +53,25 @@ fornecedor.
 
 | Pacote | Objetivo | Plataformas | Estabilidade |
 | --- | --- | --- | --- |
-| [`dartitect`](packages/dartitect/) | Result, lifecycle, ownership de recursos, eventos de arquitetura | Dart, Flutter, web | `1.0.0-rc.3` |
-| [`dartitect_sync`](packages/dartitect_sync/) | DAG de sync provider-neutral, checkpoints, leases, progresso, protocolo headless | Dart, Flutter, web | `1.0.0-rc.3` |
-| [`dartitect_isolates`](packages/dartitect_isolates/) | Workers de isolate tipados/versionados, ACKs, heartbeat, deadlines e safe-stop | Dart VM, Flutter nativo | `1.0.0-rc.3` |
-| [`dartitect_flutter`](packages/dartitect_flutter/) | Ownership de ViewModel, comandos async, selectors, scope, binding de erros | Flutter | `1.0.0-rc.3` |
-| [`dartitect_observability`](packages/dartitect_observability/) | Logs, redaction, reporting, trace W3C, runtime limitado | Dart, Flutter, web | `1.0.0-rc.3` |
-| [`dartitect_dio`](packages/dartitect_dio/) | Ownership de Dio, falhas tipadas, cancelamento, telemetria mínima | Plataformas Dio | `1.0.0-rc.3` |
-| [`dartitect_drift`](packages/dartitect_drift/) | Lifecycle, transações, checkpoints e journals para banco Drift do consumidor | Dart, Flutter, web | `1.0.0-rc.3` |
-| [`dartitect_objectbox`](packages/dartitect_objectbox/) | Ownership de Store/query/watcher sobre modelos gerados pelo consumidor | Android, iOS, Linux, macOS, Windows | `1.0.0-rc.3` |
-| [`dartitect_sentry`](packages/dartitect_sentry/) | Adapters para Hub Sentry borrowed e inicializado pelo consumidor | Dart, Flutter | `1.0.0-rc.3` |
-| [`dartitect_privacy`](packages/dartitect_privacy/) | Status/request ATT explícito, sem prompt automático | iOS; not-supported tipado nas demais | `1.0.0-rc.3` |
-| [`dartitect_media`](packages/dartitect_media/) | Permissão de galeria e salvamento de imagem tipados | Android, iOS | `1.0.0-rc.3` |
-| [`dartitect_locale_br`](packages/dartitect_locale_br/) | Values imutáveis de CEP brasileiro | Dart, Flutter, web | `1.0.0-rc.3` |
-| [`dartitect_geometry`](packages/dartitect_geometry/) | Geometria determinística de polo de inacessibilidade | Dart, Flutter, web | `1.0.0-rc.3` |
-| [`dartitect_testing`](packages/dartitect_testing/) | Clocks, probes, telemetria gravada e contract harnesses determinísticos | Dart, Flutter, web | `1.0.0-rc.3` |
-| [`dartitect_cli`](packages/dartitect_cli/) | Inspect, scan, doctor, config, baseline, geradores, sync Codex | Dart VM | `1.0.0-rc.3` |
-| [`dartitect_lints`](packages/dartitect_lints/) | Diagnósticos de arquitetura via plugin oficial do analyzer | Dart analyzer | `1.0.0-rc.3` |
-| [`dartitect_mcp`](packages/dartitect_mcp/) | Tools/resources MCP locais para trabalho revisado | Dart VM, STDIO | `1.0.0-rc.3` |
+| [`dartitect`](packages/dartitect/) | Result, lifecycle, ownership de recursos, eventos de arquitetura | Dart, Flutter, web | `1.0.0-rc.4` |
+| [`dartitect_modeling`](packages/dartitect_modeling/) | Values imutáveis, JSON limitado, projections/lenses e mappers lossless | Dart, Flutter, web | `1.0.0-rc.4` |
+| [`dartitect_modeling_analyzer`](packages/dartitect_modeling_analyzer/) | Compiler semântico read-only compartilhado e IR de modelagem validado | Tooling Dart VM | `1.0.0-rc.4` |
+| [`dartitect_sync`](packages/dartitect_sync/) | DAG de sync provider-neutral, checkpoints, leases, progresso, protocolo headless | Dart, Flutter, web | `1.0.0-rc.4` |
+| [`dartitect_isolates`](packages/dartitect_isolates/) | Workers de isolate tipados/versionados, ACKs, heartbeat, deadlines e safe-stop | Dart VM, Flutter nativo | `1.0.0-rc.4` |
+| [`dartitect_flutter`](packages/dartitect_flutter/) | Ownership de ViewModel, comandos async, selectors, scope, binding de erros | Flutter | `1.0.0-rc.4` |
+| [`dartitect_observability`](packages/dartitect_observability/) | Logs, redaction, reporting, trace W3C, runtime limitado | Dart, Flutter, web | `1.0.0-rc.4` |
+| [`dartitect_dio`](packages/dartitect_dio/) | Ownership de Dio, falhas tipadas, cancelamento, telemetria mínima | Plataformas Dio | `1.0.0-rc.4` |
+| [`dartitect_drift`](packages/dartitect_drift/) | Lifecycle, transações, checkpoints e journals para banco Drift do consumidor | Dart, Flutter, web | `1.0.0-rc.4` |
+| [`dartitect_objectbox`](packages/dartitect_objectbox/) | Ownership de Store/query/watcher sobre modelos gerados pelo consumidor | Android, iOS, Linux, macOS, Windows | `1.0.0-rc.4` |
+| [`dartitect_sentry`](packages/dartitect_sentry/) | Adapters para Hub Sentry borrowed e inicializado pelo consumidor | Dart, Flutter | `1.0.0-rc.4` |
+| [`dartitect_privacy`](packages/dartitect_privacy/) | Status/request ATT explícito, sem prompt automático | iOS; not-supported tipado nas demais | `1.0.0-rc.4` |
+| [`dartitect_media`](packages/dartitect_media/) | Permissão de galeria e salvamento de imagem tipados | Android, iOS | `1.0.0-rc.4` |
+| [`dartitect_locale_br`](packages/dartitect_locale_br/) | Values imutáveis de CEP brasileiro | Dart, Flutter, web | `1.0.0-rc.4` |
+| [`dartitect_geometry`](packages/dartitect_geometry/) | Geometria determinística de polo de inacessibilidade | Dart, Flutter, web | `1.0.0-rc.4` |
+| [`dartitect_testing`](packages/dartitect_testing/) | Clocks, probes, telemetria gravada e contract harnesses determinísticos | Dart, Flutter, web | `1.0.0-rc.4` |
+| [`dartitect_cli`](packages/dartitect_cli/) | Inspect, scan, doctor, config, baseline, geradores, sync Codex | Dart VM | `1.0.0-rc.4` |
+| [`dartitect_lints`](packages/dartitect_lints/) | Diagnósticos de arquitetura via plugin oficial do analyzer | Dart analyzer | `1.0.0-rc.4` |
+| [`dartitect_mcp`](packages/dartitect_mcp/) | Tools/resources MCP locais para trabalho revisado | Dart VM, STDIO | `1.0.0-rc.4` |
 
 ## Seleção do ecossistema
 
@@ -94,22 +95,22 @@ protegida. Para `dartitect_flutter`:
 
 ```yaml
 dependencies:
-  dartitect_flutter: 1.0.0-rc.3
+  dartitect_flutter: 1.0.0-rc.4
 
 dependency_overrides:
   dartitect:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
-      ref: v1.0.0-rc.3
+      ref: v1.0.0-rc.4
       path: packages/dartitect
   dartitect_flutter:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
-      ref: v1.0.0-rc.3
+      ref: v1.0.0-rc.4
       path: packages/dartitect_flutter
 ```
 
-Gere os overrides exatos para qualquer combinação dos dezessete pacotes com
+Gere os overrides exatos para qualquer combinação dos dezenove pacotes com
 `dart run tool/git_dependency_overrides.dart <pacote>[,<pacote>...]`. O
 [guia de consumo do candidato Git](docs/guides/git-candidate-consumption.pt-BR.md)
 documenta a validação e a diferença para o futuro canal formal assinado.
@@ -176,7 +177,7 @@ Instale o plugin no pacote consumidor:
 
 ```yaml
 dev_dependencies:
-  dartitect_lints: 1.0.0-rc.3
+  dartitect_lints: 1.0.0-rc.4
 ```
 
 ```yaml
@@ -215,7 +216,7 @@ shell, leitura arbitrária, servidor HTTP, OAuth ou acesso remoto a aplicações
 
 ```yaml
 dev_dependencies:
-  dartitect_mcp: 1.0.0-rc.3
+  dartitect_mcp: 1.0.0-rc.4
 ```
 
 ```console
@@ -245,7 +246,7 @@ O workspace exige Dart `^3.13.0`; pacotes Flutter exigem Flutter `>=3.47.1`.
 Drift aceita executores native/web pertencentes ao consumidor; ObjectBox não
 suporta web. CLI/MCP são ferramentas locais de VM. Pacotes
 candidatos podem receber correções de API antes de um novo release; o cohort
-completo de dezessete pacotes evolui em lockstep.
+completo de dezenove pacotes evolui em lockstep.
 
 Somente a config v1 estável é aceita; versões experimentais não possuem
 migração. Baselines ignoram números de linha. Mudanças de API pública são

@@ -13,6 +13,21 @@ maintained, removable, and cheaper than the code and supply chain it replaces.
 | Core uses only `dart:*`.
 | Not applicable.
 
+| dartitect_modeling
+| dartitect
+| SDK
+| Reexports the minimal result/equality contracts for pure-Dart immutable
+modeling without Analyzer, formatter, CLI, or provider runtime dependencies.
+| Consumers can keep handwritten immutable values and boundary codecs.
+
+| dartitect_modeling_analyzer
+| analyzer 13.3.0, dartitect_modeling
+| APPROVED TOOLING EXCEPTION
+| Resolves Dart types and element/library identity once for the shared
+read-only semantic compiler used by CLI generation and official lints.
+| Runtime applications depend only on modeling; handwritten code removes the
+host compiler.
+
 | dartitect_flutter
 | Flutter SDK, dartitect
 | SDK
@@ -27,9 +42,9 @@ provider-neutral DAG engine and headless protocol.
 | Consumer can implement the small ports around its own orchestration.
 
 | dartitect_testing
-| dartitect, dartitect_isolates, dartitect_observability, dartitect_sync
+| dartitect, dartitect_isolates, dartitect_modeling, dartitect_observability, dartitect_sync
 | SDK
-| Reuses lifecycle contracts without exporting a test runner.
+| Reuses lifecycle and modeling contracts for runner-neutral test harnesses.
 | Consumer can use local fakes.
 
 | dartitect_cli

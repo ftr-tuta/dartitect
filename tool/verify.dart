@@ -26,6 +26,10 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>['run', 'tool/check_package_topology.dart']),
     const _Command('dart', <String>[
       'run',
+      'tool/check_provider_constructor_evidence.dart',
+    ]),
+    const _Command('dart', <String>[
+      'run',
       'tool/check_package_release_contract.dart',
     ]),
     if (!stableCohort)
@@ -115,6 +119,10 @@ Future<void> main(List<String> arguments) async {
       'test',
       'tool/setup_objectbox_vm_test.dart',
     ]),
+    const _Command('dart', <String>[
+      'test',
+      'tool/check_provider_constructor_evidence_test.dart',
+    ]),
     const _Command('dart', <String>['test', 'tool/release_audit_test.dart']),
     const _Command('dart', <String>[
       'test',
@@ -154,6 +162,8 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>['run', 'tool/check_api_snapshot.dart']),
     for (final package in <String>[
       'dartitect',
+      'dartitect_modeling',
+      'dartitect_modeling_analyzer',
       'dartitect_sync',
       'dartitect_testing',
       'dartitect_cli',
@@ -220,6 +230,24 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>[
       'run',
       'dartitect_cli:dartitect',
+      'verify',
+      '--json',
+      '--root',
+      'examples/reference_app',
+    ]),
+    const _Command('dart', <String>[
+      'run',
+      'dartitect_cli:dartitect',
+      'fleet',
+      'check',
+      'examples/reference_app',
+      '--root',
+      '.',
+      '--json',
+    ]),
+    const _Command('dart', <String>[
+      'run',
+      'dartitect_cli:dartitect',
       'model',
       'check',
       '--root',
@@ -240,6 +268,7 @@ Future<void> main(List<String> arguments) async {
     if (web)
       for (final package in <String>[
         'dartitect',
+        'dartitect_modeling',
         'dartitect_testing',
         'dartitect_locale_br',
         'dartitect_geometry',

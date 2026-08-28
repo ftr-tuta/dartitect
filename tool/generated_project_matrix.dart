@@ -73,7 +73,7 @@ analyzer:
     - "**/*.g.dart"
 plugins:
   dartitect_lints:
-    path: ${_yamlPath('${workspace.path}/packages/dartitect_lints')}
+    path: ${_yamlPath('${workspace.path}/tool/analyzer_plugin_workspace/dartitect_lints')}
 ''', flush: true);
     if (scenario.background) {
       await File('${project.path}/lib/background.dart').writeAsString('''

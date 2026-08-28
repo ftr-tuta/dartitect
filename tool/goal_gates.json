@@ -12,7 +12,7 @@
   },
   "releaseStatus": "ACTIONS_READINESS_PENDING",
   "featurePolicy": "FEATURE_FREEZE",
-  "target": {"packageCount": 17, "entrypointCount": 18},
+  "target": {"packageCount": 19, "entrypointCount": 20},
   "statusPolicy": {
     "allowed": [
       "PLANNED", "IN_PROGRESS", "BLOCKED", "IMPLEMENTED_LOCAL",
@@ -43,7 +43,7 @@
       "id": "V1S-00", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": [],
       "owner": "Dartitect maintainers", "affectedPackages": [],
       "coveredPaths": ["tool/goal_gates.json", "tool/check_goal_gates.dart", "tool/check_goal_gates_test.dart", "docs/release/**", "docs/implementation-status.adoc"],
-      "acceptance": ["Use one active fail-closed roadmap authority, preserve the 17/18 topology, record the assembled Git candidate state, and keep formal readiness external under FEATURE_FREEZE."],
+      "acceptance": ["Use one active fail-closed roadmap authority, preserve the 19/20 topology, record the assembled Git candidate state, and keep formal readiness external under FEATURE_FREEZE."],
       "gateCommands": ["dart run tool/check_goal_gates.dart", "dart test tool/check_goal_gates_test.dart"],
       "evidence": ["tool/goal_gates.json", "tool/check_goal_gates_test.dart"],
       "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
@@ -101,11 +101,11 @@
     },
     {
       "id": "V1S-07", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": ["V1S-05"],
-      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli"],
-      "coveredPaths": ["packages/dartitect/lib/src/dartitect_value.dart", "packages/dartitect/lib/src/value_equality.dart", "packages/dartitect/test/value_equality_test.dart", "packages/dartitect_cli/lib/src/model/**", "packages/dartitect_cli/lib/src/generation/**", "packages/dartitect_cli/test/model_generator_test.dart", "packages/dartitect_cli/test/generation_engine_test.dart", "packages/dartitect_mcp/lib/src/catalog/generated_catalog.dart", "docs/guides/model-generation*", "tool/check_model_benchmark.dart", "tool/model_benchmark.json", "tool/model_benchmark_budget.json"],
-      "acceptance": ["Freeze value generation, equality, nullable copyWith, manifest ownership, freshness, recovery, schema compatibility, and performance limits."],
-      "gateCommands": ["dart test packages/dartitect", "dart test packages/dartitect_cli", "dart run tool/check_model_benchmark.dart"],
-      "evidence": ["docs/guides/model-generation.md", "packages/dartitect/test/value_equality_test.dart", "packages/dartitect_cli/test/model_generator_test.dart", "packages/dartitect_cli/test/generation_engine_test.dart", "tool/model_benchmark.json", "tool/model_benchmark_budget.json"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect_cli", "dartitect_lints", "dartitect_modeling", "dartitect_modeling_analyzer", "dartitect_testing"],
+      "coveredPaths": ["packages/dartitect_modeling/**", "packages/dartitect_modeling_analyzer/**", "packages/dartitect_cli/lib/src/model/**", "packages/dartitect_cli/lib/src/generation/**", "packages/dartitect_cli/test/model_generator_test.dart", "packages/dartitect_cli/test/generation_engine_test.dart", "packages/dartitect_lints/**", "packages/dartitect_testing/**", "packages/dartitect_mcp/lib/src/catalog/generated_catalog.dart", "docs/guides/model-generation*", "tool/check_model_benchmark.dart", "tool/model_benchmark.json", "tool/model_benchmark_budget.json"],
+      "acceptance": ["Freeze modular value generation, immutable collections, bounded JSON, projections, mappers, semantic compilation, manifest ownership, freshness, recovery, schema compatibility, and performance limits."],
+      "gateCommands": ["dart test packages/dartitect_modeling", "dart test packages/dartitect_modeling_analyzer", "dart test packages/dartitect_cli", "dart test packages/dartitect_lints", "dart test packages/dartitect_testing", "dart run tool/check_model_benchmark.dart"],
+      "evidence": ["docs/guides/model-generation.md", "packages/dartitect_modeling/test/value_collections_test.dart", "packages/dartitect_modeling/test/json_codec_test.dart", "packages/dartitect_modeling/test/projection_mapping_test.dart", "packages/dartitect_modeling_analyzer/test/compiler_test.dart", "packages/dartitect_cli/test/model_generator_test.dart", "packages/dartitect_cli/test/generation_engine_test.dart", "packages/dartitect_testing/test/projection_mapping_harness_test.dart", "tool/model_benchmark.json", "tool/model_benchmark_budget.json"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-08", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": ["V1S-05"],
@@ -127,9 +127,9 @@
       "id": "V1S-10", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": ["V1S-06", "V1S-07", "V1S-08", "V1S-09"],
       "owner": "Dartitect maintainers", "affectedPackages": [],
       "coveredPaths": ["tool/git_dependency_overrides.dart", "tool/git_dependency_overrides_test.dart", "tool/run_git_canaries.dart", "tool/canaries/**", "examples/**", "docs/release/**"],
-      "acceptance": ["Validate minimal, offline-first, and native-capability canaries from one annotated Git tag and remote URL with no local-path or hosted Dartitect resolution."],
-      "gateCommands": ["dart run tool/run_git_canaries.dart --repository=<url> --ref=v1.0.0-rc.3"],
-      "evidence": ["tool/git_dependency_overrides.dart", "tool/run_git_canaries.dart", "tool/canaries/canary_contract.json", "docs/release/packaged-canaries.adoc", "examples/reference_app/test/native_objectbox_workload_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "acceptance": ["Validate modeling, interop, minimal, offline-first, Drift-provider, and native-capability canaries from the exact source candidate with isolated resolution and no local-path or hosted Dartitect dependency."],
+      "gateCommands": ["dart run tool/check_canaries.dart"],
+      "evidence": ["tool/check_canaries.dart", "tool/git_dependency_overrides.dart", "tool/run_git_canaries.dart", "tool/canaries/canary_contract.json", "docs/release/packaged-canaries.adoc", "examples/reference_app/test/native_objectbox_workload_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-11", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": ["V1S-02", "V1S-07", "V1S-09", "V1S-10"],
@@ -157,7 +157,7 @@
     },
     {
       "id": "V1S-14", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-11", "V1S-12", "V1S-13"],
-      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_dio", "dartitect_drift", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_sentry", "dartitect_sync", "dartitect_testing"],
+      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_dio", "dartitect_drift", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_modeling", "dartitect_modeling_analyzer", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_sentry", "dartitect_sync", "dartitect_testing"],
       "coveredPaths": ["README*", ".github/ISSUE_TEMPLATE/bug_report.yml", ".agents/skills/**/.dartitect-skill.json", "docs/**", "examples/**", "packages/**/README*", "packages/**/CHANGELOG.md", "packages/**/pubspec.yaml", "pubspec.yaml", "tool/api_surface.snapshot.json", "tool/sdk_inventory.json", "tool/package_release_contract.json", "tool/rc_candidate_contract.json", "tool/check_rc_candidate.dart", "tool/check_pub_dev_identity.dart", "tool/run_clean_clone_release_audit.dart", "tool/release_audit.dart", "tool/generate_supply_chain.dart"],
       "acceptance": ["Finish bilingual docs, API review, examples, clean clone, dry-runs, Dartdoc, SBOM, licenses, advisories, ownership checks, changelogs, and the rc.N candidate."],
       "gateCommands": ["dart run tool/release_audit.dart --docs --publish-dry-run"],
@@ -189,7 +189,7 @@
     },
     {
       "id": "V1-18", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-17"],
-      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_dio", "dartitect_drift", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_sentry", "dartitect_sync", "dartitect_testing"],
+      "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_dio", "dartitect_drift", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_modeling", "dartitect_modeling_analyzer", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_sentry", "dartitect_sync", "dartitect_testing"],
       "coveredPaths": ["packages/**/pubspec.yaml", "packages/**/CHANGELOG.md", ".github/workflows/**", "docs/release/**", "tool/goal_gates.json", "tool/stable_candidate_contract.json", "tool/check_stable_candidate.dart", "tool/check_stable_candidate_test.dart", "tool/check_public_docs.dart", "tool/check_api_snapshot.dart", "tool/check_sdk_inventory.dart", "tool/check_skill_coverage.dart", "tool/generate_supply_chain.dart", "tool/release_audit.dart", "tool/verify.dart"],
       "acceptance": ["Validate the stable candidate through CI / Required and actions-readiness-v1, then leave the human role limited to selecting the manual publication channel."],
       "gateCommands": ["dart run tool/check_stable_candidate.dart --contract-only", "dart run tool/release_audit.dart --docs --publish-dry-run"],

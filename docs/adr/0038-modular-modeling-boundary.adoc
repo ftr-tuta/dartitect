@@ -1,0 +1,18 @@
+= ADR 0038: Modular modeling boundary
+
+Status:: Accepted for 1.0.0-rc.4
+
+== Decision
+
+Move the passive value annotation out of core into +dartitect_modeling+, add
+independent JSON/projection/mapper annotations there, and reexport only core
+value primitives. Runtime apps never depend on Analyzer, formatter, CLI, or
+generation packages. +dartitect_modeling_analyzer+ owns a read-only semantic
+compiler and validated public IR shared by CLI and lints.
+
+== Consequences
+
+Consumers select each modeling capability explicitly. The core has no legacy
+annotation alias. Provider schemas, constructors, and converter hooks remain
+consumer-owned. One deterministic generated part per source library avoids
+generator collisions while supporting multiple annotated models.

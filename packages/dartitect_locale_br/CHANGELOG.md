@@ -1,3 +1,7 @@
+## 1.0.0-rc.4
+
+- Promote the modular modeling cohort without package-specific API changes.
+
 ## 1.0.0-rc.3
 
 - Promote the lockstep hardening candidate without package-specific public API

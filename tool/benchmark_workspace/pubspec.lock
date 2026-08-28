@@ -119,28 +119,28 @@ packages:
       path: "../../packages/dartitect"
       relative: true
     source: path
-    version: "1.0.0-rc.3"
+    version: "1.0.0-rc.4"
   dartitect_flutter:
     dependency: "direct main"
     description:
       path: "../../packages/dartitect_flutter"
       relative: true
     source: path
-    version: "1.0.0-rc.3"
+    version: "1.0.0-rc.4"
   dartitect_observability:
     dependency: "direct overridden"
     description:
       path: "../../packages/dartitect_observability"
       relative: true
     source: path
-    version: "1.0.0-rc.3"
+    version: "1.0.0-rc.4"
   dartitect_sync:
     dependency: "direct overridden"
     description:
       path: "../../packages/dartitect_sync"
       relative: true
     source: path
-    version: "1.0.0-rc.3"
+    version: "1.0.0-rc.4"
   fake_async:
     dependency: transitive
     description:

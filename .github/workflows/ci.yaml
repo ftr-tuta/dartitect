@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - flutter: "3.47.1"
@@ -479,6 +479,9 @@ jobs:
         env:
           DARTITECT_DRIFT_WEB_DIAGNOSTICS: ${{ runner.temp }}/drift-web-diagnostics
         run: dart run tool/run_drift_web_fixture.dart
+      - name: Exercise modeling and JSON in hosted Chrome
+        run: dart test --platform chrome
+        working-directory: packages/dartitect_modeling
       - name: Upload Drift Web diagnostics on failure
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -516,7 +519,7 @@ jobs:
         run: git diff --exit-code -- .
 
   git-consumption:
-    name: Git consumption / v1.0.0-rc.3
+    name: Git consumption / v1.0.0-rc.4
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
@@ -543,14 +546,14 @@ jobs:
         run: |
           git config user.name ftr
           git config user.email ftr@tuta.com
-          git tag --delete v1.0.0-rc.3 2>/dev/null || true
-          git tag --annotate v1.0.0-rc.3 --message "Dartitect 1.0.0-rc.3 Git candidate"
+          git tag --delete v1.0.0-rc.4 2>/dev/null || true
+          git tag --annotate v1.0.0-rc.4 --message "Dartitect 1.0.0-rc.4 Git candidate"
           git clone --bare . "${RUNNER_TEMP:?}/dartitect.git"
       - name: Validate all consumers through Git only
         run: >-
           dart run tool/run_git_canaries.dart
           --repository=file://${RUNNER_TEMP:?}/dartitect.git
-          --ref=v1.0.0-rc.3
+          --ref=v1.0.0-rc.4
       - name: Confirm tracked files are unchanged
         if: always()
         run: git diff --exit-code -- .

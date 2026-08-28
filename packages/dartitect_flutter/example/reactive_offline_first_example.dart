@@ -97,15 +97,17 @@ final class ExampleTasksRuntime {
           0 => const Ok<PageBatch<int, ExampleTask>>(
             PageBatch<int, ExampleTask>(
               items: <ExampleTask>[
-                ExampleTask(1, 1, 'Inspect field'),
-                ExampleTask(2, 1, 'Sync inventory'),
+                ExampleTask(id: 1, version: 1, title: 'Inspect field'),
+                ExampleTask(id: 2, version: 1, title: 'Sync inventory'),
               ],
               nextCursor: 2,
             ),
           ),
           _ => const Ok<PageBatch<int, ExampleTask>>(
             PageBatch<int, ExampleTask>(
-              items: <ExampleTask>[ExampleTask(3, 1, 'Review offline outbox')],
+              items: <ExampleTask>[
+                ExampleTask(id: 3, version: 1, title: 'Review offline outbox'),
+              ],
               nextCursor: null,
             ),
           ),
@@ -154,18 +156,18 @@ final class ExampleTasksRuntime {
 }
 
 /// Immutable local entity/DTO used only by the package example.
-final class ExampleTask {
-  /// Creates a task with stable ID and explicit projection version.
-  const ExampleTask(this.id, this.version, this.title);
-
+final class const ExampleTask({
   /// Stable local key.
-  final int id;
+  required final int id,
 
   /// Projection version.
-  final int version;
+  required final int version,
 
   /// Presentational title.
-  final String title;
+  required final String title,
+}) {
+  /// Creates a task with stable ID and explicit projection version.
+  this;
 }
 
 final class _ExampleLocalSource

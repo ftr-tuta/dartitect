@@ -1,6 +1,9 @@
 # Selection matrix
 
 - Pure Dart result/ownership/composition: `dartitect` plus `$dartitect-runtime`.
+- Immutable values, explicit JSON, projections, or pure boundary mappers: add
+  `dartitect_modeling` and `$dartitect-modeling`; capabilities remain separately
+  opt-in and Analyzer tooling stays out of runtime.
 - Basic Flutter ViewModels and commands: add `dartitect_flutter` and keep the
   established `dartitect_flutter.dart` entrypoint.
 - Hot/warm/cold resources, causal refresh, families, collections, selectors, or
@@ -27,3 +30,7 @@
 ObjectBox has no web support. CLI and MCP run on the Dart VM. Material widgets
 belong only in Material presentation code. Provider adapters never belong in
 domain, application, ViewModel, or presentation layers.
+
+For incremental adoption, an installed overlapping runtime is a warning until
+evidence shows provider leakage, service location, duplicate ownership, or a
+concrete boundary crossing. Select one bounded adoption slice at a time.

@@ -2,6 +2,26 @@ import 'package:dartitect_cli/dartitect_cli.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('modeling presets preserve explicit capability opt-in', () {
+    expect(DartitectModelingPreset.minimal.suggestedCapabilities, <String>[
+      'value',
+    ]);
+    expect(DartitectModelingPreset.recommended.suggestedCapabilities, <String>[
+      'value',
+      'json',
+      'projection',
+      'mapper',
+    ]);
+    expect(
+      DartitectModelingPreset.interop.allowsExistingModelGenerators,
+      isTrue,
+    );
+    expect(
+      DartitectModelingPreset.recommended.allowsExistingModelGenerators,
+      isFalse,
+    );
+  });
+
   test('stable v1 round-trips strict boundaries and unknown keys', () {
     final source = DartitectConfig(
       unknown: const <String, Object?>{
@@ -27,6 +47,26 @@ void main() {
     expect(config.scaffolds['blueprints'], hasLength(5));
     expect(config.unknown, contains('futureStableField'));
     expect(DartitectConfig.parse(config.encode()).toJson(), config.toJson());
+  });
+
+  test('modeling and ecosystem extend v1 without changing legacy defaults', () {
+    final legacy = DartitectConfig();
+    expect(legacy.toJson(), isNot(contains('modeling')));
+    expect(legacy.toJson(), isNot(contains('ecosystem')));
+
+    final configured = DartitectConfig(
+      modeling: const DartitectModelingConfig(
+        preset: DartitectModelingPreset.interop,
+      ),
+      ecosystem: const DartitectEcosystemConfig(),
+    );
+    final roundTrip = DartitectConfig.parse(configured.encode());
+
+    expect(roundTrip.modeling?.preset, DartitectModelingPreset.interop);
+    expect(roundTrip.modeling?.maxDepth, 64);
+    expect(roundTrip.modeling?.maxCollectionItems, 10000);
+    expect(roundTrip.modeling?.maxNodes, 100000);
+    expect(roundTrip.ecosystem?.installedOverlap, 'warning');
   });
 
   test('missing version and future version fail closed with pointers', () {

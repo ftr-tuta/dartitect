@@ -15,6 +15,8 @@ compatibilidade e status atual de adoção pelo Dartitect. As decisões são:
 - `advisory_alternative`: o Dartitect oferece alternativa limitada, mas o uso
   do package externo é apenas informativo por padrão;
 - `reviewed_exception`: o uso exige overlay do consumidor com escopo;
+- `overlap_warning`: runtime de estado/provider/service location instalado
+  fica visível durante adoção incremental, sem autorizar vazamento concreto;
 - `prohibited_native_strict`: proibição universal de arquitetura, container,
   service locator, import privado ou segurança;
 - `unreviewed`: ausente do ledger global.
@@ -62,7 +64,11 @@ resolvida determinística por owner. `dartitect dependencies explain <package>`
 mostra a decisão global neutra. Use `--json` para automação.
 
 DT1017 identifica conflito universal ou contextual; DT1018 identifica revisão
-inválida, ausente, expirada ou incompleta. Alternativas como Freezed, Retrofit,
+inválida, ausente, expirada ou incompleta; e DT1019 identifica overlap
+instalado. Riverpod, BLoC, Provider, GetIt, MobX, Signals e runtimes equivalentes
+são warnings DT1019 quando apenas resolvidos. Imports, tipos de provider,
+service location, ownership duplicado ou vazamento de boundary concreta
+continuam erros no scanner e no Analyzer. Alternativas como Freezed, Retrofit,
 packages de UUID, plugins de galeria e tooling de splash nativo não geram erro
 somente porque o Dartitect possui capability limitada equivalente. `sentry_dio`
 vira erro apenas quando a instrumentação Dio equivalente do Dartitect também
@@ -70,8 +76,8 @@ estiver resolvida.
 
 O comando de dependências, o scanner e o plugin do Analyzer usam as mesmas
 decisões e o mesmo schema de overlay. O Analyzer incorpora snapshot gerado e
-conferido; o gate rejeita decisão, alternativa, conflito ou proibição de
-arquitetura desatualizada.
+conferido; o gate rejeita decisão, alternativa, conflito, proibição de
+arquitetura ou decisão de overlap desatualizada.
 
 ## Workflow de revisão
 

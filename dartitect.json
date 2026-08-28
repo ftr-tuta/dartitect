@@ -40,5 +40,17 @@
       "offline-mutation",
       "sync-dataset"
     ]
+  },
+  "modeling": {
+    "preset": "recommended_complete",
+    "jsonLimits": {
+      "maxDepth": 64,
+      "maxCollectionItems": 10000,
+      "maxNodes": 100000
+    }
+  },
+  "ecosystem": {
+    "adoption": "incremental",
+    "installedOverlap": "warning"
   }
 }

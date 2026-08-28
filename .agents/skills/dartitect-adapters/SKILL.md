@@ -22,7 +22,9 @@ Create adapters in an app/session/isolate infrastructure composition root.
 Provider SDKs, generated models, credentials, and configuration remain
 consumer-owned. No global client, Store, Hub, or adapter crosses into domain,
 application, ViewModel, or presentation. Record owned/borrowed lifetime and
-dispose borrowers before providers.
+dispose borrowers before providers. Storage schemas have one consumer-owned
+writer; never introduce dual-write, automatic cross-engine migration, a schema
+bridge, or a cross-engine transaction.
 
 ## Workflow
 

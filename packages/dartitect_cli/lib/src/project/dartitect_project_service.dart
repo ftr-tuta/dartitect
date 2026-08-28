@@ -10,6 +10,8 @@ import '../config/dartitect_config.dart';
 import '../diagnostics/models.dart';
 import '../generation/generation_engine.dart';
 import '../generation/scaffolds.dart';
+import '../model/model_generator.dart';
+import '../model/primary_constructor_migration.dart';
 import '../policy/ecosystem_policy.dart';
 import '../scan/baseline.dart';
 import '../scan/project_scanner.dart';
@@ -27,6 +29,12 @@ enum DartitectChangeKind {
 
   /// Upgrade reviewed Dartitect dependency constraints as one cohort.
   dependencyUpgrade,
+
+  /// Converge fully generated modeling parts and ownership metadata.
+  modelSync,
+
+  /// Apply reviewed primary-constructor source edits transactionally.
+  modelPrimaryMigration,
 }
 
 /// One project-relative semantic input bound to a reviewed change plan.
@@ -265,6 +273,9 @@ final class DartitectProjectService {
       DartitectChangeKind.dependencyUpgrade => _previewDependencyUpgrade(
         _validatedTargetCohort(targetCohort),
       ),
+      DartitectChangeKind.modelSync => _previewModelSync(),
+      DartitectChangeKind.modelPrimaryMigration =>
+        _previewModelPrimaryMigration(),
     };
   }
 
@@ -297,10 +308,14 @@ final class DartitectProjectService {
       switch (plan.kind) {
         case DartitectChangeKind.init:
           final scan = await ProjectScanner(root).scan();
-          final result = await GenerationEngine(root).apply(
-            ScaffoldFactory(packageName: scan.packageName ?? 'application')
-                .init(),
-          );
+          final result =
+              await GenerationEngine(
+                root,
+                namespace: GenerationNamespace.scaffolding,
+              ).apply(
+                ScaffoldFactory(packageName: scan.packageName ?? 'application')
+                    .init(),
+              );
           return DartitectChangeReceipt(
             kind: plan.kind,
             operations: plan.operations,
@@ -337,6 +352,23 @@ final class DartitectProjectService {
             kind: plan.kind,
             operations: plan.operations,
             changed: plan.operations.any((value) => value.startsWith('UPDATE')),
+          );
+        case DartitectChangeKind.modelSync:
+          final result = await DartitectModelGenerator(root).apply();
+          return DartitectChangeReceipt(
+            kind: plan.kind,
+            operations: plan.operations,
+            changed:
+                result.createdPaths.isNotEmpty ||
+                result.updatedPaths.isNotEmpty ||
+                result.deletedPaths.isNotEmpty,
+          );
+        case DartitectChangeKind.modelPrimaryMigration:
+          final result = await PrimaryConstructorMigration(root).apply();
+          return DartitectChangeReceipt(
+            kind: plan.kind,
+            operations: plan.operations,
+            changed: result.applied && result.operations.isNotEmpty,
           );
       }
     });
@@ -561,9 +593,14 @@ final class DartitectProjectService {
 
   Future<DartitectChangePlan> _previewInit() async {
     final scan = await ProjectScanner(root).scan();
-    final plan = await GenerationEngine(root).plan(
-      ScaffoldFactory(packageName: scan.packageName ?? 'application').init(),
-    );
+    final plan =
+        await GenerationEngine(
+          root,
+          namespace: GenerationNamespace.scaffolding,
+        ).plan(
+          ScaffoldFactory(packageName: scan.packageName ?? 'application')
+              .init(),
+        );
     final operations = <String>[
       for (final operation in plan.operations)
         '${operation.disposition.name.toUpperCase()} ${operation.operation.relativePath}',
@@ -652,6 +689,58 @@ final class DartitectProjectService {
       stateToken: manifest.digest,
       semanticManifest: manifest,
       targetCohort: targetCohort,
+    );
+  }
+
+  Future<DartitectChangePlan> _previewModelSync() async {
+    final report = await DartitectModelGenerator(root).inspect();
+    if (report.diagnostics.isNotEmpty || report.plan == null) {
+      throw const DartitectChangeException(
+        'model_diagnostics',
+        'Model sources have diagnostics; run `dartitect verify --json` first.',
+      );
+    }
+    final operations = <String>[
+      for (final operation in report.plan!.operations)
+        '${operation.disposition.name.toUpperCase()} ${operation.operation.relativePath}',
+    ];
+    final preview = jsonEncode(report.toJson());
+    final manifest = await _semanticManifest(
+      DartitectChangeKind.modelSync,
+      preview,
+    );
+    return DartitectChangePlan(
+      kind: DartitectChangeKind.modelSync,
+      operations: List<String>.unmodifiable(operations),
+      preview: preview,
+      stateToken: manifest.digest,
+      semanticManifest: manifest,
+    );
+  }
+
+  Future<DartitectChangePlan> _previewModelPrimaryMigration() async {
+    final report = await PrimaryConstructorMigration(root).inspect();
+    if (report.diagnostics.isNotEmpty) {
+      throw const DartitectChangeException(
+        'model_migration_diagnostics',
+        'Primary-constructor migration requires consumer review in `dartitect '
+            'verify --json`.',
+      );
+    }
+    final operations = <String>[
+      for (final operation in report.operations) 'UPDATE ${operation.path}',
+    ];
+    final preview = jsonEncode(report.toJson());
+    final manifest = await _semanticManifest(
+      DartitectChangeKind.modelPrimaryMigration,
+      preview,
+    );
+    return DartitectChangePlan(
+      kind: DartitectChangeKind.modelPrimaryMigration,
+      operations: List<String>.unmodifiable(operations),
+      preview: preview,
+      stateToken: manifest.digest,
+      semanticManifest: manifest,
     );
   }
 
@@ -1046,6 +1135,10 @@ final class DartitectProjectService {
       DartitectChangeKind.codexSync => await _codexSemanticInputs(),
       DartitectChangeKind.dependencyUpgrade =>
         await _dependencyUpgradeSemanticInputs(),
+      DartitectChangeKind.modelSync => await _modelSemanticInputs(),
+      DartitectChangeKind.modelPrimaryMigration => await _modelSemanticInputs(
+        primaryMigration: true,
+      ),
     };
     final inputs = <DartitectSemanticInput>[
       DartitectSemanticInput(
@@ -1157,6 +1250,24 @@ final class DartitectProjectService {
     '.dartitect/dependency-upgrade.pubspec.backup',
     '.dartitect/dependency-upgrade.transaction.json',
   };
+
+  Future<Set<String>> _modelSemanticInputs({
+    bool primaryMigration = false,
+  }) async {
+    final inputs = await _baselineSemanticInputs();
+    inputs.addAll(<String>{
+      '.dartitect/generation/modeling/manifest.json',
+      '.dartitect/generation/modeling/journal.json',
+      '.dartitect/generation/modeling/transaction',
+      '.dartitect-model-outputs.json',
+      '.dartitect-generation.json',
+      if (primaryMigration)
+        '.dartitect/generation/model-primary-migration/source-journal.json',
+      if (primaryMigration)
+        '.dartitect/generation/model-primary-migration/transaction',
+    });
+    return inputs;
+  }
 
   static const Set<String> _dartitectPackages = <String>{
     'dartitect',

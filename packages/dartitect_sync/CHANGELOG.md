@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-rc.4
+
+- Promote primary-constructor data carriers and the modular modeling cohort
+  without changing provider ownership or persisted sync schemas.
+
 ## 1.0.0-rc.3
 
 - Expose optional `SyncAuthority` in each dataset context so fencing-capable

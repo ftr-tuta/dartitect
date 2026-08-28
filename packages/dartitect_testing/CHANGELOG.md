@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-rc.4
+
+- Add deterministic projection and one-way/bidirectional mapper contract
+  harnesses for generated modeling boundaries.
+
 ## 1.0.0-rc.3
 
 - Add `DiagnosticsTopologyHarness` for reconstructing protocol-v1 topology and

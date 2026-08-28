@@ -1,0 +1,10 @@
+name: dartitect_modeling_analyzer
+description: Local-only bridge for the unpublished workspace analyzer package.
+version: 1.0.0-rc.4
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  analyzer: ^13.3.0

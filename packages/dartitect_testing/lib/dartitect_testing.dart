@@ -13,6 +13,7 @@ export 'src/manual_clock.dart';
 export 'src/manual_scheduler.dart';
 export 'src/owned_graph_harness.dart';
 export 'src/owned_scope_harness.dart';
+export 'src/projection_mapping_harness.dart';
 export 'src/recording_observability.dart';
 export 'src/repository_contract_harness.dart';
 export 'src/resource_census.dart';

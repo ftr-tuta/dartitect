@@ -357,17 +357,17 @@ dev_dependencies:
 ''');
       final service = DartitectProjectService(root);
 
-      final plan = await service.previewDependencyUpgrade('1.0.0-rc.3');
+      final plan = await service.previewDependencyUpgrade('1.0.0-rc.4');
       final receipt = await service.applyChange(plan);
       final result = await pubspec.readAsString();
 
       expect(plan.stateToken, matches(RegExp(r'^[0-9a-f]{64}$')));
-      expect(plan.targetCohort, '1.0.0-rc.3');
+      expect(plan.targetCohort, '1.0.0-rc.4');
       expect(plan.preview, isNot(contains(result)));
       expect(receipt.changed, isTrue);
-      expect(result, contains('>=1.0.0-rc.3 <1.0.0'));
-      expect(result, contains('dartitect_flutter: ^1.0.0-rc.3'));
-      expect(result, contains('dartitect_testing: 1.0.0-rc.3'));
+      expect(result, contains('>=1.0.0-rc.4 <1.0.0'));
+      expect(result, contains('dartitect_flutter: ^1.0.0-rc.4'));
+      expect(result, contains('dartitect_testing: 1.0.0-rc.4'));
       expect(result, contains('# cohort'));
       for (final path in <String>[
         'dependency-upgrade.pubspec.stage',
@@ -389,7 +389,7 @@ dependencies:
   dartitect: ^1.0.0-rc.2
 ''');
       final service = DartitectProjectService(root);
-      final plan = await service.previewDependencyUpgrade('1.0.0-rc.3');
+      final plan = await service.previewDependencyUpgrade('1.0.0-rc.4');
       await pubspec.writeAsString('''name: fixture
 dependencies:
   dartitect: 1.0.0-rc.2
@@ -411,7 +411,7 @@ dependencies:
     path: ../sdk
 ''');
       await expectLater(
-        service.previewDependencyUpgrade('1.0.0-rc.3'),
+        service.previewDependencyUpgrade('1.0.0-rc.4'),
         throwsA(
           isA<DartitectChangeException>().having(
             (error) => error.code,
@@ -432,7 +432,7 @@ dependencies:
 ''';
     await pubspec.writeAsString(original);
     final service = DartitectProjectService(root);
-    final plan = await service.previewDependencyUpgrade('1.0.0-rc.3');
+    final plan = await service.previewDependencyUpgrade('1.0.0-rc.4');
     final transaction = Directory('${root.path}/.dartitect');
     await transaction.create();
     await File('${transaction.path}/dependency-upgrade.pubspec.backup')
@@ -449,7 +449,7 @@ dependencies:
     final receipt = await service.applyChange(plan);
 
     expect(receipt.changed, isTrue);
-    expect(await pubspec.readAsString(), contains('^1.0.0-rc.3'));
+    expect(await pubspec.readAsString(), contains('^1.0.0-rc.4'));
     expect(
       await File('${transaction.path}/dependency-upgrade.transaction.json')
           .exists(),
@@ -466,11 +466,11 @@ dependencies:
     );
     final service = DartitectProjectService(root);
 
-    final plan = await service.previewDependencyUpgrade('1.0.0-rc.3');
+    final plan = await service.previewDependencyUpgrade('1.0.0-rc.4');
     await service.applyChange(plan);
     final result = await pubspec.readAsString();
 
-    expect(result, contains('dartitect: ^1.0.0-rc.3\r\n'));
+    expect(result, contains('dartitect: ^1.0.0-rc.4\r\n'));
     expect(result.replaceAll('\r\n', ''), isNot(contains('\n')));
   });
 }

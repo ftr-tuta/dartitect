@@ -17,6 +17,8 @@
     "dartitect_geometry": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
     "dartitect_privacy": {"platforms": ["iOS", "Flutter non-iOS notSupported"], "stability": "development"},
     "dartitect_media": {"platforms": ["Android", "iOS", "Flutter other notSupported"], "stability": "development"},
+    "dartitect_modeling": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
+    "dartitect_modeling_analyzer": {"platforms": ["Dart VM", "Dart analyzer"], "stability": "development"},
     "dartitect_mcp": {"platforms": ["Dart VM", "STDIO"], "stability": "development"}
   }
 }

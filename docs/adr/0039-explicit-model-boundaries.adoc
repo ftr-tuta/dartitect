@@ -1,0 +1,16 @@
+= ADR 0039: Explicit serialization and mapper boundaries
+
+Status:: Accepted for 1.0.0-rc.4
+
+== Decision
+
+Generated JSON rejects unknown keys by default and applies explicit untrusted
+limits. Mappers automate only semantically assignable, lossless fields and
+return typed +Result+ values. Rename, conversion, and trusted-data choices are
+annotations that name consumer-owned static hooks.
+
+== Consequences
+
+The compiler never guesses narrowing, enum/string conversions, dates,
+identifiers, relations, or flattening. Paths in failures contain structure but
+not rejected values. Provider schemas and data ownership stay outside the SDK.

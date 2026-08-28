@@ -15,6 +15,8 @@ Dartitect adoption status. The architectural dispositions are:
 - `advisory_alternative`: Dartitect offers a bounded alternative, but use of
   the external package is informational by default;
 - `reviewed_exception`: use requires a consumer-owned scoped overlay;
+- `overlap_warning`: an installed state/provider/service-location runtime is
+  visible during incremental adoption, without authorizing concrete leakage;
 - `prohibited_native_strict`: a universal architecture, container, service
   locator, private-import, or security prohibition;
 - `unreviewed`: absent from the global ledger.
@@ -60,8 +62,12 @@ authorize publication, move provider types across layers, or contain secrets.
 resolved route per owner. `dartitect dependencies explain <package>` prints the
 neutral global decision. Use `--json` for automation.
 
-DT1017 identifies a universal or contextual conflict and DT1018 an invalid,
-missing, expired, or incomplete review. Alternatives such as Freezed, Retrofit,
+DT1017 identifies a universal or contextual conflict, DT1018 an invalid,
+missing, expired, or incomplete review, and DT1019 an installed overlap.
+Riverpod, BLoC, Provider, GetIt, MobX, Signals, and equivalent runtimes are
+DT1019 warnings when merely resolved. Their imports, provider types, service
+location, duplicate ownership, or concrete boundary leakage remain scanner and
+Analyzer errors. Alternatives such as Freezed, Retrofit,
 UUID packages, gallery plugins, and native splash tooling do not produce an
 error merely because Dartitect has an equivalent bounded capability.
 `sentry_dio` becomes an error only when equivalent Dartitect Dio
@@ -69,8 +75,8 @@ instrumentation is also resolved.
 
 The CLI dependency command, scanner, and Analyzer plugin use the same decisions
 and overlay schema. The Analyzer embeds a checked generated snapshot; the
-ecosystem policy gate rejects stale decisions, alternatives, conflicts, or
-architecture prohibitions.
+ecosystem policy gate rejects stale decisions, alternatives, conflicts,
+architecture prohibitions, or overlap decisions.
 
 ## Review workflow
 

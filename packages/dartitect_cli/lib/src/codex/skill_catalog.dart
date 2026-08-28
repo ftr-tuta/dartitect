@@ -47,14 +47,14 @@ dartitectSkillCatalog = <DartitectSkillTemplate>[
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-design
-description: Select the smallest Dartitect package and skill stack for a new Dart or Flutter application or feature. Use for Native Strict greenfield architecture choices; do not use for conformance auditing or detailed implementation.
+description: Select the smallest Dartitect package and skill stack for a new or incrementally adopting Dart/Flutter application or feature. Use for architecture choices; do not use for conformance auditing or detailed implementation.
 ---
 
 # Design with Dartitect
 
 ## When to use
 
-Use this skill before implementing a new application, feature, composition root,
+Use this skill before implementing a new application, incremental feature, composition root,
 or provider boundary when the required Dartitect packages are not yet clear.
 
 ## When not to use
@@ -66,7 +66,9 @@ selected.
 
 ## Invariants
 
-Choose the smallest stack that satisfies the feature. Keep domain/application
+Choose the smallest stack that satisfies the feature. Existing Riverpod, BLoC,
+Provider, GetIt, MobX, Signals, or equivalent dependencies are overlap warnings
+when merely installed; do not require an all-at-once rewrite. Keep domain/application
 contracts provider-neutral, use constructor injection, and make every resource
 owned or borrowed. Do not add a container, global runtime, provider package, or
 remote telemetry without a stated requirement.
@@ -78,7 +80,10 @@ remote telemetry without a stated requirement.
 2. Identify platforms, authoritative data source, failure model, lifecycle
    owner, isolate boundaries, and telemetry policy.
 3. Select only the packages and focused skills needed for those boundaries.
-4. Record explicit exclusions so optional packages do not become defaults.
+4. For an existing project, define one consumer-owned adoption boundary and
+   reject provider leakage, service location, duplicate ownership, or concrete
+   runtime boundaries within it.
+5. Record explicit exclusions so optional packages do not become defaults.
 
 Read [references/selection-matrix.md](references/selection-matrix.md) when
 choosing packages or routing the implementation.
@@ -92,6 +97,9 @@ break a stated requirement.
       'references/selection-matrix.md': r'''# Selection matrix
 
 - Pure Dart result/ownership/composition: `dartitect` plus `$dartitect-runtime`.
+- Immutable values, explicit JSON, projections, or pure boundary mappers: add
+  `dartitect_modeling` and `$dartitect-modeling`; capabilities remain separately
+  opt-in and Analyzer tooling stays out of runtime.
 - Basic Flutter ViewModels and commands: add `dartitect_flutter` and keep the
   established `dartitect_flutter.dart` entrypoint.
 - Hot/warm/cold resources, causal refresh, families, collections, selectors, or
@@ -118,6 +126,10 @@ break a stated requirement.
 ObjectBox has no web support. CLI and MCP run on the Dart VM. Material widgets
 belong only in Material presentation code. Provider adapters never belong in
 domain, application, ViewModel, or presentation layers.
+
+For incremental adoption, an installed overlapping runtime is a warning until
+evidence shows provider leakage, service location, duplicate ownership, or a
+concrete boundary crossing. Select one bounded adoption slice at a time.
 ''',
     },
   ),
@@ -129,7 +141,7 @@ domain, application, ViewModel, or presentation layers.
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-audit
-description: Audit an existing Dart or Flutter codebase for Native Strict conformance without changing it. Use for read-only evidence; Dartitect 1.0 is greenfield-only and provides no migration or coexistence workflow.
+description: Audit an existing Dart or Flutter codebase for Native Strict conformance and incremental adoption without changing it. Use for read-only evidence and overlap classification.
 ---
 
 # Audit Dartitect conformance
@@ -141,17 +153,18 @@ lifecycle assumptions must be assessed against Native Strict boundaries.
 
 ## When not to use
 
-Use `$dartitect-design` for a new application or feature. Do not use this skill
-to convert an existing runtime, plan staged migration, or authorize coexistence
-with another DI or application-state runtime.
+Use `$dartitect-design` for implementation choices. Do not use this skill to
+perform migration or authorize provider leakage, service location, duplicate
+ownership, or concrete runtime boundaries.
 
 ## Invariants
 
 Inspection is read-only. Report evidence without modifying code, dependencies,
-configuration, baselines, or generated files. Treat `scan --no-baseline` as the
-canonical conformance gate. Existing projects may be audited, but Dartitect 1.0
-does not support runtime migration, compatibility shims, or coexistence with a
-competing DI/application-state architecture.
+configuration, baselines, or generated files. Treat `dartitect verify` and
+`scan --no-baseline` as canonical read-only evidence. Installed Riverpod, BLoC,
+Provider, GetIt, MobX, Signals, or equivalent runtimes are overlap warnings by
+themselves. Escalate to an error only on evidenced leakage, service location,
+duplicate ownership, dual-write, or a concrete boundary crossing.
 
 ## Workflow
 
@@ -161,8 +174,8 @@ competing DI/application-state architecture.
 3. Classify each boundary as conforming, non-conforming, or not evidenced.
 4. Record prohibited runtime packages separately from advisory alternatives and
    approved consumer-owned infrastructure.
-5. Return a conformance report and the exact commands used; do not emit a
-   conversion plan.
+5. Return a conformance report, bounded adoption observations, and the exact
+   commands used; do not mutate or claim automatic conversion.
 
 Read [references/inventory.md](references/inventory.md) for evidence collection
 and [references/conformance-audit.md](references/conformance-audit.md) for the
@@ -198,14 +211,15 @@ Run `scan --no-baseline` as the canonical gate. A reviewed baseline may describe
 known debt for other workflows, but it never changes conformance evidence.
 
 The local MCP may assist discovery with bounded inspect, scan, doctor, explain,
-conformance, and preview tools. `dartitect_audit_conformance` reports only
-evidence and declares existing projects `audit_only`; it never returns migration
-steps. Preview/apply tools are separate capabilities and are outside a
-conformance audit.
+conformance, and preview tools. `dartitect_audit_conformance` reports evidence
+and incremental-adoption status; it never performs migration. Preview/apply
+tools are separate capabilities and are outside a conformance audit.
 
 Report constructor boundaries, ownership, provider leakage, runtime conflicts,
-and missing evidence. Do not recommend compatibility shims or coexistence with
-Riverpod, BLoC, Provider, GetIt, MobX, Signals, or another competing runtime.
+and missing evidence. Riverpod, BLoC, Provider, GetIt, MobX, Signals, and
+equivalents are overlap warnings when merely installed. Provider leakage,
+service location, duplicate ownership, concrete boundary crossings, and
+dual-write remain errors.
 ''',
     },
   ),
@@ -671,7 +685,9 @@ Create adapters in an app/session/isolate infrastructure composition root.
 Provider SDKs, generated models, credentials, and configuration remain
 consumer-owned. No global client, Store, Hub, or adapter crosses into domain,
 application, ViewModel, or presentation. Record owned/borrowed lifetime and
-dispose borrowers before providers.
+dispose borrowers before providers. Storage schemas have one consumer-owned
+writer; never introduce dual-write, automatic cross-engine migration, a schema
+bridge, or a cross-engine transaction.
 
 ## Workflow
 
@@ -895,47 +911,57 @@ expiry, replay, concurrency/lock, output sanitization, and clean shutdown.
   DartitectSkillTemplate(
     name: 'dartitect-modeling',
     displayName: 'Dartitect Modeling',
-    shortDescription: 'Generate immutable Dartitect value models',
-    defaultPrompt: r'Use $dartitect-modeling to define and synchronize Dartitect value models.',
+    shortDescription: 'Generate opt-in Dartitect modeling capabilities',
+    defaultPrompt:
+        r'Use $dartitect-modeling to define and synchronize Dartitect models.',
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-modeling
-description: Define, generate, validate, or review immutable Dartitect value models with DartitectValue, ValueEquality, typed copyWith, and model sync/check. Use for Dartitect-owned value generation; exclude DTO/JSON, unions, DI, ViewModels, state, and HTTP clients.
+description: Define, generate, validate, or review opt-in Dartitect values, JSON codecs, projections, lenses, and boundary mappers. Use for consumer-owned modeling and model sync/check/migration; exclude provider schema, DI, ViewModels, state, and HTTP clients.
 ---
 
 # Model values with Dartitect
 
 ## When to use
 
-Use this skill for `@DartitectValue()`, generated value semantics, typed
-`copyWith`, model ownership manifests, or `model sync/check`.
+Use this skill for the independent `@DartitectValue()`, `@DartitectJson()`,
+`@DartitectProjection()`, and `@DartitectMapper()` capabilities, generated
+value semantics, codecs, projections/lenses, pure mappers, ownership manifests,
+or `model sync/check/migrate primary`.
 
 ## When not to use
 
-Use provider-specific tooling for DTO/JSON, schema, or native generators. Use
+Use provider-specific tooling for provider DTO/entity schema or native generators. Use
 the runtime, reactive, adapters, or tooling skill for ViewModels, state, HTTP,
 DI, and unrelated CLI behavior.
 
 ## Invariants
 
-Keep the annotation passive in `dartitect`; generation belongs to the CLI. One
-source library contains exactly one annotated final, non-generic class. Declare
-the matching `part`, extend `ValueEquality`, mix in the calculated generated
-mixin, expose typed public final fields, and use one unnamed generative
-constructor whose named parameters correspond exactly to those fields.
+Keep annotations passive in `dartitect_modeling`; generation belongs to host
+tooling. A source library may contain multiple annotated final classes and owns
+one deterministic Dartitect part. Models use a primary constructor, extend
+`ValueEquality`, expose immutable typed fields, and may be generic, const, use
+defaults, records, and parts when the shared semantic compiler validates them.
 
-Do not declare fields through mutable collection interfaces such as `List`,
-`Set`, `Map`, or `Iterable`; wrap immutable values in a consumer-owned type.
-Generation does not own JSON, DTOs, unions, DI, ViewModels, state, routes, or
-clients and may coexist with provider-owned generators in distinct part files.
+Use `ImmutableValueList`, `ImmutableValueSet`, and `ImmutableValueMap` for
+structural collection fields. JSON, projections, and mappers are never enabled
+by the value marker. Unknown JSON keys reject by default, untrusted limits are
+64 depth/10,000 items/100,000 nodes, and any trusted or custom limit choice is
+explicit. Mappers automate only assignable lossless fields; renames and static
+consumer hooks are explicit. Never infer narrowing, enum/string, dates, IDs,
+relations, or flattening. Provider-owned generators use distinct outputs.
 
 ## Workflow
 
 Use `dartitect model sync` for a read-only preview, or `--dry-run` for an
 explicit preview. Only `dartitect model sync --apply` may recover and converge
 outputs. Run `dartitect model check` in CI. Commit every
-`*.dartitect.g.dart` output and `.dartitect/model-outputs.json` so a clean
+`*.dartitect.g.dart` output and namespaced manifest so a clean
 checkout compiles without installing the CLI.
+
+Use `dartitect model migrate primary` to preview traditional-to-primary
+constructor edits. Only `--apply` may take the project lock, journal source
+bytes, revalidate, and commit or roll back the complete semantic edit.
 
 Never hand-edit or force-adopt a generated model. A digest conflict means the
 consumer bytes must be reviewed and ownership restored explicitly. A pending
@@ -943,16 +969,18 @@ journal is inspected by preview/check and recovered only by `sync --apply`.
 
 ## Validate
 
-The generated mixin supplies abstract getters, `equalityFields`, and typed
-`copyWith` only. Nullable fields preserve on omission, replace on a non-null
+The generated model surface supplies `equalityFields`, descriptors/lenses, and
+typed `copyWith`. Nullable fields preserve on omission, replace on a non-null
 value, and clear with `clear<Field>: true`; passing a value and clear together
 must fail. Non-nullable fields have no clear flag. Do not generate equality,
 hashing, or `toString` because `ValueEquality` centralizes those semantics.
 
-Test bootstrap with the exact missing part/mixin only, clean post-sync analysis,
-preserve/replace/clear behavior, full equality participation, create/update/
-no-op/orphan convergence, consumer edits, manifest corruption/path escapes,
-CRLF canonicalization, pending recovery, and stable JSON/exit codes.
+Test primary constructors, generics, const/defaults, records, multiple models,
+preserve/replace/clear behavior, defensive structural collections, JSON
+round-trip/malformed/bounds, projection selection, lossless/lossy mapping and
+hooks. Also cover create/update/no-op/orphan convergence, migration preview/
+apply/recovery, consumer edits, manifest corruption/path escapes, CRLF,
+concurrency, pending recovery, and stable JSON/SARIF/exit codes.
 ''',
     },
   ),
@@ -965,14 +993,14 @@ CRLF canonicalization, pending recovery, and stable JSON/exit codes.
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-tooling
-description: Operate or extend the Dartitect CLI, config, scan, doctor, baselines, lints, generators, native setup, and release gates. Use for shell/CI architecture tooling; MCP configuration and protocol work belongs to the MCP skill.
+description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, fleet, lints, semantic compiler, generators, native setup, and release gates. Use for shell/CI architecture tooling; MCP configuration and protocol work belongs to the MCP skill.
 ---
 
 # Operate Dartitect tooling
 
 ## When to use
 
-Use this skill for CLI commands/services, stable config v1, scanner/doctor policy,
+Use this skill for CLI commands/services, stable config v1, verify/scanner/doctor policy,
 baselines, analyzer diagnostics, generators, Codex sync, native fixture setup,
 or repository release gates.
 
@@ -983,15 +1011,17 @@ opt-in MCP writes. Use runtime skills for application behavior.
 
 ## Invariants
 
-Inspection is read-only. Mutations preview by default or provide explicit
+Inspection and `dartitect verify` are strictly read-only. Mutations preview by default or provide explicit
 dry-run/apply separation. Reject experimental versions and preserve unknown v1
 extension fields without interpreting them.
 Baselines cover reviewed existing debt only. Generators stage, validate, refuse
 conflicts, and recover transactionally. Codex sync replaces only valid
 manifest-owned skills and preserves consumer-owned files/directories.
 Every reviewed project change binds only its semantic inputs in a sorted
-SHA-256 manifest. Acquire the cross-process project lock before revalidation and
-hold it through commit, rollback, or recovery.
+SHA-256 manifest. Partition generated ownership, reports, and journals by
+`GenerationNamespace`. Acquire the cross-process project lock before
+revalidation and hold it through commit, rollback, or recovery. Migrate RC3
+ownership only when manifest metadata, recorded digest, and current bytes match.
 
 ## Workflow
 
@@ -1118,8 +1148,8 @@ Run `dart run dartitect_mcp:dartitect_mcp --root .` and register that local STDI
 command in the MCP client. Multiple roots must already exist and are addressed
 by configured names. Do not put credentials in command arguments or environment.
 
-The closed read surface provides inspect, bounded scan, doctor, finding
-explanation, conformance auditing, and change previews. Generated resources expose
+The closed read surface provides inspect, verify, bounded scan, doctor, finding
+explanation, conformance auditing, and modeling migration previews. Generated resources expose
 package metadata, diagnostics, canonical English guides, and credential-free
 config v1. There is no free-form file resource. Results include structured
 content plus compatible JSON text. Read tools/previews are annotated read-only;

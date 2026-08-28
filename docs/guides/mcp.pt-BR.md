@@ -4,7 +4,7 @@
 
 ## Escopo
 
-`dartitect_mcp 1.0.0-rc.3` é local e somente STDIO. Usa
+`dartitect_mcp 1.0.0-rc.4` é local e somente STDIO. Usa
 `dart_mcp 0.5.2`. Streamable HTTP, OAuth/autorização, plugins ChatGPT remotos,
 UI MCP, shell/arquivos arbitrários, scaffolding `create` e acesso a apps em
 execução estão fora do escopo.
@@ -12,7 +12,7 @@ execução estão fora do escopo.
 ## Configuração read-only
 
 O candidato não está no pub.dev. Declare
-`dartitect_mcp: 1.0.0-rc.3` em `dev_dependencies`, aplique o fechamento Git
+`dartitect_mcp: 1.0.0-rc.4` em `dev_dependencies`, aplique o fechamento Git
 completo do [guia de consumo do candidato](git-candidate-consumption.pt-BR.md)
 e execute `dart run dartitect_mcp:dartitect_mcp --root .`.
 
@@ -54,8 +54,10 @@ Cada resultado retorna `structuredContent` e bloco textual JSON compatível.
 
 ## Tools read-only e resources
 
-Inspect, scan, doctor, explicação, conformidade e previews são read-only. Scan aceita
-baseline e paginação limitada. Doctor deep é opt-in e tem timeout.
+Inspect, scan, verify, doctor, explicação, conformidade e previews são
+read-only. Scan e verify aceitam paginação limitada; verify combina arquitetura,
+freshness de modelagem, overlap do ecossistema e status de providers. Doctor
+deep é opt-in e tem timeout.
 
 `dartitect_audit_conformance` declara projetos existentes como `audit_only`, usa
 o scan sem baseline como evidência e nunca retorna passos de migração ou
@@ -76,6 +78,11 @@ protocolo MCP; use `$dartitect-tooling` e a CLI diretamente em scripts ou CI.
 ## Escritas opt-in
 
 Adicione `--allow-writes` somente para escrita local revisada. O flag não basta.
+
+Model sync e migração para primary constructor usam o mesmo gate preview/apply
+de init, baseline e sincronização de skills. O preview contém operações e
+manifest semântico, nunca bodies de source do consumidor.
+
 Apply exige simultaneamente:
 
 1. opt-in do servidor;

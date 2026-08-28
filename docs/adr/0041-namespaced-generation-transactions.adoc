@@ -1,0 +1,50 @@
+= ADR 0041: namespaced generation transactions
+:status: accepted
+:date: 2026-08-27
+
+== Context
+
+ADR 0027 gave model outputs strong manifest ownership and crash recovery, but
+its paths and metadata assumed one generator. The package release cohort also
+served as the renderer identity. Adding modeling, scaffolding, and future
+generators would let unrelated desired sets, journals, or release bumps collide.
+The primary-constructor codemod used a separate source transaction but needed
+the same project-wide exclusion boundary.
+
+== Decision
+
++GenerationEngine+ requires a +GenerationNamespace+. Each namespace owns
++.dartitect/generation/{namespace}/manifest.json+, +journal.json+, and its
+transaction directory. Generated-once scaffolds use +scaffolding+; complete
+Dartitect model parts use +modeling+. Namespace manifests never claim another
+namespace's output set.
+
+Release, generation protocol, semantic schema, renderer, manifest, command
+report, output journal, and source journal have independent version constants.
+Manifest schema 2 records +rendererVersion+ and +semanticSchemaVersion+.
+Generated headers identify those contracts and do not contain the package
+release cohort. Output journal schema 3 records namespace and protocol.
+
+All output namespaces and semantic source edits serialize on
++.dartitect/project.lock+. A process-local queue complements the exclusive OS
+file lock because same-process file-lock behavior is platform-dependent. The
+primary-constructor source journal moves to
++.dartitect/generation/model-primary-migration/source-journal.json+ schema 2
+and keeps its own transaction directory.
+
+Compatibility is narrow and fail-closed. A legacy RC3 model manifest is
+accepted only at +.dartitect/model-outputs.json+, with schema 1, generator
++dartitect model+, exact +1.0.0-rc.3+ entry identity, safe paths, valid digests,
+and current output bytes matching every digest. Apply journals removal of the
+old manifest and creation of the namespaced manifest in the same transaction.
+Legacy output journal schema 2 and source journal schema 1 are recoverable from
+their original paths. Coexisting old/new artifacts, unknown schemas, changed
+bytes, or transaction residue without a journal stop without adoption.
+
+== Consequences
+
+A release-only bump does not stale generated files. Renderer or semantic schema
+changes remain visible and converge through the manifest. Fault recovery,
+namespace isolation, legacy adoption, path safety, concurrent mutation, and
+shared-lock behavior require deterministic tests. There is no force adoption,
+downgrade, or general legacy-manifest importer.

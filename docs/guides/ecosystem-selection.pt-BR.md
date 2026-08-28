@@ -6,8 +6,9 @@
 
 Selecione pacotes pelo comportamento realmente necessário. `dartitect` é o core
 para falhas tipadas, concorrência, ownership e contratos de mutation offline.
-Todos os outros pacotes são opcionais. SDKs de provider, entidades, modelos
-gerados, credenciais e configuração de fornecedor pertencem ao consumidor.
+Todos os outros pacotes são opcionais. SDKs de provider, entidades/schemas,
+credenciais e configuração de fornecedor pertencem ao consumidor; boilerplate
+opt-in de modelos imutáveis pode ser gerado em parts commitados do consumidor.
 
 Para aplicação ou feature nova, use `$dartitect-design`. Uma codebase existente
 pode usar `$dartitect-audit` para evidência read-only de conformidade. Isso não é
@@ -18,6 +19,8 @@ um caminho para migrar ou coexistir com outro runtime de DI/application state.
 | Capacidade | Pacote(s) | Entrypoint(s) público(s) | Plataformas | Skill focada | Não escolha quando |
 | --- | --- | --- | --- | --- | --- |
 | Results, ownership, command lanes, contratos de mutation | `dartitect` | `package:dartitect/dartitect.dart` | Dart, Flutter, web | `$dartitect-runtime`; `$dartitect-offline-first` para mutations | Espera-se service locator, state manager, logger, ORM ou cliente HTTP |
+| Values imutáveis, codecs JSON, projections/lenses, mappers de boundary | `dartitect_modeling` | `package:dartitect_modeling/dartitect_modeling.dart` | Dart, Flutter, web | `$dartitect-modeling` | Esperam-se entities mutáveis/de provider, conversões inferidas ou reflexão runtime |
+| Compiler/IR semântico compartilhado de modelagem | `dartitect_modeling_analyzer` | `package:dartitect_modeling_analyzer/dartitect_modeling_analyzer.dart` | Tooling Dart VM | `$dartitect-modeling`; `$dartitect-tooling` | Algum runtime da aplicação dependeria de Analyzer, formatter, CLI ou geração |
 | Sync de DAG de datasets, checkpoints, leases, progresso, protocolo headless | `dartitect_sync` | `package:dartitect_sync/dartitect_sync.dart` | Dart, Flutter, web | `$dartitect-offline-first`; `$dartitect-testing` | Espera-se scheduler, política de retry, fila durável, cliente de provider ou engine de conflitos |
 | ViewModels e commands Flutter básicos | `dartitect_flutter` | `package:dartitect_flutter/dartitect_flutter.dart` | Flutter | `$dartitect-runtime` | São necessários recursos hot/warm/cold avançados ou páginas local-first |
 | Grafo reativo, resources, families, collections, builders headless | `dartitect_flutter` | `package:dartitect_flutter/dartitect_flutter_reactive.dart` | Flutter | `$dartitect-reactive` | Composição básica com `ChangeNotifier`/command é suficiente |
@@ -62,6 +65,9 @@ não transfere ownership: cada skill responde apenas por seu limite nomeado.
 
 - Serviço Dart puro: `dartitect`; adicione `dartitect_observability` somente para
   um contrato concreto e `dartitect_testing` como dependência de desenvolvimento.
+- Boundary modelado imutável: adicione `dartitect_modeling` no runtime e mantenha
+  `dartitect_cli`/`dartitect_modeling_analyzer` apenas no tooling de
+  desenvolvimento; escolha value, JSON, projection e mapper independentemente.
 - Feature Flutter básica: `dartitect` + `dartitect_flutter` pelo entrypoint fino;
   o entrypoint reactive não é necessário.
 - Feature Flutter reativa: adicione somente o entrypoint reativo e mantenha a

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.4
+
+- Promote the modular modeling cohort without package-specific API changes.
+
 ## 1.0.0-rc.3
 
 - Upgrade the worker protocol to version 2 and correlate wire envelopes with a
