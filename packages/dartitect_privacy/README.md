@@ -1,28 +1,94 @@
-# Dartitect Privacy
-
-[Português (Brasil)](README.pt-BR.md)
+# dartitect_privacy
 
 ## Purpose
 
-`dartitect_privacy` is a removable, ATT-only iOS boundary. Construction and
-bootstrap are inert; `request()` is invoked only by an explicit consumer action.
-iOS versions without ATT and non-iOS platforms return `notSupported`.
+A removable Flutter boundary for Apple App Tracking Transparency (ATT) status
+and an explicit authorization request. Construction and status reads never
+prompt. The package is not a consent engine and makes no legal-compliance claim.
 
-This package is not a consent engine and makes no LGPD, GDPR, legal-basis, or
-regulatory-compliance claim.
+## When to use
 
-## Boundary contract
+Use it when an iOS Flutter application has independently decided to use ATT and
+needs a small injectable boundary that keeps prompting under a consumer-owned
+interaction.
 
-- Why a package: isolate the AppTrackingTransparency framework from foundation.
-- Owns: method-channel request coordination; no provider or global resource.
-- Borrows: the Flutter registrar/channel and consumer disclosure flow.
-- Persists: nothing.
-- Logs: nothing; authorization state and user action are never telemetry here.
-- Supports: ATT status and explicit request only.
-- Does not support: legal consent, analytics policy, SDK initialization, or
-  privacy-description generation.
-- Removal: remove plugin registration/dependency and replace the injected
-  `TrackingAuthorizationService`.
+## When not to use
 
-The app owns `NSUserTrackingUsageDescription`, disclosure copy, timing, legal
-review, and initialization of any tracking SDK.
+Do not use it for LGPD/GDPR consent, analytics policy, SDK initialization,
+privacy-manifest generation, disclosure copy, or automatic bootstrap prompts.
+
+## Platforms and entrypoints
+
+Import `package:dartitect_privacy/dartitect_privacy.dart` from Flutter code. ATT
+is available on iOS 14 and later; the plugin's iOS deployment floor is iOS 12.
+Earlier iOS versions and non-iOS hosts return `notSupported`.
+
+## Mental model and data flow
+
+The composition root injects a `TrackingAuthorizationService`. UI first presents
+consumer-owned disclosure and then, from an explicit user action, reads status
+and optionally calls `request()`. Native status returns as the closed
+`TrackingAuthorizationStatus` enum. Nothing is persisted or logged.
+
+## Minimal workflow
+
+```dart
+import 'package:dartitect_privacy/dartitect_privacy.dart';
+
+Future<void> requestAfterDisclosure() async {
+  final tracking = MethodChannelTrackingAuthorizationService();
+  if (await tracking.status() == TrackingAuthorizationStatus.notDetermined) {
+    await tracking.request();
+  }
+}
+```
+
+## Public API tour
+
+- `TrackingAuthorizationService` is the injectable status/request contract.
+- `MethodChannelTrackingAuthorizationService` is the Flutter implementation.
+- `TrackingAuthorizationStatus` preserves authorized, denied, restricted,
+  not-determined, and not-supported outcomes.
+
+## Ownership and lifecycle
+
+The service owns only request coordination and has no dispose operation. It
+borrows Flutter plugin registration and the consumer's disclosure flow. The
+application owns `NSUserTrackingUsageDescription`, request timing, UI copy,
+legal review, and every tracking/analytics SDK.
+
+## Failure, cancellation, and concurrency
+
+Concurrent prompt coordination is handled by the service/native boundary.
+Requests are platform-controlled and not cancellable after dispatch. Unsupported
+hosts return a typed status without making a channel call. An unknown future
+native status fails closed with the stable `invalid_status` error rather than
+retaining native payload.
+
+## Prohibited uses and limitations
+
+Never prompt during construction, bootstrap, a status read, or without explicit
+consumer interaction. Do not interpret ATT as general consent, initialize a
+tracking SDK here, persist authorization state, or emit status/user action as
+telemetry.
+
+## Testing
+
+Run `flutter test`. Cover inert construction, status mapping, explicit prompt
+separation, unsupported hosts, concurrent requests, unknown status, and absence
+of logging/persistence. Native integration should cover the deployment floor
+and an ATT-capable simulator/device environment.
+
+## Related packages and guides
+
+This is an optional leaf package. Pair it with consumer UI and policy; it has no
+required relationship to media or observability. Read
+[optional capabilities](../../docs/guides/optional-capabilities.md) and
+[ecosystem selection](../../docs/guides/ecosystem-selection.md).
+
+## Availability
+
+The workspace contains the `1.0.0-rc.4` source candidate. Use only coordinates
+from a matching tag with a published GitHub Release and compatible cohort. If no
+such Release exists, there is no supported consumption path. See the
+[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).

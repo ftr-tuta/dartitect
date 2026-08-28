@@ -1,43 +1,117 @@
-# Dartitect Isolates
-
-[Português (Brasil)](README.pt-BR.md)
+# dartitect_isolates
 
 ## Purpose
 
 Typed, generation-scoped isolate workers with explicit readiness, correlated
-ACKs, heartbeats, request deadlines, crash/exit handling, and safe-stop.
-
-Protocol version 2 separates the caller-facing request ID from a monotonic,
-generation-local wire correlation nonce. A public ID may be reused only after
-its request is terminal; a late envelope for the old nonce is discarded and
-cannot complete the new request. `accepted` and `result` may be awaited
-independently without creating an unobserved sibling-Future error.
+acceptance, heartbeats, per-request deadlines, crash/exit handling, and
+cooperative safe stop.
 
 ## When to use
 
-Use `IsolateWorker<P, R, F>` when a native Dart or Flutter workload needs one
-owned worker and a bounded typed protocol. The handler returns `Result<R, F>`
-for expected failures; unexpected remote crashes retain their remote stack.
+Use `IsolateWorker<P, R, F>` for a native Dart or Flutter workload that benefits
+from one long-lived owned worker and a bounded typed request protocol.
 
-## Ownership
+## When not to use
 
-The caller owns the worker supervisor. Each receiver builds its own graph. Only
-validated transferable values cross the boundary; clients, Stores, ViewModels,
-subscriptions, timers, and owners never do. Call `safeStop()` during reverse
-teardown; forced termination is only the deadline fallback.
+Do not use it as a process manager, global worker registry, serialization
+framework, infinite restart policy, or a way to pass provider resources between
+isolates. Small or rare work may be clearer inline or through an explicit
+per-task projection executor.
 
-Payloads, expected failures, and successful results are copied according to
-Dart isolate transfer rules. Validate a versioned DTO at the boundary; do not
-use this protocol as a serialization framework or hide copy cost.
+## Platforms and entrypoints
+
+Import `package:dartitect_isolates/dartitect_isolates.dart`. It supports Dart VM
+and native Flutter platforms with isolate spawning. Web is not supported.
+
+## Mental model and data flow
+
+The caller owns a supervisor. `IsolateWorker.spawn` creates one generation,
+waits for protocol readiness, and sends versioned envelopes containing
+transferable request data. The receiver executes an `IsolateRequestHandler` in
+its own isolate-local graph and returns `Result<R, F>`. Protocol version 2 keeps
+a public request ID separate from a monotonic generation-local wire nonce, so a
+late response cannot complete a later reuse of the same public ID.
+
+## Minimal workflow
+
+```dart
+import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_isolates/dartitect_isolates.dart';
+
+Future<void> main() async {
+  final worker = await IsolateWorker.spawn<int, int, StateError>(
+    handler: _double,
+  );
+  try {
+    final result = await worker.execute(21, requestId: 'double-21');
+    assert(result == const Ok<int>(42));
+  } finally {
+    await worker.safeStop();
+  }
+}
+
+Future<Result<int, StateError>> _double(
+  int value,
+  CancellationSignal cancellation,
+) async {
+  cancellation.throwIfCancelled();
+  return Ok<int>(value * 2);
+}
+```
+
+## Public API tour
+
+- `IsolateWorker.spawn`, `send`, `execute`, and `safeStop` own the worker
+  lifecycle and request flow.
+- `IsolateRequestReceipt` exposes acceptance and result futures independently.
+- `IsolateRequestHandler` is the receiver callback contract.
+- `IsolateWorkerException`, readiness, heartbeat, deadline, unexpected-exit,
+  and `RemoteIsolateCrash` types distinguish terminal failures.
+- `currentIsolateWorkerProtocolVersion` identifies the wire contract.
+
+## Ownership and lifecycle
+
+The caller owns the worker and calls `safeStop()` during reverse teardown. The
+receiver builds and disposes its own clients, databases, subscriptions, and
+other resources. Only versioned transferable DTOs and expected failure/result
+values cross the port boundary. Forced termination is a deadline fallback after
+cooperative stop has been requested.
+
+## Failure, cancellation, and concurrency
+
+Expected handler failures use `Err<F>`. Unexpected remote exceptions become
+`RemoteIsolateCrash` with the remote stack; readiness, heartbeat, deadline, and
+unexpected exits remain distinct failures. Acceptance and result can be awaited
+separately without an unobserved sibling-future error.
+
+Cancellation is cooperative. A timed-out request becomes terminal locally and
+late envelopes for its old nonce are discarded. Public request IDs cannot be
+reused while active. Requests share the owned worker, while nonce correlation
+prevents cross-request publication.
+
+## Prohibited uses and limitations
+
+Never transfer clients, Stores, databases, owners, ViewModels, subscriptions, or
+closures that capture live resources. Validate protocol version and DTO shape
+before provider work. Dart isolate copying and transfer costs still apply.
+There is no web contract or automatic restart loop.
 
 ## Testing
 
-Use the real-isolate contract harness in `dartitect_testing` to exercise ACK,
-result/failure, deadline, crash, and zero residual requests. Run `dart test` for
-the package protocol suite.
+Run `dart test`. Use the real-isolate harness in `dartitect_testing` to cover
+readiness, acceptance, success, expected failure, crash, heartbeat, deadline,
+late envelopes, reused public IDs, safe stop, and zero residual requests.
 
-## Limitations
+## Related packages and guides
 
-This package is not a scheduler, process manager, global worker registry,
-serialization framework, or infinite restart policy. Web is not declared until
-an equivalent tested contract exists.
+Use the core `IsolateProjectionExecutor` for explicit per-task projection and
+`dartitect_sync` for versioned headless sync commands. Read
+[composition/lifecycle/isolates](../../docs/guides/composition-lifecycle-isolates.md)
+and [offline-first recipes](../../docs/guides/implementation-recipes.md).
+
+## Availability
+
+The workspace contains the `1.0.0-rc.4` source candidate. Use only coordinates
+from a corresponding tagged GitHub Release; if none exists, there is no
+supported consumption path. See the
+[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).

@@ -14,3 +14,9 @@ headless requests, protocol rejection, fresh graph per accepted request, and
 shutdown drain. Add one real generated storage fixture for fencing-capable
 dataset/checkpoint transactions without moving consumer schema or conflict
 policy into the adapter.
+
+Test durable mutation/outbox separately: atomic domain-plus-enqueue commit and
+rollback, same-key order, bounded cross-key concurrency, stable idempotency keys,
+at-least-once duplicates, acknowledgement persistence failure, bounded retry,
+conflict and uncertainty, explicit compensation, crash-lane recovery, and
+session recovery that does not auto-deliver uncertain records.

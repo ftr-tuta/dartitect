@@ -1,27 +1,27 @@
 # Selecting the Dartitect ecosystem
 
-[Português (Brasil)](ecosystem-selection.pt-BR.md)
-
 ## Start with the boundary
 
 Select packages from the behavior the application actually needs. `dartitect`
-is the core for typed failures, concurrency, ownership, and offline mutation
-contracts. Every other package is optional. Provider SDKs, entities/schemas,
+is the core for typed failures, concurrency, and ownership. Durable mutation
+and synchronization contracts live in `dartitect_sync`. Every other package is
+optional. Provider SDKs, entities/schemas,
 credentials, and vendor configuration remain consumer-owned; opt-in immutable
 model boilerplate may be generated into consumer-owned committed parts.
 
 For a new application or feature, use `$dartitect-design`. An existing codebase
-may use `$dartitect-audit` for read-only conformance evidence. It is not a path
-to migrate or coexist with another DI/application-state runtime.
+may use `$dartitect-audit` for read-only conformance evidence, then adopt one
+explicit feature boundary incrementally. Another DI/application-state runtime
+may remain outside that boundary but cannot become a second owner inside it.
 
 ## Capability matrix
 
 | Capability | Package(s) | Public entrypoint(s) | Platforms | Focused skill | Do not choose it when |
 | --- | --- | --- | --- | --- | --- |
-| Results, ownership, command lanes, mutation contracts | `dartitect` | `package:dartitect/dartitect.dart` | Dart, Flutter, web | `$dartitect-runtime`; `$dartitect-offline-first` for mutations | A service locator, state manager, logger, ORM, or HTTP client is expected |
+| Results, ownership, cancellation, command lanes | `dartitect` | `package:dartitect/dartitect.dart` | Dart, Flutter, web | `$dartitect-runtime` | A service locator, state manager, logger, ORM, or HTTP client is expected |
 | Immutable values, JSON codecs, projections/lenses, boundary mappers | `dartitect_modeling` | `package:dartitect_modeling/dartitect_modeling.dart` | Dart, Flutter, web | `$dartitect-modeling` | Mutable/provider entities, inferred conversions, or runtime reflection are expected |
 | Shared semantic modeling compiler/IR | `dartitect_modeling_analyzer` | `package:dartitect_modeling_analyzer/dartitect_modeling_analyzer.dart` | Dart VM tooling | `$dartitect-modeling`; `$dartitect-tooling` | Any application runtime would depend on Analyzer, formatter, CLI, or generation |
-| Dataset DAG sync, checkpoints, leases, progress, headless protocol | `dartitect_sync` | `package:dartitect_sync/dartitect_sync.dart` | Dart, Flutter, web | `$dartitect-offline-first`; `$dartitect-testing` | A scheduler, retry policy, durable queue, provider client, or conflict engine is expected |
+| Durable mutation/outbox, dataset DAG sync, checkpoints, journals, leases, progress, headless protocol | `dartitect_sync` | `package:dartitect_sync/dartitect_sync.dart` | Dart, Flutter, web | `$dartitect-offline-first`; `$dartitect-testing` | A scheduler, provider client, schema, or consumer conflict/retry policy is expected |
 | Basic Flutter ViewModels and commands | `dartitect_flutter` | `package:dartitect_flutter/dartitect_flutter.dart` | Flutter | `$dartitect-runtime` | Advanced hot/warm/cold resources or local-first pages are required |
 | Reactive graph, resources, families, collections, headless builders | `dartitect_flutter` | `package:dartitect_flutter/dartitect_flutter_reactive.dart` | Flutter | `$dartitect-reactive` | Basic `ChangeNotifier`/command composition is sufficient |
 | Logs, reporting, tracing, redaction | `dartitect_observability` | `package:dartitect_observability/dartitect_observability.dart` | Dart, Flutter, web | `$dartitect-observability` | A remote destination has not been explicitly selected; local developer logging already suffices |

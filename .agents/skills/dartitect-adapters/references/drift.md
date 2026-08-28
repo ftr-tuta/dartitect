@@ -14,6 +14,9 @@ for multi-context durability.
 
 Use `DriftDatabaseOwner.create` only when the composition root owns the
 database; use `.value` for borrowed databases. Keep domain and outbox writes in
-one `DriftMutationTransaction`. Pass fencing tokens unchanged to consumer-owned
-checkpoint callbacks. Adapt `Selectable.watch()` with `StreamReactiveSource`.
-Dispose observations, sync, and repositories before the database.
+one `DriftMutationTransaction`: `Ok` commits, typed `Err` rolls back and returns
+unchanged, and unexpected exceptions roll back with their original stack. Pass
+fencing tokens unchanged to consumer-owned checkpoint callbacks, and keep
+journal schema/query reconstruction consumer-owned. Adapt `Selectable.watch()`
+with `StreamReactiveSource`. Dispose observations, sync, and repositories before
+the database. Never claim a transaction across Drift and another engine.

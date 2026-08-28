@@ -33,7 +33,7 @@ body:
           required: true
         - label: Minimal/redacted telemetry and explicit ownership
           required: true
-        - label: English/pt-BR docs, example, dependency rationale, and license review
+        - label: English docs, example, dependency rationale, and license review
           required: true
         - label: API snapshot, package catalog, and skills updates
           required: true

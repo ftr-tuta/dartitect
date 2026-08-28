@@ -37,7 +37,6 @@ void _auditHostedGatePolicy(Directory root, List<String> errors) {
       'tool/stable_candidate_contract.json',
       'tool/goal_gates.json',
       'README.md',
-      'README.pt-BR.md',
       'docs/implementation-status.adoc',
       'docs/release/1.0-readiness.adoc',
       'docs/release/native-device-evidence.adoc',

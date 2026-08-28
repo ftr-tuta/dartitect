@@ -314,7 +314,7 @@ unkeyed policies and their keyed forms. Every outcome is cancelled, repeated
 dispose is idempotent, and running/queued/key counts end at zero.
 
 |Public contract
-|The package changelog, EN/pt-BR package READMEs, lifecycle/command guides, and
+|The package changelog, English package READMEs, lifecycle/command guides, and
 ADR 0019 document post-publication authority and callback reentrancy. The API
 snapshot now contains the typed exception across 18 public entrypoints.
 
@@ -381,7 +381,7 @@ consumer failure, FIFO/overflow, and active callback drain.
 
 |Contracts
 |ADRs 0030 and 0031 define wire nonce/versioning/transfer cost and post-frame
-Flutter delivery respectively. EN/pt-BR/AsciiDoc guides and package changelogs
+Flutter delivery respectively. English Markdown/AsciiDoc guides and package changelogs
 document the compatibility and ownership impact.
 
 |Gates
@@ -416,7 +416,7 @@ is reported as incomplete/not-attempted rather than successful or cancelled.
 
 |Compatibility and contracts
 |Persisted journal format v1 and mutation/outbox behavior remain compatible.
-ADR 0032, ADRs 0022/0023, the sync threat models, EN/pt-BR package and recipe
+ADR 0032, ADRs 0022/0023, the sync threat models, English package and recipe
 docs, and managed offline/testing skills define authority and terminal receipt
 semantics.
 
@@ -627,8 +627,8 @@ inside generated application source.
 |API, docs, licenses, and security
 |All eighteen public entrypoints match the reviewed snapshot. Dartdoc passed
 all seventeen packages without warnings/errors. The SBOM/license inventory covers
-111 packages with zero `NOASSERTION`; public-doc parity covers eighteen
-translated guides; CI/Security policy pins reviewed external Actions and keeps
+111 packages with zero `NOASSERTION`; public-doc coverage includes eighteen
+English guides; CI/Security policy pins reviewed external Actions and keeps
 formal remote receipts fail-closed.
 
 |Exact-candidate evidence boundary

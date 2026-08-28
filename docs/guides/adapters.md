@@ -1,7 +1,5 @@
 # Adapters
 
-[Português (Brasil)](adapters.pt-BR.md)
-
 ## Composition
 
 Create adapters in the app/session/isolate composition root. Infrastructure

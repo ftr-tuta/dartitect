@@ -104,7 +104,7 @@ The diagnostics topology harness is experimental with the protocol surface.
 
 == Editorial and compatibility checks
 
-All publishable packages retain English and Portuguese READMEs, changelogs,
+All publishable packages retain English READMEs, changelogs,
 licenses, examples, repository metadata, and lockstep versions checked by
 `tool/check_public_docs.dart`. API declarations, generated MCP catalog, and
 documentation examples are checked in the release audit. The compatibility

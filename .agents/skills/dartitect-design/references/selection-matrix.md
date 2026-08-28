@@ -7,7 +7,7 @@
 - Basic Flutter ViewModels and commands: add `dartitect_flutter` and keep the
   established `dartitect_flutter.dart` entrypoint.
 - Hot/warm/cold resources, causal refresh, families, collections, selectors, or
-  advanced builders: use the opt-in reactive/material entrypoints and
+  advanced builders: use the opt-in reactive entrypoint and
   `$dartitect-reactive`.
 - Local-authority paging or durable mutations/outbox: combine the reactive
   runtime with `$dartitect-offline-first`; add a storage adapter only after the

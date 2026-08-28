@@ -1,7 +1,9 @@
 # Opting into the reactive runtime
 
-This is a greenfield feature-selection guide, not a migration or coexistence
-workflow for another application-state runtime.
+This guide describes a Dartitect-owned feature graph. Existing applications may
+adopt that graph incrementally beside another application-state runtime only
+when the integration boundary is explicit and the two runtimes never own or
+publish the same feature state.
 
 The `package:dartitect_flutter/dartitect_flutter.dart` entrypoint is the stable
 thin surface for `ViewModelHost`, `Command0`/`Command1`, `ListenableSelector`,

@@ -1,7 +1,5 @@
 # Contributing to Dartitect
 
-[Português (Brasil)](CONTRIBUTING.pt-BR.md)
-
 ## Before opening a change
 
 Search existing issues, keep scope narrow, and state the ownership/composition
@@ -45,7 +43,7 @@ branch focused, and fix a failed `CI / Required` result on that same branch.
 - Preserve native-first constructor injection and explicit owned/borrowed state.
 - Add tests through public entrypoints and real provider boundaries where needed.
 - Document every supported public member and update the API snapshot.
-- Keep English canonical docs and the corresponding pt-BR structure in sync.
+- Keep public English documentation and generated catalogs current.
 - Update dependency/source ledgers, licenses, SBOM, skills, and release gates when
   the change affects them.
 - When adding or changing a Flutter plugin, regenerate and commit every affected
@@ -59,7 +57,7 @@ branch focused, and fix a failed `CI / Required` result on that same branch.
 - [ ] Real SDK boundary test and deterministic no-network tests where relevant.
 - [ ] Explicit owned/borrowed lifetime and reverse disposal order.
 - [ ] Minimal/redacted telemetry with no credentials, bodies, headers, or identity.
-- [ ] English and pt-BR README, example, Dartdoc, changelog, license, topics.
+- [ ] English README, example, Dartdoc, changelog, license, and topics.
 - [ ] Dependency/version rationale, license review, and advisory check.
 - [ ] Public API snapshot, package catalog, and skills coverage updated.
 

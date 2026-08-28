@@ -1,7 +1,5 @@
 # Dartitect implementation recipes
 
-[Português (Brasil)](implementation-recipes.pt-BR.md)
-
 ## Before copying a recipe
 
 These recipes are composition sketches derived from the repository's tested

@@ -7,8 +7,9 @@ description: Implement Dartitect local-authority pagination, mutations, durable 
 
 ## When to use
 
-Use this skill when the local store is authoritative for presentation and remote
-pages, mutations, or dataset sync must cross an explicit durable boundary.
+Use this skill when the local store is authoritative for presentation and a
+page, durable mutation/outbox, dataset DAG, or headless sync command crosses an
+explicit durable or process boundary.
 
 ## When not to use
 
@@ -26,10 +27,13 @@ synced. Never auto-rollback queued or uncertain changes.
 
 ## Workflow
 
-Define local snapshot and revision contracts, implement page writes or
-`applyLocalAndEnqueue`, map expected delivery failures, choose retry/conflict/
-compensation policy, and specify new-session recovery. Add provider integration
-only at the infrastructure composition root.
+First select the mechanism: local-authority paging, durable mutation/outbox,
+dataset DAG synchronization, or headless synchronization. Do not use an outbox
+as a checkpoint, a run journal as domain data, or a headless receipt as proof
+of exactly-once remote work. Then define local snapshot/revision or durable
+record contracts, map expected failures, choose retry/conflict/compensation
+ownership, and specify recovery. Add provider integration only at the
+infrastructure composition root.
 
 Read [references/local-first-pagination.md](references/local-first-pagination.md)
 for pages, [references/mutations-and-outbox.md](references/mutations-and-outbox.md)

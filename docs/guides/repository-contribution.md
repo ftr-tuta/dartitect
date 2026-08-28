@@ -1,7 +1,5 @@
 # Repository contribution workflow
 
-[Português (Brasil)](repository-contribution.pt-BR.md)
-
 ## Scope and invariants
 
 Every normal tracked change reaches `main` through a pull request. Do not push

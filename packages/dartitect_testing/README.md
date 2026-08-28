@@ -1,81 +1,120 @@
 # dartitect_testing
 
-[Português (Brasil)](README.pt-BR.md)
-
 ## Purpose
 
-Framework-neutral probes, manual time, lifecycle helpers, stream waits,
-recording telemetry, and repository contract harnesses. It exports no
-`package:test` type.
+Framework-neutral deterministic clocks, identifiers, schedulers, lifecycle
+probes, recording telemetry, stream helpers, and contract harnesses for
+Dartitect runtimes. It exports no `package:test` API.
 
-## When to use it
+## When to use
 
-Use it in consumer tests that need deterministic Dartitect boundary behavior.
-It does not prescribe a test runner or mock framework.
+Add it as a development dependency when a consumer test needs deterministic
+ownership, cancellation, commands, effects, reactive topology, repositories,
+model mapping, synchronization, isolates, or observability evidence.
 
-## When not to use it
+## When not to use
 
-Do not replace a real generated/provider fixture when SDK compatibility,
-codegen, transactions, or native lifecycle are the behavior under test. It does
-not define production contracts.
+Do not use test helpers as production contracts or replace a real generated/
+native provider fixture when SDK compatibility, code generation, transactions,
+locking, or teardown are the behavior under test.
 
-## Recommended combinations
+## Platforms and entrypoints
 
-Combine with whichever runtime, reactive, offline-first, observability, adapter,
-or tooling boundary the test verifies. Use deterministic fakes for policy and a
-real fixture for integration. See the
-[ecosystem selection guide](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/ecosystem-selection.md)
-and [implementation recipes](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/implementation-recipes.md).
+Import `package:dartitect_testing/dartitect_testing.dart` from tests. The helpers
+are pure Dart and support Dart VM, Flutter, and web subject to the platform of
+the production contract under test.
 
-## Install
+## Mental model and data flow
 
-This candidate is not published on pub.dev. Declare
-`dartitect_testing: 1.0.0-rc.4` under `dev_dependencies` and use the
-[Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md)
-to generate the complete override closure.
+Tests own every fake and harness. Manual time/IDs remove ambient nondeterminism;
+recording observers make sanitized events inspectable; contract harnesses accept
+consumer implementations and return immutable evidence. Provider-neutral policy
+uses deterministic helpers, while provider integration uses an appropriate real
+or provider-approved fixture.
 
-## Minimal example
+## Minimal workflow
 
 ```dart
-final order = <String>[];
-final probe = DisposalProbe(label: 'database', order: order);
-await probe.disposeAsync();
-assert(order.single == 'database:disposeAsync');
+import 'package:dartitect_testing/dartitect_testing.dart';
+
+Future<void> main() async {
+  final order = <String>[];
+  final probe = DisposalProbe(label: 'database', order: order);
+  await probe.disposeAsync();
+  assert(order.single == 'database:disposeAsync');
+}
 ```
 
 ## Public API tour
 
-- `DisposalProbe` and `LifecycleHarness` expose order and cleanup failures.
-- `ManualClock` and `DeterministicTraceIdGenerator` remove time/ID randomness.
-- recording sinks/reporters/tracers/spans expose telemetry assertions.
-- `RepositoryContractHarness` runs reusable repository contract cases.
-- `ProjectionContractHarness` records deterministic generated-selector evidence.
-- `MapperContractHarness` records forward results and bidirectional round trips.
-- `collectStreamEvents` and `waitForStreamEvent` bound async stream tests.
-- `DiagnosticsTopologyHarness` reconstructs protocol-v1 topology, generation,
-  revision, and terminal lifecycle using only opaque payload-free events.
+- `DisposalProbe`, `LifecycleHarness`, `OwnedGraphHarness`,
+  `OwnedScopeHarness`, `ResourceCensus`, and census leases verify ownership,
+  scope, order, and residual resources.
+- `ManualClock`, `ManualScheduler`, `DeterministicIdGenerator`,
+  `SequenceSyncIdGenerator`, and `DeterministicTraceIdGenerator` remove time/ID
+  randomness.
+- `CommandContractHarness` and `EffectContractHarness` exercise terminal command
+  and bounded effect contracts.
+- `RepositoryContractHarness` runs consumer-supplied repository cases.
+- `ProjectionContractHarness` and `MapperContractHarness` record selector,
+  expected-failure, and bidirectional round-trip evidence.
+- `SyncContractHarness`, `CheckpointCrashHarness`, in-memory checkpoint/journal
+  stores, and `ManualSyncLeaseStore` cover sync durability and fencing behavior.
+- `IsolateWorkerContractHarness` exercises a real isolate protocol.
+- `RecordingLogSink`, `RecordingErrorReporter`, `RecordingTracer`, and
+  `RecordingSpan` expose observability assertions.
+- `DiagnosticsTopologyHarness` reconstructs protocol-v1 lifecycle using only
+  opaque payload-free events.
+- `collectStreamEvents`, `waitForStreamEvent`, `TestingMatrix`, and
+  `TestingMatrixAuditor` provide bounded async and coverage utilities.
 
-## Ownership
+## Ownership and lifecycle
 
-Fakes are created and disposed by each test. Share explicit logs/clocks only
-within a test scope; do not turn helpers into global application state.
+Each test creates and disposes its own helpers, subscriptions, workers, and
+fixtures. Share a manual clock/log only within an explicit test scope. Contract
+harnesses borrow the implementation being tested unless their API documents
+otherwise. Never turn a fake into global application state.
 
-## Limitations
+## Failure, cancellation, and concurrency
 
-Real provider boundaries still need real or provider-approved fixtures. Use a
-generated ObjectBox model, mock Dio adapter, and fake Sentry Hub with no network.
+Harness results keep expected failure, unexpected crash, cancellation,
+admission, cleanup, and residual-resource evidence distinct. Manual scheduling
+advances only when the test asks; stream waits are bounded and must be awaited.
+Real isolate and synchronization harnesses still require explicit disposal.
 
-## Extending
+A deterministic fake proves policy, not provider thread/process behavior. Use
+real fixtures for concurrency, transactions, codegen, locking, and native
+resource cleanup.
 
-Add consumer-owned fakes next to the contract they implement. Keep this package
-free of a test-runner API.
+## Prohibited uses and limitations
+
+- No test runner, matcher library, mocking framework, or production dependency.
+- No mock-only claim for generated/native provider compatibility.
+- No real network, credentials, DSNs, or remote telemetry in deterministic
+  tests.
+- No cross-test globals or unbounded waits.
+- No substitution of an in-memory transaction for a durability claim.
 
 ## Testing
 
-Run `dart test`; cover expected/unexpected failure, cancellation, retry,
-disposal order, overflow, isolation, and zero residual resources.
+Run `dart test` for this package. Its own suite covers deterministic time/IDs,
+harness expected/unexpected paths, cancellation, disposal order, overflow,
+isolation, topology, and zero residual resources. Consumers should add real
+generated Drift/ObjectBox fixtures, a deterministic Dio adapter, and a fake
+Sentry Hub as appropriate.
 
-## Links
+## Related packages and guides
 
-See [testing guidance](https://github.com/ftr-tuta/dartitect/blob/main/.agents/skills/dartitect-testing/references/test-matrix.md),
-[custom integrations](https://github.com/ftr-tuta/dartitect/blob/main/docs/guides/custom-integrations.md), and the [issue tracker](https://github.com/ftr-tuta/dartitect/issues).
+Use the harness matching the production package; keep provider fixtures next to
+the provider integration. Read
+[implementation recipes](../../docs/guides/implementation-recipes.md),
+[custom integrations](../../docs/guides/custom-integrations.md), and
+[composition/lifecycle/isolates](../../docs/guides/composition-lifecycle-isolates.md).
+
+## Availability
+
+The workspace contains the `1.0.0-rc.4` source candidate. Add it only from a
+matching tagged GitHub Release and compatible cohort coordinates in that
+Release's notes. If no compatible Release exists, there is no supported
+consumption path. See the
+[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).

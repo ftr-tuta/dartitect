@@ -61,8 +61,8 @@ or provider boundary when the required Dartitect packages are not yet clear.
 
 Use `$dartitect-audit` to inspect an existing codebase without changing it.
 Route detailed runtime, reactive, offline-first, telemetry, adapter, testing,
-CLI, or MCP work to the matching focused skill after the greenfield stack is
-selected.
+CLI, or MCP work to the matching focused skill after suitability and the stack
+are decided.
 
 ## Invariants
 
@@ -75,15 +75,19 @@ remote telemetry without a stated requirement.
 
 ## Workflow
 
-1. Classify the target as pure Dart, basic Flutter, reactive UI, offline-first,
-   provider integration, or development tooling.
-2. Identify platforms, authoritative data source, failure model, lifecycle
+1. Decide whether Dartitect's constructor-injection, single-owner, typed-failure,
+   local-authority, and sanitized-telemetry principles fit the target. If they
+   do not, recommend not adopting Dartitect.
+2. Classify the target as pure Dart, basic Flutter, reactive UI, durable
+   mutation/outbox, dataset sync, headless sync, provider integration, or
+   development tooling.
+3. Identify platforms, authoritative data source, failure model, lifecycle
    owner, isolate boundaries, and telemetry policy.
-3. Select only the packages and focused skills needed for those boundaries.
-4. For an existing project, define one consumer-owned adoption boundary and
+4. Select only the packages and focused skills needed for those boundaries.
+5. For an existing project, define one consumer-owned adoption boundary and
    reject provider leakage, service location, duplicate ownership, or concrete
    runtime boundaries within it.
-5. Record explicit exclusions so optional packages do not become defaults.
+6. Record explicit exclusions so optional packages do not become defaults.
 
 Read [references/selection-matrix.md](references/selection-matrix.md) when
 choosing packages or routing the implementation.
@@ -103,7 +107,7 @@ break a stated requirement.
 - Basic Flutter ViewModels and commands: add `dartitect_flutter` and keep the
   established `dartitect_flutter.dart` entrypoint.
 - Hot/warm/cold resources, causal refresh, families, collections, selectors, or
-  advanced builders: use the opt-in reactive/material entrypoints and
+  advanced builders: use the opt-in reactive entrypoint and
   `$dartitect-reactive`.
 - Local-authority paging or durable mutations/outbox: combine the reactive
   runtime with `$dartitect-offline-first`; add a storage adapter only after the
@@ -456,8 +460,9 @@ description: Implement Dartitect local-authority pagination, mutations, durable 
 
 ## When to use
 
-Use this skill when the local store is authoritative for presentation and remote
-pages, mutations, or dataset sync must cross an explicit durable boundary.
+Use this skill when the local store is authoritative for presentation and a
+page, durable mutation/outbox, dataset DAG, or headless sync command crosses an
+explicit durable or process boundary.
 
 ## When not to use
 
@@ -475,10 +480,13 @@ synced. Never auto-rollback queued or uncertain changes.
 
 ## Workflow
 
-Define local snapshot and revision contracts, implement page writes or
-`applyLocalAndEnqueue`, map expected delivery failures, choose retry/conflict/
-compensation policy, and specify new-session recovery. Add provider integration
-only at the infrastructure composition root.
+First select the mechanism: local-authority paging, durable mutation/outbox,
+dataset DAG synchronization, or headless synchronization. Do not use an outbox
+as a checkpoint, a run journal as domain data, or a headless receipt as proof
+of exactly-once remote work. Then define local snapshot/revision or durable
+record contracts, map expected failures, choose retry/conflict/compensation
+ownership, and specify recovery. Add provider integration only at the
+infrastructure composition root.
 
 Read [references/local-first-pagination.md](references/local-first-pagination.md)
 for pages, [references/mutations-and-outbox.md](references/mutations-and-outbox.md)
@@ -525,9 +533,13 @@ and drains pending records only; uncertain records require human/domain policy.
 ''',
       'references/sync-execution.md': r'''# Sync execution
 
-Use `dartitect_sync` only when a feature needs an explicit dataset DAG,
-checkpoints, leases/fencing, progress, deadlines, or headless acknowledgements.
-The repository operation commits remote results into the authoritative local
+Dataset DAG synchronization and headless synchronization are separate flows.
+Use `SyncEngine` for a validated dataset DAG, checkpoints, journals, leases/
+fencing, progress, and deadlines. Use `HeadlessSyncEndpoint` for a versioned
+transferable command, bounded duplicate retention, separate acceptance and
+terminal acknowledgements, and a fresh graph per admitted request.
+
+For a dataset run, the repository operation commits remote results into the authoritative local
 transaction before returning a confirmed checkpoint. A failed dependency blocks
 only downstream datasets; independent branches continue.
 
@@ -539,7 +551,7 @@ token, explicitly declare dataset fencing unsupported. Inspect application,
 checkpoint, journal, lease-release, and cleanup receipts before retrying a
 `SyncRunTerminalException`.
 
-Validate headless payloads before graph creation, create a fresh `OwnedGraph`
+For headless work, validate payloads before graph creation, create a fresh `OwnedGraph`
 per accepted request, deduplicate request IDs, and transfer data rather than
 provider objects. Retry, scheduling, authentication, conflicts, schemas, and
 durable cross-process deduplication remain consumer policy. Expected failure
@@ -726,11 +738,21 @@ The consumer owns entities, annotations, model JSON, generated Dart code, and
 Store configuration. Never edit generated files or treat the adapter as an ORM
 abstraction. ObjectBox has no web support.
 
-Create Store/query/watcher resources per native composition root. Close watchers
-and queries before the Store. Across isolates, pass supported configuration or
-provider references and create isolate-local queries; never send a live Store.
-Use the real generated Store/query/watcher fixture, cover same-path locking and
-cleanup, and run the supported native-host matrix.
+Use `ObjectBoxStoreOwner.create` for an owned Store and `.value` for a borrowed
+one. `ObjectBoxQuerySource` owns one query watcher and its queries per hot
+activation; `ObjectBoxStoreWatchSource` owns typed Store-watch subscriptions
+and delegates the authoritative pull. Versioned projections borrow the Store
+and collection. `ObjectBoxProjectionExecutor` uses `Store.runAsync`; dispose it
+before the original Store.
+
+Keep domain and outbox writes in one synchronous
+`ObjectBoxMutationTransaction`. Checkpoint and journal adapters borrow the Store
+and delegate entities, codecs, and fencing comparison to consumer callbacks.
+Across isolates, send `objectBoxStoreReference` bytes, attach an isolate-local
+Store with the generated model, and close it in `finally`; never send a live
+Store. Close resource sessions, watchers, queries, projection executors, and
+observation owners before the Store. Use a real generated fixture for locking,
+transaction, async projection, isolate attachment, and teardown evidence.
 ''',
       'references/drift.md': r'''# Drift adapter
 
@@ -748,9 +770,12 @@ for multi-context durability.
 
 Use `DriftDatabaseOwner.create` only when the composition root owns the
 database; use `.value` for borrowed databases. Keep domain and outbox writes in
-one `DriftMutationTransaction`. Pass fencing tokens unchanged to consumer-owned
-checkpoint callbacks. Adapt `Selectable.watch()` with `StreamReactiveSource`.
-Dispose observations, sync, and repositories before the database.
+one `DriftMutationTransaction`: `Ok` commits, typed `Err` rolls back and returns
+unchanged, and unexpected exceptions roll back with their original stack. Pass
+fencing tokens unchanged to consumer-owned checkpoint callbacks, and keep
+journal schema/query reconstruction consumer-owned. Adapt `Selectable.watch()`
+with `StreamReactiveSource`. Dispose observations, sync, and repositories before
+the database. Never claim a transaction across Drift and another engine.
 ''',
       'references/coexistence.md': r'''# Drift and ObjectBox coexistence
 
@@ -879,6 +904,12 @@ headless requests, protocol rejection, fresh graph per accepted request, and
 shutdown drain. Add one real generated storage fixture for fencing-capable
 dataset/checkpoint transactions without moving consumer schema or conflict
 policy into the adapter.
+
+Test durable mutation/outbox separately: atomic domain-plus-enqueue commit and
+rollback, same-key order, bounded cross-key concurrency, stable idempotency keys,
+at-least-once duplicates, acknowledgement persistence failure, bounded retry,
+conflict and uncertainty, explicit compensation, crash-lane recovery, and
+session recovery that does not auto-deliver uncertain records.
 ''',
       'references/provider-fixtures.md': r'''# Provider fixtures
 

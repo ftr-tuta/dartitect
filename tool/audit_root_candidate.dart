@@ -128,12 +128,9 @@ Future<void> main() async {
 
 bool _isNarrative(String path) =>
     path == 'README.md' ||
-    path == 'README.pt-BR.md' ||
     path.startsWith('docs/') ||
     (path.startsWith('packages/') &&
-        (path.endsWith('/README.md') ||
-            path.endsWith('/README.pt-BR.md') ||
-            path.endsWith('/CHANGELOG.md')));
+        (path.endsWith('/README.md') || path.endsWith('/CHANGELOG.md')));
 
 List<String> _lines(String value) => const LineSplitter()
     .convert(value)

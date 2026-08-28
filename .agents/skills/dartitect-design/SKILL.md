@@ -14,8 +14,8 @@ or provider boundary when the required Dartitect packages are not yet clear.
 
 Use `$dartitect-audit` to inspect an existing codebase without changing it.
 Route detailed runtime, reactive, offline-first, telemetry, adapter, testing,
-CLI, or MCP work to the matching focused skill after the greenfield stack is
-selected.
+CLI, or MCP work to the matching focused skill after suitability and the stack
+are decided.
 
 ## Invariants
 
@@ -28,15 +28,19 @@ remote telemetry without a stated requirement.
 
 ## Workflow
 
-1. Classify the target as pure Dart, basic Flutter, reactive UI, offline-first,
-   provider integration, or development tooling.
-2. Identify platforms, authoritative data source, failure model, lifecycle
+1. Decide whether Dartitect's constructor-injection, single-owner, typed-failure,
+   local-authority, and sanitized-telemetry principles fit the target. If they
+   do not, recommend not adopting Dartitect.
+2. Classify the target as pure Dart, basic Flutter, reactive UI, durable
+   mutation/outbox, dataset sync, headless sync, provider integration, or
+   development tooling.
+3. Identify platforms, authoritative data source, failure model, lifecycle
    owner, isolate boundaries, and telemetry policy.
-3. Select only the packages and focused skills needed for those boundaries.
-4. For an existing project, define one consumer-owned adoption boundary and
+4. Select only the packages and focused skills needed for those boundaries.
+5. For an existing project, define one consumer-owned adoption boundary and
    reject provider leakage, service location, duplicate ownership, or concrete
    runtime boundaries within it.
-5. Record explicit exclusions so optional packages do not become defaults.
+6. Record explicit exclusions so optional packages do not become defaults.
 
 Read [references/selection-matrix.md](references/selection-matrix.md) when
 choosing packages or routing the implementation.

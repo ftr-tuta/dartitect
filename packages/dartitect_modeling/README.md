@@ -1,60 +1,127 @@
 # dartitect_modeling
 
-[Português (Brasil)](README.pt-BR.md)
-
 ## Purpose
 
-Pure-Dart, web-compatible immutable modeling primitives for Dartitect. Import
-this package to opt into values, JSON codecs, projections, or boundary mappers.
-Each capability requires its own annotation; provider schemas and runtime
-application architecture remain consumer-owned.
+Pure-Dart, web-compatible immutable modeling primitives: value annotations,
+copied immutable collections, bounded JSON codecs, projections/lenses, and
+lossless boundary mappers. Capabilities are opt-in and do not select a provider
+schema or runtime architecture.
 
-## Immutable collections
+## When to use
 
-`ImmutableValueList`, `ImmutableValueSet`, and `ImmutableValueMap` copy their
-source container, expose read operations without implementing a mutable
-collection interface, and use structural equality and hashing. Cyclic nested
-collection graphs are rejected during construction.
+Use it when a model boundary needs explicit value semantics, defensive immutable
+collections, bounded untrusted JSON, generated projections, or a typed
+lossless mapper whose behavior is reviewable.
 
-## JSON boundaries
+## When not to use
 
-`DartitectJsonCodec<T>` returns `Result` and `DartitectJsonFailure`; failures
-contain a typed kind and key/index path, never the rejected value. Explicit
-scalar codecs and immutable-collection combinators are available through
-`DartitectJsonCodecs`. Generated codecs reject unknown object keys by default.
-Integer decoding uses mathematical integrality so VM and Dart Web agree;
-double decoding widens integers only when the value is preserved.
+Do not use it to infer dates, identifiers, enums, relations, normalization,
+database entities, or lossy conversions. It is not a reflection runtime,
+serializer for arbitrary object graphs, ORM model generator, or replacement for
+consumer-owned validation.
 
-Untrusted traversal is the default and permits at most depth 64, 10,000 items
-in any collection, and 100,000 total nodes. A different boundary must pass
-`DartitectJsonLimits.custom`; disabling numeric limits requires the visibly
-explicit `DartitectJsonLimits.trusted`. Shape, finite-number, and cycle checks
-remain active in trusted mode.
+## Platforms and entrypoints
 
-The generator handles only lossless scalar, generic-codec, and immutable
-collection composition. Dates, enums, identifiers, records, narrowing, and
-other semantic conversions require a consumer-owned static decoder/encoder
-pair named by `DartitectField`.
+Import `package:dartitect_modeling/dartitect_modeling.dart`. The package is pure
+Dart and supports the Dart VM, Flutter, and web.
 
-## Projections and lenses
+## Mental model and data flow
 
-`@DartitectProjection(name: ..., fields: ...)` generates a named-record typedef,
-a pure selector, and typed field descriptors/lenses. An empty `fields` list
-selects every primary-constructor field; otherwise declaration order is the
-explicit list order. A lens reconstructs the immutable model and never exposes
-mutation or reflection. Projection support does not enable value equality,
-JSON, or mappers.
+The consumer declares each capability separately with `@DartitectValue`,
+`@DartitectJson`, `@DartitectProjection`, or `@DartitectMapper`. Source models
+and semantic conversion hooks remain consumer-owned. Code generation resolves
+types statically and produces explicit codecs, selectors, lenses, and mappers.
+Untrusted values enter through bounded codecs and leave as `Result`, never as an
+unchecked cast or payload-bearing diagnostic.
 
-## Boundary mappers
+## Minimal workflow
 
-`@DartitectMapper(Target)` generates a pure mapper returning
-`Result<Target, DartitectMappingFailure>`. Set `bidirectional: true` only when
-every reverse field is independently lossless. `DartitectField(targetName: ...)`
-is the only automatic rename metadata. Exact consumer-owned static
-`mapToWith`/`mapFromWith` hooks make semantic conversion visible and retain a
-payload-free declared-field path on expected failures.
+```dart
+import 'package:dartitect_modeling/dartitect_modeling.dart';
 
-Automatic mapping is restricted to semantically assignable, lossless scalars
-and Dartitect immutable collections. Narrowing, enum/string, dates, IDs,
-relations, flattening, and provider schemas are never inferred. Mapper targets
-and hooks remain consumer-owned.
+@DartitectValue()
+final class const Profile({
+  required final String id,
+  final String? displayName,
+}) extends ValueEquality {
+  this;
+
+  @override
+  Iterable<Object?> get equalityFields => <Object?>[id, displayName];
+}
+
+void main() {
+  assert(
+    const Profile(id: '1', displayName: 'Ada') ==
+        const Profile(id: '1', displayName: 'Ada'),
+  );
+}
+```
+
+## Public API tour
+
+- `DartitectValue`, `ValueEquality`, and `ImmutableValueList`,
+  `ImmutableValueSet`, and `ImmutableValueMap` implement explicit value
+  semantics with copied containers.
+- `DartitectJsonCodec`, `DartitectJsonCodecs`, scalar codecs, collection codecs,
+  `DartitectJsonLimits`, `DartitectUnknownKeys`, and typed path/failure objects
+  define bounded JSON boundaries.
+- `DartitectProjection`, `DartitectProjectionSelector`,
+  `DartitectFieldDescriptor`, and `DartitectLens` define generated named-record
+  projections and immutable reconstruction.
+- `DartitectMapper`, `DartitectField`, boundary mapper interfaces, hook typedefs,
+  and `DartitectMappingFailure` define explicit forward and optional reverse
+  mapping.
+- The package re-exports only the core result/value members required to use
+  these APIs.
+
+## Ownership and lifecycle
+
+Model values and immutable collections own copied data and have no disposal
+lifecycle. Generated files are manifest-owned by Dartitect tooling; application
+models and custom hooks are consumer-owned. Do not edit fully generated outputs
+by hand.
+
+## Failure, cancellation, and concurrency
+
+JSON decoding and mapping return typed `Result` failures with structural
+key/index or declared-field paths. Failures never retain rejected payloads.
+There is no cancellation or asynchronous execution in this package. Generated
+operations are pure and safe to call concurrently when consumer hooks are pure.
+
+Untrusted traversal defaults to maximum depth 64, 10,000 items per collection,
+and 100,000 total nodes. `DartitectJsonLimits.trusted` disables numeric limits
+visibly, but shape, finite-number, and cycle checks remain active.
+
+## Prohibited uses and limitations
+
+- No inferred narrowing, enum/string, date, identifier, relation, or flattening.
+- No provider schema or generated database entity ownership.
+- No mutable collection interface or cyclic nested collection graph.
+- No unknown JSON keys by default.
+- No bidirectional mapper unless every reverse field is independently lossless.
+
+Use consumer-owned static encode/decode or mapping hooks for semantic
+conversion.
+
+## Testing
+
+Run `dart test`. Test equality/hash behavior, copied collection isolation,
+unknown keys, numeric parity on VM/web, traversal limits, generated selectors
+and lenses, expected mapping paths, and bidirectional round trips where enabled.
+Use the projection and mapper harnesses from `dartitect_testing`.
+
+## Related packages and guides
+
+`dartitect_modeling_analyzer` exposes the read-only semantic compiler used by
+tooling. `dartitect_cli` performs generation and migration; `dartitect_lints`
+provides analyzer feedback. Read
+[model generation](../../docs/guides/model-generation.md) and
+[ecosystem selection](../../docs/guides/ecosystem-selection.md).
+
+## Availability
+
+The workspace contains the `1.0.0-rc.4` source candidate. Use only coordinates
+published in the notes of a corresponding tagged GitHub Release; otherwise
+there is no supported consumption path. See the
+[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).

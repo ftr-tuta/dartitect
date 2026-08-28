@@ -1,7 +1,5 @@
 # Ecosystem dependency policy
 
-[Português (Brasil)](ecosystem-policy.pt-BR.md)
-
 ## Neutral global ledger
 
 `tool/ecosystem_policy.json` schema v3 is the versioned Native Strict authority. It

@@ -1,7 +1,5 @@
 # Getting started
 
-[Português (Brasil)](getting-started.pt-BR.md)
-
 ## Choose the boundary
 
 Start with `dartitect` for `Result` and ownership. Add
@@ -49,10 +47,12 @@ remove obsolete entries over time.
 ## Agent guidance
 
 `dartitect codex sync --dry-run` previews eleven managed, implicitly invocable
-skills. Greenfield work starts with `$dartitect-design`; an existing codebase
-may be inspected read-only with `$dartitect-audit`. The 1.0 line provides no
-migration or coexistence workflow. Focused implementation routes to runtime, reactive,
-offline-first, observability, adapters, testing, tooling, or MCP. The sync never
+skills. New work starts with `$dartitect-design`; an existing codebase may be
+inspected read-only with `$dartitect-audit` and then adopt one explicitly owned
+feature boundary at a time. Existing runtimes may remain outside that boundary,
+but provider leakage, service location, and duplicate ownership remain
+prohibited. Focused implementation routes to runtime, reactive, offline-first,
+observability, adapters, testing, tooling, or MCP. The sync never
 manages the repository-local `repository-contribution` skill.
 
 ## Next

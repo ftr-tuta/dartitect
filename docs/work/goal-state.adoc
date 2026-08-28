@@ -67,7 +67,7 @@ STATUS:: DONE
 GOAL:: 01 — Direction, documentation, and ecosystem policy
 BASELINE:: `eb2693fa92ccf30546568ade6133c253776d5cab`
 FINAL SHA:: Not committed; cumulative working tree
-FILES:: Public EN/pt-BR docs, ADR 0028, managed skill catalog/snapshots, ecosystem
+FILES:: Public English docs, ADR 0028, managed skill catalog/snapshots, ecosystem
 policy schema v3, CLI project service, lints policy snapshot, MCP tool/catalog,
 and focused tests
 TESTS ADDED:: Policy dimensions/listen status; conformance service; MCP
@@ -82,7 +82,7 @@ API CHANGES:: `planAdoption()` replaced by `auditConformance()`;
 `dartitect_plan_adoption` replaced by `dartitect_audit_conformance`;
 `EcosystemDecision.approvedPrimitive` and policy dimensions added
 DOC CHANGES:: Greenfield-only contract, Native Strict matrix, conformance audit,
-`package:listen` deferral, reactive guide rename, EN/pt-BR and MCP parity
+`package:listen` deferral, reactive guide rename, English-doc and MCP parity
 ADRS/DECISIONS:: ADR 0028 accepted in-tree
 REMAINING RISKS:: RC candidate API compatibility needs final Goal 10 review;
 runtime findings remain to reproduce
@@ -109,7 +109,7 @@ FINDINGS STATUS:: `DRT-P0-001 FIXED`; `DRT-P0-002 FIXED`
 API CHANGES:: Added `OwnedRuntimeReplacementCleanupException` with authoritative
 generation, cleanup error, and cleanup stack
 DOC CHANGES:: Documented no-blind-retry replacement semantics and supported
-transition-callback reentrancy in EN/pt-BR/AsciiDoc surfaces
+transition-callback reentrancy in English Markdown/AsciiDoc surfaces
 ADRS/DECISIONS:: ADR 0019 now distinguishes committed publication from old-graph
 cleanup
 REMAINING RISKS:: Other selected runtime/tooling findings remain unreproduced;
@@ -141,7 +141,7 @@ API CHANGES:: Added `ReactiveOwnerPhase`; made `ReactiveKey` namespace/revision/
 fingerprint explicit; expanded key conflicts; added `ViewModelHost.onReassemble`
 and `ViewModelReassembler`. The key constructor change is intentionally source
 breaking before 1.0 and is recorded in ADR 0029/changelog.
-DOC CHANGES:: EN/pt-BR phase, listener outcome, definition, hot reload/restart,
+DOC CHANGES:: English phase, listener outcome, definition, hot reload/restart,
 package, skill-aligned runtime, and API documentation
 ADRS/DECISIONS:: ADR 0029 rejects implicit compute writes and defines owner-local
 definition/reassembly semantics; ADR 0016 links the refinement
@@ -171,7 +171,7 @@ FINDINGS STATUS:: `DRT-P0-005 FIXED`; `DRT-P0-006 FIXED`
 API CHANGES:: Worker protocol constant advanced from 1 to 2; no new public
 effect API. Version 1 peers are intentionally incompatible and documented.
 DOC CHANGES:: Typed/versioned isolate DTO and copy-cost contract; post-frame,
-active-route, headless, detach/discard effect contracts in EN/pt-BR/AsciiDoc
+active-route, headless, detach/discard effect contracts in English Markdown/AsciiDoc
 ADRS/DECISIONS:: ADR 0030 chooses internal nonce correlation; ADR 0031 chooses
 post-frame Flutter delivery while leaving headless policy independent
 REMAINING RISKS:: Sync and tooling findings remain unreproduced; full candidate
@@ -201,7 +201,7 @@ API CHANGES:: Added `SyncAuthority`, `SyncRunCleanup`, boundary receipt/status
 types, `SyncDatasetStatus.incomplete`, dataset application/checkpoint receipts,
 run journal/release/cleanup receipts, and `SyncRunTerminalException`. These are
 intentional pre-1.0 source/behavior refinements.
-DOC CHANGES:: EN/pt-BR authority, atomic consumer commit, terminal outcome,
+DOC CHANGES:: English authority, atomic consumer commit, terminal outcome,
 cleanup, persistence-compatibility, and recovery contracts
 ADRS/DECISIONS:: ADR 0032 requires consumer-owned atomic fencing and preserves
 independent terminal receipts; persisted journal format v1 is unchanged
@@ -238,7 +238,7 @@ API CHANGES:: Added semantic input/manifest types and required plan manifest;
 plan/receipt JSON schema fields; additive config-v1 `generatedSuffixes`;
 `change_locked` replaces MCP-only `filesystem_locked`. These are intentional
 pre-1.0 source/behavior refinements.
-DOC CHANGES:: EN/pt-BR semantic plan/lock, identity, telemetry, generated,
+DOC CHANGES:: English semantic plan/lock, identity, telemetry, generated,
 invalid-config, parity, performance, and MCP recovery contracts
 ADRS/DECISIONS:: ADR 0033 makes the service lock authoritative for CLI/MCP and
 the parity corpus authoritative for shared scanner/plugin outcomes
@@ -255,7 +255,7 @@ BASELINE:: `eb2693fa92ccf30546568ade6133c253776d5cab`
 FINAL SHA:: Not committed; cumulative working tree
 FILES:: Core diagnostics protocol and tests; Flutter restart-latest/live-resource
 integration and derived resource tests; testing topology harness; debug/profile
-benchmark gate; EN/pt-BR guides and package docs; ADR 0034; API/SDK/MCP/skills;
+benchmark gate; English guides and package docs; ADR 0034; API/SDK/MCP/skills;
 runtime hardening contract; work ledger
 TESTS ADDED:: Exact protocol schema/privacy/off/bounds/failure isolation; all
 eight fixed subject categories and topology ordering; non-cooperative old
@@ -281,7 +281,7 @@ restart-latest backpressure, stale policies, equality deduplication, and optiona
 resource diagnostic subject. No package or public entrypoint was added.
 DOC CHANGES:: Documented explicit dependency/cancellation/generation, stale and
 family ownership, exact payload-free protocol, privacy, overhead, no-global-hook
-rule, experimental status, and discard criteria in EN/pt-BR and managed skills.
+rule, experimental status, and discard criteria in English docs and managed skills.
 ADRS/DECISIONS:: ADR 0034 reuses one authoritative resource/family lifecycle,
 freezes protocol schema 1, and requires real use plus review before promotion.
 REMAINING RISKS:: The new construction APIs deliberately remain experimental
@@ -329,7 +329,7 @@ FINAL SHA:: Not committed; cumulative working tree. Dirty canary evidence is
 development evidence and deliberately not exact-candidate release evidence.
 FILES:: CLI SARIF/fleet/project service and tests; local policy bundle; packaged
 canary contract/runner/minimal hardening test; competitive/diagnostics/lifecycle
-benchmark gates; fleet EN/pt-BR guide; ADRs 0036/0037; API/SDK/MCP artifacts;
+benchmark gates; English fleet guide; ADRs 0036/0037; API/SDK/MCP artifacts;
 Goal 09 checker and verifier
 TESTS ADDED:: SARIF schema/path/redaction; fleet sorting/root/symlink/digest and
 preview-only CLI; dependency upgrade stale/structured/recovery/CR-safe commit;
@@ -357,7 +357,7 @@ target cohort, and typed dependency-upgrade preview/application. Stable JSON is
 unchanged; SARIF is a separate output.
 DOC CHANGES:: Fleet distribution, confined roots, local pinned policy,
 preview-only upgrade, SARIF privacy, benchmark claim policy, and release cohort
-ownership in EN/pt-BR and ADRs.
+ownership in English docs and ADRs.
 ADRS/DECISIONS:: ADR 0036 keeps CLI activation/AOT compilation separate from
 application Analyzer/build and defers shipped binaries. ADR 0037 uses runtime,
 Flutter, tooling, and adapter validation cohorts while retaining one lockstep
@@ -380,7 +380,7 @@ be matched by the final human handoff.
 CANDIDATE COHORT:: `1.0.0-rc.3`. The public API and isolate protocol changes
 made by this plan are intentionally not folded into the already established
 RC.2 baseline.
-FILES:: Cumulative Goals 00–10 source, tests, contracts, ADRs, public EN/pt-BR
+FILES:: Cumulative Goals 00–10 source, tests, contracts, ADRs, public English
 documentation, RC.3 changelogs/pubspecs, API/SDK/MCP and supply-chain artifacts,
 readiness contract/checker, goal state, and evidence ledger.
 TESTS ADDED:: Finding-specific red/green suites, deterministic race and
@@ -411,7 +411,7 @@ experimental diagnostics/derived-resource APIs, CLI fleet/SARIF/upgrade
 surface, and isolate wire protocol v2. Every package changelog starts at RC.3.
 DOC CHANGES:: Public API/SemVer/changelog, ownership, native, security,
 licenses/notices, benchmark-claim, optional-slice, and distribution decisions
-are current in generated and bilingual surfaces.
+are current in generated and English documentation surfaces.
 ADRS/DECISIONS:: Optional Goal 08 slices remain explicitly `DEFERRED`; Goal 07
 construction APIs remain experimental under discard criteria; no benchmark
 marked reproduction-pending authorizes a public performance claim.
