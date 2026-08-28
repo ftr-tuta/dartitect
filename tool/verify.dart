@@ -9,6 +9,11 @@ Future<void> main(List<String> arguments) async {
   final nativeObjectBox = arguments.contains('--native-objectbox');
   final commands = <_Command>[
     if (!skipGet) const _Command('dart', <String>['pub', 'get']),
+    if (!skipGet)
+      const _Command('flutter', <String>[
+        'pub',
+        'get',
+      ], workingDirectory: 'tool/dartitect_devtools_extension'),
     const _Command('dart', <String>[
       'format',
       '--output=none',

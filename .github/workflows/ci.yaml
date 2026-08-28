@@ -55,6 +55,9 @@ jobs:
       - name: Resolve isolated benchmark comparators
         run: flutter pub get
         working-directory: tool/benchmark_workspace
+      - name: Resolve isolated DevTools extension
+        run: flutter pub get
+        working-directory: tool/dartitect_devtools_extension
       - name: Validate benchmark harness and lifecycle matrix
         run: flutter test
         working-directory: tool/benchmark_workspace
@@ -144,6 +147,9 @@ jobs:
       - name: Resolve isolated benchmark comparators
         run: flutter pub get
         working-directory: tool/benchmark_workspace
+      - name: Resolve isolated DevTools extension
+        run: flutter pub get
+        working-directory: tool/dartitect_devtools_extension
       - name: Validate benchmark harness and lifecycle matrix
         run: flutter test
         working-directory: tool/benchmark_workspace
@@ -320,6 +326,9 @@ jobs:
       - name: Resolve isolated benchmark comparators
         run: flutter pub get
         working-directory: tool/benchmark_workspace
+      - name: Resolve isolated DevTools extension
+        run: flutter pub get
+        working-directory: tool/dartitect_devtools_extension
       - name: Validate benchmark harness and lifecycle matrix
         run: flutter test
         working-directory: tool/benchmark_workspace
