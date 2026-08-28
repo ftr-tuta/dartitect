@@ -172,6 +172,75 @@ final class BoundedProgressReporter<P>
   }
 }
 
+/// Payload-free execution fence around a borrowed progress destination.
+///
+/// Only the latest begun execution may publish. Finishing it rejects late
+/// events, while beginning a newer execution immediately fences older work.
+final class LatestExecutionProgressReporter<P>
+    implements ProgressReporter<P>, Disposable {
+  /// Creates a failure-isolating fence around [reporter].
+  LatestExecutionProgressReporter({required ProgressReporter<P> reporter})
+    : _reporter = SafeProgressReporter<P>(reporter: reporter);
+
+  final SafeProgressReporter<P> _reporter;
+  int? _activeExecutionId;
+  var _latestExecutionId = 0;
+  var _lastSequence = 0;
+  var _droppedEventCount = 0;
+  var _disposed = false;
+
+  /// Execution currently allowed to publish, or `null` after its terminal.
+  int? get activeExecutionId => _activeExecutionId;
+
+  /// Number of stale, out-of-order, inactive, or post-disposal events rejected.
+  int get droppedEventCount => _droppedEventCount;
+
+  /// Begins a strictly newer accepted execution.
+  void begin(int executionId) {
+    if (_disposed) throw StateError('Progress reporter is disposed.');
+    if (executionId <= _latestExecutionId) {
+      throw ArgumentError.value(
+        executionId,
+        'executionId',
+        'Must be greater than the latest execution ID.',
+      );
+    }
+    _latestExecutionId = executionId;
+    _activeExecutionId = executionId;
+    _lastSequence = 0;
+  }
+
+  /// Closes [executionId] if it is still the latest active execution.
+  bool finish(int executionId) {
+    if (_activeExecutionId != executionId) return false;
+    _activeExecutionId = null;
+    return true;
+  }
+
+  @override
+  bool report(OperationProgress<P> progress) {
+    if (_disposed || progress.executionId != _activeExecutionId) {
+      _droppedEventCount += 1;
+      return false;
+    }
+    if (progress.sequence <= _lastSequence) {
+      _droppedEventCount += 1;
+      return false;
+    }
+    _lastSequence = progress.sequence;
+    return _reporter.report(progress);
+  }
+
+  /// Rejects future publications without owning the borrowed destination.
+  @override
+  void dispose() {
+    if (_disposed) return;
+    _disposed = true;
+    _activeExecutionId = null;
+    _lastSequence = 0;
+  }
+}
+
 /// Cancellation, deadline, and typed progress for one accepted execution.
 final class CommandExecutionContext<P> {
   /// Creates a context for a positive [executionId].

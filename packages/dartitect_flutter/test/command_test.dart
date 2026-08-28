@@ -29,6 +29,43 @@ void main() {
     diagnostics.dispose();
   });
 
+  test('typed progress commands fence delayed previous executions', () async {
+    final progress = BoundedProgressReporter<int>();
+    final releases = <Completer<void>>[Completer<void>(), Completer<void>()];
+    final latePublications = <bool>[];
+    final command = ProgressCommand1<int, int, int, _ExpectedFailure>(
+      (argument, context) async {
+        expect(context.publish(argument), isTrue);
+        await releases[argument].future;
+        if (argument == 0) latePublications.add(context.publish(10));
+        return Ok<int>(argument);
+      },
+      concurrency: const CommandConcurrency.concurrent(maxConcurrent: 2),
+      progress: progress,
+    );
+
+    final first = command.execute(0);
+    final second = command.execute(1);
+    await Future<void>.delayed(Duration.zero);
+    releases[0].complete();
+    expect(
+      await first,
+      isA<CommandExecutionSucceeded<int, _ExpectedFailure>>(),
+    );
+    releases[1].complete();
+    expect(
+      await second,
+      isA<CommandExecutionSucceeded<int, _ExpectedFailure>>(),
+    );
+
+    expect(latePublications, <bool>[false]);
+    expect(progress.events.map((event) => event.executionId), <int>[1, 2]);
+    expect(progress.events.map((event) => event.payload), <int>[0, 1]);
+    expect(command.droppedProgressCount, 1);
+    await command.disposeAsync();
+    progress.dispose();
+  });
+
   test('Command0 rejects reentrancy and publishes success', () async {
     final completion = Completer<Result<int, _ExpectedFailure>>();
     final command = Command0<int, _ExpectedFailure>(() => completion.future);

@@ -102,6 +102,37 @@ void main() {
     expect(safe.droppedReentrantCount, 1);
     expect(safe.isDisabled, isTrue);
   });
+
+  test('latest execution fence rejects late and post-terminal progress', () {
+    final retained = BoundedProgressReporter<int>();
+    final fence = LatestExecutionProgressReporter<int>(reporter: retained);
+    fence.begin(1);
+    expect(
+      fence.report(
+        const OperationProgress<int>(executionId: 1, sequence: 1, payload: 1),
+      ),
+      isTrue,
+    );
+    fence.begin(2);
+    expect(
+      fence.report(
+        const OperationProgress<int>(executionId: 1, sequence: 2, payload: 2),
+      ),
+      isFalse,
+    );
+    expect(fence.finish(1), isFalse);
+    expect(fence.finish(2), isTrue);
+    expect(
+      fence.report(
+        const OperationProgress<int>(executionId: 2, sequence: 1, payload: 3),
+      ),
+      isFalse,
+    );
+    expect(retained.events.map((event) => event.payload), <int>[1]);
+    expect(fence.droppedEventCount, 2);
+    fence.dispose();
+    retained.dispose();
+  });
 }
 
 final class _Reporter<P> implements ProgressReporter<P> {

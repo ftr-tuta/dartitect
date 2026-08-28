@@ -4,6 +4,7 @@ library;
 export 'src/application_host.dart';
 export 'src/binding_diagnostics.dart';
 export 'src/command/command.dart';
+export 'src/command/progress_command.dart';
 export 'src/dartitect_scope.dart';
 export 'src/effect_channel.dart';
 export 'src/first_frame_gate.dart';
