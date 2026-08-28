@@ -1,6 +1,5 @@
-import 'dart:async';
-
 import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_jobs/dartitect_jobs.dart';
 
 import 'ports.dart';
 
@@ -130,148 +129,114 @@ final class HeadlessSyncEndpoint<P, R, F extends Object>
     bool Function(P payload)? validatePayload,
     SyncClock clock = const SystemSyncClock(),
     this.maxRememberedRequests = 128,
-  }) : _createGraph = createGraph,
-       _validatePayload = validatePayload ?? ((_) => true),
-       _clock = clock {
+  }) {
     if (maxRememberedRequests <= 0) {
       throw ArgumentError.value(maxRememberedRequests, 'maxRememberedRequests');
     }
+    _dispatcher = JobDispatcher<P, R, F, Never>(
+      definitions: <JobDefinition<P, R, F, Never>>[
+        JobDefinition<P, R, F, Never>(
+          name: _definitionName,
+          validatePayload: validatePayload,
+          createGraph: (payload) async {
+            final syncGraph = await createGraph(payload);
+            return ResourceTransaction.create((transaction) {
+              transaction.own(
+                syncGraph,
+                (graph) => graph.disposeAsync(),
+                label: 'headless-sync.graph',
+              );
+              return _HeadlessSyncJobHandler<P, R, F>(syncGraph);
+            }, label: 'HeadlessSyncEndpoint.job');
+          },
+        ),
+      ],
+      maxConcurrent: maxRememberedRequests,
+      maxRememberedJobs: maxRememberedRequests,
+      clock: _SyncJobClock(clock),
+    );
   }
 
-  final Future<OwnedGraph<HeadlessSyncHandler<P, R, F>>> Function(P payload)
-  _createGraph;
-  final bool Function(P payload) _validatePayload;
-  final SyncClock _clock;
+  static const _definitionName = 'dartitect.sync.headless';
+
+  late final JobDispatcher<P, R, F, Never> _dispatcher;
 
   /// Bound for active requests plus retained deduplicated completions.
   final int maxRememberedRequests;
 
-  final Map<String, Future<SyncCommandAck<R, F>>> _requests =
-      <String, Future<SyncCommandAck<R, F>>>{};
-  final Set<Future<SyncCommandAck<R, F>>> _inFlight =
-      <Future<SyncCommandAck<R, F>>>{};
-  final List<String> _completedRequestIds = <String>[];
-  final Set<CancellationSource> _active = <CancellationSource>{};
-  var _closing = false;
-
   /// Whether the endpoint can accept new commands.
-  bool get isReady => !_closing;
+  bool get isReady => _dispatcher.isReady;
 
   /// Accepts or rejects a command without waiting for its terminal result.
   SyncCommandReceipt<R, F> accept(SyncCommandEnvelope<P> envelope) {
-    final rejection = _validate(envelope);
-    if (rejection != null) {
-      final ack = SyncCommandRejected<R, F>(envelope.requestId, rejection);
-      return SyncCommandReceipt<R, F>(ack: ack, terminal: Future.value(ack));
-    }
-    final existing = _requests[envelope.requestId];
-    if (existing != null) {
-      return SyncCommandReceipt<R, F>(
-        ack: SyncCommandAccepted<R, F>(envelope.requestId),
-        terminal: existing,
-      );
-    }
-    while (_requests.length >= maxRememberedRequests &&
-        _completedRequestIds.isNotEmpty) {
-      final evicted = _requests.remove(_completedRequestIds.removeAt(0));
-      if (evicted != null) {
-        unawaited(evicted.then<void>((_) {}, onError: (_, _) {}));
-      }
-    }
-    if (_requests.length >= maxRememberedRequests) {
-      final ack = SyncCommandRejected<R, F>(
-        envelope.requestId,
-        SyncCommandRejection.notReady,
-      );
-      return SyncCommandReceipt<R, F>(ack: ack, terminal: Future.value(ack));
-    }
-    final terminal = _execute(envelope);
-    _requests[envelope.requestId] = terminal;
-    _inFlight.add(terminal);
-    unawaited(
-      terminal.then<void>(
-        (_) => _markCompleted(envelope.requestId, terminal),
-        onError: (_, _) => _markCompleted(envelope.requestId, terminal),
+    final receipt = _dispatcher.accept(
+      JobEnvelope<P>(
+        protocolVersion: envelope.protocolVersion,
+        jobId: envelope.requestId,
+        definition: _definitionName,
+        deadline: envelope.deadline.toUtc(),
+        payload: envelope.payload,
       ),
     );
     return SyncCommandReceipt<R, F>(
-      ack: SyncCommandAccepted<R, F>(envelope.requestId),
-      terminal: terminal,
+      ack: _mapAck(receipt.ack),
+      terminal: receipt.terminal.then(_mapAck),
     );
-  }
-
-  void _markCompleted(String requestId, Future<SyncCommandAck<R, F>> terminal) {
-    _inFlight.remove(terminal);
-    _completedRequestIds.add(requestId);
   }
 
   /// Accepts a command and waits for its terminal ACK.
   Future<SyncCommandAck<R, F>> handle(SyncCommandEnvelope<P> envelope) =>
       accept(envelope).terminal;
 
-  SyncCommandRejection? _validate(SyncCommandEnvelope<P> envelope) {
-    if (_closing) return SyncCommandRejection.notReady;
-    if (envelope.protocolVersion != currentSyncCommandProtocolVersion) {
-      return SyncCommandRejection.unsupportedProtocol;
-    }
-    if (!_clock.now().isBefore(envelope.deadline.toUtc())) {
-      return SyncCommandRejection.deadlineExceeded;
-    }
-    if (!_validatePayload(envelope.payload)) {
-      return SyncCommandRejection.invalidPayload;
-    }
-    return null;
-  }
-
-  Future<SyncCommandAck<R, F>> _execute(SyncCommandEnvelope<P> envelope) async {
-    final cancellation = CancellationSource();
-    _active.add(cancellation);
-    OwnedGraph<HeadlessSyncHandler<P, R, F>>? graph;
-    Timer? deadlineTimer;
-    try {
-      final remaining = envelope.deadline.toUtc().difference(_clock.now());
-      if (remaining <= Duration.zero) {
-        return SyncCommandRejected<R, F>(
-          envelope.requestId,
-          SyncCommandRejection.deadlineExceeded,
-        );
-      }
-      deadlineTimer = Timer(remaining, () => cancellation.cancel('deadline'));
-      graph = await _createGraph(envelope.payload);
-      final result = await graph.use(
-        (handler) => handler.execute(envelope.payload, cancellation.signal),
-      );
-      return switch (result) {
-        Ok<dynamic>(:final value) => SyncCommandCompleted<R, F>(
-          envelope.requestId,
-          value as R,
-        ),
-        Err<Object>(:final failure, :final stackTrace) =>
-          SyncCommandFailed<R, F>(envelope.requestId, failure as F, stackTrace),
-      };
-    } finally {
-      deadlineTimer?.cancel();
-      await graph?.disposeAsync();
-      cancellation.dispose();
-      _active.remove(cancellation);
-    }
+  SyncCommandAck<R, F> _mapAck(JobAck<R, F> ack) {
+    return switch (ack) {
+      JobAccepted<R, F>() => SyncCommandAccepted<R, F>(ack.jobId),
+      JobRejected<R, F>(:final reason) => SyncCommandRejected<R, F>(
+        ack.jobId,
+        switch (reason) {
+          JobRejection.unsupportedProtocol =>
+            SyncCommandRejection.unsupportedProtocol,
+          JobRejection.deadlineExceeded =>
+            SyncCommandRejection.deadlineExceeded,
+          JobRejection.invalidPayload => SyncCommandRejection.invalidPayload,
+          JobRejection.unknownDefinition ||
+          JobRejection.notReady ||
+          JobRejection.atCapacity ||
+          JobRejection.leaseUnavailable => SyncCommandRejection.notReady,
+        },
+      ),
+      JobCompleted<R, F>(:final result) => SyncCommandCompleted<R, F>(
+        ack.jobId,
+        result,
+      ),
+      JobFailed<R, F>(:final failure, :final stackTrace) =>
+        SyncCommandFailed<R, F>(ack.jobId, failure, stackTrace),
+    };
   }
 
   /// Rejects new commands, cancels active handlers, and drains their graphs.
   @override
-  Future<void> disposeAsync() async {
-    if (_closing) return;
-    _closing = true;
-    for (final cancellation in _active.toList(growable: false)) {
-      cancellation.cancel('HeadlessSyncEndpoint disposed');
-    }
-    await Future.wait<void>(
-      _inFlight
-          .toList(growable: false)
-          .map((terminal) => terminal.then<void>((_) {}, onError: (_, _) {})),
-    );
-    _requests.clear();
-    _inFlight.clear();
-    _completedRequestIds.clear();
-  }
+  Future<void> disposeAsync() => _dispatcher.disposeAsync();
+}
+
+final class _HeadlessSyncJobHandler<P, R, F extends Object>
+    implements JobHandler<P, R, F, Never> {
+  const _HeadlessSyncJobHandler(this.graph);
+
+  final OwnedGraph<HeadlessSyncHandler<P, R, F>> graph;
+
+  @override
+  Future<Result<R, F>> execute(P payload, JobExecutionContext<Never> context) =>
+      graph.use(
+        (handler) => handler.execute(payload, context.command.cancellation),
+      );
+}
+
+final class _SyncJobClock implements JobClock {
+  const _SyncJobClock(this.clock);
+
+  final SyncClock clock;
+
+  @override
+  DateTime now() => clock.now().toUtc();
 }
