@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - flutter: "3.47.1"
@@ -479,6 +479,9 @@ jobs:
         env:
           DARTITECT_DRIFT_WEB_DIAGNOSTICS: ${{ runner.temp }}/drift-web-diagnostics
         run: dart run tool/run_drift_web_fixture.dart
+      - name: Exercise modeling and JSON in hosted Chrome
+        run: dart test --platform chrome
+        working-directory: packages/dartitect_modeling
       - name: Upload Drift Web diagnostics on failure
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

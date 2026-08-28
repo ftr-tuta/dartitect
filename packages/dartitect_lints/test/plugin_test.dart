@@ -221,6 +221,10 @@ dependencies:
       policy.explain('listen', accepted.path).decision,
       DartitectEcosystemDecision.approvedPrimitive,
     );
+    expect(
+      policy.explain('provider', accepted.path).decision,
+      DartitectEcosystemDecision.overlapWarning,
+    );
   });
 
   test('lint resolver uses nearest config with project-relative paths', () {

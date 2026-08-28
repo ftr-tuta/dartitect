@@ -2,6 +2,26 @@ import 'package:dartitect_cli/dartitect_cli.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('modeling presets preserve explicit capability opt-in', () {
+    expect(DartitectModelingPreset.minimal.suggestedCapabilities, <String>[
+      'value',
+    ]);
+    expect(DartitectModelingPreset.recommended.suggestedCapabilities, <String>[
+      'value',
+      'json',
+      'projection',
+      'mapper',
+    ]);
+    expect(
+      DartitectModelingPreset.interop.allowsExistingModelGenerators,
+      isTrue,
+    );
+    expect(
+      DartitectModelingPreset.recommended.allowsExistingModelGenerators,
+      isFalse,
+    );
+  });
+
   test('stable v1 round-trips strict boundaries and unknown keys', () {
     final source = DartitectConfig(
       unknown: const <String, Object?>{

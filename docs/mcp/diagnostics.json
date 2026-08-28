@@ -14,6 +14,7 @@
     "DT1007": {"summary": "A package imports another package private src library.", "remediation": "Use the dependency public entrypoint."},
     "DT1017": {"summary": "A dependency is universally prohibited or has an active contextual conflict.", "remediation": "Use the architectural alternative or choose one instrumentation path documented by the ledger."},
     "DT1018": {"summary": "An ecosystem overlay is invalid, global, incomplete, expired, or does not cover every owner.", "remediation": "Add a consumer-owned scoped path, owner, reason, expiry, and any required direct owners."},
+    "DT1019": {"summary": "An overlapping state, provider, or service-location runtime is installed.", "remediation": "Adopt incrementally, retain consumer ownership, and prevent provider types, service location, or duplicate writers from crossing concrete boundaries."},
     "DT1020": {"summary": "A generated model output is absent, stale, or orphaned.", "remediation": "Review `dartitect model sync`, then apply and commit outputs plus manifest."},
     "DT1022": {"summary": "Generated-model ownership cannot be proven.", "remediation": "Review consumer bytes; no force-adoption is supported."},
     "DT1023": {"summary": "A model generation journal requires explicit recovery.", "remediation": "Review state, then run `dartitect model sync --apply`."},

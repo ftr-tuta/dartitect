@@ -24,9 +24,10 @@ dartitect fleet versions apps/a apps/b --root . --json
 dartitect fleet check apps/a apps/b --root . --json
 ```
 
-`versions` lê metadados de pubspec/lock sem invocar pub. `check` escaneia cada
-root sem baseline e não escreve. O output contém somente paths relativos à
-frota.
+`versions` lê metadados de pubspec/lock sem invocar pub. `check` executa a mesma
+verificação read-only de arquitetura, modelagem, ecossistema e providers de
+`dartitect verify`, sem baseline. Ambos incluem `modelStatus` e
+`providerStatus`; os paths permanecem relativos à frota.
 
 ## Policy offline fixada
 
@@ -38,7 +39,7 @@ sha256sum tool/fleet_policy_bundle.json
 dartitect fleet policy apps/a apps/b \
   --root . \
   --bundle=tool/fleet_policy_bundle.json \
-  --sha256=74df5fd60ff50069b1dc25d96221c315b9c76491804f180e127a453bdcd84b21 \
+  --sha256=1bc7b8921f16a95a2712081289392f0c93f9883635869f4cf266e9567052f90c \
   --json
 ```
 
@@ -62,6 +63,7 @@ constraints desconhecidas exigem revisão manual.
 
 ## SARIF
 
-Use `dartitect scan --sarif` para SARIF 2.1.0. SARIF e JSON estável são outputs
+Use `dartitect verify --sarif` para o gate read-only completo, ou
+`dartitect scan --sarif` somente para arquitetura. SARIF e JSON estável são outputs
 separados; `--json` e `--sarif` são mutuamente exclusivos. SARIF usa URIs
 relativas e mensagens sanitizadas e omite evidência de source e remediation.

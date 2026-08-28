@@ -55,9 +55,10 @@ block for every tool result.
 
 ## Read tools and resources
 
-Inspect, scan, doctor, finding explanation, conformance auditing, and all previews
-are read-only. Scan accepts baseline selection plus bounded `offset`/`limit`.
-Deep doctor is opt-in and time-bounded.
+Inspect, scan, verify, doctor, finding explanation, conformance auditing, and
+all previews are read-only. Scan and verify accept bounded `offset`/`limit`;
+verify combines architecture, modeling freshness, ecosystem overlap, and
+provider status. Deep doctor is opt-in and time-bounded.
 
 `dartitect_audit_conformance` declares existing projects `audit_only`, uses the
 unbaselined scan as evidence, and never returns migration or coexistence steps.
@@ -77,7 +78,13 @@ protocol work; use `$dartitect-tooling` and the CLI directly for scripts or CI.
 ## Opt-in writes
 
 Add `--allow-writes` to the server arguments only when reviewed local writes
-are required. This flag alone is insufficient. Apply requires all of:
+are required. This flag alone is insufficient.
+
+Model sync and primary-constructor migration use the same preview/apply gate as
+init, baseline, and managed skill synchronization. Preview payloads contain
+operations and semantic manifests, never consumer source bodies.
+
+Apply requires all of:
 
 1. server write opt-in;
 2. a prior read-only preview;

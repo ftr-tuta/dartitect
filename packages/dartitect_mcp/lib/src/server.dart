@@ -45,7 +45,7 @@ base class DartitectMcpServer extends MCPServer
 
   static const String _instructions =
       'Dartitect inspects only configured local roots and is read-only by default. '
-      'Use inspect, scan, doctor, explain, conformance, or preview tools first. Never '
+      'Use inspect, scan, verify, doctor, explain, conformance, or preview tools first. Never '
       'request secrets or arbitrary file content. A change may be applied only after '
       'the user reviews its preview, the client approves the mutating tool, and '
       '`confirmed` is true. Plans expire after ten minutes and are single-use. '
@@ -139,6 +139,22 @@ base class DartitectMcpServer extends MCPServer
         return _ok(await service.auditConformance());
       },
     );
+    _registerReadTool(
+      name: 'dartitect_verify_project',
+      description: 'Verify architecture, generated models, ecosystem overlap, and provider boundaries without writing.',
+      schema: _projectSchema(
+        extra: <String, Schema>{
+          'offset': Schema.int(minimum: 0),
+          'limit': Schema.int(minimum: 1, maximum: policy.maxResultLimit),
+        },
+      ),
+      handler: (arguments) async {
+        final report = await DartitectVerificationService(
+          await _resolveProject(arguments),
+        ).verify();
+        return _ok(_paginateReport(report, arguments));
+      },
+    );
     _registerPreviewTool(
       name: 'dartitect_preview_init',
       description: 'Preview creation of the initial Dartitect configuration.',
@@ -154,6 +170,17 @@ base class DartitectMcpServer extends MCPServer
       description: 'Preview synchronization of managed Dartitect Codex skills.',
       kind: DartitectChangeKind.codexSync,
       allowOverwriteManaged: true,
+    );
+    _registerPreviewTool(
+      name: 'dartitect_preview_model_sync',
+      description:
+          'Preview deterministic model output and ownership convergence.',
+      kind: DartitectChangeKind.modelSync,
+    );
+    _registerPreviewTool(
+      name: 'dartitect_preview_model_primary_migration',
+      description: 'Preview semantic primary-constructor source edits and recovery state.',
+      kind: DartitectChangeKind.modelPrimaryMigration,
     );
     final schema = ObjectSchema(
       properties: <String, Schema>{

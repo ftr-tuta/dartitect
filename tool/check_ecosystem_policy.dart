@@ -38,17 +38,19 @@ Future<void> main() async {
   final universal = (boundary['forbiddenPackages']! as List<Object?>)
       .cast<String>()
       .toSet();
-  final prohibited = policy.records.values
+  final sourceBlocking = policy.records.values
       .where(
-        (record) => record.decision == EcosystemDecision.prohibitedNativeStrict,
+        (record) =>
+            record.decision == EcosystemDecision.prohibitedNativeStrict ||
+            record.decision == EcosystemDecision.overlapWarning,
       )
       .map((record) => record.package)
       .toSet();
-  if (prohibited.length != universal.length ||
-      !prohibited.containsAll(universal)) {
+  if (sourceBlocking.length != universal.length ||
+      !sourceBlocking.containsAll(universal)) {
     errors.add(
-      'Global ecosystem prohibitions must equal the universal architecture '
-      'package set.',
+      'Installed overlap plus global prohibitions must equal the source-level '
+      'architecture package set.',
     );
   }
   for (final package in const <String>{
@@ -80,7 +82,8 @@ Future<void> main() async {
   }
   for (final record in policy.records.values) {
     if ((record.decision == EcosystemDecision.advisoryAlternative ||
-            record.decision == EcosystemDecision.prohibitedNativeStrict) &&
+            record.decision == EcosystemDecision.prohibitedNativeStrict ||
+            record.decision == EcosystemDecision.overlapWarning) &&
         (record.replacement == null || record.replacement!.trim().isEmpty)) {
       errors.add('${record.package} requires a documented alternative.');
     }

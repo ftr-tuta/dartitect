@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:dart_mcp/client.dart';
 import 'package:dartitect_cli/dartitect_cli.dart';
@@ -57,13 +58,16 @@ void main() {
             'dartitect_doctor_project',
             'dartitect_explain_finding',
             'dartitect_audit_conformance',
+            'dartitect_verify_project',
             'dartitect_preview_init',
             'dartitect_preview_baseline',
             'dartitect_preview_codex_sync',
+            'dartitect_preview_model_sync',
+            'dartitect_preview_model_primary_migration',
             'dartitect_apply_change',
           ]),
         );
-        expect(tools, hasLength(9));
+        expect(tools, hasLength(12));
         expect(
           tools.map((tool) => tool.name).join(' '),
           isNot(contains('create')),
@@ -134,6 +138,33 @@ void main() {
         containsPair('migration', false),
       );
     });
+
+    test(
+      'verify tool is read-only and exposes model/provider status',
+      () async {
+        final project = await _project();
+        final before = await File('${project.path}/pubspec.yaml')
+            .readAsString();
+        final environment = _Environment(
+          DartitectMcpPolicy(allowedRoots: <Directory>[project]),
+        );
+        addTearDown(environment.close);
+        await environment.initialize();
+
+        final result = await environment.call('dartitect_verify_project');
+
+        expect(result.isError, isNot(true));
+        final projectStatus =
+            result.structuredContent?['project'] as Map<String, Object?>;
+        expect(projectStatus['modelStatus'], isA<Map<String, Object?>>());
+        expect(projectStatus['providerStatus'], isA<Map<String, Object?>>());
+        expect(
+          await File('${project.path}/pubspec.yaml').readAsString(),
+          before,
+        );
+        expect(File('${project.path}/dartitect.json').existsSync(), isFalse);
+      },
+    );
 
     test('paginates scan results within policy limits', () async {
       final project = await _project(
@@ -332,6 +363,98 @@ environment:
       );
       expect(_errorCode(replay), 'plan_replayed');
     });
+
+    test(
+      'reviews and applies model sync through the shared change gate',
+      () async {
+        final project = await _modelProject('''
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+
+part 'user.dartitect.g.dart';
+
+@DartitectValue()
+final class const User({required final String id})
+    extends ValueEquality with _\$UserDartitect;
+''');
+        final environment = _Environment(
+          DartitectMcpPolicy(
+            allowedRoots: <Directory>[project],
+            allowWrites: true,
+            createPlanId: () => 'model-sync-plan-0000001',
+          ),
+        );
+        addTearDown(environment.close);
+        await environment.initialize();
+
+        final preview = await environment.call('dartitect_preview_model_sync');
+        expect(preview.isError, isNot(true));
+        final planId = preview.structuredContent?['planId']! as String;
+        expect(
+          File('${project.path}/lib/user.dartitect.g.dart').existsSync(),
+          isFalse,
+        );
+        final applied = await environment.call(
+          'dartitect_apply_change',
+          <String, Object?>{'planId': planId, 'confirmed': true},
+        );
+        expect(applied.structuredContent?['ok'], isTrue);
+        expect(
+          File('${project.path}/lib/user.dartitect.g.dart').existsSync(),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'primary migration preview is payload-free before reviewed apply',
+      () async {
+        final project = await _modelProject('''
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+
+part 'user.dartitect.g.dart';
+
+@DartitectValue()
+final class User extends ValueEquality with _\$UserDartitect {
+  const User({required this.id});
+
+  final String id;
+}
+''');
+        final source = File('${project.path}/lib/user.dart');
+        final before = await source.readAsString();
+        final environment = _Environment(
+          DartitectMcpPolicy(
+            allowedRoots: <Directory>[project],
+            allowWrites: true,
+            createPlanId: () => 'model-primary-plan-0001',
+          ),
+        );
+        addTearDown(environment.close);
+        await environment.initialize();
+
+        final preview = await environment.call(
+          'dartitect_preview_model_primary_migration',
+        );
+
+        expect(preview.isError, isNot(true));
+        final encoded = jsonEncode(preview.structuredContent);
+        expect(encoded, contains('lib/user.dart'));
+        expect(encoded, isNot(contains('List<Object?> get equalityProps')));
+        expect(await source.readAsString(), before);
+        final applied = await environment.call(
+          'dartitect_apply_change',
+          <String, Object?>{
+            'planId': preview.structuredContent?['planId']! as String,
+            'confirmed': true,
+          },
+        );
+        expect(applied.structuredContent?['ok'], isTrue);
+        expect(
+          await source.readAsString(),
+          contains('final class const User({'),
+        );
+      },
+    );
 
     test('rejects expired and stale plans without writing', () async {
       var now = DateTime.utc(2026, 1, 1);
@@ -540,6 +663,52 @@ environment:
   final file = File('${root.path}/$sourcePath');
   await file.parent.create(recursive: true);
   await file.writeAsString(source);
+  return root;
+}
+
+Future<Directory> _modelProject(String source) async {
+  final root = await _project(source: source, sourcePath: 'lib/user.dart');
+  await Directory('${root.path}/.dart_tool').create(recursive: true);
+  await File('${root.path}/pubspec.yaml').writeAsString('''name: fixture
+environment:
+  sdk: ^3.13.0
+dependencies:
+  dartitect_modeling: any
+''');
+  final dartitect = await Isolate.resolvePackageUri(
+    Uri.parse('package:dartitect/dartitect.dart'),
+  );
+  final modeling = await Isolate.resolvePackageUri(
+    Uri.parse('package:dartitect_modeling/dartitect_modeling.dart'),
+  );
+  if (dartitect == null || modeling == null) {
+    throw StateError('Modeling package graph is unresolved.');
+  }
+  await File('${root.path}/.dart_tool/package_config.json').writeAsString(
+    jsonEncode(<String, Object?>{
+      'configVersion': 2,
+      'packages': <Object?>[
+        <String, Object?>{
+          'name': 'fixture',
+          'rootUri': '../',
+          'packageUri': 'lib/',
+          'languageVersion': '3.13',
+        },
+        <String, Object?>{
+          'name': 'dartitect',
+          'rootUri': dartitect.resolve('../').toString(),
+          'packageUri': 'lib/',
+          'languageVersion': '3.13',
+        },
+        <String, Object?>{
+          'name': 'dartitect_modeling',
+          'rootUri': modeling.resolve('../').toString(),
+          'packageUri': 'lib/',
+          'languageVersion': '3.13',
+        },
+      ],
+    }),
+  );
   return root;
 }
 

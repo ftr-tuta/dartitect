@@ -28,6 +28,29 @@ void main() {
     expect(encoded, isNot(contains(fleet.path)));
     expect(encoded, isNot(contains(alpha.absolute.path)));
     expect(encoded, contains('lockedVersion'));
+    expect(report.projects.first['modelStatus'], isA<Map<String, Object?>>());
+    expect(
+      report.projects.first['providerStatus'],
+      isA<Map<String, Object?>>(),
+    );
+  });
+
+  test('fleet reports modeling and overlap provider adoption status', () async {
+    final fleet = await _fleet();
+    final app = await _project(fleet, 'app', '^1.0.0-rc.3');
+    await File('${app.path}/pubspec.yaml').writeAsString('''name: app
+dependencies:
+  dartitect: ^1.0.0-rc.3
+  dartitect_modeling: ^1.0.0-rc.4
+  provider: any
+''');
+    final report = await DartitectFleetService(fleet).versions(<String>['app']);
+    final project = report.projects.single;
+    expect(project['modelStatus'], containsPair('status', 'dependency_only'));
+    expect(
+      project['providerStatus'],
+      containsPair('status', 'overlap_warning'),
+    );
   });
 
   test(

@@ -442,6 +442,10 @@
         "declaration": "final class DartitectSuppression"
       },
       {
+        "name": "DartitectVerificationService",
+        "declaration": "final class DartitectVerificationService"
+      },
+      {
         "name": "EcosystemAuditFinding",
         "declaration": "final class EcosystemAuditFinding"
       },

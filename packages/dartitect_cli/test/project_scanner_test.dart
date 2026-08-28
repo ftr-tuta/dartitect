@@ -169,11 +169,24 @@ sdks:
       scan.violations.where(
         (finding) => finding.code == DartitectRuleCodes.forbiddenArchitecture,
       ),
-      hasLength(2),
+      hasLength(1),
     );
     expect(
       scan.violations.map((finding) => finding.path),
-      containsAll(<String>['pubspec.lock', 'lib/generated.freezed.dart']),
+      contains('lib/generated.freezed.dart'),
+    );
+    expect(
+      scan.findings,
+      contains(
+        isA<DartitectFinding>()
+            .having((finding) => finding.code, 'code', 'DT1019')
+            .having((finding) => finding.path, 'path', 'pubspec.lock')
+            .having(
+              (finding) => finding.severity,
+              'severity',
+              FindingSeverity.warning,
+            ),
+      ),
     );
   });
 

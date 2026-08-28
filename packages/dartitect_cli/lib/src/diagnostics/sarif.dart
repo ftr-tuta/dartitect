@@ -24,7 +24,9 @@ final class DartitectSarifReport {
       'version': '2.1.0',
       'runs': <Object?>[
         <String, Object?>{
-          'automationDetails': <String, Object?>{'id': 'dartitect/scan'},
+          'automationDetails': <String, Object?>{
+            'id': 'dartitect/${_envelope.command}',
+          },
           'tool': <String, Object?>{
             'driver': <String, Object?>{
               'name': 'dartitect',

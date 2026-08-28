@@ -16,3 +16,4 @@ export 'src/project/dartitect_project_service.dart';
 export 'src/rules/boundary_rules.dart';
 export 'src/scan/baseline.dart';
 export 'src/scan/project_scanner.dart';
+export 'src/verification/verification_service.dart';

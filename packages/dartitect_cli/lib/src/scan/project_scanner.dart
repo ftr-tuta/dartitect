@@ -90,64 +90,32 @@ final class ProjectScanner {
       final facts = _parsePubspec(await pubspec.readAsLines());
       packageName = facts.$1;
       dependencies.addAll(facts.$2);
-      for (final dependency in dependencies) {
-        if (DartitectArchitectureRules.forbiddenPackages.contains(dependency)) {
-          violations.add(
-            DartitectFinding(
-              code: DartitectRuleCodes.forbiddenArchitecture,
-              severity: FindingSeverity.error,
-              message: 'Forbidden architecture dependency: $dependency.',
-              path: 'pubspec.yaml',
-              evidence: dependency,
-              remediation: 'Use constructor injection and native listenables.',
-            ),
-          );
-        }
-      }
-    }
-    final lockfile = File(_join(root.path, 'pubspec.lock'));
-    if (await lockfile.exists()) {
-      for (final dependency in _parseLockPackages(
-        await lockfile.readAsLines(),
-      )) {
-        if (DartitectArchitectureRules.forbiddenPackages.contains(dependency)) {
-          violations.add(
-            DartitectFinding(
-              code: DartitectRuleCodes.forbiddenArchitecture,
-              severity: FindingSeverity.error,
-              message:
-                  'Forbidden transitive architecture dependency: $dependency.',
-              path: 'pubspec.lock',
-              evidence: dependency,
-              remediation:
-                  'Remove the dependency chain and use Dartitect owned state.',
-            ),
-          );
-        }
-      }
     }
     if (await pubspec.exists()) {
       final policy = await EcosystemPolicy.load(root);
       final audit = await EcosystemDependencyAuditor(root, policy).audit();
       for (final finding in audit.findings) {
-        violations.add(
-          DartitectFinding(
-            code: finding.code,
-            severity: FindingSeverity.error,
-            message: finding.message,
-            path:
-                finding.directOwners.length == 1 &&
-                    finding.directOwners.single == finding.package
-                ? 'pubspec.yaml'
-                : 'pubspec.lock',
-            evidence: finding.directOwners.isEmpty
-                ? finding.package
-                : '${finding.package} via ${finding.directOwners.join(', ')}',
-            remediation: finding.replacement == null
-                ? 'Add or repair a scoped ecosystem-policy exception.'
-                : 'Use ${finding.replacement}.',
-          ),
+        final diagnostic = DartitectFinding(
+          code: finding.code,
+          severity: finding.severity,
+          message: finding.message,
+          path:
+              finding.directOwners.length == 1 &&
+                  finding.directOwners.single == finding.package
+              ? 'pubspec.yaml'
+              : 'pubspec.lock',
+          evidence: finding.directOwners.isEmpty
+              ? finding.package
+              : '${finding.package} via ${finding.directOwners.join(', ')}',
+          remediation: finding.replacement == null
+              ? 'Add or repair a scoped ecosystem-policy exception.'
+              : 'Use ${finding.replacement}.',
         );
+        if (finding.severity == FindingSeverity.error) {
+          violations.add(diagnostic);
+        } else {
+          findings.add(diagnostic);
+        }
       }
     }
 
@@ -992,20 +960,4 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
     if (isSuppressed(code, line)) return;
     addViolation(createViolation(code, message, path, line, evidence));
   }
-}
-
-Set<String> _parseLockPackages(List<String> lines) {
-  final packages = <String>{};
-  var inPackages = false;
-  for (final line in lines) {
-    if (line == 'packages:') {
-      inPackages = true;
-      continue;
-    }
-    if (!inPackages) continue;
-    if (line.isNotEmpty && !line.startsWith(' ')) break;
-    final match = RegExp(r'^  ([A-Za-z0-9_]+):\s*$').firstMatch(line);
-    if (match != null) packages.add(match.group(1)!);
-  }
-  return packages;
 }

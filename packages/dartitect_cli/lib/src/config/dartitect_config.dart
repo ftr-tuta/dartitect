@@ -92,6 +92,16 @@ enum DartitectModelingPreset {
 
   /// Stable JSON name.
   final String wireName;
+
+  /// Whether existing consumer-owned generators may coexist during adoption.
+  bool get allowsExistingModelGenerators => this == interop;
+
+  /// Capabilities suggested by this preset; annotations remain authoritative.
+  List<String> get suggestedCapabilities => switch (this) {
+    minimal => const <String>['value'],
+    recommended => const <String>['value', 'json', 'projection', 'mapper'],
+    interop => const <String>['value'],
+  };
 }
 
 /// Additive modeling configuration for stable config v1.

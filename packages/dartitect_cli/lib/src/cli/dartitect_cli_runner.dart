@@ -12,6 +12,7 @@ import '../model/primary_constructor_migration.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
 import '../scan/project_scanner.dart';
+import '../verification/verification_service.dart';
 
 /// Stable CLI exit statuses.
 enum DartitectExitCode {
@@ -71,6 +72,7 @@ final class DartitectCliRunner {
         'scan' => await _readOnly('scan', root, parsed),
         'doctor' => await _readOnly('doctor', root, parsed),
         'inspect' => await _readOnly('inspect', root, parsed),
+        'verify' => await _readOnly('verify', root, parsed),
         'init' => await _init(root, parsed),
         'create' => await _create(root, parsed),
         'baseline' => await _baseline(root, parsed),
@@ -127,7 +129,7 @@ final class DartitectCliRunner {
     arguments.requireNoPositionals();
     arguments.requireOnlyFlags(<String>{
       'json',
-      if (command == 'scan') 'sarif',
+      if (command == 'scan' || command == 'verify') 'sarif',
       'deep',
       'verbose',
       if (command == 'scan') 'no-baseline',
@@ -143,6 +145,7 @@ final class DartitectCliRunner {
       'doctor' => await service.doctorProject(
         deep: arguments.flags.contains('deep'),
       ),
+      'verify' => await DartitectVerificationService(root).verify(),
       _ => await service.inspectProject(),
     };
     if (arguments.flags.contains('sarif')) {
@@ -939,6 +942,7 @@ Read-only commands:
                                     Install managed, focused Codex skills.
   doctor [--json] [--deep]         Validate toolchain, config, and project.
   inspect [--json]                  Emit consolidated architecture metadata.
+  verify [--json|--sarif]           Verify architecture, models, and providers.
   model check [--json]              Validate generated model freshness.
   model migrate primary [--dry-run|--apply] [--json]
                                     Preview or apply semantic constructor edits.

@@ -11,6 +11,7 @@ enum DartitectEcosystemDecision {
   advisoryAlternative,
   reviewedException,
   prohibitedNativeStrict,
+  overlapWarning,
   unreviewed,
 }
 
@@ -31,7 +32,7 @@ final class DartitectLintEcosystemPolicy {
 
   DartitectLintEcosystemRecord explain(String package, [String? path]) {
     final base = _records[package] ?? _unreviewed;
-    if (base.decision == DartitectEcosystemDecision.prohibitedNativeStrict) {
+    if (base.decision == DartitectEcosystemDecision.overlapWarning) {
       return base;
     }
     final overlay = path == null ? null : _overlayAt(package, path);
@@ -121,7 +122,7 @@ List<_OverlayEntry> _readOverlay(String root) {
     }
     final package = raw['package']! as String;
     final base = _records[package] ?? _unreviewed;
-    if (base.decision == DartitectEcosystemDecision.prohibitedNativeStrict) {
+    if (base.decision == DartitectEcosystemDecision.overlapWarning) {
       continue;
     }
     final decision = switch (raw['decision']) {
@@ -247,7 +248,7 @@ const _records = <String, DartitectLintEcosystemRecord>{
     replacement: 'dartitect_privacy',
   ),
   'bloc': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and Dartitect Commands/resources',
   ),
   'brasil_fields': DartitectLintEcosystemRecord(
@@ -266,22 +267,22 @@ const _records = <String, DartitectLintEcosystemRecord>{
   'drift': _approved,
   'drift_dev': _approved,
   'elementary': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and explicit ViewModels',
   ),
   'flutter': _approved,
   'flutter_bloc': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and Dartitect Commands/resources',
   ),
   'flutter_image_compress': _reviewed,
   'flutter_localizations': _approved,
   'flutter_mobx': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and Dartitect resources',
   ),
   'flutter_modular': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and explicit composition roots',
   ),
   'flutter_native_splash': DartitectLintEcosystemRecord(
@@ -291,7 +292,7 @@ const _records = <String, DartitectLintEcosystemRecord>{
   ),
   'flutter_pdfview': _reviewed,
   'flutter_riverpod': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and Dartitect Commands/resources',
   ),
   'flutter_secure_storage': _reviewed,
@@ -308,30 +309,30 @@ const _records = <String, DartitectLintEcosystemRecord>{
     replacement: 'dartitect_media',
   ),
   'get': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and explicit composition roots',
   ),
   'get_it': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and explicit composition roots',
   ),
   'get_it_mixin': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and explicit composition roots',
   ),
   'go_router': _approved,
   'hooks_riverpod': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and Dartitect Commands/resources',
   ),
   'hydrated_bloc': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'consumer-owned persistence with Dartitect resources',
   ),
   'image': _reviewed,
   'image_picker': _approved,
   'injectable': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and explicit composition roots',
   ),
   'intl': _approved,
@@ -341,7 +342,7 @@ const _records = <String, DartitectLintEcosystemRecord>{
   'listen': _approvedPrimitive,
   'mapbox_maps_flutter': _approved,
   'mobx': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and Dartitect resources',
   ),
   'objectbox': _approved,
@@ -354,7 +355,7 @@ const _records = <String, DartitectLintEcosystemRecord>{
   'printing': _reviewed,
   'pro_image_editor': _reviewed,
   'provider': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and explicit composition roots',
   ),
   'retrofit': DartitectLintEcosystemRecord(
@@ -366,15 +367,15 @@ const _records = <String, DartitectLintEcosystemRecord>{
     replacement: 'explicit endpoint clients',
   ),
   'riverpod': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and Dartitect Commands/resources',
   ),
   'riverpod_annotation': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and explicit composition roots',
   ),
   'riverpod_generator': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and explicit composition roots',
   ),
   'sentry': _approved,
@@ -388,15 +389,15 @@ const _records = <String, DartitectLintEcosystemRecord>{
   'shared_preferences': _approved,
   'sqlite3': _approved,
   'signals': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'Dartitect resources and native listenables',
   ),
   'signals_flutter': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'Dartitect resources and native listenables',
   ),
   'stacked': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and explicit ViewModels',
   ),
   'url_launcher': _approved,
@@ -405,7 +406,7 @@ const _records = <String, DartitectLintEcosystemRecord>{
     replacement: 'SecureUuidV4Generator when only UUID v4 is required',
   ),
   'watch_it': DartitectLintEcosystemRecord(
-    DartitectEcosystemDecision.prohibitedNativeStrict,
+    DartitectEcosystemDecision.overlapWarning,
     replacement: 'constructor injection and explicit composition roots',
   ),
   'workmanager': DartitectLintEcosystemRecord(

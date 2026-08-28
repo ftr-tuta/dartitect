@@ -23,13 +23,44 @@ void main() {
     final finding = report.findings.singleWhere(
       (finding) => finding.package == 'provider',
     );
-    expect(finding.code, 'DT1017');
+    expect(finding.code, 'DT1019');
+    expect(finding.severity, FindingSeverity.warning);
     expect(finding.directOwners, <String>['client_a', 'client_b']);
     expect(finding.dependencyPaths, <String>[
       'client_a > provider',
       'client_b > provider',
     ]);
   });
+
+  test(
+    'installed overlap warns while concrete source leakage remains error',
+    () async {
+      final root = await _graphFixture(
+        direct: const <String>['provider'],
+        edges: const <String, List<String>>{'provider': <String>[]},
+      );
+      addTearDown(() => root.delete(recursive: true));
+      final installed = await EcosystemDependencyAuditor(
+        root,
+        EcosystemPolicy.bundled,
+      ).audit();
+      expect(installed.findings.single.code, 'DT1019');
+      expect(installed.findings.single.severity, FindingSeverity.warning);
+
+      final source = File('${root.path}/lib/domain/leak.dart');
+      await source.parent.create(recursive: true);
+      await source.writeAsString("import 'package:provider/provider.dart';\n");
+      final scan = await DartitectProjectService(root)
+          .scanArchitecture(useBaseline: false);
+      expect(scan.violations, isNotEmpty);
+      expect(
+        scan.violations.every(
+          (finding) => finding.severity == FindingSeverity.error,
+        ),
+        isTrue,
+      );
+    },
+  );
 
   test('overlay must cover every owner of a reviewed transitive', () async {
     final root = await _graphFixture(
