@@ -38,6 +38,11 @@ void main() {
   test(
     'failure blocks dependents but preserves independent branches',
     () async {
+      final diagnostics = DartitectDiagnosticBuffer(capacity: 64);
+      final emitter = DartitectDiagnosticsEmitter(
+        reporter: DartitectDiagnosticReporterRegistration.borrowed(diagnostics),
+        detail: DartitectDiagnosticDetail.topology,
+      );
       final calls = <String>[];
       final checkpoints = _MemoryCheckpoints<String, int>();
       final datasets = <SyncDataset<String, int, _Failure>>[
@@ -76,6 +81,7 @@ void main() {
           },
         ),
         checkpoints: checkpoints,
+        diagnostics: emitter.subject(DartitectDiagnosticSubjectKind.owner),
       );
 
       final run = engine.start();
@@ -94,6 +100,22 @@ void main() {
       expect(run.progress.recent.last.phase, SyncProgressPhase.runCompleted);
       await engine.disposeAsync();
       expect(engine.activeRunCount, 0);
+      expect(
+        diagnostics.events
+            .where(
+              (event) =>
+                  event.subjectKind == DartitectDiagnosticSubjectKind.sync,
+            )
+            .map((event) => event.phase),
+        containsAll(<DartitectDiagnosticPhase>{
+          DartitectDiagnosticPhase.started,
+          DartitectDiagnosticPhase.failed,
+          DartitectDiagnosticPhase.succeeded,
+          DartitectDiagnosticPhase.disposed,
+        }),
+      );
+      await emitter.dispose();
+      diagnostics.dispose();
     },
   );
 

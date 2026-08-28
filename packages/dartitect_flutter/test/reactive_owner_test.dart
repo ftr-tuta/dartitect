@@ -6,6 +6,46 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('protocol v2 instruments owner nodes and dependency links', () async {
+    final diagnostics = DartitectDiagnosticBuffer(capacity: 32);
+    final emitter = DartitectDiagnosticsEmitter(
+      reporter: DartitectDiagnosticReporterRegistration.borrowed(diagnostics),
+      detail: DartitectDiagnosticDetail.topology,
+    );
+    final owner = ReactiveOwner(
+      diagnostics: emitter.subject(DartitectDiagnosticSubjectKind.owner),
+    );
+    final value = owner.value(1);
+    owner.computed<int>(
+      const ReactiveKey<int>(
+        'double',
+        namespace: 'test.diagnostics',
+        definitionRevision: 1,
+        definitionFingerprint: 'v1',
+      ),
+      <ReactiveNode<Object?>>[value],
+      (read) => read.read(value) * 2,
+    );
+    owner.update<void>((write) => write.set(value, 2));
+    await owner.dispose();
+
+    expect(
+      diagnostics.events
+          .where(
+            (event) => event.subjectKind == DartitectDiagnosticSubjectKind.node,
+          )
+          .map((event) => event.phase),
+      containsAll(<DartitectDiagnosticPhase>{
+        DartitectDiagnosticPhase.created,
+        DartitectDiagnosticPhase.linked,
+        DartitectDiagnosticPhase.updated,
+        DartitectDiagnosticPhase.disposed,
+      }),
+    );
+    await emitter.dispose();
+    diagnostics.dispose();
+  });
+
   test(
     'values are direct ValueListenables with configurable equality',
     () async {

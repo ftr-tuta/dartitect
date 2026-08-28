@@ -3,7 +3,7 @@ import 'package:dartitect_testing/dartitect_testing.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('reconstructs every v1 category without application payload', () async {
+  test('reconstructs every v2 category without application payload', () async {
     final buffer = DartitectDiagnosticBuffer(capacity: 64);
     final emitter = DartitectDiagnosticsEmitter(
       reporter: DartitectDiagnosticReporterRegistration.borrowed(buffer),

@@ -23,12 +23,25 @@ typedef SessionRouteRemover = Future<void> Function(int transitionId);
 final class SessionRuntimeController<R, D extends Object>
     implements AsyncDisposable {
   /// Creates an anonymous controller.
-  SessionRuntimeController()
-    : _states = SessionStateController<D>(SessionAnonymous<D>());
+  SessionRuntimeController({DartitectDiagnosticSubject? diagnostics})
+    : _diagnostics = diagnostics,
+      _slot = OwnedRuntimeSlot<R>(
+        label: 'SessionRuntimeController',
+        diagnostics: diagnostics?.child(DartitectDiagnosticSubjectKind.host),
+      ),
+      _states = SessionStateController<D>(SessionAnonymous<D>()) {
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.host) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'SessionRuntimeController requires a host diagnostic subject.',
+      );
+    }
+  }
 
-  final OwnedRuntimeSlot<R> _slot = OwnedRuntimeSlot<R>(
-    label: 'SessionRuntimeController',
-  );
+  final DartitectDiagnosticSubject? _diagnostics;
+  final OwnedRuntimeSlot<R> _slot;
   final SessionStateController<D> _states;
   Future<void> _tail = Future<void>.value();
   Completer<void>? _routeRemoval;
@@ -92,6 +105,10 @@ final class SessionRuntimeController<R, D extends Object>
             throw StateError('SessionRuntimeController is shutting down.');
           }
           if (_slot.hasCurrent) {
+            _diagnostics?.emit(
+              DartitectDiagnosticPhase.waiting,
+              generation: _slot.generation,
+            );
             await _waitForRouteRemoval(SessionTransitioning<D>(cause));
           }
           if (_closing) {
@@ -103,6 +120,10 @@ final class SessionRuntimeController<R, D extends Object>
             _current = next.root;
             _states.transition(
               SessionActive<D>(generation: generation, value: description),
+            );
+            _diagnostics?.emit(
+              DartitectDiagnosticPhase.updated,
+              generation: generation,
             );
             completer.complete(generation);
           } on OwnedRuntimeReplacementCleanupException catch (error) {
@@ -147,6 +168,10 @@ final class SessionRuntimeController<R, D extends Object>
           await _slot.clearCurrent();
           _current = null;
           _states.transition(SessionSignedOut<D>());
+          _diagnostics?.emit(
+            DartitectDiagnosticPhase.updated,
+            generation: _slot.generation,
+          );
           completer.complete();
         })
         .catchError((Object error, StackTrace stackTrace) {
@@ -198,6 +223,10 @@ final class SessionRuntimeController<R, D extends Object>
     await _slot.disposeAsync();
     _current = null;
     _states.dispose();
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.disposed,
+      generation: _slot.generation,
+    );
   }
 }
 

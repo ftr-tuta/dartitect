@@ -5,6 +5,30 @@ import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('commands emit only payload-free terminal diagnostics', () async {
+    final diagnostics = DartitectDiagnosticBuffer(capacity: 8);
+    final emitter = DartitectDiagnosticsEmitter(
+      reporter: DartitectDiagnosticReporterRegistration.borrowed(diagnostics),
+      detail: DartitectDiagnosticDetail.topology,
+    );
+    final command = Command0<int, _ExpectedFailure>(
+      () async => const Ok<int>(7),
+      diagnostics: emitter.subject(DartitectDiagnosticSubjectKind.command),
+    );
+
+    await command.execute();
+    await command.disposeAsync();
+    expect(
+      diagnostics.events.map((event) => event.phase),
+      containsAll(<DartitectDiagnosticPhase>{
+        DartitectDiagnosticPhase.succeeded,
+        DartitectDiagnosticPhase.disposed,
+      }),
+    );
+    await emitter.dispose();
+    diagnostics.dispose();
+  });
+
   test('Command0 rejects reentrancy and publishes success', () async {
     final completion = Completer<Result<int, _ExpectedFailure>>();
     final command = Command0<int, _ExpectedFailure>(() => completion.future);

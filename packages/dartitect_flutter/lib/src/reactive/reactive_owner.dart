@@ -217,12 +217,15 @@ final class ReactiveLazyComputed<T> implements ValueListenable<T> {
     required T Function(ReactiveLazyRead read) compute,
     required Equality<T> equality,
     required this.usesDefaultEquality,
+    required DartitectDiagnosticSubject? diagnostics,
   }) : _owner = owner,
        _dependenciesProvider = dependencies,
        _compute = compute,
-       equality = equality;
+       equality = equality,
+       _diagnostics = diagnostics;
 
   final ReactiveOwner _owner;
+  final DartitectDiagnosticSubject? _diagnostics;
 
   /// Static, payload-free definition label used for cycle diagnostics.
   final String label;
@@ -333,6 +336,18 @@ final class ReactiveLazyComputed<T> implements ValueListenable<T> {
     _bound = true;
     try {
       for (final dependency in _dependencies) {
+        final related = switch (dependency) {
+          ReactiveNode<Object?>(:final diagnostics) => diagnostics,
+          ReactiveLazyComputed<Object?>() => dependency._diagnostics,
+          _ => null,
+        };
+        if (related != null) {
+          _diagnostics?.emit(
+            DartitectDiagnosticPhase.linked,
+            related: related,
+            revision: _owner.revision,
+          );
+        }
         dependency.addListener(_dependencyChanged);
       }
     } catch (_) {
@@ -374,10 +389,15 @@ final class ReactiveLazyComputed<T> implements ValueListenable<T> {
       _dirty = false;
       if (changed) {
         _revision = _owner.revision;
+        _diagnostics?.emit(
+          DartitectDiagnosticPhase.updated,
+          revision: _revision,
+        );
         if (hadValue) _notifyListeners();
       }
     } catch (error, stackTrace) {
       _dirty = true;
+      _diagnostics?.emit(DartitectDiagnosticPhase.crashed, revision: _revision);
       _owner._report(error, stackTrace);
       if (!hadValue || throwOnFailure) {
         Error.throwWithStackTrace(error, stackTrace);
@@ -417,6 +437,7 @@ final class ReactiveLazyComputed<T> implements ValueListenable<T> {
     _stableValue = null;
     _hasValue = false;
     _dirty = true;
+    _diagnostics?.emit(DartitectDiagnosticPhase.disposed, revision: _revision);
   }
 
   void _ensureActive() {
@@ -536,10 +557,20 @@ final class ReactiveOwner {
         const ReactiveObserverRegistration.borrowed(NoOpReactiveObserver()),
     ChangeCauseRegistry? causeRegistry,
     int Function()? monotonicMicroseconds,
+    DartitectDiagnosticSubject? diagnostics,
   }) : _reporter = reporter,
        _observerRegistration = observer,
        _causeRegistry = causeRegistry ?? ChangeCauseRegistry(),
-       _monotonicMicroseconds = monotonicMicroseconds {
+       _monotonicMicroseconds = monotonicMicroseconds,
+       _diagnostics = diagnostics {
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.owner) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'ReactiveOwner requires an owner diagnostic subject.',
+      );
+    }
     _events = SafeReactiveObserver(
       observer: observer.observer,
       onFailure: _report,
@@ -551,6 +582,7 @@ final class ReactiveOwner {
   final ReactiveObserverRegistration _observerRegistration;
   final ChangeCauseRegistry _causeRegistry;
   final int Function()? _monotonicMicroseconds;
+  final DartitectDiagnosticSubject? _diagnostics;
   final Stopwatch _eventStopwatch = Stopwatch();
   late final SafeReactiveObserver _events;
   final List<_ReactiveNodeBase> _nodes = <_ReactiveNodeBase>[];
@@ -638,6 +670,10 @@ final class ReactiveOwner {
       resolvedEquality,
       equality == null,
     );
+    node.diagnostics = _diagnostics?.child(
+      DartitectDiagnosticSubjectKind.node,
+      revision: _revision,
+    );
     _nodes.add(node);
     if (key != null) _keyed[key] = node;
     return node;
@@ -718,6 +754,20 @@ final class ReactiveOwner {
       resolvedEquality,
       equality == null,
     );
+    node.diagnostics = _diagnostics?.child(
+      DartitectDiagnosticSubjectKind.node,
+      revision: _revision,
+    );
+    for (final dependency in declared) {
+      final related = dependency.diagnostics;
+      if (related != null) {
+        node.diagnostics?.emit(
+          DartitectDiagnosticPhase.linked,
+          related: related,
+          revision: _revision,
+        );
+      }
+    }
     _nodes.add(node);
     _keyed[key] = node;
     try {
@@ -749,6 +799,10 @@ final class ReactiveOwner {
       compute: compute,
       equality: equality ?? _defaultEquality,
       usesDefaultEquality: equality == null,
+      diagnostics: _diagnostics?.child(
+        DartitectDiagnosticSubjectKind.node,
+        revision: _revision,
+      ),
     );
     _lazyComputeds.add(node as ReactiveLazyComputed<Object?>);
     return node;
@@ -771,6 +825,9 @@ final class ReactiveOwner {
     final previousPhase = _phase;
     final previousRevision = _revision;
     final started = outer ? _eventNow() : 0;
+    if (outer) {
+      _diagnostics?.emit(DartitectDiagnosticPhase.started, revision: _revision);
+    }
     if (outer) _activeWrites = <_ReactiveNodeBase, Object?>{};
     _phase = ReactiveOwnerPhase.write;
     _depth += 1;
@@ -797,6 +854,10 @@ final class ReactiveOwner {
         }
       } catch (error, stackTrace) {
         eventKind = ReactiveEventKind.crashed;
+        _diagnostics?.emit(
+          DartitectDiagnosticPhase.crashed,
+          revision: _revision,
+        );
         Error.throwWithStackTrace(error, stackTrace);
       } finally {
         if (_revision != previousRevision ||
@@ -811,6 +872,12 @@ final class ReactiveOwner {
               duration: _eventDuration(started),
               listenerCount: diagnostics.listenerCount,
             ),
+          );
+        }
+        if (eventKind != ReactiveEventKind.crashed) {
+          _diagnostics?.emit(
+            DartitectDiagnosticPhase.succeeded,
+            revision: _revision,
           );
         }
       }
@@ -836,6 +903,7 @@ final class ReactiveOwner {
     if (_disposed) return;
     _disposed = true;
     _phase = ReactiveOwnerPhase.dispose;
+    _diagnostics?.emit(DartitectDiagnosticPhase.started, revision: _revision);
     _activeWrites = null;
     _deferredWrites.clear();
     _pendingValues = null;
@@ -849,6 +917,10 @@ final class ReactiveOwner {
     _lazyComputeds.clear();
     for (final node in _nodes.reversed) {
       node.listeners.clear();
+      node.diagnostics?.emit(
+        DartitectDiagnosticPhase.disposed,
+        revision: _revision,
+      );
     }
     _keyed.clear();
     _nodes.clear();
@@ -856,6 +928,10 @@ final class ReactiveOwner {
       await _observerRegistration.disposeOwned();
     } finally {
       _phase = ReactiveOwnerPhase.disposed;
+      _diagnostics?.emit(
+        DartitectDiagnosticPhase.disposed,
+        revision: _revision,
+      );
     }
   }
 
@@ -936,6 +1012,10 @@ final class ReactiveOwner {
       node
         ..stableValue = pending[node]
         ..nodeRevision = _revision;
+      node.diagnostics?.emit(
+        DartitectDiagnosticPhase.updated,
+        revision: _revision,
+      );
     }
 
     _phase = ReactiveOwnerPhase.notify;
@@ -1045,6 +1125,7 @@ base class _ReactiveNodeBase {
   final int ordinal;
   Object? stableValue;
   int nodeRevision = 0;
+  DartitectDiagnosticSubject? diagnostics;
   final List<VoidCallback> listeners = <VoidCallback>[];
 
   bool valuesEqual(Object? previous, Object? next) => previous == next;

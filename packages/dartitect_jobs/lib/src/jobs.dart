@@ -224,10 +224,20 @@ final class JobDispatcher<P, R, F extends Object, Q>
     this.receiptStore,
     this.leasePort,
     ProgressReporter<Q> Function(JobEnvelope<P> envelope)? progressReporter,
+    DartitectDiagnosticSubject? diagnostics,
   }) : _clock = clock,
+       _diagnostics = diagnostics,
        _progressReporter =
            progressReporter ?? ((_) => const NoOpProgressReporter<Never>()),
        _definitions = <String, JobDefinition<P, R, F, Q>>{} {
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.owner) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'JobDispatcher requires an owner diagnostic subject.',
+      );
+    }
     if (maxConcurrent <= 0 || maxRememberedJobs <= 0) {
       throw ArgumentError('Job dispatcher bounds must be positive.');
     }
@@ -257,6 +267,7 @@ final class JobDispatcher<P, R, F extends Object, Q>
 
   final JobClock _clock;
   final ProgressReporter<Q> Function(JobEnvelope<P>) _progressReporter;
+  final DartitectDiagnosticSubject? _diagnostics;
   final Map<String, JobDefinition<P, R, F, Q>> _definitions;
   final Map<String, _JobEntry<R, F>> _jobs = <String, _JobEntry<R, F>>{};
   final List<String> _completedJobIds = <String>[];
@@ -296,10 +307,21 @@ final class JobDispatcher<P, R, F extends Object, Q>
 
     final source = CancellationSource();
     final externalRegistration = cancellation?.register(source.cancel);
-    final entry = _JobEntry<R, F>(source, externalRegistration);
+    final executionId = ++_executionId;
+    final entry = _JobEntry<R, F>(
+      source,
+      externalRegistration,
+      _diagnostics?.child(
+        DartitectDiagnosticSubjectKind.job,
+        generation: executionId,
+      ),
+    );
     _jobs[envelope.jobId] = entry;
     _activeCount += 1;
-    final executionId = ++_executionId;
+    entry.diagnostics?.emit(
+      DartitectDiagnosticPhase.started,
+      generation: executionId,
+    );
     entry.terminal = _execute(envelope, executionId, entry);
     unawaited(
       entry.terminal.then<void>(
@@ -359,7 +381,13 @@ final class JobDispatcher<P, R, F extends Object, Q>
     OwnedGraph<JobHandler<P, R, F, Q>>? graph;
     try {
       final stored = await receiptStore?.read(envelope.jobId);
-      if (stored != null) return stored;
+      if (stored != null) {
+        entry.diagnostics?.emit(
+          DartitectDiagnosticPhase.succeeded,
+          generation: executionId,
+        );
+        return stored;
+      }
       entry.source.signal.throwIfCancelled();
       final remaining = envelope.deadline.difference(_clock.now().toUtc());
       if (remaining <= Duration.zero) {
@@ -414,8 +442,26 @@ final class JobDispatcher<P, R, F extends Object, Q>
           stackTrace,
         ),
       };
+      entry.diagnostics?.emit(
+        terminal is JobCompleted<R, F>
+            ? DartitectDiagnosticPhase.succeeded
+            : DartitectDiagnosticPhase.failed,
+        generation: executionId,
+      );
       await receiptStore?.write(terminal);
       return terminal;
+    } on CancellationException {
+      entry.diagnostics?.emit(
+        DartitectDiagnosticPhase.cancelled,
+        generation: executionId,
+      );
+      rethrow;
+    } catch (_) {
+      entry.diagnostics?.emit(
+        DartitectDiagnosticPhase.crashed,
+        generation: executionId,
+      );
+      rethrow;
     } finally {
       deadlineTimer?.cancel();
       await graph?.disposeAsync();
@@ -423,6 +469,10 @@ final class JobDispatcher<P, R, F extends Object, Q>
       entry.externalRegistration?.dispose();
       entry.source.dispose();
       entry.isComplete = true;
+      entry.diagnostics?.emit(
+        DartitectDiagnosticPhase.disposed,
+        generation: executionId,
+      );
     }
   }
 
@@ -455,14 +505,16 @@ final class JobDispatcher<P, R, F extends Object, Q>
     );
     _jobs.clear();
     _completedJobIds.clear();
+    _diagnostics?.emit(DartitectDiagnosticPhase.disposed);
   }
 }
 
 final class _JobEntry<R, F extends Object> {
-  _JobEntry(this.source, this.externalRegistration);
+  _JobEntry(this.source, this.externalRegistration, this.diagnostics);
 
   final CancellationSource source;
   final CancellationRegistration? externalRegistration;
+  final DartitectDiagnosticSubject? diagnostics;
   late Future<JobAck<R, F>> terminal;
   var isComplete = false;
 }

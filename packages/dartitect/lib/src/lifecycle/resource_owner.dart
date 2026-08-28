@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../diagnostics/diagnostics_protocol.dart';
 import '../observer.dart';
 import 'contracts.dart';
 
@@ -59,11 +60,23 @@ final class ResourceOwner implements AsyncDisposable {
   ResourceOwner({
     ArchitectureObserver observer = const NoOpArchitectureObserver(),
     String label = 'ResourceOwner',
+    DartitectDiagnosticSubject? diagnostics,
   }) : _observer = observer,
-       _label = label;
+       _label = label,
+       _diagnostics = diagnostics {
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.owner) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'ResourceOwner requires an owner diagnostic subject.',
+      );
+    }
+  }
 
   final ArchitectureObserver _observer;
   final String _label;
+  final DartitectDiagnosticSubject? _diagnostics;
   final List<_OwnedResource<Object?>> _resources = <_OwnedResource<Object?>>[];
 
   Future<void>? _disposal;
@@ -106,6 +119,10 @@ final class ResourceOwner implements AsyncDisposable {
         resourceLabel,
       ),
     );
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.updated,
+      revision: _resources.length,
+    );
     _emit(
       ArchitectureEvent(
         ArchitectureEventKind.resourceAcquired,
@@ -130,6 +147,10 @@ final class ResourceOwner implements AsyncDisposable {
     final completer = Completer<void>();
     _disposal = completer.future;
     _isDisposing = true;
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.started,
+      revision: _resources.length,
+    );
     _emit(
       ArchitectureEvent(ArchitectureEventKind.runtimeDisposing, source: _label),
     );
@@ -183,6 +204,7 @@ final class ResourceOwner implements AsyncDisposable {
               stackTrace: stackTrace,
             ),
           );
+          _diagnostics?.emit(DartitectDiagnosticPhase.failed);
         }
       }
     } finally {
@@ -195,6 +217,7 @@ final class ResourceOwner implements AsyncDisposable {
           source: _label,
         ),
       );
+      _diagnostics?.emit(DartitectDiagnosticPhase.disposed);
     }
 
     if (failures.isNotEmpty) {

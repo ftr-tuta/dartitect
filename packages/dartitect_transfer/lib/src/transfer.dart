@@ -250,9 +250,19 @@ final class TransferEngine<F extends Object> implements AsyncDisposable {
     this.chunkSize = 256 * 1024,
     ProgressReporter<TransferProgress> progress =
         const NoOpProgressReporter<Never>(),
-  }) : _progress = SafeProgressReporter<TransferProgress>(reporter: progress) {
+    DartitectDiagnosticSubject? diagnostics,
+  }) : _progress = SafeProgressReporter<TransferProgress>(reporter: progress),
+       _diagnostics = diagnostics {
     if (chunkSize <= 0) {
       throw ArgumentError.value(chunkSize, 'chunkSize', 'Must be positive.');
+    }
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.owner) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'TransferEngine requires an owner diagnostic subject.',
+      );
     }
   }
 
@@ -272,6 +282,7 @@ final class TransferEngine<F extends Object> implements AsyncDisposable {
   final int chunkSize;
 
   final ProgressReporter<TransferProgress> _progress;
+  final DartitectDiagnosticSubject? _diagnostics;
   _TransferControl? _active;
   var _executionId = 0;
   var _disposed = false;
@@ -292,7 +303,18 @@ final class TransferEngine<F extends Object> implements AsyncDisposable {
     }
     final control = _TransferControl();
     _active = control;
-    final done = _execute(transferId, deadline, ++_executionId, control);
+    final executionId = ++_executionId;
+    final runDiagnostics = _diagnostics?.child(
+      DartitectDiagnosticSubjectKind.transfer,
+      generation: executionId,
+    );
+    final done = _execute(
+      transferId,
+      deadline,
+      executionId,
+      control,
+      runDiagnostics,
+    );
     control.done = done.then<void>((_) {}, onError: (_, _) {});
     return TransferRun<F>._(done, control);
   }
@@ -302,9 +324,14 @@ final class TransferEngine<F extends Object> implements AsyncDisposable {
     DateTime? deadline,
     int executionId,
     _TransferControl control,
+    DartitectDiagnosticSubject? diagnostics,
   ) async {
     Timer? deadlineTimer;
     try {
+      diagnostics?.emit(
+        DartitectDiagnosticPhase.started,
+        generation: executionId,
+      );
       if (deadline != null) {
         final remaining = deadline.difference(DateTime.now().toUtc());
         if (remaining <= Duration.zero) {
@@ -378,6 +405,11 @@ final class TransferEngine<F extends Object> implements AsyncDisposable {
         final result = await transport.transmit(chunk, control.source.signal);
         switch (result) {
           case Err<Object>(:final failure, :final stackTrace):
+            diagnostics?.emit(
+              DartitectDiagnosticPhase.failed,
+              generation: executionId,
+              revision: revision,
+            );
             return Err<F>(failure as F, stackTrace);
           case Ok<dynamic>(:final value):
             final commit = value as TransferCommit;
@@ -396,6 +428,11 @@ final class TransferEngine<F extends Object> implements AsyncDisposable {
           revision: revision,
         );
         await checkpoints.save(checkpoint);
+        diagnostics?.emit(
+          DartitectDiagnosticPhase.updated,
+          generation: executionId,
+          revision: revision,
+        );
         command.publish(
           TransferProgress(
             phase: TransferProgressPhase.chunkCommitted,
@@ -411,6 +448,11 @@ final class TransferEngine<F extends Object> implements AsyncDisposable {
           chunkCount: chunkCount,
         ),
       );
+      diagnostics?.emit(
+        DartitectDiagnosticPhase.succeeded,
+        generation: executionId,
+        revision: revision,
+      );
       return Ok<TransferReport>(
         TransferReport(
           transferId: transferId,
@@ -419,10 +461,32 @@ final class TransferEngine<F extends Object> implements AsyncDisposable {
           checkpointRevision: revision,
         ),
       );
+    } on CancellationException {
+      diagnostics?.emit(
+        DartitectDiagnosticPhase.cancelled,
+        generation: executionId,
+      );
+      rethrow;
+    } on OperationDeadlineExceededException {
+      diagnostics?.emit(
+        DartitectDiagnosticPhase.failed,
+        generation: executionId,
+      );
+      rethrow;
+    } catch (_) {
+      diagnostics?.emit(
+        DartitectDiagnosticPhase.crashed,
+        generation: executionId,
+      );
+      rethrow;
     } finally {
       deadlineTimer?.cancel();
       control.source.dispose();
       if (identical(_active, control)) _active = null;
+      diagnostics?.emit(
+        DartitectDiagnosticPhase.disposed,
+        generation: executionId,
+      );
     }
   }
 
@@ -435,7 +499,11 @@ final class TransferEngine<F extends Object> implements AsyncDisposable {
     _disposed = true;
     final active = _active;
     active?.cancel('TransferEngine disposed');
-    await active?.done;
+    try {
+      await active?.done;
+    } finally {
+      _diagnostics?.emit(DartitectDiagnosticPhase.disposed);
+    }
   }
 }
 

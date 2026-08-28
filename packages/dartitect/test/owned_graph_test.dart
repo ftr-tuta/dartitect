@@ -149,4 +149,48 @@ void main() {
     expect(first, equal);
     expect(first.hashCode, equal.hashCode);
   });
+
+  test(
+    'owned graph diagnostics reconstruct lifecycle without payloads',
+    () async {
+      final buffer = DartitectDiagnosticBuffer(capacity: 32);
+      final emitter = DartitectDiagnosticsEmitter(
+        reporter: DartitectDiagnosticReporterRegistration.borrowed(buffer),
+        detail: DartitectDiagnosticDetail.topology,
+      );
+      final host = emitter.subject(DartitectDiagnosticSubjectKind.host);
+      final slot = OwnedRuntimeSlot<int>(diagnostics: host);
+
+      await slot.replace((transaction) {
+        transaction.own(1, (_) {});
+        return 1;
+      });
+      expect(await slot.use((value) => value), 1);
+      await slot.disposeAsync();
+
+      expect(
+        buffer.events.map((event) => event.subjectKind).toSet(),
+        containsAll(<DartitectDiagnosticSubjectKind>{
+          DartitectDiagnosticSubjectKind.host,
+          DartitectDiagnosticSubjectKind.graph,
+          DartitectDiagnosticSubjectKind.owner,
+        }),
+      );
+      expect(
+        buffer.events.where(
+          (event) => event.phase == DartitectDiagnosticPhase.disposed,
+        ),
+        hasLength(3),
+      );
+      expect(
+        buffer.events.map((event) => event.monotonicMicroseconds),
+        orderedEquals(
+          buffer.events.map((event) => event.monotonicMicroseconds).toList()
+            ..sort(),
+        ),
+      );
+      await emitter.dispose();
+      buffer.dispose();
+    },
+  );
 }

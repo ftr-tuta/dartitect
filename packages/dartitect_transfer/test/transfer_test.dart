@@ -10,12 +10,18 @@ void main() {
     final checkpoints = _Checkpoints(events);
     final transport = _Transport(events);
     final progress = BoundedProgressReporter<TransferProgress>();
+    final diagnostics = DartitectDiagnosticBuffer(capacity: 32);
+    final emitter = DartitectDiagnosticsEmitter(
+      reporter: DartitectDiagnosticReporterRegistration.borrowed(diagnostics),
+      detail: DartitectDiagnosticDetail.topology,
+    );
     final engine = TransferEngine<_Failure>(
       source: _BytesSource(<int>[1, 2, 3, 4, 5]),
       transport: transport,
       checkpoints: checkpoints,
       chunkSize: 2,
       progress: progress,
+      diagnostics: emitter.subject(DartitectDiagnosticSubjectKind.owner),
     );
 
     final result = await engine.start('asset').done;
@@ -30,6 +36,22 @@ void main() {
     ]);
     expect(progress.events.last.payload.phase, TransferProgressPhase.completed);
     await engine.disposeAsync();
+    expect(
+      diagnostics.events
+          .where(
+            (event) =>
+                event.subjectKind == DartitectDiagnosticSubjectKind.transfer,
+          )
+          .map((event) => event.phase),
+      containsAll(<DartitectDiagnosticPhase>{
+        DartitectDiagnosticPhase.started,
+        DartitectDiagnosticPhase.updated,
+        DartitectDiagnosticPhase.succeeded,
+        DartitectDiagnosticPhase.disposed,
+      }),
+    );
+    await emitter.dispose();
+    diagnostics.dispose();
   });
 
   test('resume begins at the last durable checkpoint', () async {

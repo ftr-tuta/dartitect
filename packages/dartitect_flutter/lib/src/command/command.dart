@@ -304,6 +304,7 @@ mixin _CommandBinding<T, F extends Object> on ChangeNotifier
   Future<void>? _disposal;
   var _disposed = false;
   var _notifierDisposed = false;
+  DartitectDiagnosticSubject? _diagnostics;
 
   int get laneRunningCount;
   int get laneQueuedCount;
@@ -315,6 +316,18 @@ mixin _CommandBinding<T, F extends Object> on ChangeNotifier
   int? get laneLatestAcceptedExecutionId;
   int get laneActiveKeyCount => 0;
   Future<void> closeLane();
+
+  void initializeDiagnostics(DartitectDiagnosticSubject? diagnostics) {
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.command) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'Commands require a command diagnostic subject.',
+      );
+    }
+    _diagnostics = diagnostics;
+  }
 
   /// Current exhaustive operation state.
   CommandState<T, F> get state => _state;
@@ -401,26 +414,44 @@ mixin _CommandBinding<T, F extends Object> on ChangeNotifier
     if (existing != null) return existing;
     final executionId = laneLatestAcceptedExecutionId;
     final mapped = source.then(
-      (outcome) => switch (outcome) {
-        CommandSucceeded<T, F>(:final value) => CommandExecutionSucceeded<T, F>(
-          value,
-          executionId: executionId ?? 0,
-        ),
-        CommandFailed<T, F>(:final failure, :final stackTrace) =>
-          CommandExecutionFailed<T, F>(
-            failure,
-            stackTrace,
-            executionId: executionId ?? 0,
-          ),
-        CommandRejected<T, F>(:final reason) => CommandExecutionRejected<T, F>(
-          _rejection(reason),
-        ),
-        CommandDropped<T, F>() => CommandExecutionDropped<T, F>(),
-        CommandCancelled<T, F>(:final reason) =>
-          CommandExecutionCancelled<T, F>(
-            reason,
-            executionId: executionId ?? 0,
-          ),
+      (outcome) {
+        final phase = switch (outcome) {
+          CommandSucceeded<T, F>() => DartitectDiagnosticPhase.succeeded,
+          CommandFailed<T, F>() => DartitectDiagnosticPhase.failed,
+          CommandCancelled<T, F>() => DartitectDiagnosticPhase.cancelled,
+          CommandRejected<T, F>() || CommandDropped<T, F>() => null,
+        };
+        if (phase != null) {
+          _diagnostics?.emit(phase, revision: executionId ?? 0);
+        }
+        return switch (outcome) {
+          CommandSucceeded<T, F>(:final value) =>
+            CommandExecutionSucceeded<T, F>(
+              value,
+              executionId: executionId ?? 0,
+            ),
+          CommandFailed<T, F>(:final failure, :final stackTrace) =>
+            CommandExecutionFailed<T, F>(
+              failure,
+              stackTrace,
+              executionId: executionId ?? 0,
+            ),
+          CommandRejected<T, F>(:final reason) =>
+            CommandExecutionRejected<T, F>(_rejection(reason)),
+          CommandDropped<T, F>() => CommandExecutionDropped<T, F>(),
+          CommandCancelled<T, F>(:final reason) =>
+            CommandExecutionCancelled<T, F>(
+              reason,
+              executionId: executionId ?? 0,
+            ),
+        };
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        _diagnostics?.emit(
+          DartitectDiagnosticPhase.crashed,
+          revision: executionId ?? 0,
+        );
+        Error.throwWithStackTrace(error, stackTrace);
       },
     );
     _mapped[source] = mapped;
@@ -489,8 +520,11 @@ mixin _CommandBinding<T, F extends Object> on ChangeNotifier
     unawaited(() async {
       try {
         await closeLane();
+        _diagnostics?.emit(DartitectDiagnosticPhase.disposed);
         completer.complete();
       } catch (error, stackTrace) {
+        _diagnostics?.emit(DartitectDiagnosticPhase.crashed);
+        _diagnostics?.emit(DartitectDiagnosticPhase.disposed);
         completer.completeError(error, stackTrace);
       }
     }());
@@ -518,7 +552,9 @@ final class Command0<T, F extends Object> extends ChangeNotifier
     Future<Result<T, F>> Function() action, {
     this.concurrency = const CommandConcurrency.reject(),
     CommandCrashReporter reporter = const NoOpCommandCrashReporter(),
+    DartitectDiagnosticSubject? diagnostics,
   }) : _action = ((_) => action()) {
+    initializeDiagnostics(diagnostics);
     _createLane(reporter);
   }
 
@@ -527,7 +563,9 @@ final class Command0<T, F extends Object> extends ChangeNotifier
     Future<Result<T, F>> Function(CancellationSignal signal) action, {
     this.concurrency = const CommandConcurrency.reject(),
     CommandCrashReporter reporter = const NoOpCommandCrashReporter(),
+    DartitectDiagnosticSubject? diagnostics,
   }) : _action = action {
+    initializeDiagnostics(diagnostics);
     _createLane(reporter);
   }
 
@@ -593,7 +631,9 @@ final class Command1<A, T, F extends Object> extends ChangeNotifier
     Future<Result<T, F>> Function(A argument) action, {
     this.concurrency = const CommandConcurrency.reject(),
     CommandCrashReporter reporter = const NoOpCommandCrashReporter(),
+    DartitectDiagnosticSubject? diagnostics,
   }) : _action = ((argument, _) => action(argument)) {
+    initializeDiagnostics(diagnostics);
     _createLane(reporter);
   }
 
@@ -603,7 +643,9 @@ final class Command1<A, T, F extends Object> extends ChangeNotifier
     action, {
     this.concurrency = const CommandConcurrency.reject(),
     CommandCrashReporter reporter = const NoOpCommandCrashReporter(),
+    DartitectDiagnosticSubject? diagnostics,
   }) : _action = action {
+    initializeDiagnostics(diagnostics);
     _createLane(reporter);
   }
 
@@ -676,7 +718,9 @@ final class KeyedCommand1<K, A, T, F extends Object> extends ChangeNotifier
     action, {
     this.concurrency = const CommandConcurrency.keyed(),
     CommandCrashReporter reporter = const NoOpCommandCrashReporter(),
+    DartitectDiagnosticSubject? diagnostics,
   }) : _action = action {
+    initializeDiagnostics(diagnostics);
     _lane = KeyedCommandLane<K, A, T, F>(
       action: _action,
       concurrency: concurrency,

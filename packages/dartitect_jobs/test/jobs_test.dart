@@ -9,6 +9,11 @@ void main() {
     var graphCount = 0;
     var disposeCount = 0;
     final progress = BoundedProgressReporter<int>();
+    final diagnostics = DartitectDiagnosticBuffer(capacity: 32);
+    final emitter = DartitectDiagnosticsEmitter(
+      reporter: DartitectDiagnosticReporterRegistration.borrowed(diagnostics),
+      detail: DartitectDiagnosticDetail.topology,
+    );
     final dispatcher = JobDispatcher<int, int, _Failure, int>(
       definitions: <JobDefinition<int, int, _Failure, int>>[
         JobDefinition<int, int, _Failure, int>(
@@ -25,6 +30,7 @@ void main() {
         ),
       ],
       progressReporter: (_) => progress,
+      diagnostics: emitter.subject(DartitectDiagnosticSubjectKind.owner),
     );
     final envelope = JobEnvelope<int>(
       jobId: 'job-1',
@@ -42,6 +48,20 @@ void main() {
     expect(disposeCount, 1);
     expect(progress.events.single.payload, 4);
     await dispatcher.disposeAsync();
+    expect(
+      diagnostics.events
+          .where(
+            (event) => event.subjectKind == DartitectDiagnosticSubjectKind.job,
+          )
+          .map((event) => event.phase),
+      containsAll(<DartitectDiagnosticPhase>{
+        DartitectDiagnosticPhase.started,
+        DartitectDiagnosticPhase.succeeded,
+        DartitectDiagnosticPhase.disposed,
+      }),
+    );
+    await emitter.dispose();
+    diagnostics.dispose();
   });
 
   test('dispatcher bounds concurrency without evicting active work', () async {
@@ -147,7 +167,7 @@ void main() {
       JobEnvelope<int>(
         jobId: 'deadline',
         definition: 'wait',
-        deadline: DateTime.now().toUtc().add(const Duration(milliseconds: 10)),
+        deadline: DateTime.now().toUtc().add(const Duration(milliseconds: 100)),
         payload: 1,
       ),
     );

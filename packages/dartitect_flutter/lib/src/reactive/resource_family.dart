@@ -97,14 +97,27 @@ final class ResourceFamily<K, T, F extends Object> implements AsyncDisposable {
     FamilyCachePolicy<K, T>? policy,
     ReactiveTimerFactory timerFactory = const SystemReactiveTimerFactory(),
     Future<void> Function(LiveResource<T, F> resource)? disposeResource,
+    DartitectDiagnosticSubject? diagnostics,
   }) : _create = create,
        policy = policy ?? FamilyCachePolicy<K, T>(),
        _timerFactory = timerFactory,
-       _disposeResource = disposeResource ?? ((resource) => resource.dispose());
+       _diagnostics = diagnostics,
+       _disposeResource =
+           disposeResource ?? ((resource) => resource.dispose()) {
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.family) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'ResourceFamily requires a family diagnostic subject.',
+      );
+    }
+  }
 
   final LiveResource<T, F> Function(K key) _create;
   final ReactiveTimerFactory _timerFactory;
   final Future<void> Function(LiveResource<T, F> resource) _disposeResource;
+  final DartitectDiagnosticSubject? _diagnostics;
   final Map<K, _FamilyEntry<K, T, F>> _entries = <K, _FamilyEntry<K, T, F>>{};
   final Set<_FamilyPrewarm<K, T, F>> _prewarms = <_FamilyPrewarm<K, T, F>>{};
   final InvalidationGroup<K> _invalidations = InvalidationGroup<K>();
@@ -168,6 +181,10 @@ final class ResourceFamily<K, T, F extends Object> implements AsyncDisposable {
     _ensureActive();
     final entry = _obtain(key);
     _retain(entry);
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.updated,
+      revision: _entries.length,
+    );
     return FamilyLease<K, T, F>._(this, key, entry);
   }
 
@@ -346,6 +363,10 @@ final class ResourceFamily<K, T, F extends Object> implements AsyncDisposable {
 
   Future<void> _evictUnretained(_FamilyEntry<K, T, F> entry) async {
     _evictionTranscript.add(entry.key);
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.evicted,
+      revision: _evictionTranscript.length,
+    );
     try {
       await _removeAndDispose(entry);
     } catch (error, stackTrace) {
@@ -432,6 +453,10 @@ final class ResourceFamily<K, T, F extends Object> implements AsyncDisposable {
   Future<void> _dispose() async {
     if (_disposed) return;
     _disposed = true;
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.started,
+      revision: _entries.length,
+    );
     final failures = <AsyncLifecycleCleanupFailure>[];
     await _tail;
     final transitionError = _transitionError;
@@ -460,10 +485,12 @@ final class ResourceFamily<K, T, F extends Object> implements AsyncDisposable {
     _entries.clear();
     _idleWeight = 0;
     if (failures.isNotEmpty) {
+      _diagnostics?.emit(DartitectDiagnosticPhase.crashed);
       throw AsyncLifecycleCleanupException(
         List<AsyncLifecycleCleanupFailure>.unmodifiable(failures),
       );
     }
+    _diagnostics?.emit(DartitectDiagnosticPhase.disposed);
   }
 
   void _ensureActive() {

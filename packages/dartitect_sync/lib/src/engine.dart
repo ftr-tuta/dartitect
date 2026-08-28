@@ -26,12 +26,22 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
     SyncObserver<K> observer = const NoOpSyncObserver(),
     this.leaseTtl = const Duration(minutes: 5),
     this.maxRecentProgressEvents = 256,
+    DartitectDiagnosticSubject? diagnostics,
   }) : _clock = clock,
        _ids = ids ?? SecureUuidV4Generator(),
        _observer = observer,
+       _diagnostics = diagnostics,
        _datasets = <K, SyncDataset<K, C, F>>{
          for (final dataset in datasets) dataset.key: dataset,
        } {
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.owner) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'SyncEngine requires an owner diagnostic subject.',
+      );
+    }
     if (leaseTtl <= Duration.zero) {
       throw ArgumentError.value(leaseTtl, 'leaseTtl', 'must be positive');
     }
@@ -73,9 +83,11 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
   final SyncClock _clock;
   final IdGenerator _ids;
   final SyncObserver<K> _observer;
+  final DartitectDiagnosticSubject? _diagnostics;
   final Set<SyncRun<K, C, F>> _runs = <SyncRun<K, C, F>>{};
   Future<void>? _disposal;
   var _closing = false;
+  var _diagnosticGeneration = 0;
 
   /// Active runs owned by this engine.
   int get activeRunCount => _runs.length;
@@ -92,6 +104,11 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
       plan: graph.plan(eligible: eligible),
       deadline: deadline,
       maxRecentProgressEvents: maxRecentProgressEvents,
+      diagnostics: _diagnostics?.child(
+        DartitectDiagnosticSubjectKind.sync,
+        generation: ++_diagnosticGeneration,
+      ),
+      diagnosticGeneration: _diagnosticGeneration,
     );
     _runs.add(run);
     unawaited(_execute(run));
@@ -532,6 +549,7 @@ final class SyncEngine<K, C, F extends Object> implements AsyncDisposable {
     await Future.wait<void>(
       runs.map((run) => run.done.then<void>((_) {}, onError: (_, _) {})),
     );
+    _diagnostics?.emit(DartitectDiagnosticPhase.disposed);
   }
 }
 
@@ -591,7 +609,11 @@ final class SyncRun<K, C, F extends Object> implements AsyncDisposable {
     required this.plan,
     required this.deadline,
     required int maxRecentProgressEvents,
+    required DartitectDiagnosticSubject? diagnostics,
+    required int diagnosticGeneration,
   }) : _cancellation = CancellationSource(),
+       _diagnostics = diagnostics,
+       _diagnosticGeneration = diagnosticGeneration,
        _progress = SyncProgressController<K>(
          maxRecentEvents: maxRecentProgressEvents,
        );
@@ -609,6 +631,8 @@ final class SyncRun<K, C, F extends Object> implements AsyncDisposable {
   final Completer<SyncReport<K, C, F>> _completion =
       Completer<SyncReport<K, C, F>>();
   final SyncProgressController<K> _progress;
+  final DartitectDiagnosticSubject? _diagnostics;
+  final int _diagnosticGeneration;
   var _sequence = 0;
 
   /// Borrowed cooperative cancellation signal.
@@ -625,6 +649,20 @@ final class SyncRun<K, C, F extends Object> implements AsyncDisposable {
 
   void _emit(SyncProgressPhase phase, DateTime timestamp, {K? key}) {
     _sequence += 1;
+    _diagnostics?.emit(
+      switch (phase) {
+        SyncProgressPhase.runStarted => DartitectDiagnosticPhase.started,
+        SyncProgressPhase.runCompleted => DartitectDiagnosticPhase.succeeded,
+        SyncProgressPhase.runCrashed => DartitectDiagnosticPhase.crashed,
+        SyncProgressPhase.cancelled => DartitectDiagnosticPhase.cancelled,
+        SyncProgressPhase.datasetFailed => DartitectDiagnosticPhase.failed,
+        SyncProgressPhase.datasetStarted ||
+        SyncProgressPhase.datasetSucceeded ||
+        SyncProgressPhase.datasetSkipped => DartitectDiagnosticPhase.updated,
+      },
+      generation: _diagnosticGeneration,
+      revision: _sequence,
+    );
     _progress.add(
       SyncProgressEvent<K>(
         runId: runId,
@@ -646,7 +684,14 @@ final class SyncRun<K, C, F extends Object> implements AsyncDisposable {
     }
   }
 
-  Future<void> _closeProgress() => _progress.close();
+  Future<void> _closeProgress() async {
+    await _progress.close();
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.disposed,
+      generation: _diagnosticGeneration,
+      revision: _sequence,
+    );
+  }
 
   /// Cancels this run and waits for terminal cleanup.
   @override

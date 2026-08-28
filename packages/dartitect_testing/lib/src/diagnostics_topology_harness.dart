@@ -46,6 +46,7 @@ final class DiagnosticsTopologyHarness {
   final Map<DartitectDiagnosticId, DiagnosticTopologyNode> _nodes =
       <DartitectDiagnosticId, DiagnosticTopologyNode>{};
   var _lastSequence = 0;
+  var _lastMonotonicMicroseconds = 0;
 
   /// Latest admitted event sequence.
   int get lastSequence => _lastSequence;
@@ -66,7 +67,11 @@ final class DiagnosticsTopologyHarness {
     if (event.sequence <= _lastSequence) {
       throw StateError('Diagnostic event sequence is not strictly monotonic.');
     }
+    if (event.monotonicMicroseconds < _lastMonotonicMicroseconds) {
+      throw StateError('Diagnostic event time moved backwards.');
+    }
     _lastSequence = event.sequence;
+    _lastMonotonicMicroseconds = event.monotonicMicroseconds;
     final existing = _nodes[event.subjectId];
     if (event.phase == DartitectDiagnosticPhase.created) {
       if (existing != null) {

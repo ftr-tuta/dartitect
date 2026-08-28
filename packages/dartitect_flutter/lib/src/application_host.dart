@@ -27,6 +27,7 @@ final class ApplicationHost<R> extends StatefulWidget {
     required this.loading,
     required this.failure,
     required this.ready,
+    this.diagnostics,
     super.key,
   }) : _create = create,
        _value = null,
@@ -38,6 +39,7 @@ final class ApplicationHost<R> extends StatefulWidget {
     required this.loading,
     required this.failure,
     required this.ready,
+    this.diagnostics,
     super.key,
   }) : _value = value,
        _create = null,
@@ -46,6 +48,9 @@ final class ApplicationHost<R> extends StatefulWidget {
   final BootstrapCoordinator<R> Function()? _create;
   final BootstrapCoordinator<R>? _value;
   final bool _ownsCoordinator;
+
+  /// Optional payload-free host subject owned by the application runtime.
+  final DartitectDiagnosticSubject? diagnostics;
 
   /// Loading subtree shown before a graph is published.
   final WidgetBuilder loading;
@@ -72,6 +77,15 @@ final class _ApplicationHostState<R> extends State<ApplicationHost<R>> {
   @override
   void initState() {
     super.initState();
+    final diagnostics = widget.diagnostics;
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.host) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'ApplicationHost requires a host diagnostic subject.',
+      );
+    }
     _adoptCoordinator();
     _start();
   }
@@ -98,6 +112,10 @@ final class _ApplicationHostState<R> extends State<ApplicationHost<R>> {
 
   void _start() {
     final attemptId = ++_attemptId;
+    widget.diagnostics?.emit(
+      DartitectDiagnosticPhase.started,
+      generation: attemptId,
+    );
     _attemptCancellation?.dispose();
     final cancellation = CancellationSource();
     _attemptCancellation = cancellation;
@@ -115,6 +133,10 @@ final class _ApplicationHostState<R> extends State<ApplicationHost<R>> {
         }
         switch (attempt) {
           case BootstrapSucceeded<R>(:final graph):
+            widget.diagnostics?.emit(
+              DartitectDiagnosticPhase.succeeded,
+              generation: attemptId,
+            );
             final previous = _graph;
             setState(() {
               _graph = graph;
@@ -123,6 +145,10 @@ final class _ApplicationHostState<R> extends State<ApplicationHost<R>> {
             });
             if (previous != null) _watch(previous.disposeAsync());
           case BootstrapFailed<R>():
+            widget.diagnostics?.emit(
+              DartitectDiagnosticPhase.failed,
+              generation: attemptId,
+            );
             setState(() {
               _failure = attempt;
               _loading = false;
@@ -148,6 +174,10 @@ final class _ApplicationHostState<R> extends State<ApplicationHost<R>> {
     _attemptCancellation?.dispose();
     _watch(_graph?.disposeAsync());
     if (_ownsCoordinator) _watch(_coordinator.disposeAsync());
+    widget.diagnostics?.emit(
+      DartitectDiagnosticPhase.disposed,
+      generation: _attemptId,
+    );
     super.dispose();
   }
 
