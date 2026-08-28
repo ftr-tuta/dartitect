@@ -69,6 +69,57 @@ void main() {
     expect(roundTrip.ecosystem?.installedOverlap, 'warning');
   });
 
+  test('feature declarations round-trip profiles and unknown keys', () {
+    final config = DartitectConfig(
+      features: DartitectFeaturesConfig(
+        declarations: <String, DartitectFeatureDeclaration>{
+          'orders': DartitectFeatureDeclaration(
+            profile: FeatureProfile.offlineFull,
+            persistence: 'drift',
+            transport: 'dio',
+            cursorPagination: true,
+            headlessSync: true,
+            diagnostics: FeatureDiagnosticsLevel.full,
+            unknown: const <String, Object?>{'futurePolicy': true},
+          ),
+        },
+        unknown: const <String, Object?>{'futureRegistry': 2},
+      ),
+    );
+
+    final roundTrip = DartitectConfig.parse(config.encode());
+    final orders = roundTrip.features!.declarations['orders']!;
+    expect(orders.profile, FeatureProfile.offlineFull);
+    expect(orders.persistence, 'drift');
+    expect(orders.transport, 'dio');
+    expect(orders.cursorPagination, isTrue);
+    expect(orders.headlessSync, isTrue);
+    expect(orders.diagnostics, FeatureDiagnosticsLevel.full);
+    expect(orders.unknown, containsPair('futurePolicy', true));
+    expect(roundTrip.features!.unknown, containsPair('futureRegistry', 2));
+    expect(roundTrip.toJson(), config.toJson());
+  });
+
+  test('feature declarations reject incompatible profile capabilities', () {
+    expect(
+      () => DartitectFeatureDeclaration(
+        profile: FeatureProfile.online,
+        persistence: 'drift',
+        transport: 'dio',
+      ),
+      throwsA(isA<DartitectConfigException>()),
+    );
+    expect(
+      () => DartitectFeatureDeclaration(
+        profile: FeatureProfile.cache,
+        persistence: 'drift',
+        transport: 'dio',
+        headlessSync: true,
+      ),
+      throwsA(isA<DartitectConfigException>()),
+    );
+  });
+
   test('missing version and future version fail closed with pointers', () {
     expect(
       () => DartitectConfig.parse('{}'),

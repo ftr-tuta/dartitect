@@ -63,6 +63,43 @@ dependencies:
     expect(scan.findings.single.code, 'DT0001');
   });
 
+  test('borrowing hosts reject only known inline disposable values', () async {
+    final root = await Directory.systemTemp.createTemp('dartitect-host-value-');
+    addTearDown(() => root.delete(recursive: true));
+    await _write(root, 'pubspec.yaml', 'name: sample\n');
+    await _write(root, 'dartitect.json', DartitectConfig().encode());
+    await _write(
+      root,
+      'lib/features/orders/presentation/host.dart',
+      '''import 'package:dartitect_flutter/dartitect_flutter.dart';
+
+Object unsafeApplication() => ApplicationHost<Object>.value(
+  value: BootstrapCoordinator<Object>(),
+);
+Object unsafeSession() => SessionHost<Object, Object>.value(
+  value: SessionRuntimeController<Object, Object>(),
+);
+Object unsafeViewModel() => ViewModelHost<Object>.value(
+  value: ReactiveOwner(),
+);
+
+Object safe(BootstrapCoordinator<Object> coordinator) =>
+    ApplicationHost<Object>.value(value: coordinator);
+''',
+    );
+
+    final scan = await ProjectScanner(root).scan();
+    final violations = scan.violations.where(
+      (finding) =>
+          finding.code == DartitectRuleCodes.temporaryDisposableHostValue,
+    );
+    expect(violations, hasLength(3));
+    expect(
+      violations.every((finding) => finding.evidence!.endsWith('.value')),
+      isTrue,
+    );
+  });
+
   test(
     'Drift stays in infrastructure without neutral type false positives',
     () async {

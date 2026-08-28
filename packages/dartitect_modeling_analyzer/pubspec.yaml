@@ -1,6 +1,6 @@
 name: dartitect_modeling_analyzer
 description: Shared read-only semantic compiler for Dartitect modeling tools and analyzer integrations.
-version: 1.0.0-rc.4
+version: 1.0.0-rc.5
 repository: https://github.com/ftr-tuta/dartitect
 issue_tracker: https://github.com/ftr-tuta/dartitect/issues
 topics: [analyzer, code-generation, modeling, diagnostics]
@@ -11,7 +11,7 @@ environment:
 
 dependencies:
   analyzer: ^13.3.0
-  dartitect_modeling: '>=1.0.0-rc.4 <1.0.0'
+  dartitect_modeling: '>=1.0.0-rc.5 <1.0.0'
 
 dev_dependencies:
   test: ^1.26.3

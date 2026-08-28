@@ -86,9 +86,19 @@ final class EffectChannel<E extends Object> implements AsyncDisposable {
     required this.capacity,
     required this.owner,
     EffectErrorReporter reporter = const NoOpEffectErrorReporter(),
-  }) : _reporter = reporter {
+    DartitectDiagnosticSubject? diagnostics,
+  }) : _reporter = reporter,
+       _diagnostics = diagnostics {
     if (capacity <= 0) {
       throw ArgumentError.value(capacity, 'capacity', 'must be positive');
+    }
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.effect) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'EffectChannel requires an effect diagnostic subject.',
+      );
     }
     _sink = _ChannelEffectSink<E>(this);
   }
@@ -100,6 +110,7 @@ final class EffectChannel<E extends Object> implements AsyncDisposable {
   final EffectOwnerIdentity owner;
 
   final EffectErrorReporter _reporter;
+  final DartitectDiagnosticSubject? _diagnostics;
   final Queue<E> _pending = Queue<E>();
   final Completer<void> _disposalStarted = Completer<void>();
   late final EffectSink<E> _sink;
@@ -146,6 +157,10 @@ final class EffectChannel<E extends Object> implements AsyncDisposable {
     if (_disposed) return EffectPublishResult.disposed;
     if (pendingCount >= capacity) return EffectPublishResult.full;
     _pending.addLast(effect);
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.updated,
+      revision: pendingCount,
+    );
     _startDrain();
     return EffectPublishResult.accepted;
   }
@@ -176,6 +191,7 @@ final class EffectChannel<E extends Object> implements AsyncDisposable {
       try {
         await consumer(effect);
       } catch (error, stackTrace) {
+        _diagnostics?.emit(DartitectDiagnosticPhase.crashed);
         try {
           _reporter.report(error, stackTrace);
         } on Object {
@@ -184,6 +200,10 @@ final class EffectChannel<E extends Object> implements AsyncDisposable {
         }
       } finally {
         _delivering = false;
+        _diagnostics?.emit(
+          DartitectDiagnosticPhase.succeeded,
+          revision: pendingCount,
+        );
       }
     }
   }
@@ -200,6 +220,7 @@ final class EffectChannel<E extends Object> implements AsyncDisposable {
     _consumerToken = null;
     _pending.clear();
     await _drainFuture;
+    _diagnostics?.emit(DartitectDiagnosticPhase.disposed);
   }
 }
 

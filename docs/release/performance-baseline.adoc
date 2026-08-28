@@ -2,7 +2,7 @@
 
 Snapshot:: 2026-08-23
 Toolchain:: Dart 3.13.1 / Flutter 3.47.1 / Linux x64
-Role:: Reviewed `1.0.0-rc.4` thresholds; exact-root reproduction runs in Actions
+Role:: Reviewed `1.0.0-rc.5` thresholds; exact-root reproduction runs in Actions
 
 Run the following commands on the same pinned runner for comparisons:
 
@@ -73,7 +73,7 @@ supervisor requests/ports/timers after safe-stop, every
 ViewModelHost disposal, every ObjectBox query close, and temporary-directory
 cleanup. Lifecycle tests remain authoritative for leak correctness.
 
-== RC4 modeling compiler comparison
+== RC5 modeling compiler comparison
 
 +tool/model_benchmark.json+ records exact baseline +2a8261a+ and modular
 candidate +0057db5+ on the same Dart 3.13.1/Linux/4-CPU host. Every 100/500
@@ -83,7 +83,7 @@ sync alternates one semantic field type, while check remains fresh/read-only.
 
 [cols="1,1,1,1,1,1",options="header"]
 |===
-| Models | Command | RC4 cold median | RC4 warm p95 | Cold delta | Warm delta
+| Models | Command | RC5 cold median | RC5 warm p95 | Cold delta | Warm delta
 
 | 100 | sync | 3.565 s | 1.870 s | -24.95% | -30.02%
 | 100 | check | 2.275 s | 1.915 s | -26.80% | -20.61%

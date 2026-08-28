@@ -5,6 +5,67 @@ import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('commands emit only payload-free terminal diagnostics', () async {
+    final diagnostics = DartitectDiagnosticBuffer(capacity: 8);
+    final emitter = DartitectDiagnosticsEmitter(
+      reporter: DartitectDiagnosticReporterRegistration.borrowed(diagnostics),
+      detail: DartitectDiagnosticDetail.topology,
+    );
+    final command = Command0<int, _ExpectedFailure>(
+      () async => const Ok<int>(7),
+      diagnostics: emitter.subject(DartitectDiagnosticSubjectKind.command),
+    );
+
+    await command.execute();
+    await command.disposeAsync();
+    expect(
+      diagnostics.events.map((event) => event.phase),
+      containsAll(<DartitectDiagnosticPhase>{
+        DartitectDiagnosticPhase.succeeded,
+        DartitectDiagnosticPhase.disposed,
+      }),
+    );
+    await emitter.dispose();
+    diagnostics.dispose();
+  });
+
+  test('typed progress commands fence delayed previous executions', () async {
+    final progress = BoundedProgressReporter<int>();
+    final releases = <Completer<void>>[Completer<void>(), Completer<void>()];
+    final latePublications = <bool>[];
+    final command = ProgressCommand1<int, int, int, _ExpectedFailure>(
+      (argument, context) async {
+        expect(context.publish(argument), isTrue);
+        await releases[argument].future;
+        if (argument == 0) latePublications.add(context.publish(10));
+        return Ok<int>(argument);
+      },
+      concurrency: const CommandConcurrency.concurrent(maxConcurrent: 2),
+      progress: progress,
+    );
+
+    final first = command.execute(0);
+    final second = command.execute(1);
+    await Future<void>.delayed(Duration.zero);
+    releases[0].complete();
+    expect(
+      await first,
+      isA<CommandExecutionSucceeded<int, _ExpectedFailure>>(),
+    );
+    releases[1].complete();
+    expect(
+      await second,
+      isA<CommandExecutionSucceeded<int, _ExpectedFailure>>(),
+    );
+
+    expect(latePublications, <bool>[false]);
+    expect(progress.events.map((event) => event.executionId), <int>[1, 2]);
+    expect(progress.events.map((event) => event.payload), <int>[0, 1]);
+    expect(command.droppedProgressCount, 1);
+    await command.disposeAsync();
+    progress.dispose();
+  });
+
   test('Command0 rejects reentrancy and publishes success', () async {
     final completion = Completer<Result<int, _ExpectedFailure>>();
     final command = Command0<int, _ExpectedFailure>(() => completion.future);

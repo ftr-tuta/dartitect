@@ -4,6 +4,9 @@ Keep `inspect`, `scan`, and ordinary `doctor` read-only. Deep doctor is explicit
 and bounded. Accept exactly stable config v1 with `native_strict`; reject
 experimental versions, preserve unknown v1 extension keys without interpreting
 them, never store credentials, and provide no compatibility migrator.
+The additive `features` section declares `online`, `cache`, `replica`, or
+`offline-full` plus consumer provider identifiers. `verify` checks declarative
+compatibility; behavioral guarantees remain contract-matrix evidence.
 
 Scan only declared roots using real path segments; ignore nested caches and
 generated code. A baseline fingerprints code, path, and evidence without line
@@ -15,3 +18,9 @@ Sensitive metadata needs a recognized telemetry sink. Generated fallback needs
 both a reviewed header and configured suffix. Invalid analyzer config is an
 explicit diagnostic, never a silent strict-default outcome. Enforce scanner and
 analyzer performance budgets with stable machine-readable schemas.
+
+`fleet report` stays read-only and aggregates versions, profiles, providers,
+and bounded matrix-source detection. Keep process execution in the separate
+`DartitectFleetCanaryService`: require an exact commit, use only an archive and
+temporary consumer copy, run a closed command allowlist, sanitize receipts,
+compare original SHA/worktree/tree state, and remove the copy after failure.

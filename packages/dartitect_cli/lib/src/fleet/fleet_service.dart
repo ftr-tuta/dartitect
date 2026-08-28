@@ -82,6 +82,42 @@ final class DartitectFleetService {
     );
   }
 
+  /// Aggregates versions, paved-road profiles, providers, and matrix coverage.
+  ///
+  /// This report reads project declarations and test source only. It does not
+  /// resolve packages, execute processes, or write to a project.
+  Future<DartitectFleetReport> report(Iterable<String> roots) async {
+    final projects = await _projects(roots);
+    final results = <Map<String, Object?>>[];
+    for (final project in projects) {
+      final pubspec = File(_join(project.directory.path, 'pubspec.yaml'));
+      final source = await pubspec.readAsString();
+      final dependencies = _declaredDartitectDependencies(source);
+      final locked = await _lockedVersions(project.directory);
+      final adoption = await _versionAdoptionStatus(project.directory, source);
+      final featureStatus = await _featureStatus(project.directory);
+      results.add(<String, Object?>{
+        'root': project.label,
+        if (_packageName(source) case final name?) 'name': name,
+        'dependencies': <Object?>[
+          for (final dependency in dependencies)
+            <String, Object?>{
+              ...dependency,
+              if (locked[dependency['package']] case final version?)
+                'lockedVersion': version,
+            },
+        ],
+        ...adoption,
+        ...featureStatus,
+      });
+    }
+    return DartitectFleetReport(
+      command: 'fleet report',
+      projects: List<Map<String, Object?>>.unmodifiable(results),
+      exitCode: 0,
+    );
+  }
+
   /// Runs architecture checks over explicit roots without baselines or writes.
   Future<DartitectFleetReport> check(Iterable<String> roots) async {
     final projects = await _projects(roots);
@@ -368,6 +404,127 @@ final class DartitectFleetService {
             : 'none',
       },
     };
+  }
+
+  static Future<Map<String, Object?>> _featureStatus(Directory root) async {
+    final configFile = File(_join(root.path, 'dartitect.json'));
+    if (!await configFile.exists()) {
+      return const <String, Object?>{
+        'profiles': <String>[],
+        'providers': <String, Object?>{
+          'persistence': <String>[],
+          'transport': <String>[],
+        },
+        'contractMatrices': <String, Object?>{
+          'required': <String>[],
+          'detected': <String>[],
+          'missing': <String>[],
+          'status': 'not_declared',
+        },
+      };
+    }
+    final config = await DartitectConfig.load(configFile);
+    final declarations = config.features?.declarations;
+    if (declarations == null || declarations.isEmpty) {
+      return const <String, Object?>{
+        'profiles': <String>[],
+        'providers': <String, Object?>{
+          'persistence': <String>[],
+          'transport': <String>[],
+        },
+        'contractMatrices': <String, Object?>{
+          'required': <String>[],
+          'detected': <String>[],
+          'missing': <String>[],
+          'status': 'not_declared',
+        },
+      };
+    }
+    final profiles =
+        declarations.values
+            .map((declaration) => declaration.profile.wireName)
+            .toSet()
+            .toList()
+          ..sort();
+    final persistence =
+        declarations.values
+            .map((declaration) => declaration.persistence)
+            .toSet()
+            .toList()
+          ..sort();
+    final transport =
+        declarations.values
+            .map((declaration) => declaration.transport)
+            .toSet()
+            .toList()
+          ..sort();
+    final detected = await _detectedMatrices(root);
+    final missing = profiles
+        .where((profile) => !detected.contains(profile))
+        .toList(growable: false);
+    return <String, Object?>{
+      'features': <Object?>[
+        for (final entry
+            in declarations.entries.toList()
+              ..sort((left, right) => left.key.compareTo(right.key)))
+          <String, Object?>{
+            'name': entry.key,
+            'profile': entry.value.profile.wireName,
+            'persistence': entry.value.persistence,
+            'transport': entry.value.transport,
+          },
+      ],
+      'profiles': profiles,
+      'providers': <String, Object?>{
+        'persistence': persistence,
+        'transport': transport,
+      },
+      'contractMatrices': <String, Object?>{
+        'required': profiles,
+        'detected': detected,
+        'missing': missing,
+        'status': missing.isEmpty ? 'covered' : 'missing',
+      },
+    };
+  }
+
+  static Future<List<String>> _detectedMatrices(Directory root) async {
+    const tokens = <String, String>{
+      'online': 'FeatureContractMatrix.online(',
+      'cache': 'FeatureContractMatrix.cache(',
+      'replica': 'FeatureContractMatrix.replica(',
+      'offline-full': 'FeatureContractMatrix.offlineFull(',
+    };
+    final detected = <String>{};
+    var visited = 0;
+    for (final relative in const <String>['test', 'integration_test']) {
+      final directory = Directory(_join(root.path, relative));
+      if (!await directory.exists()) continue;
+      await for (final entity in directory.list(
+        recursive: true,
+        followLinks: false,
+      )) {
+        if (entity is! File || !entity.path.endsWith('.dart')) continue;
+        visited += 1;
+        if (visited > 2000) {
+          throw const FormatException(
+            'Fleet matrix discovery exceeds the 2000-file bound.',
+          );
+        }
+        final length = await entity.length();
+        if (length > 2 * 1024 * 1024) {
+          throw const FormatException(
+            'Fleet matrix discovery found a Dart file above 2 MiB.',
+          );
+        }
+        final source = await entity.readAsString();
+        for (final entry in tokens.entries) {
+          if (source.contains(entry.value)) detected.add(entry.key);
+        }
+      }
+    }
+    final result = detected.toList()..sort();
+    return List<String>.unmodifiable(result);
   }
 
   static Set<String> _declaredPackageNames(String source) {

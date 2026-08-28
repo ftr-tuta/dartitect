@@ -1,6 +1,6 @@
 name: dartitect_objectbox
 description: Optional explicit Store and observation lifecycle integration for ObjectBox.
-version: 1.0.0-rc.4
+version: 1.0.0-rc.5
 repository: https://github.com/ftr-tuta/dartitect
 issue_tracker: https://github.com/ftr-tuta/dartitect/issues
 topics: [objectbox, architecture, database, lifecycle]
@@ -11,10 +11,10 @@ environment:
   flutter: '>=3.47.1'
 
 dependencies:
-  dartitect: '>=1.0.0-rc.4 <1.0.0'
-  dartitect_flutter: '>=1.0.0-rc.4 <1.0.0'
-  dartitect_observability: '>=1.0.0-rc.4 <1.0.0'
-  dartitect_sync: '>=1.0.0-rc.4 <1.0.0'
+  dartitect: '>=1.0.0-rc.5 <1.0.0'
+  dartitect_flutter: '>=1.0.0-rc.5 <1.0.0'
+  dartitect_observability: '>=1.0.0-rc.5 <1.0.0'
+  dartitect_sync: '>=1.0.0-rc.5 <1.0.0'
   flutter:
     sdk: flutter
   objectbox: ^5.3.2

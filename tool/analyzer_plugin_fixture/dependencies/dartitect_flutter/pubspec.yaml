@@ -1,0 +1,10 @@
+name: dartitect_flutter
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  dartitect:
+    path: ../dartitect

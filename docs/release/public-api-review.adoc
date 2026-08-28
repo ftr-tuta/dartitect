@@ -1,12 +1,12 @@
 = Public API review for the 1.0 release candidate
 
-Review date:: 2026-08-27
-Reviewed version:: lockstep `1.0.0-rc.4` candidate cohort
+Review date:: 2026-08-28
+Reviewed version:: lockstep `1.0.0-rc.5` candidate cohort
 Snapshot gate:: `dart run tool/check_api_snapshot.dart`
 
 == Result
 
-The checked API snapshot covers all 20 public entrypoints and matches their
+The checked API snapshot covers all 24 public entrypoints and matches their
 source declarations. New ecosystem entrypoints are deliberately narrow;
 existing entrypoints remain source-compatible with the reviewed development
 cohort.
@@ -19,6 +19,22 @@ cohort.
 | Stable core ownership, Result, command lanes, equality, and projection
 contracts; no Flutter or provider dependency. Diagnostics protocol construction
 is explicitly experimental and payload-free.
+
+| `package:dartitect_resilience/dartitect_resilience.dart`
+| Pure-Dart bounded retry, single-flight, circuit-breaker, bulkhead, and
+rate-limit contracts with injected time, scheduling, and randomness.
+
+| `package:dartitect_jobs/dartitect_jobs.dart`
+| Pure-Dart versioned job envelopes, bounded dispatch, per-job ownership,
+deadlines, cancellation, deduplication, and optional store/lease/fencing ports.
+
+| `package:dartitect_transfer/dartitect_transfer.dart`
+| Provider-neutral resumable transfer contracts with typed progress,
+checksummed chunks, and checkpoints committed only after durable chunk commit.
+
+| `package:dartitect_devtools/dartitect_devtools.dart`
+| Explicit development-only registration for three read-only, payload-free
+service extensions. It exposes no retry, cancel, clear, or mutation command.
 
 | `package:dartitect_cli/dartitect_cli.dart`
 | Stable bounded CLI surface; no implicit application container. SARIF is a
@@ -38,7 +54,7 @@ source edit, and compatibility decisions. It never enters an app runtime.
 
 | `package:dartitect_dio/dartitect_dio.dart`
 | Opt-in adapter exporting explicit Dio ownership, cancellation, safe failure
-mapping, and instrumentation.
+mapping, instrumentation, and policy-neutral transfer transport.
 
 | `package:dartitect_drift/dartitect_drift.dart`
 | Executor-neutral adapter with explicit owned/borrowed database lifecycle,
@@ -95,11 +111,13 @@ global ownership.
 
 | `package:dartitect_sync/dartitect_sync.dart`
 | Pure-Dart mutation/outbox and DAG execution, journal, checkpoint/lease/
-progress, and headless contracts; no Flutter or provider SDK.
+progress, and a jobs-backed headless adapter with no hidden retry; no Flutter
+or provider SDK.
 
 | `package:dartitect_testing/dartitect_testing.dart`
-| Test helpers only; no test runner or production dependency is re-exported.
-The diagnostics topology harness is experimental with the protocol surface.
+| Test helpers and runner-independent profile contract matrices only; no test
+runner or production dependency is re-exported. Diagnostics and paved-road
+harnesses remain bounded by their public protocol contracts.
 |===
 
 == Editorial and compatibility checks
@@ -111,16 +129,14 @@ documentation examples are checked in the release audit. The compatibility
 entrypoint remains thin; advanced reactive APIs require a deliberate import and
 Material remains consumer-owned. No experimental API is presented as stable.
 
-The RC4 diff intentionally refines prerelease behavior and
-surface before 1.0: typed replacement cleanup, semantic CLI manifests/locks,
-sync authority/terminal receipts, isolate protocol v2, experimental diagnostics
-and derived resources, SARIF, and fleet services. Adding the dependency-upgrade
-enum value can affect exhaustive consumer switches; protocol v1 isolate peers
-are intentionally incompatible with v2. No stable deprecation is removed and
-the Drift package/entrypoint is added without changing existing APIs. These changes require a fresh prerelease
-candidate and complete same-SHA canaries rather than a patch claim. Moving
-`DartitectValue` into the opt-in modeling package is an intentional prerelease
-boundary correction with no core alias or legacy mode.
+The RC5 diff intentionally activates the five reviewed deferrals and completes
+the paved road before 1.0: typed command progress, bounded local history,
+explicit lazy computed values, versioned UI restoration, read-only DevTools,
+resilience, jobs, transfer, application/session hosts, feature profiles,
+contract matrices, diagnostics protocol v2, and the isolated fleet canary
+runner. Existing command constructors and blueprint names remain compatible.
+No stable deprecation is removed. These changes require a fresh prerelease
+candidate and complete same-SHA canaries rather than a patch claim.
 
 == Decision
 

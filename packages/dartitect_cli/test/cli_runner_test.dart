@@ -185,4 +185,72 @@ import 'package:flutter/widgets.dart';
       hasLength(11),
     );
   }, timeout: const Timeout(Duration(minutes: 2)));
+
+  test(
+    'create feature accepts paved-road profile and provider options',
+    () async {
+      final root = await Directory.systemTemp.createTemp('dartitect-profile-');
+      addTearDown(() => root.delete(recursive: true));
+      await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
+      final output = StringBuffer();
+      final errors = StringBuffer();
+      final runner = DartitectCliRunner(
+        currentDirectory: root,
+        stdoutSink: output,
+        stderrSink: errors,
+      );
+
+      final exitCode = await runner.run(<String>[
+        'create',
+        'feature',
+        'orders',
+        '--profile=offline-full',
+        '--persistence=drift',
+        '--transport=dio',
+        '--pagination=cursor',
+        '--headless-sync',
+        '--diagnostics=full',
+        '--dry-run',
+      ]);
+
+      expect(exitCode, 0);
+      expect(output.toString(), contains('orders_feature_profile.dart'));
+      expect(output.toString(), contains('orders_cursor_page.dart'));
+      expect(output.toString(), contains('orders_headless_sync.dart'));
+      expect(errors.toString(), isEmpty);
+      expect(
+        Directory('${root.path}/lib/features/orders').existsSync(),
+        isFalse,
+      );
+    },
+  );
+
+  test(
+    'create feature rejects incompatible profile provider options',
+    () async {
+      final root = await Directory.systemTemp.createTemp('dartitect-profile-');
+      addTearDown(() => root.delete(recursive: true));
+      await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
+      final errors = StringBuffer();
+      final runner = DartitectCliRunner(
+        currentDirectory: root,
+        stdoutSink: StringBuffer(),
+        stderrSink: errors,
+      );
+
+      expect(
+        await runner.run(<String>[
+          'create',
+          'feature',
+          'orders',
+          '--profile=online',
+          '--persistence=drift',
+          '--transport=dio',
+          '--dry-run',
+        ]),
+        2,
+      );
+      expect(errors.toString(), contains('online profiles require'));
+    },
+  );
 }

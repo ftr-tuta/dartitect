@@ -17,13 +17,16 @@ const experimentalDartitectApi = ExperimentalDartitectApi();
 
 /// Current wire schema emitted by [DartitectDiagnosticsEmitter].
 @experimentalDartitectApi
-const int dartitectDiagnosticsProtocolVersion = 1;
+const int dartitectDiagnosticsProtocolVersion = 2;
 
-/// Fixed subject categories supported by diagnostics protocol version 1.
+/// Fixed subject categories supported by diagnostics protocol version 2.
 @experimentalDartitectApi
 enum DartitectDiagnosticSubjectKind {
   /// An owned reactive or lifecycle composition root.
   owner,
+
+  /// A transactionally owned resource graph.
+  graph,
 
   /// A node inside an owned reactive graph.
   node,
@@ -45,9 +48,18 @@ enum DartitectDiagnosticSubjectKind {
 
   /// An isolate worker or isolate-owned execution boundary.
   isolate,
+
+  /// A bounded background job execution.
+  job,
+
+  /// A resumable transfer execution.
+  transfer,
+
+  /// An application or session host boundary.
+  host,
 }
 
-/// Fixed lifecycle facts supported by diagnostics protocol version 1.
+/// Fixed lifecycle facts supported by diagnostics protocol version 2.
 @experimentalDartitectApi
 enum DartitectDiagnosticPhase {
   /// A subject entered the diagnostic topology.
@@ -139,6 +151,7 @@ final class DartitectDiagnosticEvent {
     required this.relatedSubjectId,
     required this.generation,
     required this.revision,
+    required this.monotonicMicroseconds,
   }) {
     if (sequence <= 0) {
       throw ArgumentError.value(sequence, 'sequence', 'Must be positive.');
@@ -152,6 +165,13 @@ final class DartitectDiagnosticEvent {
     }
     if (revision < 0) {
       throw ArgumentError.value(revision, 'revision', 'Must not be negative.');
+    }
+    if (monotonicMicroseconds < 0) {
+      throw ArgumentError.value(
+        monotonicMicroseconds,
+        'monotonicMicroseconds',
+        'Must not be negative.',
+      );
     }
     if (phase == DartitectDiagnosticPhase.linked && relatedSubjectId == null) {
       throw ArgumentError(
@@ -181,7 +201,10 @@ final class DartitectDiagnosticEvent {
   /// Non-negative runtime revision, or zero when not applicable.
   final int revision;
 
-  /// Encodes the exact protocol-version-1 schema.
+  /// Non-negative time since an emitter-local monotonic origin.
+  final int monotonicMicroseconds;
+
+  /// Encodes the exact protocol-version-2 schema.
   Map<String, Object?> toJson() => <String, Object?>{
     'schemaVersion': dartitectDiagnosticsProtocolVersion,
     'sequence': sequence,
@@ -191,9 +214,10 @@ final class DartitectDiagnosticEvent {
     'relatedSubjectId': relatedSubjectId?.value,
     'generation': generation,
     'revision': revision,
+    'monotonicMicros': monotonicMicroseconds,
   };
 
-  /// Decodes only the exact protocol-version-1 schema and allowlisted values.
+  /// Decodes only the exact protocol-version-2 schema and allowlisted values.
   // Kept beside [toJson] so the wire contract remains reviewable as one unit.
   // ignore: sort_constructors_first
   factory DartitectDiagnosticEvent.fromJson(Map<String, Object?> json) {
@@ -206,10 +230,11 @@ final class DartitectDiagnosticEvent {
       'relatedSubjectId',
       'generation',
       'revision',
+      'monotonicMicros',
     };
     if (json.length != keys.length || !json.keys.toSet().containsAll(keys)) {
       throw const FormatException(
-        'Diagnostic event must use the exact version-1 field set.',
+        'Diagnostic event must use the exact version-2 field set.',
       );
     }
     if (json['schemaVersion'] != dartitectDiagnosticsProtocolVersion) {
@@ -222,13 +247,15 @@ final class DartitectDiagnosticEvent {
     final relatedId = json['relatedSubjectId'];
     final generation = json['generation'];
     final revision = json['revision'];
+    final monotonicMicroseconds = json['monotonicMicros'];
     if (sequence is! int ||
         kindName is! String ||
         phaseName is! String ||
         subjectId is! String ||
         relatedId is! String? ||
         generation is! int ||
-        revision is! int) {
+        revision is! int ||
+        monotonicMicroseconds is! int) {
       throw const FormatException('Diagnostic event field type is invalid.');
     }
     final kind = _enumByName(DartitectDiagnosticSubjectKind.values, kindName);
@@ -244,6 +271,7 @@ final class DartitectDiagnosticEvent {
             : DartitectDiagnosticId._(relatedId),
         generation: generation,
         revision: revision,
+        monotonicMicroseconds: monotonicMicroseconds,
       );
     } on ArgumentError catch (error) {
       throw FormatException('Invalid diagnostic event value.', error);
@@ -434,9 +462,12 @@ final class DartitectDiagnosticsEmitter implements AsyncDisposable {
     required DartitectDiagnosticReporterRegistration reporter,
     IdGenerator? idGenerator,
     this.detail = DartitectDiagnosticDetail.lifecycle,
+    int Function()? monotonicMicroseconds,
     void Function(Object error, StackTrace stackTrace)? onReporterFailure,
   }) : _registration = reporter,
        _idGenerator = idGenerator ?? SecureUuidV4Generator(),
+       _monotonicMicroseconds =
+           monotonicMicroseconds ?? _createMonotonicClock(),
        _safeReporter = SafeDartitectDiagnosticReporter(
          reporter: reporter.reporter,
          onFailure: onReporterFailure,
@@ -444,8 +475,10 @@ final class DartitectDiagnosticsEmitter implements AsyncDisposable {
 
   final DartitectDiagnosticReporterRegistration _registration;
   final IdGenerator _idGenerator;
+  final int Function() _monotonicMicroseconds;
   final SafeDartitectDiagnosticReporter _safeReporter;
   var _sequence = 0;
+  var _lastMonotonicMicroseconds = 0;
   var _disposed = false;
   Future<void>? _disposeFuture;
 
@@ -472,7 +505,13 @@ final class DartitectDiagnosticsEmitter implements AsyncDisposable {
       return DartitectDiagnosticSubject._disabled(kind);
     }
     final id = DartitectDiagnosticId._(_idGenerator.nextId());
-    final subject = DartitectDiagnosticSubject._(this, kind, id);
+    final subject = DartitectDiagnosticSubject._(
+      this,
+      kind,
+      id,
+      generation,
+      revision,
+    );
     emit(
       subject,
       DartitectDiagnosticPhase.created,
@@ -488,8 +527,8 @@ final class DartitectDiagnosticsEmitter implements AsyncDisposable {
     DartitectDiagnosticSubject subject,
     DartitectDiagnosticPhase phase, {
     DartitectDiagnosticSubject? related,
-    int generation = 0,
-    int revision = 0,
+    int? generation,
+    int? revision,
   }) {
     if (_disposed || !_accepts(phase)) return;
     if (!identical(subject._emitter, this) || subject._id == null) {
@@ -507,7 +546,19 @@ final class DartitectDiagnosticsEmitter implements AsyncDisposable {
         'Must be an enabled subject owned by this emitter.',
       );
     }
+    final effectiveGeneration = generation ?? subject._generation;
+    final effectiveRevision = revision ?? subject._revision;
+    if (effectiveGeneration < 0 || effectiveRevision < 0) return;
+    if (effectiveGeneration > subject._generation) {
+      subject
+        .._generation = effectiveGeneration
+        .._revision = effectiveRevision;
+    } else if (effectiveGeneration == subject._generation &&
+        effectiveRevision >= subject._revision) {
+      subject._revision = effectiveRevision;
+    }
     _sequence += 1;
+    final monotonicMicroseconds = _safeMonotonicMicroseconds();
     _safeReporter.report(
       DartitectDiagnosticEvent._(
         sequence: _sequence,
@@ -515,10 +566,29 @@ final class DartitectDiagnosticsEmitter implements AsyncDisposable {
         phase: phase,
         subjectId: subject._id,
         relatedSubjectId: related?._id,
-        generation: generation,
-        revision: revision,
+        generation: subject._generation,
+        revision: subject._revision,
+        monotonicMicroseconds: monotonicMicroseconds,
       ),
     );
+  }
+
+  int _safeMonotonicMicroseconds() {
+    try {
+      final value = _monotonicMicroseconds();
+      if (value >= _lastMonotonicMicroseconds) {
+        _lastMonotonicMicroseconds = value;
+      }
+    } on Object {
+      // Diagnostics clocks never alter runtime behavior.
+      return _lastMonotonicMicroseconds;
+    }
+    return _lastMonotonicMicroseconds;
+  }
+
+  static int Function() _createMonotonicClock() {
+    final stopwatch = Stopwatch()..start();
+    return () => stopwatch.elapsedMicroseconds;
   }
 
   bool _accepts(DartitectDiagnosticPhase phase) {
@@ -553,12 +623,24 @@ final class DartitectDiagnosticsEmitter implements AsyncDisposable {
 /// Opaque handle used to emit facts without accepting domain payloads.
 @experimentalDartitectApi
 final class DartitectDiagnosticSubject {
-  DartitectDiagnosticSubject._(this._emitter, this.kind, this._id);
+  DartitectDiagnosticSubject._(
+    this._emitter,
+    this.kind,
+    this._id,
+    this._generation,
+    this._revision,
+  );
 
-  DartitectDiagnosticSubject._disabled(this.kind) : _emitter = null, _id = null;
+  DartitectDiagnosticSubject._disabled(this.kind)
+    : _emitter = null,
+      _id = null,
+      _generation = 0,
+      _revision = 0;
 
   final DartitectDiagnosticsEmitter? _emitter;
   final DartitectDiagnosticId? _id;
+  int _generation;
+  int _revision;
 
   /// Fixed subject category.
   final DartitectDiagnosticSubjectKind kind;
@@ -569,12 +651,26 @@ final class DartitectDiagnosticSubject {
   /// Whether this subject emits no diagnostics.
   bool get isDisabled => _id == null;
 
+  /// Creates a payload-free child subject linked to this subject.
+  DartitectDiagnosticSubject child(
+    DartitectDiagnosticSubjectKind kind, {
+    int? generation,
+    int? revision,
+  }) =>
+      _emitter?.subject(
+        kind,
+        parent: this,
+        generation: generation ?? _generation,
+        revision: revision ?? _revision,
+      ) ??
+      DartitectDiagnosticSubject._disabled(kind);
+
   /// Emits an allowlisted fact through the owning emitter.
   void emit(
     DartitectDiagnosticPhase phase, {
     DartitectDiagnosticSubject? related,
-    int generation = 0,
-    int revision = 0,
+    int? generation,
+    int? revision,
   }) {
     _emitter?.emit(
       this,

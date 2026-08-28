@@ -67,13 +67,18 @@ document their own `--dry-run`/apply form in `example/README.md`.
 - `EcosystemDependencyAuditor` and policy types provide pinned offline
   dependency decisions.
 - `DartitectFleetService` confines explicit application roots and returns
-  versions/check/policy/upgrade previews; fleet operations never apply changes.
+  versions, profile/provider/matrix reports, checks, policy, and upgrade
+  previews without process execution or project writes.
+- `DartitectFleetCanaryService` is a separate opt-in boundary that archives an
+  exact candidate commit, runs a closed command allowlist only in a temporary
+  consumer copy, sanitizes receipts, and verifies both originals are unchanged.
 - `CodexSkillSynchronizer` synchronizes eleven canonical managed templates while
   preserving consumer-owned skill directories.
 - `DartitectVerificationService` and `DartitectCliRunner` map services to stable
   JSON and exit codes.
-- Scaffold/generation types expose reviewed blueprint and file-operation
-  contracts for tooling authors.
+- `FeatureProfile` and scaffold/generation types expose the `online`, `cache`,
+  `replica`, and `offline-full` paths, compatible legacy blueprint aliases, and
+  reviewed file-ownership contracts for tooling authors.
 
 ## Ownership and lifecycle
 
@@ -132,7 +137,7 @@ bounded local agent interface. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.4` source candidate. Global activation or
+The workspace contains the `1.0.0-rc.5` source candidate. Global activation or
 Git use is supported only from coordinates in a matching tagged GitHub Release.
 If no compatible Release exists, there is no supported consumption path. See
 the [experimental consumption guide](../../docs/guides/git-candidate-consumption.md).

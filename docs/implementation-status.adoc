@@ -1,11 +1,11 @@
 = Dartitect 1.0 Git candidate implementation status
 :toc:
 
-Snapshot:: 2026-08-27
+Snapshot:: 2026-08-28
 Release status:: *ACTIONS READINESS PENDING*
 Feature policy:: *FEATURE FREEZE*
 Toolchain floor:: Dart 3.13 / Flutter 3.47.1 stable
-Target topology:: 19 packages / 20 public entrypoints
+Target topology:: 23 packages / 24 public entrypoints
 
 `tool/goal_gates.json` is the machine-readable roadmap authority. GitHub
 Actions is the only technical evidence authority. Local commands are optional
@@ -19,7 +19,7 @@ feedback and cannot declare an RC or stable candidate ready.
 | IMPLEMENTED_LOCAL
 | Roadmap, privacy/consumer-neutrality, ecosystem, generator recovery, media,
 geometry, Drift, modular modeling/compiler, and public API guards are
-implemented for the nineteen-package topology.
+implemented for the twenty-three-package topology.
 
 | V1S-04
 | IN_PROGRESS
@@ -35,6 +35,9 @@ benchmark, clean-clone, and canary gates are implemented.
 The provider canary owns its Drift schema and exercises transaction/checkpoint
 ports; the offline-first canary opens Drift and ObjectBox in separate bounded
 contexts without dual-write.
+The RC5 synthetic paved-road canary adds profiles, hosts, typed progress,
+explicit lazy computation, versioned restoration, bounded local history,
+resilience, jobs, transfer, diagnostics v2, and a read-only DevTools extension.
 
 | V1S-13
 | IN_PROGRESS

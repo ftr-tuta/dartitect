@@ -4,10 +4,14 @@
     "dartitect-design": [
       "packages/dartitect/lib/dartitect.dart",
       "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_resilience/lib/dartitect_resilience.dart",
+      "packages/dartitect_jobs/lib/dartitect_jobs.dart",
+      "packages/dartitect_transfer/lib/dartitect_transfer.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart",
       "packages/dartitect_isolates/lib/dartitect_isolates.dart",
       "packages/dartitect_observability/lib/dartitect_observability.dart",
+      "packages/dartitect_devtools/lib/dartitect_devtools.dart",
       "packages/dartitect_dio/lib/dartitect_dio.dart",
       "packages/dartitect_drift/lib/dartitect_drift.dart",
       "packages/dartitect_objectbox/lib/dartitect_objectbox.dart",
@@ -27,10 +31,14 @@
     "dartitect-audit": [
       "packages/dartitect/lib/dartitect.dart",
       "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_resilience/lib/dartitect_resilience.dart",
+      "packages/dartitect_jobs/lib/dartitect_jobs.dart",
+      "packages/dartitect_transfer/lib/dartitect_transfer.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart",
       "packages/dartitect_isolates/lib/dartitect_isolates.dart",
       "packages/dartitect_observability/lib/dartitect_observability.dart",
+      "packages/dartitect_devtools/lib/dartitect_devtools.dart",
       "packages/dartitect_dio/lib/dartitect_dio.dart",
       "packages/dartitect_drift/lib/dartitect_drift.dart",
       "packages/dartitect_objectbox/lib/dartitect_objectbox.dart",
@@ -42,7 +50,8 @@
     ],
     "dartitect-runtime": [
       "packages/dartitect/lib/dartitect.dart",
-      "packages/dartitect_flutter/lib/dartitect_flutter.dart"
+      "packages/dartitect_flutter/lib/dartitect_flutter.dart",
+      "packages/dartitect_resilience/lib/dartitect_resilience.dart"
     ],
     "dartitect-reactive": [
       "packages/dartitect/lib/dartitect.dart",
@@ -51,6 +60,9 @@
     "dartitect-offline-first": [
       "packages/dartitect/lib/dartitect.dart",
       "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_resilience/lib/dartitect_resilience.dart",
+      "packages/dartitect_jobs/lib/dartitect_jobs.dart",
+      "packages/dartitect_transfer/lib/dartitect_transfer.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart",
       "packages/dartitect_isolates/lib/dartitect_isolates.dart",
       "packages/dartitect_dio/lib/dartitect_dio.dart",
@@ -60,11 +72,13 @@
     "dartitect-observability": [
       "packages/dartitect/lib/dartitect.dart",
       "packages/dartitect_observability/lib/dartitect_observability.dart",
+      "packages/dartitect_devtools/lib/dartitect_devtools.dart",
       "packages/dartitect_sentry/lib/dartitect_sentry.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter.dart"
     ],
     "dartitect-adapters": [
       "packages/dartitect_dio/lib/dartitect_dio.dart",
+      "packages/dartitect_transfer/lib/dartitect_transfer.dart",
       "packages/dartitect_drift/lib/dartitect_drift.dart",
       "packages/dartitect_media/lib/dartitect_media.dart",
       "packages/dartitect_objectbox/lib/dartitect_objectbox.dart",
@@ -80,11 +94,16 @@
     "dartitect-testing": [
       "packages/dartitect_testing/lib/dartitect_testing.dart",
       "packages/dartitect_isolates/lib/dartitect_isolates.dart",
-      "packages/dartitect_sync/lib/dartitect_sync.dart"
+      "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_resilience/lib/dartitect_resilience.dart",
+      "packages/dartitect_jobs/lib/dartitect_jobs.dart",
+      "packages/dartitect_transfer/lib/dartitect_transfer.dart",
+      "packages/dartitect_devtools/lib/dartitect_devtools.dart"
     ],
     "dartitect-tooling": [
       "packages/dartitect_cli/lib/dartitect_cli.dart",
       "packages/dartitect_lints/lib/main.dart",
+      "packages/dartitect_devtools/lib/dartitect_devtools.dart",
       "packages/dartitect_modeling_analyzer/lib/dartitect_modeling_analyzer.dart",
       "tool/setup_objectbox_vm.dart"
     ],

@@ -121,8 +121,12 @@ deterministic tests. Read [adapters](../../docs/guides/adapters.md) and
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.4` source candidate. Use only coordinates
+The workspace contains the `1.0.0-rc.5` source candidate. Use only coordinates
 from a matching tag with a published GitHub Release and its complete cohort
 notes. If no compatible Release exists, there is no supported consumption path.
 See the
 [experimental consumption guide](../../docs/guides/git-candidate-consumption.md).
+`DioTransferTransport` also connects `dartitect_transfer` to a borrowed Dio
+client. Its callbacks leave URL, headers, credentials, Range/ETag,
+idempotency, response validation, and durable-commit semantics with the
+consumer; the adapter emits no request logs.

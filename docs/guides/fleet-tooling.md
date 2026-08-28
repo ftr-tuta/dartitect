@@ -6,7 +6,7 @@ Run the CLI from an exact dev-dependency version or activate it separately:
 
 ```console
 dart run dartitect_cli:dartitect --version
-dart pub global activate dartitect_cli 1.0.0-rc.4
+dart pub global activate dartitect_cli 1.0.0-rc.5
 ```
 
 Do not add `dartitect_cli` to application runtime dependencies. Analyze and
@@ -20,13 +20,32 @@ escape.
 
 ```console
 dartitect fleet versions apps/a apps/b --root . --json
+dartitect fleet report apps/a apps/b --root . --json
 dartitect fleet check apps/a apps/b --root . --json
 ```
 
-`versions` reads pubspec/lock metadata without invoking pub. `check` runs the
+`versions` reads pubspec/lock metadata without invoking pub. `report` adds
+declared feature profiles, persistence/transport providers, and bounded
+source-level detection of the matching `FeatureContractMatrix` constructors.
+`check` runs the
 same read-only architecture, modeling, ecosystem, and provider verification as
 `dartitect verify`, without a baseline. Both outputs include `modelStatus` and
-`providerStatus`; paths remain fleet-relative.
+`providerStatus`; paths remain fleet-relative. None of these services executes
+a process or writes a project.
+
+## Isolated candidate canaries
+
+`DartitectFleetCanaryService` is a separate opt-in process boundary. It requires
+an exact lowercase 40-character commit SHA, creates a Git archive, copies the
+consumer into a temporary directory, and injects `pubspec_overrides.yaml` plus
+a candidate receipt only into that copy. Commands are selected from a closed
+Dart/Flutter pub-get, analyze, and test allowlist. Logs are sanitized and
+bounded in receipts.
+
+After execution it compares candidate HEAD/worktree state and a consumer tree
+digest with their original values, then proves the temporary copy was removed.
+It does not provide a general remote execution protocol, arbitrary shell
+command, or mutation path for `DartitectFleetService`.
 
 ## Pinned offline policy
 
@@ -52,7 +71,7 @@ Fleet upgrade is deliberately preview-only:
 
 ```console
 dartitect fleet upgrade apps/a apps/b \
-  --root . --dry-run --to=1.0.0-rc.4 --json
+  --root . --dry-run --to=1.0.0-rc.5 --json
 ```
 
 Each result includes sanitized operations, the target cohort, a semantic input

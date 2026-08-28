@@ -13,8 +13,15 @@
   runtime with `$dartitect-offline-first`; add a storage adapter only after the
   application chooses its provider.
 - Dataset DAG orchestration, checkpoints, leases, progress, or headless ACKs:
-  add `dartitect_sync` with `$dartitect-offline-first`; keep scheduling, retry,
-  conflicts, storage transactions, and provider resources consumer-owned.
+  add `dartitect_sync` and `dartitect_jobs` with `$dartitect-offline-first`;
+  keep scheduling, recurrence, conflicts, storage transactions, and provider
+  resources consumer-owned.
+- Bounded retry, single-flight, breaker, bulkhead, or rate limiting: add
+  `dartitect_resilience`; expected-failure classification remains
+  consumer-owned and uncertain mutation results are never retried.
+- Resumable chunk transfer: add `dartitect_transfer` and optionally
+  `dartitect_dio`; checkpoints follow durable chunk commits, while remote
+  protocol, authentication, Range, ETag, and idempotency remain consumer-owned.
 - Neutral logs/reporting/tracing: add `dartitect_observability` and
   `$dartitect-observability`; add `dartitect_sentry` only for an already selected
   and consumer-initialized Sentry Hub.

@@ -173,7 +173,7 @@ Combine with the reactive entrypoint for local-authority observation,
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.4` source candidate. Supported experimental
+The workspace contains the `1.0.0-rc.5` source candidate. Supported experimental
 Git consumption requires a matching tag and published GitHub Release and the
 complete compatible cohort coordinates in its notes. Without one, there is no
 supported consumption path. See the

@@ -72,6 +72,36 @@ dependencies:
       expect(Directory('${root.path}/.dartitect').existsSync(), isFalse);
     },
   );
+
+  test('verify reports declarative feature compatibility read-only', () async {
+    final root = await Directory.systemTemp.createTemp('dartitect-features-');
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/pubspec.yaml').writeAsString('name: fixture\n');
+    await File('${root.path}/dartitect.json').writeAsString(
+      DartitectConfig(
+        features: DartitectFeaturesConfig(
+          declarations: <String, DartitectFeatureDeclaration>{
+            'orders': DartitectFeatureDeclaration(
+              profile: FeatureProfile.replica,
+              persistence: 'drift',
+              transport: 'dio',
+              headlessSync: true,
+            ),
+          },
+        ),
+      ).encode(),
+    );
+    final before = await _snapshot(root);
+
+    final report = await DartitectVerificationService(root).verify();
+    final status = report.project['featureStatus']! as Map<String, Object?>;
+    expect(status['status'], 'compatible');
+    expect(status['profiles'], <String>['replica']);
+    expect(status['persistenceProviders'], <String>['drift']);
+    expect(status['transportProviders'], <String>['dio']);
+    expect(status['behavioralGuarantees'], 'contract_harness_required');
+    expect(await _snapshot(root), before);
+  });
 }
 
 Future<Map<String, List<int>>> _snapshot(Directory root) async {

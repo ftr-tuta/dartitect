@@ -9,6 +9,11 @@ Future<void> main(List<String> arguments) async {
   final nativeObjectBox = arguments.contains('--native-objectbox');
   final commands = <_Command>[
     if (!skipGet) const _Command('dart', <String>['pub', 'get']),
+    if (!skipGet)
+      const _Command('flutter', <String>[
+        'pub',
+        'get',
+      ], workingDirectory: 'tool/dartitect_devtools_extension'),
     const _Command('dart', <String>[
       'format',
       '--output=none',
@@ -56,6 +61,15 @@ Future<void> main(List<String> arguments) async {
       'tool/check_benchmark_artifacts.dart',
     ]),
     const _Command('dart', <String>['run', 'tool/check_model_benchmark.dart']),
+    const _Command('dart', <String>[
+      'test',
+      'packages/dartitect/benchmark/paved_road_primitives_benchmark_test.dart',
+    ]),
+    const _Command('flutter', <String>[
+      'test',
+      'packages/dartitect_flutter/benchmark/reactive_lazy_computed_benchmark_test.dart',
+      'packages/dartitect_flutter/benchmark/versioned_restoration_benchmark_test.dart',
+    ]),
     const _Command('dart', <String>[
       '--enable-asserts',
       'run',
@@ -162,6 +176,8 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>['run', 'tool/check_api_snapshot.dart']),
     for (final package in <String>[
       'dartitect',
+      'dartitect_devtools',
+      'dartitect_jobs',
       'dartitect_modeling',
       'dartitect_modeling_analyzer',
       'dartitect_sync',
@@ -173,9 +189,11 @@ Future<void> main(List<String> arguments) async {
       'dartitect_locale_br',
       'dartitect_geometry',
       'dartitect_observability',
+      'dartitect_resilience',
       'dartitect_drift',
       'dartitect_sentry',
       'dartitect_mcp',
+      'dartitect_transfer',
     ])
       _Command('dart', <String>['test', 'packages/$package']),
     for (final package in <String>[
@@ -186,6 +204,7 @@ Future<void> main(List<String> arguments) async {
     ])
       _Command('flutter', <String>['test', 'packages/$package']),
     const _Command('flutter', <String>['test', 'examples/reference_app']),
+    const _Command('flutter', <String>['test', 'examples/paved_road_canary']),
     if (nativeObjectBox)
       _Command(
         'flutter',
@@ -268,8 +287,11 @@ Future<void> main(List<String> arguments) async {
     if (web)
       for (final package in <String>[
         'dartitect',
+        'dartitect_jobs',
         'dartitect_modeling',
+        'dartitect_resilience',
         'dartitect_testing',
+        'dartitect_transfer',
         'dartitect_locale_br',
         'dartitect_geometry',
       ])

@@ -159,7 +159,7 @@ Combine with `dartitect_sync` for mutation/outbox and dataset orchestration,
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.4` source candidate. Supported experimental
+The workspace contains the `1.0.0-rc.5` source candidate. Supported experimental
 Git consumption requires a matching tag and published GitHub Release and uses
 the complete cohort coordinates from its notes. If none exists, there is no
 supported consumption path. See the

@@ -7,9 +7,10 @@ description: Implement Dartitect Result, ownership, composition, commands, ViewM
 
 ## When to use
 
-Use this skill for `Result<T, F>`, resource ownership, composition roots,
-`Command0`, ViewModels, app/session/route lifetimes, isolate graphs, and the
-basic `dartitect_flutter.dart` entrypoint.
+Use this skill for `Result<T, F>`, resource ownership, composition roots, typed
+progress, bounded local history, `Command0`, ViewModels, application and session
+hosts, versioned UI restoration, isolate graphs, and the basic
+`dartitect_flutter.dart` entrypoint.
 
 ## When not to use
 
@@ -27,6 +28,9 @@ context—not clients, Stores, subscriptions, or other live resources.
 Expected failures use `Result<T, F>`. Unexpected exceptions remain crashes, may
 be reported once, and are rethrown with their stack. Keep `BuildContext` out of
 ViewModels, domain, repositories, and services.
+Application bootstrap extends `ResourceTransaction`; do not create parallel
+ownership primitives. Replace session graphs only after explicit route-removal
+confirmation, and let application resources outlive them.
 
 ## Workflow
 

@@ -14,6 +14,9 @@ enum SessionTransitionCause {
 
   /// A new authenticated session is being installed.
   signIn,
+
+  /// An authenticated runtime is moving to another tenant generation.
+  tenantSwitch,
 }
 
 /// Replayable application-owned authentication/session state.

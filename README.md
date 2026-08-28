@@ -50,18 +50,23 @@ independently documented and exports only public entrypoints under `lib/`.
 | Reactive resources, families, collections, and local-authority paging | `dartitect_flutter_reactive.dart` | A persistence adapter only after repository and ownership boundaries exist |
 | Durable local mutation and outbox delivery | [`dartitect_sync`](packages/dartitect_sync/) | [`dartitect_drift`](packages/dartitect_drift/) or [`dartitect_objectbox`](packages/dartitect_objectbox/) for consumer-owned transactions |
 | Ordered multi-dataset synchronization | [`dartitect_sync`](packages/dartitect_sync/) | Checkpoint, journal, and lease implementations selected by the application |
-| Headless/background synchronization | [`dartitect_sync`](packages/dartitect_sync/) | [`dartitect_isolates`](packages/dartitect_isolates/) when the host uses an isolate worker |
+| Bounded retry, single-flight, breakers, bulkheads, or rate limiting | [`dartitect_resilience`](packages/dartitect_resilience/) | Consumer failure classification, budget, deadline, clock, scheduler, and randomness |
+| Generic headless/background work | [`dartitect_jobs`](packages/dartitect_jobs/) | [`dartitect_isolates`](packages/dartitect_isolates/) when the host uses an isolate worker |
+| Resumable chunk transfer | [`dartitect_transfer`](packages/dartitect_transfer/) | [`dartitect_dio`](packages/dartitect_dio/) for an optional transport adapter |
 | HTTP infrastructure | [`dartitect_dio`](packages/dartitect_dio/) | [`dartitect_observability`](packages/dartitect_observability/) for neutral telemetry policy |
 | Persistence with Drift | [`dartitect_drift`](packages/dartitect_drift/) | Consumer-generated database, schema, migrations, codecs, and executor |
 | Persistence with ObjectBox | [`dartitect_objectbox`](packages/dartitect_objectbox/) | Consumer entities, generated model, native fixture, and Store opener |
 | Logs, errors, tracing, and redaction | [`dartitect_observability`](packages/dartitect_observability/) | [`dartitect_sentry`](packages/dartitect_sentry/) for a borrowed consumer-initialized Hub |
 | Platform or domain leaves | [`dartitect_privacy`](packages/dartitect_privacy/), [`dartitect_media`](packages/dartitect_media/), [`dartitect_locale_br`](packages/dartitect_locale_br/), [`dartitect_geometry`](packages/dartitect_geometry/) | Add only the capability the application actually uses |
 | Deterministic contract tests | [`dartitect_testing`](packages/dartitect_testing/) | Real provider fixtures when generated/native behavior is under test |
+| Read-only local diagnostics inspection | [`dartitect_devtools`](packages/dartitect_devtools/) | Explicit development-entrypoint registration only; never product activation |
 | Inspection, generation, editor diagnostics, or agent context | [`dartitect_cli`](packages/dartitect_cli/), [`dartitect_lints`](packages/dartitect_lints/), [`dartitect_mcp`](packages/dartitect_mcp/) | Managed Codex skills synchronized by the CLI |
 
 The [ecosystem selection guide](docs/guides/ecosystem-selection.md) gives the
 detailed decision matrix. The [implementation recipes](docs/guides/implementation-recipes.md)
-show complete boundary-oriented flows.
+show complete boundary-oriented flows. The [RC5 paved-road guide](docs/guides/paved-road-platform.md)
+connects feature profiles, hosts, resilience, jobs, transfer, diagnostics, and
+contract matrices without turning them into a framework.
 
 ## Core workflow
 
@@ -124,10 +129,10 @@ Three mechanisms solve different problems:
 2. `SyncEngine` runs a validated dataset dependency graph. Checkpoints confirm
    local coverage; journals record payload-free run facts; leases provide a
    fencing token only when the local commit compares that token atomically.
-3. `HeadlessSyncEndpoint` validates a versioned transferable envelope, returns
-   acceptance separately from a terminal receipt, builds a fresh owned graph
-   for admitted work, deduplicates a bounded request set, and drains on
-   disposal.
+3. `HeadlessSyncEndpoint` adapts a versioned sync definition through
+   `dartitect_jobs`, returns acceptance separately from a terminal receipt,
+   builds a fresh owned graph for admitted work, deduplicates a bounded request
+   set, and drains on disposal without hidden retries.
 
 These mechanisms can be composed, but none replaces a repository transaction.
 Never advance a checkpoint before the corresponding local state is durable.
@@ -228,7 +233,7 @@ The workspace requires Dart `^3.13.0`; Flutter packages require Flutter
 READMEs. Drift accepts consumer-owned native and web executors. ObjectBox has no
 web support. The CLI, modeling analyzer, and MCP server run on the Dart VM.
 
-All packages currently share the `1.0.0-rc.4` source cohort. Do not copy Git
+All packages currently share the `1.0.0-rc.5` source cohort. Do not copy Git
 coordinates from this README. Experimental Git consumption is supported only
 for a tag that has a corresponding published GitHub Release, using the complete
 compatible cohort and dependency coordinates from that Release's notes. If no

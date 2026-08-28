@@ -36,8 +36,8 @@ Future<void> main() async {
       .where((directory) => File('${directory.path}/pubspec.yaml').existsSync())
       .toList();
   packages.sort((left, right) => left.path.compareTo(right.path));
-  if (packages.length != 19) {
-    errors.add('Expected 19 publishable packages; found ${packages.length}.');
+  if (packages.length != 23) {
+    errors.add('Expected 23 publishable packages; found ${packages.length}.');
   }
 
   for (final package in packages) {
@@ -131,8 +131,8 @@ Future<void> main() async {
       .cast<File>()
       .toList();
   guides.sort((left, right) => left.path.compareTo(right.path));
-  if (guides.length != 18) {
-    errors.add('Expected 18 English guides; found ${guides.length}.');
+  if (guides.length != 19) {
+    errors.add('Expected 19 English guides; found ${guides.length}.');
   }
 
   final markdown = await root

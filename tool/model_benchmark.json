@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "recordedAt": "2026-08-28T02:51:09.683319Z",
-  "targetVersion": "1.0.0-rc.4",
+  "targetVersion": "1.0.0-rc.5",
   "policy": {
     "coldRuns": 5,
     "coldStatistic": "median",

@@ -80,7 +80,9 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
     required this.protocolVersion,
     required this.heartbeatTimeout,
     required IdGenerator ids,
-  }) : _ids = ids;
+    required DartitectDiagnosticSubject? diagnostics,
+  }) : _ids = ids,
+       _diagnostics = diagnostics;
 
   /// Spawns a fresh worker and waits for generation readiness.
   static Future<IsolateWorker<P, R, F>> spawn<P, R, F extends Object>({
@@ -91,6 +93,7 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
     Duration heartbeatInterval = const Duration(seconds: 1),
     Duration heartbeatTimeout = const Duration(seconds: 5),
     IdGenerator? ids,
+    DartitectDiagnosticSubject? diagnostics,
   }) async {
     if (generation <= 0) {
       throw ArgumentError.value(generation, 'generation', 'must be positive');
@@ -110,11 +113,20 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
         'timeout must exceed its interval.',
       );
     }
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.isolate) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'IsolateWorker requires an isolate diagnostic subject.',
+      );
+    }
     final worker = IsolateWorker<P, R, F>._(
       generation: generation,
       protocolVersion: protocolVersion,
       heartbeatTimeout: heartbeatTimeout,
       ids: ids ?? SecureUuidV4Generator(),
+      diagnostics: diagnostics,
     );
     await worker._spawn(
       handler,
@@ -142,6 +154,7 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
       <int, _PendingRequest<R, F>>{};
   final Set<String> _activePublicRequestIds = <String>{};
   final IdGenerator _ids;
+  final DartitectDiagnosticSubject? _diagnostics;
   Isolate? _isolate;
   SendPort? _commands;
   StreamSubscription<Object?>? _messageSubscription;
@@ -174,6 +187,10 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
     required Duration readinessTimeout,
     required Duration heartbeatInterval,
   }) async {
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.started,
+      generation: generation,
+    );
     _messageSubscription = _messages.listen(_handleMessage);
     _errorSubscription = _errors.listen(_handleError);
     _exitSubscription = _exit.listen(_handleExit);
@@ -193,11 +210,19 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
         debugName: 'dartitect-worker-$generation',
       );
       await ready.timeout(readinessTimeout);
+      _diagnostics?.emit(
+        DartitectDiagnosticPhase.succeeded,
+        generation: generation,
+      );
       _heartbeatMonitor = Timer.periodic(
         Duration(microseconds: heartbeatTimeout.inMicroseconds ~/ 2),
         (_) => _checkHeartbeat(),
       );
     } on TimeoutException {
+      _diagnostics?.emit(
+        DartitectDiagnosticPhase.failed,
+        generation: generation,
+      );
       await _failAndClose(
         const IsolateReadinessException('Worker readiness deadline elapsed.'),
         forceKill: true,
@@ -206,6 +231,10 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
         'Worker readiness deadline elapsed.',
       );
     } catch (_) {
+      _diagnostics?.emit(
+        DartitectDiagnosticPhase.crashed,
+        generation: generation,
+      );
       await _closeSupervisor(forceKill: true);
       rethrow;
     }
@@ -233,6 +262,11 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
     final pending = _PendingRequest<R, F>(id);
     _pending[correlationId] = pending;
     _activePublicRequestIds.add(id);
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.updated,
+      generation: generation,
+      revision: _pending.length,
+    );
     pending.deadline = Timer(timeout, () {
       _commands?.send(<String, Object?>{
         'kind': 'cancel',
@@ -342,6 +376,13 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
             ),
           );
         }
+        _diagnostics?.emit(
+          message['success'] == true
+              ? DartitectDiagnosticPhase.succeeded
+              : DartitectDiagnosticPhase.failed,
+          generation: generation,
+          revision: _pending.length,
+        );
       case 'crash':
         final correlationId = message['correlationId'];
         if (correlationId is! int) return;
@@ -423,6 +464,11 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
   Future<void> _failAndClose(Object error, {required bool forceKill}) async {
     if (_disposed) return;
     _closing = true;
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.crashed,
+      generation: generation,
+      revision: _pending.length,
+    );
     if (!_ready.isCompleted) _ready.completeError(error, StackTrace.current);
     for (final correlationId in _pending.keys.toList(growable: false)) {
       _completeRequestError(correlationId, error, StackTrace.current);
@@ -454,6 +500,10 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
     _commands = null;
     _isolate = null;
     _activePublicRequestIds.clear();
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.disposed,
+      generation: generation,
+    );
   }
 
   @override

@@ -47,6 +47,7 @@ void main() {
         'dartitect_ecosystem_prohibited',
         'dartitect_ecosystem_exception',
         'dartitect_invalid_configuration',
+        'dartitect_temporary_disposable_host_value',
       ],
     );
     expect(

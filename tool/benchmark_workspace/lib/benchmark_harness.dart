@@ -51,7 +51,7 @@ Future<Map<String, Object?>> runBenchmarkSuite({
     'warmupSamples': warmupSamples,
     'repetitions': repetitions,
     'comparators': <String, String>{
-      'dartitect_flutter': '1.0.0-rc.4',
+      'dartitect_flutter': '1.0.0-rc.5',
       'flutter_riverpod': '3.4.2',
       'flutter_bloc': '9.1.1',
       'bloc_concurrency': '0.3.0',

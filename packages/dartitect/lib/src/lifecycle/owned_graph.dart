@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../diagnostics/diagnostics_protocol.dart';
 import '../observer.dart';
 import 'contracts.dart';
 import 'resource_owner.dart';
@@ -75,12 +76,29 @@ final class ResourceTransaction implements AsyncDisposable {
   ResourceTransaction({
     ArchitectureObserver observer = const NoOpArchitectureObserver(),
     String label = 'ResourceTransaction',
+    DartitectDiagnosticSubject? diagnostics,
   }) : _observer = observer,
        _label = label,
-       _owner = ResourceOwner(observer: observer, label: '$label.owner');
+       _diagnostics = diagnostics,
+       _owner = ResourceOwner(
+         observer: observer,
+         label: '$label.owner',
+         diagnostics: diagnostics?.child(DartitectDiagnosticSubjectKind.owner),
+       ) {
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.graph) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'ResourceTransaction requires a graph diagnostic subject.',
+      );
+    }
+    diagnostics?.emit(DartitectDiagnosticPhase.started);
+  }
 
   final ArchitectureObserver _observer;
   final String _label;
+  final DartitectDiagnosticSubject? _diagnostics;
   ResourceOwner? _owner;
   var _terminal = false;
 
@@ -112,11 +130,13 @@ final class ResourceTransaction implements AsyncDisposable {
     final owner = _activeOwner();
     _terminal = true;
     _owner = null;
+    _diagnostics?.emit(DartitectDiagnosticPhase.succeeded);
     return OwnedGraph<T>._(
       root: root,
       owner: owner,
       observer: _observer,
       label: '$_label.graph',
+      diagnostics: _diagnostics,
     );
   }
 
@@ -126,7 +146,15 @@ final class ResourceTransaction implements AsyncDisposable {
     if (_terminal || owner == null) return;
     _terminal = true;
     _owner = null;
-    await owner.disposeAsync();
+    _diagnostics?.emit(DartitectDiagnosticPhase.cancelled);
+    try {
+      await owner.disposeAsync();
+      _diagnostics?.emit(DartitectDiagnosticPhase.disposed);
+    } catch (_) {
+      _diagnostics?.emit(DartitectDiagnosticPhase.crashed);
+      _diagnostics?.emit(DartitectDiagnosticPhase.disposed);
+      rethrow;
+    }
   }
 
   /// Builds and commits a graph, rolling back if [build] throws.
@@ -134,8 +162,13 @@ final class ResourceTransaction implements AsyncDisposable {
     FutureOr<T> Function(ResourceTransaction transaction) build, {
     ArchitectureObserver observer = const NoOpArchitectureObserver(),
     String label = 'ResourceTransaction',
+    DartitectDiagnosticSubject? diagnostics,
   }) async {
-    final transaction = ResourceTransaction(observer: observer, label: label);
+    final transaction = ResourceTransaction(
+      observer: observer,
+      label: label,
+      diagnostics: diagnostics,
+    );
     try {
       final root = await build(transaction);
       return transaction.commit(root);
@@ -176,9 +209,11 @@ final class OwnedGraph<T> implements AsyncDisposable {
     required ResourceOwner owner,
     required ArchitectureObserver observer,
     required String label,
+    required DartitectDiagnosticSubject? diagnostics,
   }) : _owner = owner,
        _observer = observer,
-       _label = label;
+       _label = label,
+       _diagnostics = diagnostics;
 
   /// Root value published only after its transaction commits.
   final T root;
@@ -186,6 +221,7 @@ final class OwnedGraph<T> implements AsyncDisposable {
   final ResourceOwner _owner;
   final ArchitectureObserver _observer;
   final String _label;
+  final DartitectDiagnosticSubject? _diagnostics;
   final Set<Completer<void>> _operations = <Completer<void>>{};
   var _accepting = true;
   Future<void>? _disposal;
@@ -210,11 +246,25 @@ final class OwnedGraph<T> implements AsyncDisposable {
     }
     final completion = Completer<void>();
     _operations.add(completion);
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.started,
+      revision: _operations.length,
+    );
     try {
-      return await operation(root);
+      final result = await operation(root);
+      _diagnostics?.emit(DartitectDiagnosticPhase.succeeded);
+      return result;
+    } catch (_) {
+      _diagnostics?.emit(DartitectDiagnosticPhase.crashed);
+      _diagnostics?.emit(DartitectDiagnosticPhase.disposed);
+      rethrow;
     } finally {
       _operations.remove(completion);
       completion.complete();
+      _diagnostics?.emit(
+        DartitectDiagnosticPhase.updated,
+        revision: _operations.length,
+      );
     }
   }
 
@@ -227,12 +277,24 @@ final class OwnedGraph<T> implements AsyncDisposable {
 
   Future<void> _dispose() async {
     _closeAdmission();
+    _diagnostics?.emit(
+      _operations.isEmpty
+          ? DartitectDiagnosticPhase.started
+          : DartitectDiagnosticPhase.waiting,
+      revision: _operations.length,
+    );
     while (_operations.isNotEmpty) {
       await Future.wait<void>(
         _operations.map((operation) => operation.future).toList(),
       );
     }
-    await _owner.disposeAsync();
+    try {
+      await _owner.disposeAsync();
+      _diagnostics?.emit(DartitectDiagnosticPhase.disposed);
+    } catch (_) {
+      _diagnostics?.emit(DartitectDiagnosticPhase.crashed);
+      rethrow;
+    }
   }
 
   void _emit(ArchitectureEventKind kind) {
@@ -256,11 +318,23 @@ final class OwnedRuntimeSlot<T> implements AsyncDisposable {
   OwnedRuntimeSlot({
     ArchitectureObserver observer = const NoOpArchitectureObserver(),
     String label = 'OwnedRuntimeSlot',
+    DartitectDiagnosticSubject? diagnostics,
   }) : _observer = observer,
-       _label = label;
+       _label = label,
+       _diagnostics = diagnostics {
+    if (diagnostics != null &&
+        diagnostics.kind != DartitectDiagnosticSubjectKind.host) {
+      throw ArgumentError.value(
+        diagnostics.kind,
+        'diagnostics',
+        'OwnedRuntimeSlot requires a host diagnostic subject.',
+      );
+    }
+  }
 
   final ArchitectureObserver _observer;
   final String _label;
+  final DartitectDiagnosticSubject? _diagnostics;
   OwnedGraph<T>? _current;
   Future<void> _tail = Future<void>.value();
   Future<void>? _disposal;
@@ -291,6 +365,10 @@ final class OwnedRuntimeSlot<T> implements AsyncDisposable {
       build,
       observer: _observer,
       label: '$_label.transaction',
+      diagnostics: _diagnostics?.child(
+        DartitectDiagnosticSubjectKind.graph,
+        generation: _generation + 1,
+      ),
     ),
   );
 
@@ -313,6 +391,10 @@ final class OwnedRuntimeSlot<T> implements AsyncDisposable {
           previous?._closeAdmission();
           _current = next;
           _generation += 1;
+          _diagnostics?.emit(
+            DartitectDiagnosticPhase.updated,
+            generation: _generation,
+          );
           final publishedGeneration = _generation;
           if (previous != null) {
             try {
@@ -337,16 +419,64 @@ final class OwnedRuntimeSlot<T> implements AsyncDisposable {
     return completer.future;
   }
 
+  /// Atomically removes and disposes the current graph generation.
+  ///
+  /// Removal is serialized with replacements. New admission closes before the
+  /// graph is unpublished, then already admitted work drains before teardown.
+  Future<void> clearCurrent() {
+    if (_closing) throw StateError('$_label is shutting down.');
+    final completer = Completer<void>();
+    _tail = _tail
+        .then((_) async {
+          if (_closing) throw StateError('$_label is shutting down.');
+          final previous = _current;
+          previous?._closeAdmission();
+          _current = null;
+          await previous?.disposeAsync();
+          _diagnostics?.emit(
+            DartitectDiagnosticPhase.updated,
+            generation: _generation,
+          );
+          completer.complete();
+        })
+        .catchError((Object error, StackTrace stackTrace) {
+          if (!completer.isCompleted) {
+            completer.completeError(error, stackTrace);
+          }
+        });
+    return completer.future;
+  }
+
   /// Prevents replacements and closes the current generation.
   @override
   Future<void> disposeAsync() => _disposal ??= _dispose();
 
   Future<void> _dispose() async {
     _closing = true;
+    _diagnostics?.emit(
+      DartitectDiagnosticPhase.started,
+      generation: _generation,
+    );
     await _tail;
     final current = _current;
     _current = null;
-    await current?.disposeAsync();
+    try {
+      await current?.disposeAsync();
+      _diagnostics?.emit(
+        DartitectDiagnosticPhase.disposed,
+        generation: _generation,
+      );
+    } catch (_) {
+      _diagnostics?.emit(
+        DartitectDiagnosticPhase.crashed,
+        generation: _generation,
+      );
+      _diagnostics?.emit(
+        DartitectDiagnosticPhase.disposed,
+        generation: _generation,
+      );
+      rethrow;
+    }
   }
 
   void _emit(ArchitectureEventKind kind) {

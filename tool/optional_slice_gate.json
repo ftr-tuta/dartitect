@@ -11,55 +11,48 @@
   "slices": [
     {
       "id": "explicit-lazy-computed",
-      "status": "DEFERRED",
-      "dedicatedAdr": "MISSING",
-      "realConsumer": "MISSING",
-      "benchmark": "MISSING",
-      "packageBoundaryReview": "MISSING",
-      "reason": "Existing explicit computed nodes do not establish a real need for a separate lazy memoization contract."
+      "status": "ACTIVATED_RC5",
+      "dedicatedAdr": "docs/adr/0043-activate-rc5-paved-road-platform.adoc",
+      "realConsumer": "examples/paved_road_canary",
+      "benchmark": "packages/dartitect_flutter/benchmark/reactive_lazy_computed_benchmark_test.dart",
+      "packageBoundaryReview": "tool/check_package_topology.dart",
+      "reason": "Explicit dependencies and observed/unobserved lifecycle semantics now have reproducible consumer, benchmark, and boundary evidence."
     },
     {
       "id": "typed-command-progress",
-      "status": "DEFERRED",
-      "dedicatedAdr": "MISSING",
-      "realConsumer": "MISSING",
-      "benchmark": "MISSING",
-      "packageBoundaryReview": "MISSING",
-      "reason": "Commands already expose accepted and terminal execution IDs; no real bounded progress contract is evidenced."
+      "status": "ACTIVATED_RC5",
+      "dedicatedAdr": "docs/adr/0043-activate-rc5-paved-road-platform.adoc",
+      "realConsumer": "examples/paved_road_canary",
+      "benchmark": "packages/dartitect/benchmark/paved_road_primitives_benchmark_test.dart",
+      "packageBoundaryReview": "tool/check_package_topology.dart",
+      "reason": "Execution-scoped typed progress now has bounded retention, stale-execution rejection, canary use, and measured churn evidence."
     },
     {
       "id": "versioned-ui-restoration",
-      "status": "DEFERRED",
-      "dedicatedAdr": "MISSING",
-      "realConsumer": "MISSING",
-      "benchmark": "MISSING",
-      "packageBoundaryReview": "MISSING",
-      "reason": "No consumer-owned storage schema or UI restoration use is recorded, and repositories remain durable authority."
+      "status": "ACTIVATED_RC5",
+      "dedicatedAdr": "docs/adr/0043-activate-rc5-paved-road-platform.adoc",
+      "realConsumer": "examples/paved_road_canary",
+      "benchmark": "packages/dartitect_flutter/benchmark/versioned_restoration_benchmark_test.dart",
+      "packageBoundaryReview": "tool/check_package_topology.dart",
+      "reason": "Versioned ephemeral UI restoration now has consumer codecs, typed fallback behavior, canary use, and measured codec churn."
     },
     {
       "id": "bounded-local-history",
-      "status": "DEFERRED",
-      "dedicatedAdr": "MISSING",
-      "realConsumer": "MISSING",
-      "benchmark": "MISSING",
-      "packageBoundaryReview": "MISSING",
-      "reason": "No reversible local-only state use is recorded; external effects must never be represented as undoable."
+      "status": "ACTIVATED_RC5",
+      "dedicatedAdr": "docs/adr/0043-activate-rc5-paved-road-platform.adoc",
+      "realConsumer": "examples/paved_road_canary",
+      "benchmark": "packages/dartitect/benchmark/paved_road_primitives_benchmark_test.dart",
+      "packageBoundaryReview": "tool/check_package_topology.dart",
+      "reason": "Value-only bounded undo and redo now has explicit effect exclusions, canary use, disposal checks, and measured churn evidence."
     },
     {
       "id": "readonly-devtools-diagnostics",
-      "status": "DEFERRED",
-      "dedicatedAdr": "MISSING",
-      "realConsumer": "MISSING",
-      "benchmark": "MISSING",
-      "packageBoundaryReview": "MISSING",
-      "reason": "Protocol v1 exists, but its construction API is experimental and no DevTools consumer or package review exists."
+      "status": "ACTIVATED_RC5",
+      "dedicatedAdr": "docs/adr/0043-activate-rc5-paved-road-platform.adoc",
+      "realConsumer": "examples/paved_road_canary",
+      "benchmark": "tool/benchmark_diagnostics.dart",
+      "packageBoundaryReview": "tool/check_package_topology.dart",
+      "reason": "Protocol v2 and the read-only extension now have bounded payload-free canary, disposal, package, and overhead evidence."
     }
-  ],
-  "forbiddenPublicMarkers": [
-    "LazyComputed",
-    "CommandProgress",
-    "DartitectRestoration",
-    "UndoHistory",
-    "DartitectDevTools"
   ]
 }

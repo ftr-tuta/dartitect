@@ -6,7 +6,7 @@ import '../model/model_generator.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
 
-/// Read-only RC4 verification shared by the public CLI, fleet, and MCP server.
+/// Read-only RC5 verification shared by the public CLI, fleet, and MCP server.
 final class DartitectVerificationService {
   /// Creates a verifier for one package or workspace root.
   DartitectVerificationService(Directory root) : root = root.absolute;
@@ -57,6 +57,7 @@ final class DartitectVerificationService {
     findings.sort(_compareFinding);
     violations.sort(_compareFinding);
     final providerStatus = _providerStatus(ecosystem, violations);
+    final featureStatus = _featureStatus(config?.features);
     final project = <String, Object?>{
       ...architecture.project,
       'modelStatus': <String, Object?>{
@@ -75,6 +76,7 @@ final class DartitectVerificationService {
         'diagnosticCount': modelReport?.findings.length ?? 0,
       },
       'providerStatus': providerStatus,
+      'featureStatus': featureStatus,
       'ecosystem': <String, Object?>{
         'adoption': config?.ecosystem?.adoption ?? 'incremental',
         'installedOverlap': config?.ecosystem?.installedOverlap ?? 'warning',
@@ -93,6 +95,8 @@ final class DartitectVerificationService {
         if (modelingEnabled) 'modeling',
         for (final provider in providerStatus['installed']! as List<Object?>)
           'provider:$provider',
+        for (final profile in featureStatus['profiles']! as List<Object?>)
+          'profile:$profile',
       }.toList()..sort(),
       findings: List<DartitectFinding>.unmodifiable(findings),
       violations: List<DartitectFinding>.unmodifiable(violations),
@@ -148,6 +152,47 @@ final class DartitectVerificationService {
           : installed.isNotEmpty
           ? 'bounded'
           : 'none',
+    };
+  }
+
+  static Map<String, Object?> _featureStatus(
+    DartitectFeaturesConfig? features,
+  ) {
+    final declarations =
+        features?.declarations ?? const <String, DartitectFeatureDeclaration>{};
+    final profiles =
+        declarations.values
+            .map((declaration) => declaration.profile.wireName)
+            .toSet()
+            .toList()
+          ..sort();
+    final persistence =
+        declarations.values
+            .map((declaration) => declaration.persistence)
+            .toSet()
+            .toList()
+          ..sort();
+    final transport =
+        declarations.values
+            .map((declaration) => declaration.transport)
+            .toSet()
+            .toList()
+          ..sort();
+    return <String, Object?>{
+      'configured': features != null,
+      'declarationCount': declarations.length,
+      'profiles': profiles,
+      'persistenceProviders': persistence,
+      'transportProviders': transport,
+      'headlessSyncCount': declarations.values
+          .where((declaration) => declaration.headlessSync)
+          .length,
+      'status': features == null
+          ? 'not_configured'
+          : declarations.isEmpty
+          ? 'ready'
+          : 'compatible',
+      'behavioralGuarantees': 'contract_harness_required',
     };
   }
 

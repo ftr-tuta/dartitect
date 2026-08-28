@@ -1,0 +1,16 @@
+name: dartitect_transfer
+description: Provider-neutral resumable chunk transfer contracts and bounded orchestration for Dart.
+version: 1.0.0-rc.5
+repository: https://github.com/ftr-tuta/dartitect
+issue_tracker: https://github.com/ftr-tuta/dartitect/issues
+topics: [transfer, upload, download, architecture]
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  dartitect: '>=1.0.0-rc.5 <1.0.0'
+
+dev_dependencies:
+  test: ^1.26.3

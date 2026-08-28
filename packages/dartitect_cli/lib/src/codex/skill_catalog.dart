@@ -113,8 +113,15 @@ break a stated requirement.
   runtime with `$dartitect-offline-first`; add a storage adapter only after the
   application chooses its provider.
 - Dataset DAG orchestration, checkpoints, leases, progress, or headless ACKs:
-  add `dartitect_sync` with `$dartitect-offline-first`; keep scheduling, retry,
-  conflicts, storage transactions, and provider resources consumer-owned.
+  add `dartitect_sync` and `dartitect_jobs` with `$dartitect-offline-first`;
+  keep scheduling, recurrence, conflicts, storage transactions, and provider
+  resources consumer-owned.
+- Bounded retry, single-flight, breaker, bulkhead, or rate limiting: add
+  `dartitect_resilience`; expected-failure classification remains
+  consumer-owned and uncertain mutation results are never retried.
+- Resumable chunk transfer: add `dartitect_transfer` and optionally
+  `dartitect_dio`; checkpoints follow durable chunk commits, while remote
+  protocol, authentication, Range, ETag, and idempotency remain consumer-owned.
 - Neutral logs/reporting/tracing: add `dartitect_observability` and
   `$dartitect-observability`; add `dartitect_sentry` only for an already selected
   and consumer-initialized Sentry Hub.
@@ -243,9 +250,10 @@ description: Implement Dartitect Result, ownership, composition, commands, ViewM
 
 ## When to use
 
-Use this skill for `Result<T, F>`, resource ownership, composition roots,
-`Command0`, ViewModels, app/session/route lifetimes, isolate graphs, and the
-basic `dartitect_flutter.dart` entrypoint.
+Use this skill for `Result<T, F>`, resource ownership, composition roots, typed
+progress, bounded local history, `Command0`, ViewModels, application and session
+hosts, versioned UI restoration, isolate graphs, and the basic
+`dartitect_flutter.dart` entrypoint.
 
 ## When not to use
 
@@ -263,6 +271,9 @@ context—not clients, Stores, subscriptions, or other live resources.
 Expected failures use `Result<T, F>`. Unexpected exceptions remain crashes, may
 be reported once, and are rethrown with their stack. Keep `BuildContext` out of
 ViewModels, domain, repositories, and services.
+Application bootstrap extends `ResourceTransaction`; do not create parallel
+ownership primitives. Replace session graphs only after explicit route-removal
+confirmation, and let application resources outlive them.
 
 ## Workflow
 
@@ -295,6 +306,11 @@ unexpected exception transitions to crashed, can be reported once through an
 injected reporter, and is rethrown. A disposed command is terminal and does not
 notify. One-shot navigation/snackbar effects use a bounded, route-owned,
 single-consumer channel rather than being replayed as command data.
+
+Use `OperationProgress<P>` and `CommandExecutionContext<P>` for typed bounded
+progress. Execution IDs fence old work and sequences increase within one
+execution. `ProgressCommand0`, `ProgressCommand1`, and `KeyedProgressCommand1`
+retain the established concurrency contracts and reject late progress.
 ''',
       'references/ownership-and-isolates.md': r'''# Ownership and isolates
 
@@ -324,6 +340,13 @@ navigation out of the ViewModel. Use replayable `SessionState`, not an effect,
 for forced logout and remove routes before closing the old session graph. For
 hot/warm/cold resources or advanced list/page builders, switch to
 `$dartitect-reactive` instead of growing the basic runtime ad hoc.
+
+Use `ApplicationHost` for named cancellable bootstrap, retry, atomic graph
+publication, and teardown. Use `SessionRuntimeController`/`SessionHost` for
+login, logout, tenant switch, and route-confirmed generation replacement.
+Versioned restoration accepts only consumer codecs/migrations and ephemeral UI
+payloads; invalid data falls back safely. `BoundedLocalHistory` is value-only
+and cannot claim to undo persistence, HTTP, upload, sync, or another effect.
 ''',
     },
   ),
@@ -392,6 +415,11 @@ Nested `ReactiveOwner.update` calls join the outer transaction; listeners run
 only after affected computed values stabilize. A compute crash preserves the
 prior graph snapshot, is reported through the injected reporter, and is
 rethrown. Disposal removes every edge and listener.
+
+`ReactiveLazyComputed<T>` declares dependencies explicitly, evaluates on first
+read or observation, marks dirty while unobserved, and recomputes atomically
+while observed. A compute failure preserves its last valid value and remains
+dirty. Hot reload uses explicit `rebind`; never add ambient read tracking.
 
 `LiveResource<T, F>` separates waiting/ready/failed/crashed data from hot/warm/
 cold temperature. A hot resource owns an active source session, warm retains
@@ -536,8 +564,9 @@ and drains pending records only; uncertain records require human/domain policy.
 Dataset DAG synchronization and headless synchronization are separate flows.
 Use `SyncEngine` for a validated dataset DAG, checkpoints, journals, leases/
 fencing, progress, and deadlines. Use `HeadlessSyncEndpoint` for a versioned
-transferable command, bounded duplicate retention, separate acceptance and
-terminal acknowledgements, and a fresh graph per admitted request.
+sync definition adapted through `dartitect_jobs`, bounded duplicate retention,
+separate acceptance and terminal acknowledgements, and a fresh graph per
+admitted request.
 
 For a dataset run, the repository operation commits remote results into the authoritative local
 transaction before returning a confirmed checkpoint. A failed dependency blocks
@@ -557,6 +586,14 @@ provider objects. Retry, scheduling, authentication, conflicts, schemas, and
 durable cross-process deduplication remain consumer policy. Expected failure
 returns `Err`; an unexpected exception preserves its cause/stack and is never
 retried automatically.
+
+Use `RetryExecutor` only with explicit expected-failure classification, budget,
+deadline, and injected timing/randomness in tests. An uncertain result always
+stops retry. Use `JobDispatcher` for generic bounded headless definitions and
+one graph per job; scheduling, recurrence, credentials, schemas, and durable
+cross-process policy remain outside the SDK. Use `TransferEngine` for chunks,
+pause/resume/cancel, checksums, and post-commit checkpoints; remote protocol,
+ETag, Range, auth, and idempotency remain consumer policy.
 ''',
     },
   ),
@@ -623,6 +660,12 @@ fingerprint, and allowlisted attributes, then are rethrown with the original
 stack. Errors and fatal events bypass sampling. Bounded destination queues must
 have explicit overflow behavior, and one destination failure cannot affect the
 application or another destination.
+
+Diagnostics protocol v2 permits only fixed enums, opaque process-local IDs,
+counters, generations, revisions, and monotonic time. It rejects metadata,
+URLs, domain keys, dynamic errors, stacks, and user identifiers. Optional
+DevTools registration is explicit, isolate-local, development-only, and exposes
+capabilities, snapshot, and event-delta reads only; disposal clears the ring.
 ''',
       'references/flutter-and-providers.md': r'''# Flutter and providers
 
@@ -645,11 +688,12 @@ listener count. It never contains values, keys, idempotency IDs, error text,
 stack traces, or user identity. Reject reconstructed or dynamic causes before
 state changes begin.
 
-Diagnostics protocol v1 adds fixed owner/node/command/resource/family/effect/
-sync/isolate subjects and fixed lifecycle phases. An event has only its exact
-schema version, emitter sequence, opaque process-local IDs, generation, and
-revision. IDs come only from the emitter's injected generator and never from
-application identifiers. The decoder rejects unknown fields.
+Diagnostics protocol v2 adds fixed owner/graph/node/command/resource/family/
+effect/sync/isolate/job/transfer/host subjects and fixed lifecycle phases. An
+event has only its exact schema version, emitter sequence, opaque process-local
+IDs, generation, revision, and monotonic time. IDs come only from the emitter's
+injected generator and never from application identifiers. The decoder rejects
+unknown fields.
 
 Register observers as explicitly owned or borrowed. `ReactiveJournal` is a
 bounded memory-only local diagnostic ring and clears permanently on disposal.
@@ -662,7 +706,10 @@ dispose. `SafeDartitectDiagnosticReporter` isolates reentrancy and destination
 failure. Off detail allocates no subject ID; lifecycle detail retains every
 failure/crash terminal; topology detail supports
 `DiagnosticsTopologyHarness`. Construction/reporting APIs remain experimental
-under ADR 0034 and install no remote destination or global Flutter hook.
+under ADR 0034/0043 and install no remote destination or global Flutter hook.
+The optional DevTools bridge registers exactly `capabilities`, `snapshot`, and
+`events` RPCs per isolate; it has no mutation surface and is absent from product
+builds.
 ''',
     },
   ),
@@ -852,6 +899,9 @@ and disposes what it creates and proves no residual resources.
 Build a matrix across success, expected failure, unexpected crash,
 cancellation/concurrency, lifecycle temperature, disposal, and provider failure.
 Choose deterministic fakes for policy and real fixtures for integration.
+For a public feature profile, run the matching `FeatureContractMatrix.online`,
+`.cache`, `.replica`, or `.offlineFull`; each required row gets a fresh typed
+fixture and returns a framework-neutral result with disposal evidence.
 
 Read [references/runtime-and-reactive.md](references/runtime-and-reactive.md),
 [references/sync.md](references/sync.md),
@@ -1078,6 +1128,9 @@ Keep `inspect`, `scan`, and ordinary `doctor` read-only. Deep doctor is explicit
 and bounded. Accept exactly stable config v1 with `native_strict`; reject
 experimental versions, preserve unknown v1 extension keys without interpreting
 them, never store credentials, and provide no compatibility migrator.
+The additive `features` section declares `online`, `cache`, `replica`, or
+`offline-full` plus consumer provider identifiers. `verify` checks declarative
+compatibility; behavioral guarantees remain contract-matrix evidence.
 
 Scan only declared roots using real path segments; ignore nested caches and
 generated code. A baseline fingerprints code, path, and evidence without line
@@ -1089,6 +1142,12 @@ Sensitive metadata needs a recognized telemetry sink. Generated fallback needs
 both a reviewed header and configured suffix. Invalid analyzer config is an
 explicit diagnostic, never a silent strict-default outcome. Enforce scanner and
 analyzer performance budgets with stable machine-readable schemas.
+
+`fleet report` stays read-only and aggregates versions, profiles, providers,
+and bounded matrix-source detection. Keep process execution in the separate
+`DartitectFleetCanaryService`: require an exact commit, use only an archive and
+temporary consumer copy, run a closed command allowlist, sanitize receipts,
+compare original SHA/worktree/tree state, and remove the copy after failure.
 ''',
       'references/generation-and-native.md': r'''# Generation and native setup
 

@@ -104,10 +104,12 @@ List<String> _dependencies(String pubspec) {
 const Map<String, String> _decisions = <String, String>{
   'dartitect': 'keep-minimal-core',
   'dartitect_cli': 'keep-host-tooling',
+  'dartitect_devtools': 'add-read-only-development-inspector',
   'dartitect_dio': 'keep-optional-adapter',
   'dartitect_drift': 'add-consumer-owned-drift-sync-adapter',
   'dartitect_flutter': 'keep-headless-and-widgets-no-material-entrypoint',
   'dartitect_isolates': 'add-pure-dart-worker-lifecycle',
+  'dartitect_jobs': 'add-bounded-headless-job-runtime',
   'dartitect_lints': 'keep-analyzer-host',
   'dartitect_locale_br': 'add-pure-dart-brazilian-values',
   'dartitect_mcp': 'keep-local-reviewed-tooling',
@@ -117,8 +119,10 @@ const Map<String, String> _decisions = <String, String>{
   'dartitect_objectbox': 'keep-optional-native-adapter',
   'dartitect_observability': 'keep-provider-neutral-core',
   'dartitect_privacy': 'add-explicit-tracking-authorization-boundary',
+  'dartitect_resilience': 'add-bounded-resilience-primitives',
   'dartitect_geometry': 'add-attributed-pure-dart-geometry',
   'dartitect_sentry': 'keep-optional-borrowed-hub-adapter',
   'dartitect_sync': 'keep-offline-and-sync-owner',
   'dartitect_testing': 'keep-dev-only-contract-sdk',
+  'dartitect_transfer': 'add-provider-neutral-transfer-runtime',
 };

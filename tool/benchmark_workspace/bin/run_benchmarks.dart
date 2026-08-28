@@ -107,7 +107,7 @@ Future<Map<String, Object?>> _environment(
     'schemaVersion': 2,
     'generatedAtUtc': DateTime.now().toUtc().toIso8601String(),
     'sourceRevision': const <String, String>{
-      'candidateCohort': '1.0.0-rc.4',
+      'candidateCohort': '1.0.0-rc.5',
       'evidenceStatus': 'REFERENCE_ONLY_REPRODUCTION_REQUIRED',
     },
     'publicClaimEligible': false,

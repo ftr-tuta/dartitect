@@ -104,6 +104,179 @@ enum DartitectModelingPreset {
   };
 }
 
+/// Public paved-road feature profiles.
+enum FeatureProfile {
+  /// Remote authority without durable local persistence.
+  online('online'),
+
+  /// Remote authority with a durable local cache.
+  cache('cache'),
+
+  /// Locally queryable synchronized replica.
+  replica('replica'),
+
+  /// Replica plus durable offline mutation delivery.
+  offlineFull('offline-full');
+
+  const FeatureProfile(this.wireName);
+
+  /// Stable CLI and config spelling.
+  final String wireName;
+
+  /// Parses a public profile name.
+  static FeatureProfile parse(String value) {
+    for (final profile in values) {
+      if (profile.wireName == value) return profile;
+    }
+    throw FormatException('Unknown feature profile "$value".');
+  }
+}
+
+/// Closed generated diagnostics levels for feature wiring.
+enum FeatureDiagnosticsLevel {
+  /// No feature-level diagnostics wiring.
+  off('off'),
+
+  /// Lifecycle counters and closed events.
+  basic('basic'),
+
+  /// Full payload-free protocol instrumentation.
+  full('full');
+
+  const FeatureDiagnosticsLevel(this.wireName);
+
+  /// Stable CLI and config spelling.
+  final String wireName;
+
+  /// Parses one supported diagnostics level.
+  static FeatureDiagnosticsLevel parse(String value) {
+    for (final level in values) {
+      if (level.wireName == value) return level;
+    }
+    throw FormatException('Unknown feature diagnostics level "$value".');
+  }
+}
+
+/// One declarative feature/provider compatibility record.
+final class DartitectFeatureDeclaration {
+  /// Creates and validates a declaration.
+  DartitectFeatureDeclaration({
+    required this.profile,
+    required this.persistence,
+    required this.transport,
+    this.cursorPagination = false,
+    this.headlessSync = false,
+    this.diagnostics = FeatureDiagnosticsLevel.basic,
+    Map<String, Object?> unknown = const <String, Object?>{},
+  }) : unknown = Map<String, Object?>.unmodifiable(unknown) {
+    _validateProvider(persistence, 'persistence');
+    _validateProvider(transport, 'transport');
+    if (profile == FeatureProfile.online && persistence != 'none') {
+      throw const DartitectConfigException(
+        '/features/declarations',
+        'online profiles require persistence "none"',
+      );
+    }
+    if (profile != FeatureProfile.online && persistence == 'none') {
+      throw const DartitectConfigException(
+        '/features/declarations',
+        'cache, replica, and offline-full require persistence',
+      );
+    }
+    if (transport == 'none') {
+      throw const DartitectConfigException(
+        '/features/declarations',
+        'public paved-road profiles require a transport',
+      );
+    }
+    if (headlessSync &&
+        profile != FeatureProfile.replica &&
+        profile != FeatureProfile.offlineFull) {
+      throw const DartitectConfigException(
+        '/features/declarations',
+        'headless sync requires replica or offline-full',
+      );
+    }
+  }
+
+  /// Paved-road behavior profile.
+  final FeatureProfile profile;
+
+  /// Consumer-selected persistence provider or `none`.
+  final String persistence;
+
+  /// Consumer-selected transport provider.
+  final String transport;
+
+  /// Whether generated contracts include cursor pagination.
+  final bool cursorPagination;
+
+  /// Whether the feature declares headless sync execution.
+  final bool headlessSync;
+
+  /// Payload-free diagnostics wiring level.
+  final FeatureDiagnosticsLevel diagnostics;
+
+  /// Unknown declaration keys preserved after known fields validate.
+  final Map<String, Object?> unknown;
+
+  /// Stable JSON representation.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'profile': profile.wireName,
+    'persistence': persistence,
+    'transport': transport,
+    'cursorPagination': cursorPagination,
+    'headlessSync': headlessSync,
+    'diagnostics': diagnostics.wireName,
+    ...unknown,
+  };
+
+  static void _validateProvider(String value, String field) {
+    if (!RegExp(r'^[a-z][a-z0-9_-]*$').hasMatch(value)) {
+      throw DartitectConfigException(
+        '/features/declarations/$field',
+        'expected a safe provider identifier',
+      );
+    }
+  }
+}
+
+/// Additive stable-v1 feature declarations.
+final class DartitectFeaturesConfig {
+  /// Creates an immutable declaration registry.
+  DartitectFeaturesConfig({
+    Map<String, DartitectFeatureDeclaration> declarations =
+        const <String, DartitectFeatureDeclaration>{},
+    Map<String, Object?> unknown = const <String, Object?>{},
+  }) : declarations = Map<String, DartitectFeatureDeclaration>.unmodifiable(
+         declarations,
+       ),
+       unknown = Map<String, Object?>.unmodifiable(unknown) {
+    for (final name in declarations.keys) {
+      if (!RegExp(r'^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$').hasMatch(name)) {
+        throw DartitectConfigException(
+          '/features/declarations/$name',
+          'expected an ASCII snake_case feature name',
+        );
+      }
+    }
+  }
+
+  /// Feature declarations keyed by snake_case feature name.
+  final Map<String, DartitectFeatureDeclaration> declarations;
+
+  /// Unknown feature-section keys preserved after validation.
+  final Map<String, Object?> unknown;
+
+  /// Stable JSON representation.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'declarations': <String, Object?>{
+      for (final entry in declarations.entries) entry.key: entry.value.toJson(),
+    },
+    ...unknown,
+  };
+}
+
 /// Additive modeling configuration for stable config v1.
 final class DartitectModelingConfig {
   /// Creates an explicit modeling block.
@@ -188,6 +361,7 @@ final class DartitectConfig {
     },
     this.modeling,
     this.ecosystem,
+    this.features,
     Map<String, Object?> unknown = const <String, Object?>{},
   }) : layers = _copyLayers(layers),
        compositionRoots = List<String>.unmodifiable(compositionRoots),
@@ -239,6 +413,7 @@ final class DartitectConfig {
       'scaffolds',
       'modeling',
       'ecosystem',
+      'features',
     };
     final version = _requiredInt(json, 'configVersion');
     if (version != currentConfigVersion) {
@@ -272,6 +447,7 @@ final class DartitectConfig {
       scaffolds: _parseScaffolds(json['scaffolds']),
       modeling: _parseModeling(json['modeling']),
       ecosystem: _parseEcosystem(json['ecosystem']),
+      features: _parseFeatures(json['features']),
       unknown: <String, Object?>{
         for (final entry in json.entries)
           if (!known.contains(entry.key)) entry.key: entry.value,
@@ -309,6 +485,9 @@ final class DartitectConfig {
   /// Optional ecosystem coexistence policy.
   final DartitectEcosystemConfig? ecosystem;
 
+  /// Optional paved-road feature declarations.
+  final DartitectFeaturesConfig? features;
+
   /// Unknown keys retained only after the complete stable schema validates.
   final Map<String, Object?> unknown;
 
@@ -324,6 +503,7 @@ final class DartitectConfig {
     'scaffolds': scaffolds,
     if (modeling != null) 'modeling': modeling!.toJson(),
     if (ecosystem != null) 'ecosystem': ecosystem!.toJson(),
+    if (features != null) 'features': features!.toJson(),
     ...unknown,
   };
 
@@ -566,6 +746,77 @@ final class DartitectConfig {
       );
     }
     return const DartitectEcosystemConfig();
+  }
+
+  static DartitectFeaturesConfig? _parseFeatures(Object? value) {
+    if (value == null) return null;
+    if (value is! Map<String, Object?>) {
+      throw const DartitectConfigException('/features', 'expected an object');
+    }
+    final rawDeclarations = value['declarations'];
+    if (rawDeclarations is! Map<String, Object?>) {
+      throw const DartitectConfigException(
+        '/features/declarations',
+        'expected an object',
+      );
+    }
+    final declarations = <String, DartitectFeatureDeclaration>{};
+    for (final entry in rawDeclarations.entries) {
+      final pointer = '/features/declarations/${entry.key}';
+      final raw = entry.value;
+      if (raw is! Map<String, Object?>) {
+        throw DartitectConfigException(pointer, 'expected an object');
+      }
+      const known = <String>{
+        'profile',
+        'persistence',
+        'transport',
+        'cursorPagination',
+        'headlessSync',
+        'diagnostics',
+      };
+      String requiredString(String key) {
+        final field = raw[key];
+        if (field is! String || field.trim().isEmpty) {
+          throw DartitectConfigException(
+            '$pointer/$key',
+            'expected a non-empty string',
+          );
+        }
+        return field.trim();
+      }
+
+      bool boolean(String key, {bool defaultValue = false}) {
+        final field = raw[key];
+        if (field == null) return defaultValue;
+        if (field is! bool) {
+          throw DartitectConfigException('$pointer/$key', 'expected a boolean');
+        }
+        return field;
+      }
+
+      declarations[entry.key] = DartitectFeatureDeclaration(
+        profile: FeatureProfile.parse(requiredString('profile')),
+        persistence: requiredString('persistence'),
+        transport: requiredString('transport'),
+        cursorPagination: boolean('cursorPagination'),
+        headlessSync: boolean('headlessSync'),
+        diagnostics: raw['diagnostics'] == null
+            ? FeatureDiagnosticsLevel.basic
+            : FeatureDiagnosticsLevel.parse(requiredString('diagnostics')),
+        unknown: <String, Object?>{
+          for (final field in raw.entries)
+            if (!known.contains(field.key)) field.key: field.value,
+        },
+      );
+    }
+    return DartitectFeaturesConfig(
+      declarations: declarations,
+      unknown: <String, Object?>{
+        for (final entry in value.entries)
+          if (entry.key != 'declarations') entry.key: entry.value,
+      },
+    );
   }
 
   static List<String> _globList(Object? value, String pointer) {

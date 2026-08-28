@@ -25,6 +25,20 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.7"
+  dartitect:
+    dependency: "direct main"
+    description:
+      path: "dependencies/dartitect"
+      relative: true
+    source: path
+    version: "1.0.0"
+  dartitect_flutter:
+    dependency: "direct main"
+    description:
+      path: "dependencies/dartitect_flutter"
+      relative: true
+    source: path
+    version: "1.0.0"
   fixnum:
     dependency: transitive
     description:

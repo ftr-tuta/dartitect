@@ -35,6 +35,7 @@
     "DT1042": {"summary": "An unrelated Analyzer error prevents safe model rendering.", "remediation": "Resolve the underlying Analyzer diagnostic before generation."},
     "DT1043": {"summary": "A JSON field type or hook pair cannot be rendered safely.", "remediation": "Use an explicit scalar or immutable collection, or provide both consumer-owned codec hooks."},
     "DT1044": {"summary": "A mapper target, field compatibility, or converter hook cannot be proven lossless.", "remediation": "Use semantically assignable fields or exact consumer-owned static Result converters in each required direction."},
+    "DT1045": {"summary": "A disposable temporary is passed directly to a borrowing host .value constructor.", "remediation": "Retain and dispose the value at an explicit owner boundary, or use the host's owning constructor."},
     "DT2000": {"summary": "dartitect.json is missing.", "remediation": "Preview and review `dartitect init`."},
     "DT2001": {"summary": "dartitect.json is invalid.", "remediation": "Correct the reported JSON Pointer without discarding unknown keys."},
     "DT2002": {"summary": "An unknown config key was preserved.", "remediation": "Check whether it belongs to a newer SDK."},

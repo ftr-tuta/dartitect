@@ -10,6 +10,7 @@ void main() {
       reporter: DartitectDiagnosticReporterRegistration.borrowed(buffer),
       idGenerator: _Ids(),
       detail: DartitectDiagnosticDetail.topology,
+      monotonicMicroseconds: _MonotonicClock().call,
     );
     final owner = emitter.subject(DartitectDiagnosticSubjectKind.owner);
     final node = emitter.subject(
@@ -37,6 +38,7 @@ void main() {
       'relatedSubjectId',
       'generation',
       'revision',
+      'monotonicMicros',
     ]);
     final decoded = DartitectDiagnosticEvent.fromJson(
       jsonDecode(encoded) as Map<String, Object?>,
@@ -151,7 +153,7 @@ void main() {
 
   test('decoder rejects payload fields and unsupported versions', () {
     final valid = <String, Object?>{
-      'schemaVersion': 1,
+      'schemaVersion': dartitectDiagnosticsProtocolVersion,
       'sequence': 1,
       'subjectKind': 'owner',
       'phase': 'created',
@@ -159,6 +161,7 @@ void main() {
       'relatedSubjectId': null,
       'generation': 0,
       'revision': 0,
+      'monotonicMicros': 0,
     };
     expect(
       () => DartitectDiagnosticEvent.fromJson(<String, Object?>{
@@ -170,11 +173,17 @@ void main() {
     expect(
       () => DartitectDiagnosticEvent.fromJson(<String, Object?>{
         ...valid,
-        'schemaVersion': 2,
+        'schemaVersion': 1,
       }),
       throwsFormatException,
     );
   });
+}
+
+final class _MonotonicClock {
+  var _value = 0;
+
+  int call() => _value += 5;
 }
 
 final class _Ids implements IdGenerator {

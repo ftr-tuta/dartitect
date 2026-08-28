@@ -50,6 +50,9 @@ abstract final class DartitectRuleCodes {
 
   /// Stable DT1016 diagnostic code.
   static const String scopeBoundary = 'DT1016';
+
+  /// Stable DT1045 diagnostic code.
+  static const String temporaryDisposableHostValue = 'DT1045';
 }
 
 /// Generated Native-First boundary policy shared without package coupling.
@@ -162,6 +165,25 @@ abstract final class DartitectArchitectureRules {
     'UseRowClass',
     'Entity',
     'RestApi',
+  };
+
+  /// Flutter hosts whose `.value` constructors borrow their value.
+  static const Set<String> borrowingValueHosts = <String>{
+    'ApplicationHost',
+    'SessionHost',
+    'ViewModelHost',
+  };
+
+  /// Known lifecycle-owning values unsafe as inline borrowed temporaries.
+  static const Set<String> knownDisposableTypes = <String>{
+    'BootstrapCoordinator',
+    'BoundedLocalHistory',
+    'CancellationSource',
+    'DioOwner',
+    'OwnedRuntimeSlot',
+    'ReactiveOwner',
+    'ResourceOwner',
+    'SessionRuntimeController',
   };
 }
 

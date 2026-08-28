@@ -190,8 +190,16 @@ final class DartitectCliRunner {
       'observability',
       'adapters',
       'blueprint',
+      'profile',
+      'persistence',
+      'transport',
+      'pagination',
+      'cursor-pagination',
+      'headless-sync',
+      'diagnostics',
     });
     if (kind == 'app') {
+      _rejectFeatureOptions(arguments);
       if (arguments.flags.contains('domain')) {
         throw const _UsageException(
           '--domain is valid only for create feature.',
@@ -213,7 +221,45 @@ final class DartitectCliRunner {
     final scaffold = ScaffoldFactory(
       packageName: scan.packageName ?? 'application',
     );
+    final profileName = arguments.options['profile'];
+    final hasFeatureOptions =
+        profileName != null ||
+        arguments.options['persistence'] != null ||
+        arguments.options['transport'] != null ||
+        arguments.options['pagination'] != null ||
+        arguments.options['diagnostics'] != null ||
+        arguments.flags.contains('cursor-pagination') ||
+        arguments.flags.contains('headless-sync');
+    if (kind != 'feature' && hasFeatureOptions) {
+      throw const _UsageException(
+        'Feature profile options are valid only for create feature.',
+      );
+    }
+    if (kind == 'feature' && hasFeatureOptions && profileName == null) {
+      throw const _UsageException(
+        '--profile is required when feature profile options are used.',
+      );
+    }
+    final pagination =
+        arguments.options['pagination'] ??
+        (arguments.flags.contains('cursor-pagination') ? 'cursor' : 'none');
+    if (!const <String>{'none', 'cursor'}.contains(pagination)) {
+      throw _UsageException('Unsupported pagination mode "$pagination".');
+    }
     final operations = switch (kind) {
+      'feature' when profileName != null => scaffold.profile(
+        FeatureScaffoldOptions(
+          profile: FeatureProfile.parse(profileName),
+          persistence: arguments.options['persistence'],
+          transport: arguments.options['transport'],
+          cursorPagination: pagination == 'cursor',
+          headlessSync: arguments.flags.contains('headless-sync'),
+          diagnostics: FeatureDiagnosticsLevel.parse(
+            arguments.options['diagnostics'] ?? 'basic',
+          ),
+        ),
+        name,
+      ),
       'feature' => scaffold.feature(
         name,
         includeDomain: arguments.flags.contains('domain'),
@@ -335,7 +381,7 @@ final class DartitectCliRunner {
     }.toList()..sort();
     final localOverridePackages = _localSdkPackageClosure(sdkPackages);
     final dependencyBlock = localSdk == null
-        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.4\n').join()
+        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.5\n').join()
         : sdkPackages
               .map(
                 (package) =>
@@ -701,7 +747,8 @@ final class ${name.pascal}App extends StatelessWidget {
   Future<int> _fleet(Directory root, _CliArguments arguments) async {
     if (arguments.positionals.length < 2) {
       throw const _UsageException(
-        'Usage: dartitect fleet <versions|check|policy|upgrade> <project-root...>.',
+        'Usage: dartitect fleet <report|versions|check|policy|upgrade> '
+        '<project-root...>.',
       );
     }
     final command = arguments.positionals.first;
@@ -709,6 +756,9 @@ final class ${name.pascal}App extends StatelessWidget {
     final service = DartitectFleetService(root);
     late final DartitectFleetReport report;
     switch (command) {
+      case 'report':
+        arguments.requireOnlyFlags(<String>{'json', 'verbose'});
+        report = await service.report(roots);
       case 'versions':
         arguments.requireOnlyFlags(<String>{'json', 'verbose'});
         report = await service.versions(roots);
@@ -775,7 +825,11 @@ final class ${name.pascal}App extends StatelessWidget {
       return (plan['operations']! as List<Object?>).join(', ');
     }
     if (project['dependencies'] case final List<Object?> dependencies) {
-      return '${dependencies.length} Dartitect dependencies';
+      final profiles = project['profiles'] as List<Object?>?;
+      return profiles == null
+          ? '${dependencies.length} Dartitect dependencies'
+          : '${dependencies.length} Dartitect dependencies, '
+                '${profiles.length} profiles';
     }
     if (project['diagnostics'] case final List<Object?> diagnostics) {
       return diagnostics.isEmpty
@@ -798,6 +852,24 @@ final class ${name.pascal}App extends StatelessWidget {
         .toSet()
         .toList()
       ..sort();
+  }
+
+  static void _rejectFeatureOptions(_CliArguments arguments) {
+    const optionNames = <String>{
+      'profile',
+      'persistence',
+      'transport',
+      'pagination',
+      'cursor-pagination',
+      'headless-sync',
+      'diagnostics',
+    };
+    final used = arguments.flags.intersection(optionNames);
+    if (used.isNotEmpty) {
+      throw _UsageException(
+        '--${used.first} is valid only for create feature.',
+      );
+    }
   }
 
   void _writeEnvelope(CommandEnvelope envelope, {required bool json}) {
@@ -867,28 +939,39 @@ final class ${name.pascal}App extends StatelessWidget {
 
   static List<String> _localSdkPackageClosure(Iterable<String> packages) {
     final closure = <String>{...packages};
-    if (closure.contains('dartitect_flutter') ||
-        closure.contains('dartitect_dio') ||
-        closure.contains('dartitect_drift') ||
-        closure.contains('dartitect_objectbox')) {
-      closure
-        ..add('dartitect')
-        ..add('dartitect_observability');
-    }
-    if (closure.contains('dartitect_sentry')) {
-      closure.add('dartitect_observability');
-    }
-    if (closure.contains('dartitect_observability') ||
-        closure.contains('dartitect_testing') ||
-        closure.contains('dartitect_dio') ||
-        closure.contains('dartitect_drift') ||
-        closure.contains('dartitect_objectbox')) {
-      closure
-        ..add('dartitect')
-        ..add('dartitect_sync');
-    }
-    if (closure.contains('dartitect_sync')) {
-      closure.add('dartitect');
+    const dependencies = <String, Set<String>>{
+      'dartitect_flutter': {'dartitect'},
+      'dartitect_observability': {'dartitect'},
+      'dartitect_jobs': {'dartitect'},
+      'dartitect_resilience': {'dartitect'},
+      'dartitect_transfer': {'dartitect'},
+      'dartitect_sync': {'dartitect', 'dartitect_jobs', 'dartitect_resilience'},
+      'dartitect_dio': {
+        'dartitect',
+        'dartitect_observability',
+        'dartitect_transfer',
+      },
+      'dartitect_drift': {
+        'dartitect',
+        'dartitect_observability',
+        'dartitect_sync',
+      },
+      'dartitect_objectbox': {
+        'dartitect',
+        'dartitect_flutter',
+        'dartitect_observability',
+        'dartitect_sync',
+      },
+      'dartitect_sentry': {'dartitect_observability'},
+    };
+    var changed = true;
+    while (changed) {
+      changed = false;
+      for (final package in closure.toList(growable: false)) {
+        for (final dependency in dependencies[package] ?? const <String>{}) {
+          changed = closure.add(dependency) || changed;
+        }
+      }
     }
     return closure.toList()..sort();
   }
@@ -964,6 +1047,10 @@ Mutating commands (all accept --dry-run):
   create app <name> [--observability=MODE] [--adapters=a,b] [--blueprint=NAME]
                                     Create a six-platform Flutter app.
   create feature <name> [--domain] Create a feature-first vertical slice.
+  create feature <name> --profile=PROFILE [--persistence=PROVIDER]
+                       [--transport=PROVIDER] [--pagination=cursor]
+                       [--headless-sync] [--diagnostics=off|basic|full]
+                                    Create online/cache/replica/offline-full wiring.
   create simple <name>             Create an immutable MVVM slice.
   create remote-read <name>        Add a typed remote port and mapper.
   create local-first <name>        Add local authority and pull reactivity.

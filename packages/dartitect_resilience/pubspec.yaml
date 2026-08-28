@@ -1,0 +1,17 @@
+name: dartitect_resilience
+description: Bounded retry, single-flight, circuit breaker, bulkhead, and rate limiting for Dartitect.
+version: 1.0.0-rc.5
+repository: https://github.com/ftr-tuta/dartitect
+issue_tracker: https://github.com/ftr-tuta/dartitect/issues
+topics: [resilience, retry, architecture, dart]
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  dartitect: '>=1.0.0-rc.5 <1.0.0'
+
+dev_dependencies:
+  test: ^1.26.3
+

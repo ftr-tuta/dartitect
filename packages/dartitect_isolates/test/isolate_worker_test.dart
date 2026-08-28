@@ -7,10 +7,16 @@ import 'package:test/test.dart';
 
 void main() {
   test('real worker correlates ACK, success, and expected failure', () async {
+    final diagnostics = DartitectDiagnosticBuffer(capacity: 32);
+    final emitter = DartitectDiagnosticsEmitter(
+      reporter: DartitectDiagnosticReporterRegistration.borrowed(diagnostics),
+      detail: DartitectDiagnosticDetail.topology,
+    );
     final worker = await IsolateWorker.spawn<int, int, _Failure>(
       handler: _handler,
       heartbeatInterval: const Duration(milliseconds: 10),
       heartbeatTimeout: const Duration(milliseconds: 100),
+      diagnostics: emitter.subject(DartitectDiagnosticSubjectKind.isolate),
     );
 
     final success = worker.send(2, requestId: 'success');
@@ -22,6 +28,18 @@ void main() {
     expect(worker.activeRequestCount, 0);
     await worker.safeStop();
     expect(worker.isDisposed, isTrue);
+    expect(
+      diagnostics.events.map((event) => event.phase),
+      containsAll(<DartitectDiagnosticPhase>{
+        DartitectDiagnosticPhase.started,
+        DartitectDiagnosticPhase.succeeded,
+        DartitectDiagnosticPhase.updated,
+        DartitectDiagnosticPhase.failed,
+        DartitectDiagnosticPhase.disposed,
+      }),
+    );
+    await emitter.dispose();
+    diagnostics.dispose();
   });
 
   test('remote crash and request deadline terminate exactly once', () async {

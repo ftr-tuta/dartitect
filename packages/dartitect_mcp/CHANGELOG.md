@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0-rc.5
+
+- Join the lockstep RC5 paved-road source cohort without creating a tag,
+  release, or publication.
+
 ## 1.0.0-rc.4
 
 - Add aggregate verify and reviewed modeling/migration previews, retain the

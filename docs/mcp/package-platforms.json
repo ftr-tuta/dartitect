@@ -2,6 +2,10 @@
   "schemaVersion": 1,
   "packages": {
     "dartitect": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
+    "dartitect_resilience": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
+    "dartitect_jobs": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
+    "dartitect_transfer": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
+    "dartitect_devtools": {"platforms": ["Dart VM", "Flutter development", "DevTools web"], "stability": "development"},
     "dartitect_sync": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
     "dartitect_isolates": {"platforms": ["Dart VM", "Flutter native"], "stability": "development"},
     "dartitect_flutter": {"platforms": ["Flutter"], "stability": "development"},

@@ -3,7 +3,7 @@
 Install `dartitect_cli`, run read-only discovery first, and review every preview:
 
 ```console
-dart pub global activate dartitect_cli 1.0.0-rc.4
+dart pub global activate dartitect_cli 1.0.0-rc.5
 dartitect inspect --json
 dartitect scan --no-baseline
 dartitect doctor
@@ -19,7 +19,7 @@ dartitect dependencies explain uuid
 dartitect fleet versions apps/a apps/b --root . --json
 dartitect fleet check apps/a apps/b --root . --json
 dartitect fleet policy apps/a --root . --bundle=tool/fleet_policy_bundle.json --sha256=<sha256> --json
-dartitect fleet upgrade apps/a --root . --dry-run --to=1.0.0-rc.4 --json
+dartitect fleet upgrade apps/a --root . --dry-run --to=1.0.0-rc.5 --json
 ```
 
 Mutating counterparts are `init` without `--dry-run`, `baseline create` without
