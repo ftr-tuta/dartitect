@@ -126,3 +126,7 @@ from a matching tag with a published GitHub Release and its complete cohort
 notes. If no compatible Release exists, there is no supported consumption path.
 See the
 [experimental consumption guide](../../docs/guides/git-candidate-consumption.md).
+`DioTransferTransport` also connects `dartitect_transfer` to a borrowed Dio
+client. Its callbacks leave URL, headers, credentials, Range/ETag,
+idempotency, response validation, and durable-commit semantics with the
+consumer; the adapter emits no request logs.

@@ -3,6 +3,7 @@ library;
 
 export 'src/cancellation_binding.dart';
 export 'src/dio_owner.dart';
+export 'src/dio_transfer_transport.dart';
 export 'src/instrumentation.dart';
 export 'src/interceptors.dart';
 export 'src/json_client.dart';

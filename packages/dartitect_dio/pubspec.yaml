@@ -12,6 +12,7 @@ environment:
 dependencies:
   dartitect: '>=1.0.0-rc.4 <1.0.0'
   dartitect_observability: '>=1.0.0-rc.4 <1.0.0'
+  dartitect_transfer: '>=1.0.0-rc.4 <1.0.0'
   dio: ^5.11.0
 
 dev_dependencies:
