@@ -1,0 +1,16 @@
+{
+  "configVersion": 1,
+  "profile": "native_strict",
+  "features": {
+    "declarations": {
+      "paved_road": {
+        "profile": "offline-full",
+        "persistence": "memory",
+        "transport": "synthetic",
+        "cursorPagination": true,
+        "headlessSync": true,
+        "diagnostics": "full"
+      }
+    }
+  }
+}

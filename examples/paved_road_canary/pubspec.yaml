@@ -1,0 +1,27 @@
+name: paved_road_canary
+description: Synthetic RC5 canary for Dartitect paved-road contracts.
+version: 1.0.0-rc.4
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dependencies:
+  dartitect: ^1.0.0-rc.4
+  dartitect_devtools: ^1.0.0-rc.4
+  dartitect_flutter: ^1.0.0-rc.4
+  dartitect_jobs: ^1.0.0-rc.4
+  dartitect_resilience: ^1.0.0-rc.4
+  dartitect_transfer: ^1.0.0-rc.4
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

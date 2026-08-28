@@ -3,6 +3,8 @@
 **/.dartitect/project.lock
 .packages
 build/
+!packages/dartitect_devtools/extension/devtools/build/
+!packages/dartitect_devtools/extension/devtools/build/**
 coverage/
 docs/api/
 doc/api/
