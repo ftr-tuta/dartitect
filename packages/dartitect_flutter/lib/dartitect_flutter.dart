@@ -8,5 +8,7 @@ export 'src/effect_channel.dart';
 export 'src/first_frame_gate.dart';
 export 'src/flutter_error_binding.dart';
 export 'src/listenable_selector.dart';
+export 'src/local_history_listenable.dart';
+export 'src/restoration/versioned_restoration.dart';
 export 'src/session_state.dart';
 export 'src/view_model_host.dart';
