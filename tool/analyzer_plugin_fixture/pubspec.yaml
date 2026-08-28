@@ -5,4 +5,8 @@ environment:
   sdk: ^3.13.0
 
 dependencies:
+  dartitect:
+    path: dependencies/dartitect
+  dartitect_flutter:
+    path: dependencies/dartitect_flutter
   sentry: ^9.27.0

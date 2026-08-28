@@ -16,7 +16,8 @@
     "serviceLocator": "DT1013",
     "packageDependencyCycle": "DT1014",
     "packageReexport": "DT1015",
-    "scopeBoundary": "DT1016"
+    "scopeBoundary": "DT1016",
+    "temporaryDisposableHostValue": "DT1045"
   },
   "defaultLayers": {
     "domain": ["**/domain/**"],
@@ -107,5 +108,20 @@
     "UseRowClass",
     "Entity",
     "RestApi"
+  ],
+  "borrowingValueHosts": [
+    "ApplicationHost",
+    "SessionHost",
+    "ViewModelHost"
+  ],
+  "knownDisposableTypes": [
+    "BootstrapCoordinator",
+    "BoundedLocalHistory",
+    "CancellationSource",
+    "DioOwner",
+    "OwnedRuntimeSlot",
+    "ReactiveOwner",
+    "ResourceOwner",
+    "SessionRuntimeController"
   ]
 }

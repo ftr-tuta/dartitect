@@ -860,6 +860,42 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
     super.visitMethodInvocation(node);
   }
 
+  @override
+  void visitInstanceCreationExpression(InstanceCreationExpression node) {
+    if (classification.isGeneratedInfrastructure ||
+        !nativeStrict ||
+        !_importsDartitectFlutter(node)) {
+      super.visitInstanceCreationExpression(node);
+      return;
+    }
+    final constructor = node.constructorName;
+    final host = constructor.type.name.lexeme;
+    if (constructor.name?.name == 'value' &&
+        DartitectArchitectureRules.borrowingValueHosts.contains(host)) {
+      NamedArgument? valueArgument;
+      for (final argument in node.argumentList.arguments) {
+        if (argument is NamedArgument && argument.name.lexeme == 'value') {
+          valueArgument = argument;
+          break;
+        }
+      }
+      final value = valueArgument?.argumentExpression;
+      final disposable = _temporaryConstructedType(value);
+      if (disposable != null &&
+          DartitectArchitectureRules.knownDisposableTypes.contains(
+            disposable,
+          )) {
+        _report(
+          DartitectRuleCodes.temporaryDisposableHostValue,
+          'A borrowing host .value constructor must not receive an inline disposable.',
+          value!.offset,
+          '$host.value',
+        );
+      }
+    }
+    super.visitInstanceCreationExpression(node);
+  }
+
   bool _providerImportAlreadyReported = false;
 
   void _inspectUri(StringLiteral literal) {
@@ -954,6 +990,32 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
       );
     }
   }
+
+  static bool _importsDartitectFlutter(AstNode node) {
+    AstNode? current = node;
+    while (current != null && current is! CompilationUnit) {
+      current = current.parent;
+    }
+    final unit = current as CompilationUnit?;
+    return unit?.directives.whereType<ImportDirective>().any(
+          (directive) =>
+              directive.uri.stringValue?.startsWith(
+                'package:dartitect_flutter/',
+              ) ??
+              false,
+        ) ??
+        false;
+  }
+
+  static String? _temporaryConstructedType(Expression? expression) =>
+      switch (expression) {
+        InstanceCreationExpression(:final constructorName) =>
+          constructorName.type.name.lexeme,
+        MethodInvocation(:final target, :final methodName)
+            when target == null =>
+          methodName.name,
+        _ => null,
+      };
 
   void _report(String code, String message, int offset, String evidence) {
     final line = lineNumberAt(offset);

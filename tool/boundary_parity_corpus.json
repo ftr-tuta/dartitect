@@ -14,7 +14,8 @@
     "DARTITECT_ARCHITECTURE_CODEGEN": "DT1011",
     "DARTITECT_PROVIDER_CODEGEN_BOUNDARY": "DT1012",
     "DARTITECT_SERVICE_LOCATOR": "DT1013",
-    "DARTITECT_SCOPE_BOUNDARY": "DT1016"
+    "DARTITECT_SCOPE_BOUNDARY": "DT1016",
+    "DARTITECT_TEMPORARY_DISPOSABLE_HOST_VALUE": "DT1045"
   },
   "cases": [
     {
@@ -36,6 +37,10 @@
     {
       "path": "lib/features/orders/presentation/shared_violation.dart",
       "expected": ["DT1008"]
+    },
+    {
+      "path": "lib/features/orders/presentation/temporary_host_value.dart",
+      "expected": ["DT1045"]
     }
   ],
   "performanceBudget": {

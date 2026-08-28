@@ -35,6 +35,10 @@ Future<void> main(List<String> arguments) async {
           .cast<String>();
   final providerCodegen =
       (source['providerCodegenAnnotations']! as List<Object?>).cast<String>();
+  final borrowingValueHosts = (source['borrowingValueHosts']! as List<Object?>)
+      .cast<String>();
+  final knownDisposableTypes =
+      (source['knownDisposableTypes']! as List<Object?>).cast<String>();
   final generated = await _formatDart(
     _render(
       codes,
@@ -48,6 +52,8 @@ Future<void> main(List<String> arguments) async {
       flutterBoundaryTypes,
       architectureCodegen,
       providerCodegen,
+      borrowingValueHosts,
+      knownDisposableTypes,
     ),
   );
   final targets = <File>[
@@ -115,6 +121,8 @@ String _render(
   List<String> flutterBoundaryTypes,
   List<String> architectureCodegen,
   List<String> providerCodegen,
+  List<String> borrowingValueHosts,
+  List<String> knownDisposableTypes,
 ) {
   String strings(Iterable<String> values, {String indent = '    '}) => values
       .map((value) => "$indent'${value.replaceAll("'", "\\'")}',")
@@ -186,6 +194,16 @@ ${strings(architectureCodegen)}
   /// Provider serialization/schema annotations restricted to infrastructure.
   static const Set<String> providerCodegenAnnotations = <String>{
 ${strings(providerCodegen)}
+  };
+
+  /// Flutter hosts whose `.value` constructors borrow their value.
+  static const Set<String> borrowingValueHosts = <String>{
+${strings(borrowingValueHosts)}
+  };
+
+  /// Known lifecycle-owning values unsafe as inline borrowed temporaries.
+  static const Set<String> knownDisposableTypes = <String>{
+${strings(knownDisposableTypes)}
   };
 }
 

@@ -212,6 +212,14 @@ final class DartitectBoundaryRule extends MultiAnalysisRule {
     uniqueName: 'DartitectLint.invalidConfiguration',
   );
 
+  /// Inline disposable passed to a borrowing Flutter host.
+  static const temporaryDisposableHostValue = LintCode(
+    'dartitect_temporary_disposable_host_value',
+    'A disposable temporary must not be passed to a borrowing host `.value` constructor.',
+    correctionMessage: 'Retain and dispose the value in an outer owner, or use the host `.create` constructor.',
+    uniqueName: 'DartitectLint.temporaryDisposableHostValue',
+  );
+
   /// Whether reviewed generated infrastructure may retain [uri].
   ///
   /// Provider generators may legitimately import their SDK internals and
@@ -246,6 +254,7 @@ final class DartitectBoundaryRule extends MultiAnalysisRule {
     ecosystemProhibited,
     ecosystemException,
     invalidConfiguration,
+    temporaryDisposableHostValue,
   ];
 
   @override
@@ -262,6 +271,7 @@ final class DartitectBoundaryRule extends MultiAnalysisRule {
       ..addNamedType(this, visitor)
       ..addAnnotation(this, visitor)
       ..addMethodInvocation(this, visitor)
+      ..addInstanceCreationExpression(this, visitor)
       ..addCatchClause(this, visitor)
       ..addMapLiteralEntry(this, visitor);
   }
@@ -447,6 +457,26 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
         DartitectBoundaryRule.directConsoleLogging,
       );
     }
+  }
+
+  @override
+  void visitInstanceCreationExpression(InstanceCreationExpression node) {
+    if (_generated || !_importsDartitectFlutter(node)) return;
+    final constructor = node.constructorName;
+    if (constructor.name?.name != 'value') return;
+    final host = constructor.type.name.lexeme;
+    if (!DartitectArchitectureRules.borrowingValueHosts.contains(host)) return;
+    final value = node.argumentList.arguments
+        .whereType<NamedArgument>()
+        .where((argument) => argument.name.lexeme == 'value')
+        .firstOrNull
+        ?.argumentExpression;
+    if (value is! InstanceCreationExpression) return;
+    final disposable = value.constructorName.type.name.lexeme;
+    if (!DartitectArchitectureRules.knownDisposableTypes.contains(disposable)) {
+      return;
+    }
+    _reportAtNode(value, DartitectBoundaryRule.temporaryDisposableHostValue);
   }
 
   @override
@@ -678,4 +708,24 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
     final package = RegExp(r'^package:([^/]+)/').firstMatch(uri)?.group(1);
     return package != null && packages.contains(package);
   }
+
+  static bool _importsDartitectFlutter(AstNode node) {
+    AstNode? current = node;
+    while (current != null && current is! CompilationUnit) {
+      current = current.parent;
+    }
+    final unit = current as CompilationUnit?;
+    return unit?.directives.whereType<ImportDirective>().any(
+          (directive) =>
+              directive.uri.stringValue?.startsWith(
+                'package:dartitect_flutter/',
+              ) ??
+              false,
+        ) ??
+        false;
+  }
+}
+
+extension<T> on Iterable<T> {
+  T? get firstOrNull => isEmpty ? null : first;
 }
