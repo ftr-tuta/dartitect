@@ -4,6 +4,65 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 
+import 'project_lock.dart';
+
+/// Independent compatibility versions used by generation and reporting.
+abstract final class DartitectGenerationVersions {
+  /// Package release version; never used as generated ownership identity.
+  static const String release = '1.0.0-rc.3';
+
+  /// Cross-component generation protocol version.
+  static const int protocol = 1;
+
+  /// Validated modeling semantic-input schema.
+  static const int modelingSemanticSchema = 4;
+
+  /// Model renderer behavior and header version.
+  static const int modelRenderer = 1;
+
+  /// Namespaced ownership manifest schema.
+  static const int manifest = 2;
+
+  /// Stable generation command report schema.
+  static const int report = 1;
+
+  /// Namespaced output transaction journal schema.
+  static const int journal = 3;
+
+  /// Namespaced source-edit journal schema.
+  static const int sourceJournal = 2;
+}
+
+/// Isolation boundary for manifests, journals, staging, and recovery.
+final class GenerationNamespace {
+  /// Creates a namespace with an optional fully-generated output suffix.
+  const GenerationNamespace(this.name, {this.fullyGeneratedSuffix});
+
+  /// Generated-once scaffolds and project files.
+  static const scaffolding = GenerationNamespace('scaffolding');
+
+  /// Fully-generated Dartitect model parts.
+  static const modeling = GenerationNamespace(
+    'modeling',
+    fullyGeneratedSuffix: '.dartitect.g.dart',
+  );
+
+  /// Stable lowercase identifier used only in `.dartitect/generation` paths.
+  final String name;
+
+  /// Required output suffix when this namespace manages complete ownership.
+  final String? fullyGeneratedSuffix;
+
+  @override
+  bool operator ==(Object other) =>
+      other is GenerationNamespace &&
+      name == other.name &&
+      fullyGeneratedSuffix == other.fullyGeneratedSuffix;
+
+  @override
+  int get hashCode => Object.hash(name, fullyGeneratedSuffix);
+}
+
 /// Ownership class of generated content.
 enum GeneratedOwnership {
   /// Created once and owned by the consumer afterward.
@@ -21,8 +80,8 @@ final class FileGenerationOperation {
     required this.content,
     this.ownership = GeneratedOwnership.generatedOnce,
     this.sourcePath,
-    this.generatorVersion = '1.0.0-rc.3',
-    this.inputSchemaVersion = 1,
+    this.rendererVersion = 1,
+    this.semanticSchemaVersion = 1,
     this.inputSignature,
   });
 
@@ -38,11 +97,11 @@ final class FileGenerationOperation {
   /// Project-relative source path for fully generated output.
   final String? sourcePath;
 
-  /// Generator version recorded in the ownership manifest.
-  final String generatorVersion;
+  /// Renderer behavior version recorded in the ownership manifest.
+  final int rendererVersion;
 
   /// Semantic input schema version.
-  final int inputSchemaVersion;
+  final int semanticSchemaVersion;
 
   /// Canonical semantic model signature, excluding formatting/comments.
   final String? inputSignature;
@@ -101,8 +160,13 @@ final class GenerationPlan {
     this.operations, {
     required this.pendingRecovery,
     required this.managesFullyGenerated,
+    required this.migratesLegacyOwnership,
     required List<_ManifestEntry> nextManifestEntries,
-  }) : _nextManifestEntries = nextManifestEntries;
+    required String? previousManifestPath,
+    required String? previousManifestRawDigest,
+  }) : _nextManifestEntries = nextManifestEntries,
+       _previousManifestPath = previousManifestPath,
+       _previousManifestRawDigest = previousManifestRawDigest;
 
   /// Operations sorted by normalized path.
   final List<PlannedFileOperation> operations;
@@ -113,7 +177,12 @@ final class GenerationPlan {
   /// Whether this plan converges the complete fully-generated set.
   final bool managesFullyGenerated;
 
+  /// Whether apply will atomically replace a verified RC3 ownership manifest.
+  final bool migratesLegacyOwnership;
+
   final List<_ManifestEntry> _nextManifestEntries;
+  final String? _previousManifestPath;
+  final String? _previousManifestRawDigest;
 
   /// Whether any destination has unproven or diverged ownership.
   bool get hasConflicts => operations.any(
@@ -121,11 +190,13 @@ final class GenerationPlan {
   );
 
   /// Whether applying the plan changes an output or manifest entry.
-  bool get hasChanges => operations.any(
-    (operation) =>
-        operation.disposition != GenerationDisposition.noOp &&
-        operation.disposition != GenerationDisposition.conflict,
-  );
+  bool get hasChanges =>
+      migratesLegacyOwnership ||
+      operations.any(
+        (operation) =>
+            operation.disposition != GenerationDisposition.noOp &&
+            operation.disposition != GenerationDisposition.conflict,
+      );
 
   /// Files that would be created.
   Iterable<PlannedFileOperation> get creates => operations.where(
@@ -271,24 +342,55 @@ final class GenerationException implements Exception {
 
 /// Transactional generation engine for generated-once and fully-generated files.
 final class GenerationEngine {
-  /// Creates an engine rooted at an existing or creatable project directory.
-  GenerationEngine(Directory root, {GenerationFaultInjector? faultInjector})
-    : root = root.absolute,
-      _faultInjector = faultInjector;
+  /// Creates an engine rooted at a project and isolated by [namespace].
+  GenerationEngine(
+    Directory root, {
+    required this.namespace,
+    GenerationFaultInjector? faultInjector,
+  }) : root = root.absolute,
+       _faultInjector = faultInjector {
+    final suffix = namespace.fullyGeneratedSuffix;
+    final reservedMismatch =
+        namespace.name == GenerationNamespace.modeling.name &&
+            namespace != GenerationNamespace.modeling ||
+        namespace.name == GenerationNamespace.scaffolding.name &&
+            namespace != GenerationNamespace.scaffolding;
+    if (!RegExp(r'^[a-z][a-z0-9-]*$').hasMatch(namespace.name) ||
+        suffix != null &&
+            (suffix.isEmpty ||
+                !suffix.startsWith('.') ||
+                suffix.contains('/') ||
+                suffix.contains('\\')) ||
+        reservedMismatch) {
+      throw const GenerationException(
+        'Generation namespace identifier or output suffix is invalid.',
+        kind: GenerationFailureKind.invalidConfiguration,
+      );
+    }
+  }
 
   /// Destination project root.
   final Directory root;
+
+  /// Ownership and transaction isolation boundary.
+  final GenerationNamespace namespace;
 
   final GenerationFaultInjector? _faultInjector;
 
   /// Resolves all requested operations without writing.
   ///
   /// Set [manageFullyGenerated] only when [requested] is the complete desired
-  /// set for `.dartitect/model-outputs.json`; an empty set then removes orphans.
+  /// set for this namespace's manifest; an empty set then removes orphans.
   Future<GenerationPlan> plan(
     Iterable<FileGenerationOperation> requested, {
     bool manageFullyGenerated = false,
   }) async {
+    if (manageFullyGenerated && namespace.fullyGeneratedSuffix == null) {
+      throw const GenerationException(
+        'This generation namespace does not manage complete outputs.',
+        kind: GenerationFailureKind.invalidConfiguration,
+      );
+    }
     final byPath = <String, FileGenerationOperation>{};
     for (final operation in requested) {
       _validatePath(operation.relativePath);
@@ -311,13 +413,32 @@ final class GenerationEngine {
       if (prior != null &&
           (prior.content != operation.content ||
               prior.ownership != operation.ownership ||
-              prior.sourcePath != operation.sourcePath)) {
+              prior.sourcePath != operation.sourcePath ||
+              prior.rendererVersion != operation.rendererVersion ||
+              prior.semanticSchemaVersion != operation.semanticSchemaVersion ||
+              prior.inputSignature != operation.inputSignature)) {
         throw GenerationException(
           'Two operations diverge for ${operation.relativePath}.',
           kind: GenerationFailureKind.invalidConfiguration,
         );
       }
       byPath[operation.relativePath] = operation;
+    }
+
+    final hasJournal = await _journal.exists();
+    final hasLegacyJournal = await _legacyJournal.exists();
+    final hasTransaction = await _transaction.exists();
+    final hasLegacyTransaction = await _legacyTransaction.exists();
+    if (hasTransaction && !hasJournal ||
+        hasLegacyTransaction && !hasLegacyJournal) {
+      final residue = hasLegacyTransaction && !hasLegacyJournal
+          ? _legacyTransaction
+          : _transaction;
+      throw GenerationException(
+        'Generation transaction residue is not journaled.',
+        kind: GenerationFailureKind.invalidConfiguration,
+        recoveryPaths: <String>[_relative(residue.path)],
+      );
     }
 
     final manifest = manageFullyGenerated ? await _readManifest() : null;
@@ -333,7 +454,7 @@ final class GenerationEngine {
     final operations = <PlannedFileOperation>[];
 
     if (manageFullyGenerated && manifest == null) {
-      final candidates = await _findUnmanagedModelOutputs();
+      final candidates = await _findUnmanagedOutputs();
       for (final path in candidates) {
         if (!byPath.containsKey(path)) {
           operations.add(
@@ -452,8 +573,8 @@ final class GenerationEngine {
               content: '',
               ownership: GeneratedOwnership.fullyGenerated,
               sourcePath: prior.source,
-              generatorVersion: prior.generatorVersion,
-              inputSchemaVersion: prior.inputSchemaVersion,
+              rendererVersion: prior.rendererVersion,
+              semanticSchemaVersion: prior.semanticSchemaVersion,
               inputSignature: prior.inputDigest,
             ),
             disposition,
@@ -473,9 +594,12 @@ final class GenerationEngine {
     ]..sort((left, right) => left.path.compareTo(right.path));
     return GenerationPlan._(
       List<PlannedFileOperation>.unmodifiable(operations),
-      pendingRecovery: await _journal.exists(),
+      pendingRecovery: hasJournal || hasLegacyJournal,
       managesFullyGenerated: manageFullyGenerated,
+      migratesLegacyOwnership: manifest?.legacy ?? false,
       nextManifestEntries: List<_ManifestEntry>.unmodifiable(nextEntries),
+      previousManifestPath: manifest?.relativePath,
+      previousManifestRawDigest: manifest?.rawDigest,
     );
   }
 
@@ -496,7 +620,16 @@ final class GenerationEngine {
         createdPaths: const <String>[],
       );
     }
-    await recover();
+    return _withProjectLock(
+      () => _applyLocked(requested, manageFullyGenerated: manageFullyGenerated),
+    );
+  }
+
+  Future<GenerationResult> _applyLocked(
+    Iterable<FileGenerationOperation> requested, {
+    required bool manageFullyGenerated,
+  }) async {
+    await _recoverUnlocked();
     final resolved = await plan(
       requested,
       manageFullyGenerated: manageFullyGenerated,
@@ -523,11 +656,14 @@ final class GenerationEngine {
     }
 
     await root.create(recursive: true);
-    if (await _transaction.exists()) {
+    final hasTransaction = await _transaction.exists();
+    final hasLegacyTransaction = await _legacyTransaction.exists();
+    if (hasTransaction || hasLegacyTransaction) {
+      final residue = hasLegacyTransaction ? _legacyTransaction : _transaction;
       throw GenerationException(
         'Generation transaction residue exists without a recoverable journal.',
         kind: GenerationFailureKind.invalidConfiguration,
-        recoveryPaths: <String>[_relative(_transaction.path)],
+        recoveryPaths: <String>[_relative(residue.path)],
       );
     }
     await _transaction.create(recursive: true);
@@ -542,9 +678,40 @@ final class GenerationEngine {
         final path = planned.operation.relativePath;
         final destination = File(_resolve(path));
         final beforeExists = await destination.exists();
-        final beforeDigest = beforeExists
-            ? await _rawDigest(destination)
-            : null;
+        String? beforeDigest;
+        String? beforeCanonicalDigest;
+        if (beforeExists) {
+          final bytes = await destination.readAsBytes();
+          beforeDigest = sha256.convert(bytes).toString();
+          try {
+            beforeCanonicalDigest = _textDigest(
+              _canonicalText(utf8.decode(bytes)),
+            );
+          } on FormatException {
+            throw GenerationException(
+              'Owned destination is not valid UTF-8: $path.',
+              recoveryPaths: <String>[path],
+            );
+          }
+        }
+        if (planned.disposition == GenerationDisposition.create &&
+            beforeExists) {
+          throw GenerationException(
+            'Destination appeared after planning: $path.',
+            recoveryPaths: <String>[path],
+          );
+        }
+        if (planned.disposition
+            case GenerationDisposition.update || GenerationDisposition.delete) {
+          if (!beforeExists ||
+              planned.previousOutputDigest == null ||
+              beforeCanonicalDigest != planned.previousOutputDigest) {
+            throw GenerationException(
+              'Owned destination changed after planning: $path.',
+              recoveryPaths: <String>[path],
+            );
+          }
+        }
         final afterExists = planned.disposition != GenerationDisposition.delete;
         String? afterDigest;
         if (afterExists) {
@@ -573,6 +740,7 @@ final class GenerationEngine {
 
       _JournalEntry? manifestJournal;
       if (resolved.managesFullyGenerated) {
+        await _revalidateManifest(resolved);
         await _validateNoSymlinkPath(_manifestRelativePath);
         final stagedManifest = File(_stageManifestPath);
         await _fault(
@@ -584,14 +752,17 @@ final class GenerationEngine {
           _encodeManifest(resolved._nextManifestEntries),
           flush: true,
         );
-        final beforeExists = await _manifest.exists();
+        final beforeExists =
+            resolved._previousManifestPath == _manifestRelativePath;
         manifestJournal = _JournalEntry(
           path: _manifestRelativePath,
           disposition: beforeExists
               ? GenerationDisposition.update
               : GenerationDisposition.create,
           beforeExists: beforeExists,
-          beforeDigest: beforeExists ? await _rawDigest(_manifest) : null,
+          beforeDigest: beforeExists
+              ? resolved._previousManifestRawDigest
+              : null,
           afterExists: true,
           afterDigest: await _rawDigest(stagedManifest),
         );
@@ -599,8 +770,22 @@ final class GenerationEngine {
           GenerationFaultPoint.afterStageManifest,
           path: _manifestRelativePath,
         );
+        if (resolved.migratesLegacyOwnership) {
+          final legacyDigest = resolved._previousManifestRawDigest!;
+          journalEntries.add(
+            _JournalEntry(
+              path: _legacyManifestRelativePath,
+              disposition: GenerationDisposition.delete,
+              beforeExists: true,
+              beforeDigest: legacyDigest,
+              afterExists: false,
+              afterDigest: null,
+            ),
+          );
+        }
       }
       final journal = _Journal(
+        namespace: namespace.name,
         phase: 'staged',
         entries: journalEntries,
         manifest: manifestJournal,
@@ -626,7 +811,7 @@ final class GenerationEngine {
       final original = error;
       try {
         if (await _journal.exists()) {
-          await recover();
+          await _recoverUnlocked();
         } else if (await _transaction.exists()) {
           await _transaction.delete(recursive: true);
         }
@@ -664,13 +849,33 @@ final class GenerationEngine {
 
   /// Restores exact pre-transaction bytes or validates a completed commit.
   Future<void> recover() async {
-    if (!await _journal.exists()) return;
-    final journal = await _readJournal();
+    await _withProjectLock(_recoverUnlocked);
+  }
+
+  Future<void> _recoverUnlocked() async {
+    final hasCurrent = await _journal.exists();
+    final hasLegacy = await _legacyJournal.exists();
+    if (!hasCurrent && !hasLegacy) return;
+    if (hasCurrent && hasLegacy) {
+      throw GenerationException(
+        'Both legacy and namespaced generation journals exist.',
+        kind: GenerationFailureKind.recovery,
+        recoveryPaths: <String>[
+          _legacyJournalRelativePath,
+          _journalRelativePath,
+        ],
+      );
+    }
+    final legacy = hasLegacy;
+    final journalFile = legacy ? _legacyJournal : _journal;
+    final transaction = legacy ? _legacyTransaction : _transaction;
+    final journal = await _readJournal(journalFile, legacy: legacy);
     if (journal.phase == 'committed') {
       await _validateCommitted(journal);
-      if (await _transaction.exists())
-        await _transaction.delete(recursive: true);
-      await _journal.delete();
+      if (await transaction.exists()) {
+        await transaction.delete(recursive: true);
+      }
+      await journalFile.delete();
       return;
     }
 
@@ -679,7 +884,7 @@ final class GenerationEngine {
       ...journal.entries,
       if (journal.manifest case final manifest?) manifest,
     ]) {
-      await _validateRollbackEntry(entry, conflicts);
+      await _validateRollbackEntry(entry, conflicts, transaction);
     }
     if (conflicts.isNotEmpty) {
       throw GenerationException(
@@ -693,10 +898,10 @@ final class GenerationEngine {
       if (journal.manifest case final manifest?) manifest,
       ...journal.entries.reversed,
     ]) {
-      await _rollbackEntry(entry);
+      await _rollbackEntry(entry, transaction);
     }
-    if (await _transaction.exists()) await _transaction.delete(recursive: true);
-    await _journal.delete();
+    if (await transaction.exists()) await transaction.delete(recursive: true);
+    await journalFile.delete();
   }
 
   Future<void> _commitEntry(
@@ -791,9 +996,10 @@ final class GenerationEngine {
   Future<void> _validateRollbackEntry(
     _JournalEntry entry,
     List<String> conflicts,
+    Directory transaction,
   ) async {
     final destination = File(_resolve(entry.path));
-    final backup = File(_backupPath(entry.path));
+    final backup = File(_backupPath(entry.path, transaction: transaction));
     final destinationExists = await destination.exists();
     final backupExists = await backup.exists();
     final destinationDigest = destinationExists
@@ -816,9 +1022,12 @@ final class GenerationEngine {
     }
   }
 
-  Future<void> _rollbackEntry(_JournalEntry entry) async {
+  Future<void> _rollbackEntry(
+    _JournalEntry entry,
+    Directory transaction,
+  ) async {
     final destination = File(_resolve(entry.path));
-    final backup = File(_backupPath(entry.path));
+    final backup = File(_backupPath(entry.path, transaction: transaction));
     if (entry.beforeExists) {
       if (await backup.exists()) {
         if (await destination.exists()) {
@@ -853,32 +1062,95 @@ final class GenerationEngine {
     }
   }
 
-  Future<_Manifest?> _readManifest() async {
-    final type = await FileSystemEntity.type(
+  Future<void> _revalidateManifest(GenerationPlan plan) async {
+    final expectedPath = plan._previousManifestPath;
+    final expectedDigest = plan._previousManifestRawDigest;
+    final currentType = await FileSystemEntity.type(
       _manifest.path,
       followLinks: false,
     );
-    if (type == FileSystemEntityType.notFound) return null;
+    final legacyType = namespace == GenerationNamespace.modeling
+        ? await FileSystemEntity.type(_legacyManifest.path, followLinks: false)
+        : FileSystemEntityType.notFound;
+    if (expectedPath == null) {
+      if (currentType != FileSystemEntityType.notFound ||
+          legacyType != FileSystemEntityType.notFound) {
+        throw const GenerationException(
+          'An ownership manifest appeared after planning.',
+        );
+      }
+      return;
+    }
+    final expectedLegacy = expectedPath == _legacyManifestRelativePath;
+    final expectedType = expectedLegacy ? legacyType : currentType;
+    final otherType = expectedLegacy ? currentType : legacyType;
+    final file = expectedLegacy ? _legacyManifest : _manifest;
+    await _validateNoSymlinkPath(expectedPath);
+    if (expectedType != FileSystemEntityType.file ||
+        otherType != FileSystemEntityType.notFound ||
+        expectedDigest == null ||
+        await _rawDigest(file) != expectedDigest) {
+      throw GenerationException(
+        'Ownership manifest changed after planning.',
+        recoveryPaths: <String>[expectedPath],
+      );
+    }
+  }
+
+  Future<_Manifest?> _readManifest() async {
+    final currentType = await FileSystemEntity.type(
+      _manifest.path,
+      followLinks: false,
+    );
+    final legacyType = namespace == GenerationNamespace.modeling
+        ? await FileSystemEntity.type(_legacyManifest.path, followLinks: false)
+        : FileSystemEntityType.notFound;
+    if (currentType != FileSystemEntityType.notFound &&
+        legacyType != FileSystemEntityType.notFound) {
+      throw const GenerationException(
+        'Both legacy and namespaced ownership manifests exist.',
+        kind: GenerationFailureKind.invalidConfiguration,
+      );
+    }
+    if (currentType == FileSystemEntityType.notFound &&
+        legacyType == FileSystemEntityType.notFound) {
+      return null;
+    }
+    final legacy = legacyType != FileSystemEntityType.notFound;
+    final file = legacy ? _legacyManifest : _manifest;
+    final type = legacy ? legacyType : currentType;
     if (type != FileSystemEntityType.file) {
       throw const GenerationException(
-        'Model output manifest must be a regular file.',
+        'Generation ownership manifest must be a regular file.',
         kind: GenerationFailureKind.invalidConfiguration,
       );
     }
     Object? decoded;
+    late final String rawDigest;
     try {
-      decoded = jsonDecode(await _manifest.readAsString());
+      final bytes = await file.readAsBytes();
+      rawDigest = sha256.convert(bytes).toString();
+      decoded = jsonDecode(utf8.decode(bytes));
     } on Object {
       throw const GenerationException(
-        'Model output manifest is not valid JSON.',
+        'Generation ownership manifest is not valid JSON.',
         kind: GenerationFailureKind.invalidConfiguration,
       );
     }
-    if (decoded is! Map<String, Object?> ||
-        decoded['schemaVersion'] != 1 ||
-        decoded['outputs'] is! List<Object?>) {
+    final validEnvelope =
+        decoded is Map<String, Object?> &&
+        decoded['outputs'] is List<Object?> &&
+        (legacy
+            ? decoded['schemaVersion'] == 1 &&
+                  decoded['generator'] == 'dartitect model'
+            : decoded['schemaVersion'] ==
+                      DartitectGenerationVersions.manifest &&
+                  decoded['namespace'] == namespace.name &&
+                  decoded['protocolVersion'] ==
+                      DartitectGenerationVersions.protocol);
+    if (!validEnvelope) {
       throw const GenerationException(
-        'Model output manifest has an unsupported schema.',
+        'Generation ownership manifest has an unsupported schema.',
         kind: GenerationFailureKind.invalidConfiguration,
       );
     }
@@ -887,43 +1159,75 @@ final class GenerationEngine {
     for (final raw in decoded['outputs']! as List<Object?>) {
       if (raw is! Map<String, Object?>) {
         throw const GenerationException(
-          'Model output manifest contains an invalid entry.',
+          'Generation ownership manifest contains an invalid entry.',
           kind: GenerationFailureKind.invalidConfiguration,
         );
       }
-      final entry = _ManifestEntry.fromJson(raw);
+      late final _ManifestEntry entry;
+      try {
+        entry = legacy
+            ? _ManifestEntry.fromLegacyJson(raw)
+            : _ManifestEntry.fromJson(raw);
+      } on Object {
+        throw const GenerationException(
+          'Generation ownership manifest contains invalid metadata.',
+          kind: GenerationFailureKind.invalidConfiguration,
+        );
+      }
       _validatePath(entry.path);
       _validatePath(entry.source);
+      final suffix = namespace.fullyGeneratedSuffix!;
       if (entry.path.contains('\\') ||
           entry.source.contains('\\') ||
-          !entry.path.endsWith('.dartitect.g.dart') ||
+          !entry.path.endsWith(suffix) ||
           !seen.add(entry.path)) {
         throw const GenerationException(
-          'Model output manifest contains an unsafe or duplicate path.',
+          'Generation manifest contains an unsafe or duplicate path.',
           kind: GenerationFailureKind.invalidConfiguration,
         );
       }
       await _validateNoSymlinkPath(entry.path);
       await _validateNoSymlinkPath(entry.source);
+      if (legacy) {
+        final output = File(_resolve(entry.path));
+        if (!await output.exists() ||
+            await _canonicalFileDigest(output) != entry.outputDigest) {
+          throw GenerationException(
+            'Legacy RC3 ownership bytes cannot be proven: ${entry.path}.',
+            recoveryPaths: <String>[entry.path],
+          );
+        }
+      }
       entries.add(entry);
     }
     entries.sort((left, right) => left.path.compareTo(right.path));
-    return _Manifest(List<_ManifestEntry>.unmodifiable(entries));
+    return _Manifest(
+      List<_ManifestEntry>.unmodifiable(entries),
+      legacy: legacy,
+      relativePath: legacy
+          ? _legacyManifestRelativePath
+          : _manifestRelativePath,
+      rawDigest: rawDigest,
+    );
   }
 
-  Future<_Journal> _readJournal() async {
+  Future<_Journal> _readJournal(File file, {required bool legacy}) async {
     Object? decoded;
     try {
-      decoded = jsonDecode(await _journal.readAsString());
+      decoded = jsonDecode(await file.readAsString());
     } on Object {
       throw GenerationException(
         'Generation recovery journal is invalid.',
         kind: GenerationFailureKind.recovery,
-        recoveryPaths: <String>[_journalRelativePath],
+        recoveryPaths: <String>[_relative(file.path)],
       );
     }
     try {
-      final journal = _Journal.fromJson(decoded);
+      final journal = _Journal.fromJson(
+        decoded,
+        namespace: namespace,
+        legacy: legacy,
+      );
       for (final entry in <_JournalEntry>[
         ...journal.entries,
         if (journal.manifest case final manifest?) manifest,
@@ -937,7 +1241,7 @@ final class GenerationEngine {
       throw GenerationException(
         'Generation recovery journal has an unsupported schema.',
         kind: GenerationFailureKind.recovery,
-        recoveryPaths: <String>[_journalRelativePath],
+        recoveryPaths: <String>[_relative(file.path)],
       );
     }
   }
@@ -953,12 +1257,12 @@ final class GenerationEngine {
     await temporary.rename(_journal.path);
   }
 
-  Future<List<String>> _findUnmanagedModelOutputs() async {
+  Future<List<String>> _findUnmanagedOutputs() async {
     if (!await root.exists()) return <String>[];
+    final suffix = namespace.fullyGeneratedSuffix!;
     final outputs = <String>[];
     await for (final entity in root.list(recursive: true, followLinks: false)) {
-      if (entity is! File || !entity.path.endsWith('.dartitect.g.dart'))
-        continue;
+      if (entity is! File || !entity.path.endsWith(suffix)) continue;
       final relative = _relative(entity.path);
       final segments = relative.split('/');
       if (segments.any(
@@ -973,12 +1277,12 @@ final class GenerationEngine {
   }
 
   void _validateFullyGenerated(FileGenerationOperation operation) {
-    if (!operation.relativePath.endsWith('.dartitect.g.dart') ||
+    if (!operation.relativePath.endsWith(namespace.fullyGeneratedSuffix!) ||
         operation.sourcePath == null ||
         operation.inputSignature == null ||
         operation.inputSignature!.isEmpty ||
-        operation.generatorVersion.isEmpty ||
-        operation.inputSchemaVersion <= 0) {
+        operation.rendererVersion <= 0 ||
+        operation.semanticSchemaVersion <= 0) {
       throw GenerationException(
         'Fully-generated operation metadata is incomplete: '
         '${operation.relativePath}.',
@@ -1041,16 +1345,17 @@ final class GenerationEngine {
   _ManifestEntry _entryFor(FileGenerationOperation operation) => _ManifestEntry(
     path: operation.relativePath,
     source: operation.sourcePath!,
-    generatorVersion: operation.generatorVersion,
-    inputSchemaVersion: operation.inputSchemaVersion,
+    rendererVersion: operation.rendererVersion,
+    semanticSchemaVersion: operation.semanticSchemaVersion,
     inputDigest: _textDigest(_canonicalText(operation.inputSignature!)),
     outputDigest: _textDigest(_canonicalText(operation.content)),
   );
 
   String _encodeManifest(List<_ManifestEntry> entries) =>
       '${const JsonEncoder.withIndent('  ').convert(<String, Object?>{
-        'schemaVersion': 1,
-        'generator': 'dartitect model',
+        'schemaVersion': DartitectGenerationVersions.manifest,
+        'namespace': namespace.name,
+        'protocolVersion': DartitectGenerationVersions.protocol,
         'outputs': <Object?>[for (final entry in entries) entry.toJson()],
       })}\n';
 
@@ -1063,38 +1368,66 @@ final class GenerationEngine {
   String _stagePath(String path) =>
       _join(_transaction.path, 'stage/outputs/$path');
 
-  String _backupPath(String path) => _join(_transaction.path, 'backup/$path');
+  String _backupPath(String path, {Directory? transaction}) =>
+      _join((transaction ?? _transaction).path, 'backup/$path');
 
   String get _stageManifestPath =>
-      _join(_transaction.path, 'stage/model-outputs.json');
+      _join(_transaction.path, 'stage/manifest.json');
 
   File get _manifest => File(_resolve(_manifestRelativePath));
 
   File get _journal => File(_resolve(_journalRelativePath));
 
-  Directory get _transaction =>
+  File get _legacyManifest => File(_resolve(_legacyManifestRelativePath));
+
+  File get _legacyJournal => File(_resolve(_legacyJournalRelativePath));
+
+  Directory get _transaction => Directory(
+    _resolve('.dartitect/generation/${namespace.name}/transaction'),
+  );
+
+  Directory get _legacyTransaction =>
       Directory(_resolve('.dartitect/generation-transaction'));
 
-  static const String _manifestRelativePath = '.dartitect/model-outputs.json';
-  static const String _journalRelativePath =
+  String get _namespaceRoot => '.dartitect/generation/${namespace.name}';
+
+  String get _manifestRelativePath => '$_namespaceRoot/manifest.json';
+
+  String get _journalRelativePath => '$_namespaceRoot/journal.json';
+
+  static const String _legacyManifestRelativePath =
+      '.dartitect/model-outputs.json';
+  static const String _legacyJournalRelativePath =
       '.dartitect/generation-journal.json';
+
+  Future<T> _withProjectLock<T>(Future<T> Function() action) async {
+    return GenerationProjectLock.synchronized(root, action);
+  }
 
   static String _join(String left, String right) =>
       '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
 }
 
 final class _Manifest {
-  const _Manifest(this.entries);
+  const _Manifest(
+    this.entries, {
+    required this.legacy,
+    required this.relativePath,
+    required this.rawDigest,
+  });
 
   final List<_ManifestEntry> entries;
+  final bool legacy;
+  final String relativePath;
+  final String rawDigest;
 }
 
 final class _ManifestEntry {
   const _ManifestEntry({
     required this.path,
     required this.source,
-    required this.generatorVersion,
-    required this.inputSchemaVersion,
+    required this.rendererVersion,
+    required this.semanticSchemaVersion,
     required this.inputDigest,
     required this.outputDigest,
   });
@@ -1102,17 +1435,17 @@ final class _ManifestEntry {
   factory _ManifestEntry.fromJson(Map<String, Object?> json) {
     final path = json['path'];
     final source = json['source'];
-    final generatorVersion = json['generatorVersion'];
-    final inputSchemaVersion = json['inputSchemaVersion'];
+    final rendererVersion = json['rendererVersion'];
+    final semanticSchemaVersion = json['semanticSchemaVersion'];
     final inputDigest = json['inputDigest'];
     final outputDigest = json['outputDigest'];
     final digest = RegExp(r'^[0-9a-f]{64}$');
     if (path is! String ||
         source is! String ||
-        generatorVersion is! String ||
-        generatorVersion.isEmpty ||
-        inputSchemaVersion is! int ||
-        inputSchemaVersion <= 0 ||
+        rendererVersion is! int ||
+        rendererVersion <= 0 ||
+        semanticSchemaVersion is! int ||
+        semanticSchemaVersion <= 0 ||
         inputDigest is! String ||
         !digest.hasMatch(inputDigest) ||
         outputDigest is! String ||
@@ -1122,25 +1455,40 @@ final class _ManifestEntry {
     return _ManifestEntry(
       path: path,
       source: source,
-      generatorVersion: generatorVersion,
-      inputSchemaVersion: inputSchemaVersion,
+      rendererVersion: rendererVersion,
+      semanticSchemaVersion: semanticSchemaVersion,
       inputDigest: inputDigest,
       outputDigest: outputDigest,
     );
   }
 
+  factory _ManifestEntry.fromLegacyJson(Map<String, Object?> json) {
+    if (json['generatorVersion'] != '1.0.0-rc.3' ||
+        json['inputSchemaVersion'] != 4) {
+      throw const FormatException('Legacy manifest is not exact RC3.');
+    }
+    return _ManifestEntry.fromJson(<String, Object?>{
+      'path': json['path'],
+      'source': json['source'],
+      'rendererVersion': 1,
+      'semanticSchemaVersion': 4,
+      'inputDigest': json['inputDigest'],
+      'outputDigest': json['outputDigest'],
+    });
+  }
+
   final String path;
   final String source;
-  final String generatorVersion;
-  final int inputSchemaVersion;
+  final int rendererVersion;
+  final int semanticSchemaVersion;
   final String inputDigest;
   final String outputDigest;
 
   Map<String, Object?> toJson() => <String, Object?>{
     'path': path,
     'source': source,
-    'generatorVersion': generatorVersion,
-    'inputSchemaVersion': inputSchemaVersion,
+    'rendererVersion': rendererVersion,
+    'semanticSchemaVersion': semanticSchemaVersion,
     'inputDigest': inputDigest,
     'outputDigest': outputDigest,
   };
@@ -1150,8 +1498,8 @@ final class _ManifestEntry {
       other is _ManifestEntry &&
       path == other.path &&
       source == other.source &&
-      generatorVersion == other.generatorVersion &&
-      inputSchemaVersion == other.inputSchemaVersion &&
+      rendererVersion == other.rendererVersion &&
+      semanticSchemaVersion == other.semanticSchemaVersion &&
       inputDigest == other.inputDigest &&
       outputDigest == other.outputDigest;
 
@@ -1159,8 +1507,8 @@ final class _ManifestEntry {
   int get hashCode => Object.hash(
     path,
     source,
-    generatorVersion,
-    inputSchemaVersion,
+    rendererVersion,
+    semanticSchemaVersion,
     inputDigest,
     outputDigest,
   );
@@ -1168,14 +1516,24 @@ final class _ManifestEntry {
 
 final class _Journal {
   const _Journal({
+    required this.namespace,
     required this.phase,
     required this.entries,
     required this.manifest,
   });
 
-  factory _Journal.fromJson(Object? value) {
+  factory _Journal.fromJson(
+    Object? value, {
+    required GenerationNamespace namespace,
+    required bool legacy,
+  }) {
     if (value is! Map<String, Object?> ||
-        value['schemaVersion'] != 2 ||
+        (legacy
+            ? value['schemaVersion'] != 2
+            : value['schemaVersion'] != DartitectGenerationVersions.journal ||
+                  value['namespace'] != namespace.name ||
+                  value['protocolVersion'] !=
+                      DartitectGenerationVersions.protocol) ||
         value['phase'] is! String ||
         !const <String>{
           'staged',
@@ -1186,6 +1544,7 @@ final class _Journal {
       throw const FormatException('Invalid journal.');
     }
     return _Journal(
+      namespace: namespace.name,
       phase: value['phase']! as String,
       entries: <_JournalEntry>[
         for (final raw in value['entries']! as List<Object?>)
@@ -1197,15 +1556,22 @@ final class _Journal {
     );
   }
 
+  final String namespace;
   final String phase;
   final List<_JournalEntry> entries;
   final _JournalEntry? manifest;
 
-  _Journal withPhase(String value) =>
-      _Journal(phase: value, entries: entries, manifest: manifest);
+  _Journal withPhase(String value) => _Journal(
+    namespace: namespace,
+    phase: value,
+    entries: entries,
+    manifest: manifest,
+  );
 
   Map<String, Object?> toJson() => <String, Object?>{
-    'schemaVersion': 2,
+    'schemaVersion': DartitectGenerationVersions.journal,
+    'namespace': namespace,
+    'protocolVersion': DartitectGenerationVersions.protocol,
     'phase': phase,
     'entries': <Object?>[for (final entry in entries) entry.toJson()],
     'manifest': manifest?.toJson(),

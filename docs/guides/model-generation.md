@@ -119,7 +119,8 @@ Both commands accept `--json`. Global exit code 2 means usage/configuration
 failure and 3 means I/O/internal failure. Preview, dry-run, and check never
 repair files or recovery residue.
 
-Commit every `*.dartitect.g.dart` and `.dartitect/model-outputs.json`. CI runs
+Commit every `*.dartitect.g.dart` and
+`.dartitect/generation/modeling/manifest.json`. CI runs
 `dartitect model check` and rejects any generated diff. A clean checkout must
 analyze, test, and compile consumers without installing or invoking
 `dartitect_cli`.
@@ -138,19 +139,32 @@ no force flag.
 
 ## Manifest, schemas, and recovery
 
-The manifest owns only complete generated outputs and records their source,
-generator version, input schema, and canonical SHA-256 input/output digests.
-Updates and deletes require the existing bytes to match the recorded digest.
+The namespaced manifest owns only complete generated outputs and records their
+source, renderer version, semantic schema, and canonical SHA-256 input/output
+digests. Updates and deletes require the existing bytes to match the recorded
+digest. Release, protocol, semantic schema, renderer, manifest, command-report,
+output-journal, and source-journal versions evolve independently; the package
+release is never an ownership key or generated header.
 
 | Artifact | 1.0 schema | Compatibility rule |
 |---|---:|---|
 | Semantic model input signature | 4 | Includes library identity, capabilities, generics, defaults, types, JSON policy, projections, mapper compatibility decisions, renames, hooks, and all models in the generated part |
 | JSON command report | 1 | Consumers must select the supported schema explicitly |
-| `.dartitect/model-outputs.json` | 1 | Missing ownership conflicts with candidate outputs; malformed, older, or future schemas fail closed |
-| `.dartitect/generation-journal.json` | 2 | Malformed, older, or future schemas stop recovery and preserve residue for diagnosis |
+| `.dartitect/generation/modeling/manifest.json` | 2 | Namespace and protocol must match; missing ownership conflicts with candidate outputs; malformed, older, or future schemas fail closed |
+| `.dartitect/generation/modeling/journal.json` | 3 | Namespace and protocol must match; malformed schemas stop recovery and preserve residue for diagnosis |
+| `.dartitect/generation/model-primary-migration/source-journal.json` | 2 | Source edits use their own namespace and transaction but the same project lock |
 
-There is no implicit migration, downgrade, or force mode. A schema change
-requires an explicit compatibility implementation and new contract evidence.
+The only legacy adoption path is the explicit RC3 compatibility implementation:
+`.dartitect/model-outputs.json` schema 1 is migrated atomically only when its
+generator identity is exactly `1.0.0-rc.3` and every current canonical output
+digest matches. The legacy output journal schema 2 and source journal schema 1
+are recoverable at their original paths. Any mismatch, ambiguous old/new
+artifact pair, downgrade, or force attempt fails closed without writes.
+
+Each `GenerationNamespace` has an isolated manifest, journal, and transaction
+directory. Generated-once scaffolds use `scaffolding`; model parts use
+`modeling`. All namespaces and semantic source edits share
+`.dartitect/project.lock`, including in-process serialization.
 
 Apply stages the complete generation, persists a recovery journal, backs up
 owned targets, replaces outputs, replaces the manifest, validates committed

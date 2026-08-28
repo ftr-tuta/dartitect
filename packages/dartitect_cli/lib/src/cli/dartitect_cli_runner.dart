@@ -225,8 +225,10 @@ final class DartitectCliRunner {
       'sync-dataset' => scaffold.blueprint(ScaffoldBlueprint.parse(kind), name),
       _ => throw _UsageException('Unknown create target "$kind".'),
     };
-    final result = await GenerationEngine(root)
-        .apply(operations, dryRun: arguments.flags.contains('dry-run'));
+    final result = await GenerationEngine(
+      root,
+      namespace: GenerationNamespace.scaffolding,
+    ).apply(operations, dryRun: arguments.flags.contains('dry-run'));
     _writeGeneration(result);
     return DartitectExitCode.success.code;
   }
@@ -382,7 +384,10 @@ final class ${name.pascal}App extends StatelessWidget {
     );
 
     final scaffold = ScaffoldFactory(packageName: name.snake);
-    await GenerationEngine(project).apply(<FileGenerationOperation>[
+    await GenerationEngine(
+      project,
+      namespace: GenerationNamespace.scaffolding,
+    ).apply(<FileGenerationOperation>[
       ...scaffold.init(),
       ...scaffold.agents(),
       if (blueprint == null)
@@ -582,7 +587,7 @@ final class ${name.pascal}App extends StatelessWidget {
     }
     if (report.pendingRecovery) {
       _stdout.writeln(
-        'RECOVERY .dartitect/model-primary-migration-journal.json',
+        'RECOVERY .dartitect/generation/model-primary-migration/source-journal.json',
       );
     }
     if (report.applied) {

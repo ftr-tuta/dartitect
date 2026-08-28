@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT EDIT BY HAND.
-// Dartitect model generator 1.0.0-rc.3, input schema 4.
+// Dartitect model renderer 1, semantic schema 4.
 
 part of 'user.dart';
 

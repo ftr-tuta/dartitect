@@ -9,6 +9,9 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dartitect_modeling_analyzer/dartitect_modeling_analyzer.dart';
 
+import '../generation/generation_engine.dart';
+import '../generation/project_lock.dart';
+
 /// Transaction boundary exposed to deterministic migration recovery tests.
 enum PrimaryConstructorMigrationFaultPoint {
   /// After the source journal is durable.
@@ -135,7 +138,7 @@ final class PrimaryConstructorMigrationReport {
 
   /// Stable machine representation.
   Map<String, Object?> toJson() => <String, Object?>{
-    'schemaVersion': 1,
+    'schemaVersion': DartitectGenerationVersions.report,
     'command': 'model migrate primary',
     'applied': applied,
     'pendingRecovery': pendingRecovery,
@@ -161,7 +164,7 @@ final class PrimaryConstructorMigrationException implements Exception {
   String toString() => message;
 }
 
-/// Semantic primary-constructor codemod with its own lock and source journal.
+/// Semantic primary-constructor codemod with the shared lock and source journal.
 final class PrimaryConstructorMigration {
   /// Creates a migration rooted at one project or pub workspace.
   PrimaryConstructorMigration(
@@ -276,16 +279,13 @@ final class PrimaryConstructorMigration {
       diagnostics: List<PrimaryConstructorMigrationDiagnostic>.unmodifiable(
         diagnostics,
       ),
-      pendingRecovery: await _journal.exists(),
+      pendingRecovery: await _journal.exists() || await _legacyJournal.exists(),
     );
   }
 
   /// Recovers, revalidates, and commits every eligible semantic edit.
   Future<PrimaryConstructorMigrationReport> apply() async {
-    await _lock.parent.create(recursive: true);
-    final lock = await _lock.open(mode: FileMode.append);
-    await lock.lock(FileLock.exclusive);
-    try {
+    return GenerationProjectLock.synchronized(root, () async {
       await _recover();
       final report = await inspect();
       if (report.diagnostics.isNotEmpty) {
@@ -301,32 +301,32 @@ final class PrimaryConstructorMigration {
           applied: true,
         );
       }
-      if (await _transaction.exists()) {
+      if (await _transaction.exists() || await _legacyTransaction.exists()) {
         throw const PrimaryConstructorMigrationException(
           'Primary-constructor transaction residue is not journaled.',
         );
       }
       await _transaction.create(recursive: true);
-      final entries = <_MigrationJournalEntry>[];
-      for (final operation in report.operations) {
-        await _validatePath(operation.path);
-        final staged = File(_stagePath(operation.path));
-        await staged.parent.create(recursive: true);
-        await staged.writeAsString(operation._after, flush: true);
-        entries.add(
-          _MigrationJournalEntry(
-            path: operation.path,
-            beforeDigest: _digest(operation._before),
-            afterDigest: _digest(operation._after),
-          ),
-        );
-      }
-      var journal = _MigrationJournal(phase: 'staged', entries: entries);
-      await _writeJournal(journal);
-      await _fault(PrimaryConstructorMigrationFaultPoint.afterJournal);
-      journal = journal.withPhase('committing');
-      await _writeJournal(journal);
       try {
+        final entries = <_MigrationJournalEntry>[];
+        for (final operation in report.operations) {
+          await _validatePath(operation.path);
+          final staged = File(_stagePath(operation.path));
+          await staged.parent.create(recursive: true);
+          await staged.writeAsString(operation._after, flush: true);
+          entries.add(
+            _MigrationJournalEntry(
+              path: operation.path,
+              beforeDigest: _digest(operation._before),
+              afterDigest: _digest(operation._after),
+            ),
+          );
+        }
+        var journal = _MigrationJournal(phase: 'staged', entries: entries);
+        await _writeJournal(journal);
+        await _fault(PrimaryConstructorMigrationFaultPoint.afterJournal);
+        journal = journal.withPhase('committing');
+        await _writeJournal(journal);
         for (final entry in entries) {
           final source = File(_resolve(entry.path));
           if (!await source.exists() ||
@@ -357,7 +357,11 @@ final class PrimaryConstructorMigration {
         await _transaction.delete(recursive: true);
         await _journal.delete();
       } on Object {
-        await _recover();
+        if (await _journal.exists()) {
+          await _recover();
+        } else if (await _transaction.exists()) {
+          await _transaction.delete(recursive: true);
+        }
         rethrow;
       }
       return PrimaryConstructorMigrationReport(
@@ -366,27 +370,34 @@ final class PrimaryConstructorMigration {
         pendingRecovery: false,
         applied: true,
       );
-    } finally {
-      await lock.unlock();
-      await lock.close();
-    }
+    });
   }
 
   Future<void> _recover() async {
-    if (!await _journal.exists()) return;
-    final journal = await _readJournal();
+    final hasCurrent = await _journal.exists();
+    final hasLegacy = await _legacyJournal.exists();
+    if (!hasCurrent && !hasLegacy) return;
+    if (hasCurrent && hasLegacy) {
+      throw const PrimaryConstructorMigrationException(
+        'Both legacy and namespaced source journals exist.',
+      );
+    }
+    final legacy = hasLegacy;
+    final journalFile = legacy ? _legacyJournal : _journal;
+    final transaction = legacy ? _legacyTransaction : _transaction;
+    final journal = await _readJournal(journalFile, legacy: legacy);
     if (journal.phase == 'committed') {
       await _validateAfter(journal.entries);
-      if (await _transaction.exists()) {
-        await _transaction.delete(recursive: true);
+      if (await transaction.exists()) {
+        await transaction.delete(recursive: true);
       }
-      await _journal.delete();
+      await journalFile.delete();
       return;
     }
     for (final entry in journal.entries.reversed) {
       await _validatePath(entry.path);
       final source = File(_resolve(entry.path));
-      final backup = File(_backupPath(entry.path));
+      final backup = File(_backupPath(entry.path, transaction: transaction));
       if (await backup.exists()) {
         if (_digest(await backup.readAsString()) != entry.beforeDigest) {
           throw const PrimaryConstructorMigrationException(
@@ -411,10 +422,10 @@ final class PrimaryConstructorMigration {
         );
       }
     }
-    if (await _transaction.exists()) {
-      await _transaction.delete(recursive: true);
+    if (await transaction.exists()) {
+      await transaction.delete(recursive: true);
     }
-    await _journal.delete();
+    await journalFile.delete();
   }
 
   Future<void> _validateAfter(List<_MigrationJournalEntry> entries) async {
@@ -438,10 +449,13 @@ final class PrimaryConstructorMigration {
     await injector(PrimaryConstructorMigrationFaultEvent(point, path: path));
   }
 
-  Future<_MigrationJournal> _readJournal() async {
+  Future<_MigrationJournal> _readJournal(
+    File file, {
+    required bool legacy,
+  }) async {
     try {
-      final decoded = jsonDecode(await _journal.readAsString());
-      return _MigrationJournal.fromJson(decoded);
+      final decoded = jsonDecode(await file.readAsString());
+      return _MigrationJournal.fromJson(decoded, legacy: legacy);
     } on PrimaryConstructorMigrationException {
       rethrow;
     } on Object {
@@ -520,14 +534,23 @@ final class PrimaryConstructorMigration {
 
   String _stagePath(String path) => _join(_transaction.path, 'stage/$path');
 
-  String _backupPath(String path) => _join(_transaction.path, 'backup/$path');
+  String _backupPath(String path, {Directory? transaction}) =>
+      _join((transaction ?? _transaction).path, 'backup/$path');
 
-  File get _journal =>
+  File get _journal => File(
+    _resolve(
+      '.dartitect/generation/model-primary-migration/source-journal.json',
+    ),
+  );
+
+  File get _legacyJournal =>
       File(_resolve('.dartitect/model-primary-migration-journal.json'));
 
-  File get _lock => File(_resolve('.dartitect/project.lock'));
+  Directory get _transaction => Directory(
+    _resolve('.dartitect/generation/model-primary-migration/transaction'),
+  );
 
-  Directory get _transaction =>
+  Directory get _legacyTransaction =>
       Directory(_resolve('.dartitect/model-primary-migration-transaction'));
 
   static String _join(String left, String right) =>
@@ -554,9 +577,15 @@ String _digest(String content) =>
 final class _MigrationJournal {
   const _MigrationJournal({required this.phase, required this.entries});
 
-  factory _MigrationJournal.fromJson(Object? value) {
+  factory _MigrationJournal.fromJson(Object? value, {required bool legacy}) {
     if (value is! Map<String, Object?> ||
-        value['schemaVersion'] != 1 ||
+        (legacy
+            ? value['schemaVersion'] != 1
+            : value['schemaVersion'] !=
+                      DartitectGenerationVersions.sourceJournal ||
+                  value['namespace'] != 'model-primary-migration' ||
+                  value['protocolVersion'] !=
+                      DartitectGenerationVersions.protocol) ||
         !const <String>{
           'staged',
           'committing',
@@ -581,7 +610,9 @@ final class _MigrationJournal {
       _MigrationJournal(phase: value, entries: entries);
 
   Map<String, Object?> toJson() => <String, Object?>{
-    'schemaVersion': 1,
+    'schemaVersion': DartitectGenerationVersions.sourceJournal,
+    'namespace': 'model-primary-migration',
+    'protocolVersion': DartitectGenerationVersions.protocol,
     'command': 'model migrate primary',
     'phase': phase,
     'entries': <Object?>[for (final entry in entries) entry.toJson()],

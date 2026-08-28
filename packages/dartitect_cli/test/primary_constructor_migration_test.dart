@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:crypto/crypto.dart';
 import 'package:dartitect_cli/dartitect_cli.dart';
 import 'package:test/test.dart';
 
@@ -112,18 +113,98 @@ void main() {
     expect(injected, isTrue);
     expect(await source.readAsString(), _traditionalSource);
     expect(
-      await File('${root.path}/.dartitect/model-primary-migration-journal.json')
-          .exists(),
+      await File(
+        '${root.path}/.dartitect/generation/model-primary-migration/source-journal.json',
+      ).exists(),
       isFalse,
     );
     expect(
       await Directory(
-        '${root.path}/.dartitect/model-primary-migration-transaction',
+        '${root.path}/.dartitect/generation/model-primary-migration/transaction',
       ).exists(),
       isFalse,
     );
   });
+
+  test('source journal v2 records namespace and protocol', () async {
+    final root = await _migrationPackage();
+    addTearDown(() => root.delete(recursive: true));
+    final source = File('${root.path}/lib/user.dart');
+    await source.writeAsString(_traditionalSource);
+    Map<String, Object?>? captured;
+    final migration = PrimaryConstructorMigration(
+      root,
+      faultInjector: (event) async {
+        if (event.point == PrimaryConstructorMigrationFaultPoint.afterJournal) {
+          captured = jsonDecode(
+            await File(
+              '${root.path}/.dartitect/generation/model-primary-migration/source-journal.json',
+            ).readAsString(),
+          ) as Map<String, Object?>;
+          throw StateError('capture journal');
+        }
+      },
+    );
+
+    await expectLater(migration.apply(), throwsA(isA<StateError>()));
+
+    expect(
+      captured?['schemaVersion'],
+      DartitectGenerationVersions.sourceJournal,
+    );
+    expect(captured?['namespace'], 'model-primary-migration');
+    expect(captured?['protocolVersion'], DartitectGenerationVersions.protocol);
+    expect(await source.readAsString(), _traditionalSource);
+    expect(
+      await File(
+        '${root.path}/.dartitect/generation/model-primary-migration/source-journal.json',
+      ).exists(),
+      isFalse,
+    );
+  });
+
+  test('legacy source journal rolls back before a new atomic apply', () async {
+    final root = await _migrationPackage();
+    addTearDown(() => root.delete(recursive: true));
+    final source = File('${root.path}/lib/user.dart');
+    const interrupted = 'interrupted replacement\n';
+    await source.writeAsString(interrupted);
+    final transaction = Directory(
+      '${root.path}/.dartitect/model-primary-migration-transaction',
+    );
+    await File('${transaction.path}/backup/lib/user.dart')
+        .create(recursive: true)
+        .then((file) => file.writeAsString(_traditionalSource));
+    final journal = File(
+      '${root.path}/.dartitect/model-primary-migration-journal.json',
+    );
+    await journal.create(recursive: true);
+    await journal.writeAsString(
+      jsonEncode(<String, Object?>{
+        'schemaVersion': 1,
+        'command': 'model migrate primary',
+        'phase': 'committing',
+        'entries': <Object?>[
+          <String, Object?>{
+            'path': 'lib/user.dart',
+            'beforeDigest': _sourceDigest(_traditionalSource),
+            'afterDigest': _sourceDigest(interrupted),
+          },
+        ],
+      }),
+    );
+
+    final result = await PrimaryConstructorMigration(root).apply();
+
+    expect(result.applied, isTrue);
+    expect(await source.readAsString(), contains('final class const User({'));
+    expect(await journal.exists(), isFalse);
+    expect(await transaction.exists(), isFalse);
+  });
 }
+
+String _sourceDigest(String content) =>
+    sha256.convert(utf8.encode(content)).toString();
 
 const _traditionalSource = '''
 import 'package:dartitect_modeling/dartitect_modeling.dart';

@@ -34,6 +34,11 @@ void main() {
       expect(applied.createdPaths, <String>['lib/user.dartitect.g.dart']);
       final output = await File('${root.path}/lib/user.dartitect.g.dart')
           .readAsString();
+      expect(
+        output,
+        contains('// Dartitect model renderer 1, semantic schema 4.'),
+      );
+      expect(output, isNot(contains(DartitectGenerationVersions.release)));
       expect(output, contains('String? email,'));
       expect(output, contains('bool clearEmail = false'));
       expect(output, isNot(contains('operator ==')));

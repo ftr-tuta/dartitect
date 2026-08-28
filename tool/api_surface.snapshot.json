@@ -398,6 +398,10 @@
         "declaration": "final class DartitectFleetService"
       },
       {
+        "name": "DartitectGenerationVersions",
+        "declaration": "abstract final class DartitectGenerationVersions"
+      },
+      {
         "name": "DartitectModelGenerator",
         "declaration": "final class DartitectModelGenerator"
       },
@@ -504,6 +508,10 @@
       {
         "name": "GenerationFaultPoint",
         "declaration": "enum GenerationFaultPoint"
+      },
+      {
+        "name": "GenerationNamespace",
+        "declaration": "final class GenerationNamespace"
       },
       {
         "name": "GenerationPlan",

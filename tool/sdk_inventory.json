@@ -25,7 +25,7 @@
       "entrypoints": [
         "dartitect_cli.dart"
       ],
-      "publicSymbolCount": 70
+      "publicSymbolCount": 72
     },
     {
       "name": "dartitect_dio",

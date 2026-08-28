@@ -95,7 +95,7 @@ final class ModelGenerationReport {
           code: 'DT1023',
           message:
               'A generation journal requires `model sync --apply` recovery.',
-          path: '.dartitect/generation-journal.json',
+          path: '.dartitect/generation/modeling/journal.json',
         ),
       );
     }
@@ -142,7 +142,7 @@ final class ModelGenerationReport {
 
   /// Stable JSON representation used by sync/check.
   Map<String, Object?> toJson() => <String, Object?>{
-    'schemaVersion': 1,
+    'schemaVersion': DartitectGenerationVersions.report,
     'command': 'model',
     'fresh': isFresh,
     'pendingRecovery': plan?.pendingRecovery ?? false,
@@ -198,6 +198,7 @@ final class DartitectModelGenerator {
     }
     final plan = await GenerationEngine(
       root,
+      namespace: GenerationNamespace.modeling,
       faultInjector: _faultInjector,
     ).plan(discovery.operations, manageFullyGenerated: true);
     return ModelGenerationReport(
@@ -209,8 +210,11 @@ final class DartitectModelGenerator {
 
   /// Recovers, rediscovers, replans, and commits the complete desired set.
   Future<GenerationResult> apply() async {
-    final engine = GenerationEngine(root, faultInjector: _faultInjector);
-    await engine.recover();
+    final engine = GenerationEngine(
+      root,
+      namespace: GenerationNamespace.modeling,
+      faultInjector: _faultInjector,
+    );
     final report = await inspect();
     if (report.diagnostics.isNotEmpty) {
       throw ModelGenerationException(report.diagnostics);
@@ -232,7 +236,9 @@ final class DartitectModelGenerator {
           content: _render(library),
           ownership: GeneratedOwnership.fullyGenerated,
           sourcePath: library.path,
-          inputSchemaVersion: 4,
+          rendererVersion: DartitectGenerationVersions.modelRenderer,
+          semanticSchemaVersion:
+              DartitectGenerationVersions.modelingSemanticSchema,
           inputSignature: _semanticSignature(library),
         ),
       );
@@ -336,7 +342,11 @@ String _render(ModelingLibraryIr library) {
   final partName = _basename(library.outputPath);
   final buffer = StringBuffer()
     ..writeln('// GENERATED CODE - DO NOT EDIT BY HAND.')
-    ..writeln('// Dartitect model generator 1.0.0-rc.3, input schema 4.')
+    ..writeln(
+      '// Dartitect model renderer '
+      '${DartitectGenerationVersions.modelRenderer}, semantic schema '
+      '${DartitectGenerationVersions.modelingSemanticSchema}.',
+    )
     ..writeln()
     ..writeln("part of '$sourceName';");
   for (final model in library.models.where(

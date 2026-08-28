@@ -41,7 +41,11 @@
       "consumer edit",
       "fault matrix",
       "unsupported manifest schema",
+      "namespaces isolate manifests",
+      "shared project lock",
+      "verified RC3 manifest",
       "journal v2",
+      "journal v3",
       "unsupported journal schema"
     ]
   },
@@ -57,10 +61,14 @@
     ]
   },
   "compatibility": {
-    "manifestAcceptedSchemas": [1],
-    "manifestRejectedSchemas": [0, 2],
-    "journalAcceptedSchemas": [2],
-    "journalRejectedSchemas": [1, 3]
+    "legacyManifestAcceptedSchemas": [1],
+    "legacyManifestRejectedSchemas": [0, 2],
+    "namespacedManifestAcceptedSchemas": [2],
+    "namespacedManifestRejectedSchemas": [1, 3],
+    "legacyJournalAcceptedSchemas": [2],
+    "legacyJournalRejectedSchemas": [1, 3],
+    "namespacedJournalAcceptedSchemas": [3],
+    "namespacedJournalRejectedSchemas": [2, 4]
   },
   "performance": {
     "artifact": "tool/model_benchmark.json",

@@ -1,5 +1,6 @@
 .dart_tool/
 **/.dartitect/project-change.lock
+**/.dartitect/project.lock
 .packages
 build/
 coverage/

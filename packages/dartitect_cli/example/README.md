@@ -28,9 +28,11 @@ support `--dry-run` and are deliberately absent from MCP. Experimental configs
 have no migration; recreate and review stable v1 with `init`.
 Unlike create-only mutators, convergent `model sync` previews by default and
 only `model sync --apply` writes or recovers; `--dry-run` and `--apply` cannot
-be combined. Generated outputs and `.dartitect/model-outputs.json` are committed.
+be combined. Generated outputs and
+`.dartitect/generation/modeling/manifest.json` are committed.
 Primary-constructor migration also previews by default; only
-`model migrate primary --apply` writes source under its lock and journal.
+`model migrate primary --apply` writes source under the shared project lock and
+its namespaced source journal.
 Fleet commands never write. Upgrade has no apply mode; its preview exposes a
 state token that callers of the typed project service can review and revalidate
 under the project lock. Policy uses only a local, doubly pinned bundle.

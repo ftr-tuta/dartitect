@@ -2,6 +2,9 @@
 :status: accepted
 :date: 2026-08-24
 
+NOTE: ADR 0041 supersedes the manifest paths, version identity, and transaction
+namespace described here. The strong-digest ownership rule remains in force.
+
 == Context
 
 ADR 0010 made generators create-only and ADR 0015 treated a generated header

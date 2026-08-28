@@ -119,7 +119,8 @@ Os dois commands aceitam `--json`. O exit code global 2 indica falha de uso ou
 configuração, e 3 indica falha de I/O ou interna. Preview, dry-run e check nunca
 reparam arquivos nem resíduos de recovery.
 
-Versione todos os `*.dartitect.g.dart` e `.dartitect/model-outputs.json`. O CI
+Versione todos os `*.dartitect.g.dart` e
+`.dartitect/generation/modeling/manifest.json`. O CI
 executa `dartitect model check` e rejeita qualquer diff gerado. Um checkout
 limpo deve analisar, testar e compilar consumidores sem instalar nem invocar
 `dartitect_cli`.
@@ -138,20 +139,34 @@ existe flag force.
 
 ## Manifest, schemas e recovery
 
-O manifest possui somente outputs inteiramente gerados e registra source,
-versão do gerador, schema de input e digests SHA-256 canônicos de input/output.
-Updates e deletes exigem que os bytes existentes correspondam ao digest
-registrado.
+O manifest com namespace possui somente outputs inteiramente gerados e registra
+source, versão do renderer, schema semântico e digests SHA-256 canônicos de
+input/output. Updates e deletes exigem que os bytes existentes correspondam ao
+digest registrado. As versões de release, protocolo, schema semântico,
+renderer, manifest, relatório de command, journal de output e journal de source
+evoluem independentemente; o release do package nunca é chave de ownership nem
+header gerado.
 
 | Artefato | Schema 1.0 | Regra de compatibilidade |
 |---|---:|---|
 | Assinatura semântica de input do modelo | 4 | Inclui identidade da library, capabilities, generics, defaults, types, policy JSON, projections, decisões de compatibilidade de mappers, renames, hooks e todos os modelos do part gerado |
 | Relatório JSON do command | 1 | Consumidores devem selecionar explicitamente o schema suportado |
-| `.dartitect/model-outputs.json` | 1 | Ownership ausente conflita com outputs candidatos; schemas malformados, anteriores ou futuros falham fechado |
-| `.dartitect/generation-journal.json` | 2 | Schemas malformados, anteriores ou futuros interrompem recovery e preservam resíduos para diagnóstico |
+| `.dartitect/generation/modeling/manifest.json` | 2 | Namespace e protocolo devem corresponder; ownership ausente conflita com outputs candidatos; schemas malformados, anteriores ou futuros falham fechado |
+| `.dartitect/generation/modeling/journal.json` | 3 | Namespace e protocolo devem corresponder; schemas malformados interrompem recovery e preservam resíduos para diagnóstico |
+| `.dartitect/generation/model-primary-migration/source-journal.json` | 2 | Edições de source usam namespace e transação próprios, mas o mesmo lock de projeto |
 
-Não existe migração, downgrade ou force implícito. Mudança de schema exige uma
-implementação explícita de compatibilidade e nova evidência de contrato.
+O único caminho de adoção legacy é a implementação explícita de compatibilidade
+RC3: `.dartitect/model-outputs.json` schema 1 é migrado atomicamente somente
+quando a identidade do gerador é exatamente `1.0.0-rc.3` e cada digest canônico
+do output atual corresponde. O journal legacy de output schema 2 e o journal de
+source schema 1 podem ser recuperados nos paths originais. Qualquer mismatch,
+par ambíguo de artefatos antigo/novo, downgrade ou tentativa de force falha
+fechado sem escrita.
+
+Cada `GenerationNamespace` possui manifest, journal e diretório de transação
+isolados. Scaffolds generated-once usam `scaffolding`; parts de modelo usam
+`modeling`. Todos os namespaces e edições semânticas de source compartilham
+`.dartitect/project.lock`, inclusive com serialização dentro do processo.
 
 O apply prepara a geração completa em staging, persiste um recovery journal,
 faz backup dos targets owned, substitui outputs, substitui o manifest, valida os

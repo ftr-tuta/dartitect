@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -13,7 +14,7 @@ void main() {
         'dartitect generation ',
       );
       addTearDown(() => root.delete(recursive: true));
-      final engine = GenerationEngine(root);
+      final engine = _modelEngine(root);
       const operations = <FileGenerationOperation>[
         FileGenerationOperation(relativePath: 'lib/a.dart', content: 'a\n'),
         FileGenerationOperation(relativePath: 'lib/b.dart', content: 'b\n'),
@@ -39,7 +40,7 @@ void main() {
     await File('${root.path}/existing.txt').writeAsString('consumer\n');
 
     await expectLater(
-      GenerationEngine(root).apply(const <FileGenerationOperation>[
+      _modelEngine(root).apply(const <FileGenerationOperation>[
         FileGenerationOperation(
           relativePath: 'existing.txt',
           content: 'generated\n',
@@ -59,7 +60,7 @@ void main() {
   test('rejects path traversal and duplicate divergent operations', () async {
     final root = await Directory.systemTemp.createTemp('dartitect-safe-path-');
     addTearDown(() => root.delete(recursive: true));
-    final engine = GenerationEngine(root);
+    final engine = _modelEngine(root);
 
     await expectLater(
       engine.plan(const <FileGenerationOperation>[
@@ -74,6 +75,26 @@ void main() {
       ]),
       throwsA(isA<GenerationException>()),
     );
+    expect(
+      () => GenerationEngine(
+        root,
+        namespace: const GenerationNamespace(
+          'modeling',
+          fullyGeneratedSuffix: '.other.g.dart',
+        ),
+      ),
+      throwsA(isA<GenerationException>()),
+    );
+    expect(
+      () => GenerationEngine(
+        root,
+        namespace: const GenerationNamespace(
+          'unsafe',
+          fullyGeneratedSuffix: '../owned.dart',
+        ),
+      ),
+      throwsA(isA<GenerationException>()),
+    );
   });
 
   test('rejects existing directories and symlink traversal', () async {
@@ -86,7 +107,7 @@ void main() {
     addTearDown(() => root.delete(recursive: true));
     addTearDown(() => outside.delete(recursive: true));
     await Directory('${root.path}/directory_target').create();
-    final engine = GenerationEngine(root);
+    final engine = _modelEngine(root);
 
     final directoryPlan = await engine.plan(const <FileGenerationOperation>[
       FileGenerationOperation(relativePath: 'directory_target', content: ''),
@@ -116,10 +137,9 @@ void main() {
     addTearDown(() => root.delete(recursive: true));
     await File('${root.path}/same.txt').writeAsString('same\r\n');
 
-    final plan = await GenerationEngine(root)
-        .plan(const <FileGenerationOperation>[
-          FileGenerationOperation(relativePath: 'same.txt', content: 'same\n'),
-        ]);
+    final plan = await _modelEngine(root).plan(const <FileGenerationOperation>[
+      FileGenerationOperation(relativePath: 'same.txt', content: 'same\n'),
+    ]);
 
     expect(plan.operations.single.disposition, GenerationDisposition.noOp);
     expect(await File('${root.path}/same.txt').readAsString(), 'same\r\n');
@@ -130,7 +150,7 @@ void main() {
     () async {
       final root = await Directory.systemTemp.createTemp('dartitect-owned-');
       addTearDown(() => root.delete(recursive: true));
-      final engine = GenerationEngine(root);
+      final engine = _modelEngine(root);
       FileGenerationOperation model(String content) => FileGenerationOperation(
         relativePath: 'lib/user.dartitect.g.dart',
         content: content,
@@ -144,7 +164,8 @@ void main() {
       ], manageFullyGenerated: true);
       expect(created.createdPaths, <String>['lib/user.dartitect.g.dart']);
       expect(
-        await File('${root.path}/.dartitect/model-outputs.json').exists(),
+        await File('${root.path}/.dartitect/generation/modeling/manifest.json')
+            .exists(),
         isTrue,
       );
 
@@ -172,7 +193,7 @@ void main() {
   test('consumer edit blocks an entire fully-generated transaction', () async {
     final root = await Directory.systemTemp.createTemp('dartitect-owned-edit-');
     addTearDown(() => root.delete(recursive: true));
-    final engine = GenerationEngine(root);
+    final engine = _modelEngine(root);
     const original = FileGenerationOperation(
       relativePath: 'lib/a.dartitect.g.dart',
       content: 'owned\n',
@@ -207,7 +228,7 @@ void main() {
       await Directory('${root.path}/lib').create(recursive: true);
       await File('${root.path}/lib/a.dartitect.g.dart')
           .writeAsString('candidate\n');
-      final plan = await GenerationEngine(root)
+      final plan = await _modelEngine(root)
           .plan(const <FileGenerationOperation>[], manageFullyGenerated: true);
       expect(plan.hasConflicts, isTrue);
 
@@ -215,7 +236,7 @@ void main() {
       await File('${root.path}/.dartitect/model-outputs.json')
           .writeAsString('{bad');
       await expectLater(
-        GenerationEngine(
+        _modelEngine(
           root,
         ).plan(const <FileGenerationOperation>[], manageFullyGenerated: true),
         throwsA(
@@ -244,7 +265,7 @@ void main() {
       await manifest.writeAsString(original);
 
       await expectLater(
-        GenerationEngine(root).apply(const <FileGenerationOperation>[
+        _modelEngine(root).apply(const <FileGenerationOperation>[
           FileGenerationOperation(relativePath: 'lib/new.dart', content: ''),
         ], manageFullyGenerated: true),
         throwsA(
@@ -265,6 +286,41 @@ void main() {
     }
   });
 
+  test('unsupported namespaced manifest schemas fail closed', () async {
+    for (final schema in <int>[1, 3]) {
+      final root = await Directory.systemTemp.createTemp(
+        'dartitect-namespaced-manifest-schema-$schema-',
+      );
+      addTearDown(() => root.delete(recursive: true));
+      final manifest = File(
+        '${root.path}/.dartitect/generation/modeling/manifest.json',
+      );
+      await manifest.create(recursive: true);
+      final original = jsonEncode(<String, Object?>{
+        'schemaVersion': schema,
+        'namespace': 'modeling',
+        'protocolVersion': DartitectGenerationVersions.protocol,
+        'outputs': const <Object?>[],
+      });
+      await manifest.writeAsString(original);
+
+      await expectLater(
+        _modelEngine(
+          root,
+        ).plan(const <FileGenerationOperation>[], manageFullyGenerated: true),
+        throwsA(
+          isA<GenerationException>().having(
+            (error) => error.kind,
+            'kind',
+            GenerationFailureKind.invalidConfiguration,
+          ),
+        ),
+        reason: 'schema $schema',
+      );
+      expect(await manifest.readAsString(), original);
+    }
+  });
+
   test('unsupported journal schema preserves recovery residue', () async {
     for (final schema in <int>[1, 3]) {
       final root = await Directory.systemTemp.createTemp(
@@ -280,7 +336,7 @@ void main() {
       await consumer.writeAsString('consumer\n');
 
       await expectLater(
-        GenerationEngine(root).recover(),
+        _modelEngine(root).recover(),
         throwsA(
           isA<GenerationException>()
               .having(
@@ -301,6 +357,76 @@ void main() {
         await consumer.readAsString(),
         'consumer\n',
         reason: 'schema $schema',
+      );
+    }
+  });
+
+  test('unsupported namespaced journal schemas preserve residue', () async {
+    for (final schema in <int>[2, 4]) {
+      final root = await Directory.systemTemp.createTemp(
+        'dartitect-namespaced-journal-schema-$schema-',
+      );
+      addTearDown(() => root.delete(recursive: true));
+      final journal = File(
+        '${root.path}/.dartitect/generation/modeling/journal.json',
+      );
+      await journal.create(recursive: true);
+      final original = jsonEncode(<String, Object?>{
+        'schemaVersion': schema,
+        'namespace': 'modeling',
+        'protocolVersion': DartitectGenerationVersions.protocol,
+        'phase': 'committing',
+        'entries': const <Object?>[],
+        'manifest': null,
+      });
+      await journal.writeAsString(original);
+
+      await expectLater(
+        _modelEngine(root).recover(),
+        throwsA(
+          isA<GenerationException>()
+              .having(
+                (error) => error.kind,
+                'kind',
+                GenerationFailureKind.recovery,
+              )
+              .having(
+                (error) => error.recoveryPaths,
+                'recovery paths',
+                <String>['.dartitect/generation/modeling/journal.json'],
+              ),
+        ),
+      );
+      expect(await journal.readAsString(), original);
+    }
+  });
+
+  test('unjournaled current and legacy transactions fail closed', () async {
+    for (final relative in <String>[
+      '.dartitect/generation/modeling/transaction',
+      '.dartitect/generation-transaction',
+    ]) {
+      final root = await Directory.systemTemp.createTemp(
+        'dartitect-unjournaled-',
+      );
+      addTearDown(() => root.delete(recursive: true));
+      await Directory('${root.path}/$relative').create(recursive: true);
+
+      await expectLater(
+        _modelEngine(root).plan(const <FileGenerationOperation>[]),
+        throwsA(
+          isA<GenerationException>()
+              .having(
+                (error) => error.kind,
+                'kind',
+                GenerationFailureKind.invalidConfiguration,
+              )
+              .having(
+                (error) => error.recoveryPaths,
+                'recovery paths',
+                <String>[relative],
+              ),
+        ),
       );
     }
   });
@@ -339,7 +465,7 @@ void main() {
       }),
     );
 
-    await GenerationEngine(root).recover();
+    await _modelEngine(root).recover();
 
     expect(
       await File('${root.path}/lib/update.dart').readAsString(),
@@ -376,7 +502,7 @@ void main() {
           );
 
       await expectLater(
-        GenerationEngine(root).recover(),
+        _modelEngine(root).recover(),
         throwsA(
           isA<GenerationException>().having(
             (error) => error.recoveryPaths,
@@ -392,6 +518,411 @@ void main() {
     },
   );
 
+  test('namespaces isolate manifests and ownership sets', () async {
+    final root = await Directory.systemTemp.createTemp('dartitect-namespaces-');
+    addTearDown(() => root.delete(recursive: true));
+    const alpha = GenerationNamespace(
+      'alpha',
+      fullyGeneratedSuffix: '.alpha.g.dart',
+    );
+    const beta = GenerationNamespace(
+      'beta',
+      fullyGeneratedSuffix: '.beta.g.dart',
+    );
+    const alphaOperation = FileGenerationOperation(
+      relativePath: 'lib/value.alpha.g.dart',
+      content: 'alpha\n',
+      ownership: GeneratedOwnership.fullyGenerated,
+      sourcePath: 'lib/value.dart',
+      inputSignature: 'alpha',
+    );
+    const betaOperation = FileGenerationOperation(
+      relativePath: 'lib/value.beta.g.dart',
+      content: 'beta\n',
+      ownership: GeneratedOwnership.fullyGenerated,
+      sourcePath: 'lib/value.dart',
+      inputSignature: 'beta',
+    );
+
+    await GenerationEngine(root, namespace: alpha).apply(
+      const <FileGenerationOperation>[alphaOperation],
+      manageFullyGenerated: true,
+    );
+    await GenerationEngine(root, namespace: beta).apply(
+      const <FileGenerationOperation>[betaOperation],
+      manageFullyGenerated: true,
+    );
+    await GenerationEngine(
+      root,
+      namespace: alpha,
+    ).apply(const <FileGenerationOperation>[], manageFullyGenerated: true);
+
+    expect(await File('${root.path}/lib/value.alpha.g.dart').exists(), isFalse);
+    expect(await File('${root.path}/lib/value.beta.g.dart').exists(), isTrue);
+    expect(
+      await File('${root.path}/.dartitect/generation/alpha/manifest.json')
+          .exists(),
+      isTrue,
+    );
+    expect(
+      await File('${root.path}/.dartitect/generation/beta/manifest.json')
+          .exists(),
+      isTrue,
+    );
+  });
+
+  test('shared project lock serializes different namespaces', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-shared-lock-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    final entered = Completer<void>();
+    final release = Completer<void>();
+    final first =
+        GenerationEngine(
+          root,
+          namespace: GenerationNamespace.scaffolding,
+          faultInjector: (event) async {
+            if (event.point == GenerationFaultPoint.afterPersistJournal &&
+                !entered.isCompleted) {
+              entered.complete();
+              await release.future;
+            }
+          },
+        ).apply(const <FileGenerationOperation>[
+          FileGenerationOperation(
+            relativePath: 'first.txt',
+            content: 'first\n',
+          ),
+        ]);
+    await entered.future;
+
+    final second =
+        GenerationEngine(
+          root,
+          namespace: const GenerationNamespace('secondary'),
+        ).apply(const <FileGenerationOperation>[
+          FileGenerationOperation(
+            relativePath: 'second.txt',
+            content: 'second\n',
+          ),
+        ]);
+    await Future<void>.delayed(const Duration(milliseconds: 40));
+    expect(await File('${root.path}/second.txt').exists(), isFalse);
+
+    release.complete();
+    await Future.wait(<Future<GenerationResult>>[first, second]);
+    expect(await File('${root.path}/first.txt').exists(), isTrue);
+    expect(await File('${root.path}/second.txt').exists(), isTrue);
+  });
+
+  test('concurrent output bytes are preserved after staging', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-concurrent-output-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    FileGenerationOperation model(String content) => FileGenerationOperation(
+      relativePath: 'lib/value.dartitect.g.dart',
+      content: content,
+      ownership: GeneratedOwnership.fullyGenerated,
+      sourcePath: 'lib/value.dart',
+      inputSignature: content,
+    );
+    await _modelEngine(root).apply(<FileGenerationOperation>[
+      model('v1\n'),
+    ], manageFullyGenerated: true);
+    var changed = false;
+    final engine = GenerationEngine(
+      root,
+      namespace: GenerationNamespace.modeling,
+      faultInjector: (event) async {
+        if (!changed &&
+            event.point == GenerationFaultPoint.afterStageOutput &&
+            event.path == 'lib/value.dartitect.g.dart') {
+          changed = true;
+          await File('${root.path}/lib/value.dartitect.g.dart')
+              .writeAsString('consumer\n');
+        }
+      },
+    );
+
+    await expectLater(
+      engine.apply(<FileGenerationOperation>[
+        model('v2\n'),
+      ], manageFullyGenerated: true),
+      throwsA(
+        isA<GenerationException>().having(
+          (error) => error.kind,
+          'kind',
+          GenerationFailureKind.recovery,
+        ),
+      ),
+    );
+
+    expect(changed, isTrue);
+    expect(
+      await File('${root.path}/lib/value.dartitect.g.dart').readAsString(),
+      'consumer\n',
+    );
+    expect(
+      await File('${root.path}/.dartitect/generation/modeling/journal.json')
+          .exists(),
+      isTrue,
+    );
+  });
+
+  test(
+    'verified RC3 manifest migrates atomically to modeling namespace',
+    () async {
+      final root = await Directory.systemTemp.createTemp(
+        'dartitect-rc3-manifest-',
+      );
+      addTearDown(() => root.delete(recursive: true));
+      const operation = FileGenerationOperation(
+        relativePath: 'lib/user.dartitect.g.dart',
+        content: 'owned\n',
+        ownership: GeneratedOwnership.fullyGenerated,
+        sourcePath: 'lib/user.dart',
+        rendererVersion: DartitectGenerationVersions.modelRenderer,
+        semanticSchemaVersion:
+            DartitectGenerationVersions.modelingSemanticSchema,
+        inputSignature: 'semantic',
+      );
+      await File('${root.path}/lib/user.dartitect.g.dart')
+          .create(recursive: true)
+          .then((file) => file.writeAsString(operation.content));
+      await _writeLegacyManifest(root, operation);
+      final legacy = File('${root.path}/.dartitect/model-outputs.json');
+      final engine = _modelEngine(root);
+
+      final preview = await engine.plan(const <FileGenerationOperation>[
+        operation,
+      ], manageFullyGenerated: true);
+      expect(preview.migratesLegacyOwnership, isTrue);
+      expect(preview.hasChanges, isTrue);
+      expect(preview.operations.single.disposition, GenerationDisposition.noOp);
+      await engine.apply(const <FileGenerationOperation>[
+        operation,
+      ], manageFullyGenerated: true);
+
+      expect(await legacy.exists(), isFalse);
+      final migrated = jsonDecode(
+        await File('${root.path}/.dartitect/generation/modeling/manifest.json')
+            .readAsString(),
+      ) as Map<String, Object?>;
+      expect(migrated['schemaVersion'], DartitectGenerationVersions.manifest);
+      expect(migrated['namespace'], 'modeling');
+      expect(migrated['protocolVersion'], DartitectGenerationVersions.protocol);
+      final entry =
+          (migrated['outputs']! as List<Object?>).single
+              as Map<String, Object?>;
+      expect(
+        entry['rendererVersion'],
+        DartitectGenerationVersions.modelRenderer,
+      );
+      expect(
+        entry['semanticSchemaVersion'],
+        DartitectGenerationVersions.modelingSemanticSchema,
+      );
+      expect(entry.containsKey('generatorVersion'), isFalse);
+    },
+  );
+
+  test(
+    'fault during RC3 adoption restores legacy ownership and bytes',
+    () async {
+      final root = await Directory.systemTemp.createTemp(
+        'dartitect-rc3-fault-',
+      );
+      addTearDown(() => root.delete(recursive: true));
+      const legacyOperation = FileGenerationOperation(
+        relativePath: 'lib/user.dartitect.g.dart',
+        content: 'legacy\n',
+        ownership: GeneratedOwnership.fullyGenerated,
+        sourcePath: 'lib/user.dart',
+        inputSignature: 'semantic',
+      );
+      const desired = FileGenerationOperation(
+        relativePath: 'lib/user.dartitect.g.dart',
+        content: 'desired\n',
+        ownership: GeneratedOwnership.fullyGenerated,
+        sourcePath: 'lib/user.dart',
+        inputSignature: 'semantic',
+      );
+      final output = File('${root.path}/lib/user.dartitect.g.dart');
+      await output.create(recursive: true);
+      await output.writeAsString(legacyOperation.content);
+      await _writeLegacyManifest(root, legacyOperation);
+      var injected = false;
+      final engine = GenerationEngine(
+        root,
+        namespace: GenerationNamespace.modeling,
+        faultInjector: (event) {
+          if (!injected &&
+              event.point == GenerationFaultPoint.afterReplacement &&
+              event.path == desired.relativePath) {
+            injected = true;
+            throw StateError('interrupt RC3 adoption');
+          }
+        },
+      );
+
+      await expectLater(
+        engine.apply(const <FileGenerationOperation>[
+          desired,
+        ], manageFullyGenerated: true),
+        throwsA(isA<GenerationException>()),
+      );
+
+      expect(injected, isTrue);
+      expect(await output.readAsString(), legacyOperation.content);
+      expect(
+        await File('${root.path}/.dartitect/model-outputs.json').exists(),
+        isTrue,
+      );
+      expect(
+        await File('${root.path}/.dartitect/generation/modeling/manifest.json')
+            .exists(),
+        isFalse,
+      );
+    },
+  );
+
+  test('RC3 migration rejects unproven current bytes without writes', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-rc3-mismatch-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    const operation = FileGenerationOperation(
+      relativePath: 'lib/user.dartitect.g.dart',
+      content: 'owned\n',
+      ownership: GeneratedOwnership.fullyGenerated,
+      sourcePath: 'lib/user.dart',
+      inputSignature: 'semantic',
+    );
+    final output = File('${root.path}/lib/user.dartitect.g.dart');
+    await output.create(recursive: true);
+    await output.writeAsString(operation.content);
+    await _writeLegacyManifest(root, operation);
+    await output.writeAsString('consumer\n');
+
+    await expectLater(
+      _modelEngine(root).apply(const <FileGenerationOperation>[
+        operation,
+      ], manageFullyGenerated: true),
+      throwsA(
+        isA<GenerationException>().having(
+          (error) => error.recoveryPaths,
+          'recovery paths',
+          <String>['lib/user.dartitect.g.dart'],
+        ),
+      ),
+    );
+    expect(await output.readAsString(), 'consumer\n');
+    expect(
+      await File('${root.path}/.dartitect/model-outputs.json').exists(),
+      isTrue,
+    );
+    expect(
+      await File('${root.path}/.dartitect/generation/modeling/manifest.json')
+          .exists(),
+      isFalse,
+    );
+  });
+
+  test('legacy ownership from a non-RC3 cohort fails closed', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-non-rc3-manifest-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    const operation = FileGenerationOperation(
+      relativePath: 'lib/user.dartitect.g.dart',
+      content: 'owned\n',
+      ownership: GeneratedOwnership.fullyGenerated,
+      sourcePath: 'lib/user.dart',
+      inputSignature: 'semantic',
+    );
+    await File('${root.path}/lib/user.dartitect.g.dart')
+        .create(recursive: true)
+        .then((file) => file.writeAsString(operation.content));
+    await _writeLegacyManifest(root, operation);
+    final legacy = File('${root.path}/.dartitect/model-outputs.json');
+    final decoded =
+        jsonDecode(await legacy.readAsString()) as Map<String, Object?>;
+    final entry =
+        (decoded['outputs']! as List<Object?>).single as Map<String, Object?>;
+    entry['generatorVersion'] = '1.0.0-rc.2';
+    await legacy.writeAsString(jsonEncode(decoded));
+
+    await expectLater(
+      _modelEngine(root).plan(const <FileGenerationOperation>[
+        operation,
+      ], manageFullyGenerated: true),
+      throwsA(
+        isA<GenerationException>().having(
+          (error) => error.kind,
+          'kind',
+          GenerationFailureKind.invalidConfiguration,
+        ),
+      ),
+    );
+    entry['generatorVersion'] = '1.0.0-rc.3';
+    entry['inputSchemaVersion'] = 3;
+    await legacy.writeAsString(jsonEncode(decoded));
+    await expectLater(
+      _modelEngine(root).plan(const <FileGenerationOperation>[
+        operation,
+      ], manageFullyGenerated: true),
+      throwsA(
+        isA<GenerationException>().having(
+          (error) => error.kind,
+          'kind',
+          GenerationFailureKind.invalidConfiguration,
+        ),
+      ),
+    );
+    expect(await legacy.exists(), isTrue);
+  });
+
+  test('journal v3 restores namespaced transaction bytes', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-recovery-v3-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    const before = 'before\n';
+    const after = 'after\n';
+    await File('${root.path}/lib/value.dart')
+        .create(recursive: true)
+        .then((file) => file.writeAsString(after));
+    final transaction = Directory(
+      '${root.path}/.dartitect/generation/modeling/transaction',
+    );
+    await File('${transaction.path}/backup/lib/value.dart')
+        .create(recursive: true)
+        .then((file) => file.writeAsString(before));
+    await File('${root.path}/.dartitect/generation/modeling/journal.json')
+        .create(recursive: true)
+        .then(
+          (file) => file.writeAsString(
+            jsonEncode(<String, Object?>{
+              'schemaVersion': DartitectGenerationVersions.journal,
+              'namespace': 'modeling',
+              'protocolVersion': DartitectGenerationVersions.protocol,
+              'phase': 'committing',
+              'entries': <Object?>[
+                _journalEntry('lib/value.dart', 'update', before, after),
+              ],
+              'manifest': null,
+            }),
+          ),
+        );
+
+    await _modelEngine(root).recover();
+
+    expect(await File('${root.path}/lib/value.dart').readAsString(), before);
+    expect(await transaction.exists(), isFalse);
+  });
+
   test('fault matrix recovers or preserves one complete generation', () async {
     for (final point in GenerationFaultPoint.values) {
       final root = await Directory.systemTemp.createTemp(
@@ -405,12 +936,13 @@ void main() {
         sourcePath: 'lib/user.dart',
         inputSignature: content,
       );
-      await GenerationEngine(root).apply(<FileGenerationOperation>[
+      await _modelEngine(root).apply(<FileGenerationOperation>[
         model('v1\n'),
       ], manageFullyGenerated: true);
       var injected = false;
       final engine = GenerationEngine(
         root,
+        namespace: GenerationNamespace.modeling,
         faultInjector: (event) {
           if (!injected && event.point == point) {
             injected = true;
@@ -428,7 +960,7 @@ void main() {
       );
       expect(injected, isTrue, reason: point.name);
 
-      final retry = GenerationEngine(root);
+      final retry = _modelEngine(root);
       await retry.recover();
       await retry.apply(<FileGenerationOperation>[
         model('v2\n'),
@@ -439,22 +971,57 @@ void main() {
         reason: point.name,
       );
       final manifest = jsonDecode(
-        await File('${root.path}/.dartitect/model-outputs.json').readAsString(),
+        await File('${root.path}/.dartitect/generation/modeling/manifest.json')
+            .readAsString(),
       ) as Map<String, Object?>;
       expect(manifest['outputs'], hasLength(1), reason: point.name);
       expect(
-        await File('${root.path}/.dartitect/generation-journal.json').exists(),
+        await File('${root.path}/.dartitect/generation/modeling/journal.json')
+            .exists(),
         isFalse,
         reason: point.name,
       );
       expect(
-        await Directory('${root.path}/.dartitect/generation-transaction')
-            .exists(),
+        await Directory(
+          '${root.path}/.dartitect/generation/modeling/transaction',
+        ).exists(),
         isFalse,
         reason: point.name,
       );
     }
   });
+}
+
+GenerationEngine _modelEngine(Directory root) =>
+    GenerationEngine(root, namespace: GenerationNamespace.modeling);
+
+Future<void> _writeLegacyManifest(
+  Directory root,
+  FileGenerationOperation operation,
+) async {
+  final manifest = File('${root.path}/.dartitect/model-outputs.json');
+  await manifest.create(recursive: true);
+  final encoded = const JsonEncoder.withIndent('  ').convert(<String, Object?>{
+    'schemaVersion': 1,
+    'generator': 'dartitect model',
+    'outputs': <Object?>[
+      <String, Object?>{
+        'path': operation.relativePath,
+        'source': operation.sourcePath,
+        'generatorVersion': '1.0.0-rc.3',
+        'inputSchemaVersion': 4,
+        'inputDigest': _canonicalDigest(operation.inputSignature!),
+        'outputDigest': _canonicalDigest(operation.content),
+      },
+    ],
+  });
+  await manifest.writeAsString('$encoded\n');
+}
+
+String _canonicalDigest(String value) {
+  final normalized = value.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+  final canonical = normalized.endsWith('\n') ? normalized : '$normalized\n';
+  return sha256.convert(utf8.encode(canonical)).toString();
 }
 
 Map<String, Object?> _journalEntry(

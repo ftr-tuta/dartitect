@@ -297,10 +297,14 @@ final class DartitectProjectService {
       switch (plan.kind) {
         case DartitectChangeKind.init:
           final scan = await ProjectScanner(root).scan();
-          final result = await GenerationEngine(root).apply(
-            ScaffoldFactory(packageName: scan.packageName ?? 'application')
-                .init(),
-          );
+          final result =
+              await GenerationEngine(
+                root,
+                namespace: GenerationNamespace.scaffolding,
+              ).apply(
+                ScaffoldFactory(packageName: scan.packageName ?? 'application')
+                    .init(),
+              );
           return DartitectChangeReceipt(
             kind: plan.kind,
             operations: plan.operations,
@@ -561,9 +565,14 @@ final class DartitectProjectService {
 
   Future<DartitectChangePlan> _previewInit() async {
     final scan = await ProjectScanner(root).scan();
-    final plan = await GenerationEngine(root).plan(
-      ScaffoldFactory(packageName: scan.packageName ?? 'application').init(),
-    );
+    final plan =
+        await GenerationEngine(
+          root,
+          namespace: GenerationNamespace.scaffolding,
+        ).plan(
+          ScaffoldFactory(packageName: scan.packageName ?? 'application')
+              .init(),
+        );
     final operations = <String>[
       for (final operation in plan.operations)
         '${operation.disposition.name.toUpperCase()} ${operation.operation.relativePath}',
