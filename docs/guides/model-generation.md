@@ -29,11 +29,9 @@ read-only compiler owns one Analyzer lifecycle and produces the same public IR,
 granular `DT1030+` rules, source locations, severities, and fix IDs for the CLI
 and official lints. The renderer receives only validated IR.
 
-Run `dartitect model migrate primary` for a read-only semantic preview of
-eligible traditional value classes. Only `--apply` takes the shared project
-lock, writes the dedicated source journal, revalidates bytes, and commits or
-rolls back the complete edit. Behavioral classes and ambiguous constructors are
-reported for consumer review and are never rewritten heuristically.
+New generators and analyzer quick fixes emit primary constructors directly.
+The public CLI does not provide a general conversion codemod for existing
+models.
 
 Provider-owned mutable entities remain outside Dartitect model ownership. They
 may use primary constructors with declaring `var` parameters. A traditional
@@ -110,10 +108,7 @@ provider-owned schemas are never inferred.
 | `dartitect model sync --dry-run` | No | Reports pending recovery | 0 when fresh, 1 for findings |
 | `dartitect model check` | Never | Reports pending recovery | 0 when fresh, 1 for findings |
 | `dartitect model sync --apply` | Yes, atomically | Recovers first, rediscovers, replans, then applies | 0 on success, 1 for model findings |
-| `dartitect model migrate primary` | No; preview by default | Reports its own pending source journal | 0 when no migration remains, 1 for a preview/findings |
-| `dartitect model migrate primary --apply` | Yes, atomically | Rolls back an incomplete source transaction before rediscovery | 0 on success |
-
-Both commands accept `--json`. Global exit code 2 means usage/configuration
+The commands accept `--json`. Global exit code 2 means usage/configuration
 failure and 3 means I/O/internal failure. Preview, dry-run, and check never
 repair files or recovery residue.
 

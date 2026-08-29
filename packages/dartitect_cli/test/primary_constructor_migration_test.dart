@@ -4,6 +4,7 @@ import 'dart:isolate';
 
 import 'package:crypto/crypto.dart';
 import 'package:dartitect_cli/dartitect_cli.dart';
+import 'package:dartitect_cli/src/model/primary_constructor_migration.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -38,7 +39,7 @@ void main() {
     expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
   });
 
-  test('CLI previews by default and emits stable JSON', () async {
+  test('public CLI rejects the removed conversion codemod', () async {
     final root = await _migrationPackage();
     addTearDown(() => root.delete(recursive: true));
     final source = File('${root.path}/lib/user.dart');
@@ -53,24 +54,11 @@ void main() {
 
     expect(
       await runner.run(<String>['model', 'migrate', 'primary', '--json']),
-      DartitectExitCode.findings.code,
-    );
-    final json = jsonDecode(output.toString()) as Map<String, Object?>;
-    expect(json['command'], 'model migrate primary');
-    expect(json['modelCount'], 1);
-    expect(json['applied'], isFalse);
-    expect(await source.readAsString(), _traditionalSource);
-    expect(
-      await runner.run(<String>[
-        'model',
-        'migrate',
-        'primary',
-        '--dry-run',
-        '--apply',
-      ]),
       DartitectExitCode.usage.code,
     );
-    expect(errors.toString(), contains('mutually exclusive'));
+    expect(await source.readAsString(), _traditionalSource);
+    expect(output, isEmpty);
+    expect(errors.toString(), contains('model <check|sync>'));
   });
 
   test('unsupported constructors fail closed without partial edits', () async {

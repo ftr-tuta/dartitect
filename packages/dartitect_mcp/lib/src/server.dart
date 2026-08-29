@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:dart_mcp/server.dart';
 import 'package:dartitect_cli/dartitect_cli.dart';
+import 'package:dartitect_cli/src/model/primary_constructor_migration.dart';
 
 import 'catalog/generated_catalog.dart';
 import 'policy.dart';
@@ -70,21 +71,16 @@ base class DartitectMcpServer extends MCPServer
     );
     _registerReadTool(
       name: 'dartitect_scan_architecture',
-      description: 'Scan architecture rules with optional baseline and bounded pagination.',
+      description: 'Scan strict architecture rules with bounded pagination.',
       schema: _projectSchema(
         extra: <String, Schema>{
-          'baseline': Schema.bool(
-            description: 'Apply the reviewed baseline; defaults to true.',
-          ),
           'offset': Schema.int(minimum: 0),
           'limit': Schema.int(minimum: 1, maximum: policy.maxResultLimit),
         },
       ),
       handler: (arguments) async {
         final root = await _resolveProject(arguments);
-        final report = await DartitectProjectService(
-          root,
-        ).scanArchitecture(useBaseline: arguments['baseline'] as bool? ?? true);
+        final report = await DartitectProjectService(root).scanArchitecture();
         return _ok(_paginateReport(report, arguments));
       },
     );
@@ -165,11 +161,6 @@ base class DartitectMcpServer extends MCPServer
       kind: DartitectChangeKind.init,
     );
     _registerPreviewTool(
-      name: 'dartitect_preview_baseline',
-      description: 'Preview a transactional architecture baseline replacement.',
-      kind: DartitectChangeKind.baseline,
-    );
-    _registerPreviewTool(
       name: 'dartitect_preview_codex_sync',
       description: 'Preview synchronization of managed Dartitect Codex skills.',
       kind: DartitectChangeKind.codexSync,
@@ -180,11 +171,6 @@ base class DartitectMcpServer extends MCPServer
       description:
           'Preview deterministic model output and ownership convergence.',
       kind: DartitectChangeKind.modelSync,
-    );
-    _registerPreviewTool(
-      name: 'dartitect_preview_model_primary_migration',
-      description: 'Preview semantic primary-constructor source edits and recovery state.',
-      kind: DartitectChangeKind.modelPrimaryMigration,
     );
     _registerCreateFeaturePreview();
     _registerWiringPreview();

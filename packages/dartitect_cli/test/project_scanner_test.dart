@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dartitect_cli/dartitect_cli.dart';
+import 'package:dartitect_cli/src/scan/baseline.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -398,7 +399,7 @@ final Size Function() readSize = () => const Size();
       "path": "lib/model/legacy.dart",
       "reason": "Reviewed compatibility shim",
       "owner": "architecture",
-      "permanentJustification": "Public compatibility contract"
+      "expiresAt": "2099-12-31"
     }
   ],
   "features": {"declarations": {}},

@@ -3,7 +3,7 @@
 ## Purpose
 
 Local Dart VM inspection, architecture scanning, diagnostics, stable config,
-reviewed baselines, modeling generation/migration, dependency/fleet policy,
+strict greenfield scans, modeling generation, dependency/fleet policy,
 managed Codex skill synchronization, and transactional filesystem changes.
 
 ## When to use
@@ -42,7 +42,7 @@ rule and preserves consumer-owned skills and an existing `AGENTS.md`.
 
 ```console
 dartitect inspect --json
-dartitect scan --no-baseline
+dartitect scan
 dartitect doctor
 dartitect model check --json
 dartitect model sync
@@ -59,11 +59,10 @@ document their own `--dry-run`/apply form in `example/README.md`.
   classification, and SARIF/report types expose architecture results.
 - `DartitectConfig`, `ConfigMigrator`, and `nativeStrictProfile` define stable
   config v2 and architecture defaults.
-- `DartitectBaseline` fingerprints code/path/evidence without line numbers.
 - `DartitectChangePlan`, semantic inputs/manifests, receipts, and
   `GenerationEngine` implement preview/revalidation/recovery.
-- `DartitectModelGenerator` and `PrimaryConstructorMigration` consume shared
-  semantic modeling IR.
+- `DartitectModelGenerator` consumes shared semantic modeling IR and emits
+  primary constructors directly.
 - `EcosystemDependencyAuditor` and policy types provide pinned offline
   dependency decisions.
 - `DartitectFleetService` confines explicit application roots and returns

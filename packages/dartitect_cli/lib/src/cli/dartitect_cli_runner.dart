@@ -12,7 +12,6 @@ import '../generation/generation_engine.dart';
 import '../generation/scaffolds.dart';
 import '../generation/wiring_service.dart';
 import '../model/model_generator.dart';
-import '../model/primary_constructor_migration.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
 import '../scan/project_scanner.dart';
@@ -83,7 +82,6 @@ final class DartitectCliRunner {
         'verify' => await _readOnly('verify', root, parsed),
         'init' => await _init(root, parsed),
         'create' => await _create(root, parsed),
-        'baseline' => await _baseline(root, parsed),
         'codex' => await _codex(root, parsed),
         'contracts' => await _contracts(root, parsed),
         'model' => await _model(root, parsed),
@@ -116,9 +114,6 @@ final class DartitectCliRunner {
     } on DartitectChangeException catch (error) {
       _stderr.writeln('${error.code}: ${error.message}');
       return DartitectExitCode.findings.code;
-    } on PrimaryConstructorMigrationException catch (error) {
-      _stderr.writeln(error.message);
-      return DartitectExitCode.internal.code;
     } on FileSystemException catch (error) {
       _stderr.writeln('IO failure: ${error.message}');
       return DartitectExitCode.internal.code;
@@ -143,16 +138,13 @@ final class DartitectCliRunner {
       'deep',
       if (command == 'doctor') 'release',
       'verbose',
-      if (command == 'scan') 'no-baseline',
     });
     if (arguments.flags.contains('json') && arguments.flags.contains('sarif')) {
       throw const _UsageException('--json and --sarif are mutually exclusive.');
     }
     final service = DartitectProjectService(root);
     final envelope = switch (command) {
-      'scan' => await service.scanArchitecture(
-        useBaseline: !arguments.flags.contains('no-baseline'),
-      ),
+      'scan' => await service.scanArchitecture(),
       'doctor' => await service.doctorProject(
         deep: arguments.flags.contains('deep'),
         release: arguments.flags.contains('release'),
@@ -611,26 +603,6 @@ final class _ExampleTasksRepository implements TasksRepository {
     await DartitectWiringService(project).apply();
   }
 
-  Future<int> _baseline(Directory root, _CliArguments arguments) async {
-    if (arguments.positionals.length != 1 ||
-        arguments.positionals.single != 'create') {
-      throw const _UsageException(
-        'Usage: dartitect baseline create [--dry-run].',
-      );
-    }
-    arguments.requireOnlyFlags(<String>{'dry-run', 'verbose'});
-    final service = DartitectProjectService(root);
-    final plan = await service.previewChange(DartitectChangeKind.baseline);
-    if (arguments.flags.contains('dry-run')) {
-      _stdout.writeln('DRY-RUN ${plan.operations.single}');
-      _stdout.write(plan.preview);
-      return DartitectExitCode.success.code;
-    }
-    await service.applyChange(plan);
-    _stdout.writeln(plan.operations.single);
-    return DartitectExitCode.success.code;
-  }
-
   Future<int> _codex(Directory root, _CliArguments arguments) async {
     if (arguments.positionals.length != 1 ||
         arguments.positionals.single != 'sync') {
@@ -660,11 +632,6 @@ final class _ExampleTasksRepository implements TasksRepository {
   }
 
   Future<int> _model(Directory root, _CliArguments arguments) async {
-    if (arguments.positionals.length == 2 &&
-        arguments.positionals[0] == 'migrate' &&
-        arguments.positionals[1] == 'primary') {
-      return _modelMigratePrimary(root, arguments);
-    }
     if (arguments.positionals.length != 1 ||
         !const <String>{
           'check',
@@ -855,70 +822,6 @@ final class _ExampleTasksRepository implements TasksRepository {
     return report.isFresh
         ? DartitectExitCode.success.code
         : DartitectExitCode.findings.code;
-  }
-
-  Future<int> _modelMigratePrimary(
-    Directory root,
-    _CliArguments arguments,
-  ) async {
-    arguments.requireOnlyFlags(<String>{'json', 'verbose', 'dry-run', 'apply'});
-    if (arguments.flags.contains('dry-run') &&
-        arguments.flags.contains('apply')) {
-      throw const _UsageException(
-        '--dry-run and --apply are mutually exclusive.',
-      );
-    }
-    final migration = PrimaryConstructorMigration(root);
-    final preview = await migration.inspect();
-    if (!arguments.flags.contains('apply') || preview.diagnostics.isNotEmpty) {
-      _writePrimaryMigrationReport(
-        preview,
-        json: arguments.flags.contains('json'),
-      );
-      return preview.diagnostics.isEmpty &&
-              preview.operations.isEmpty &&
-              !preview.pendingRecovery
-          ? DartitectExitCode.success.code
-          : DartitectExitCode.findings.code;
-    }
-    final applied = await migration.apply();
-    _writePrimaryMigrationReport(
-      applied,
-      json: arguments.flags.contains('json'),
-    );
-    return DartitectExitCode.success.code;
-  }
-
-  void _writePrimaryMigrationReport(
-    PrimaryConstructorMigrationReport report, {
-    required bool json,
-  }) {
-    if (json) {
-      _stdout.writeln(jsonEncode(report.toJson()));
-      return;
-    }
-    for (final diagnostic in report.diagnostics) {
-      final line = diagnostic.line == null ? '' : ':${diagnostic.line}';
-      _stdout.writeln(
-        '${diagnostic.rule} ${diagnostic.path}$line ${diagnostic.message}',
-      );
-    }
-    for (final operation in report.operations) {
-      _stdout.writeln('MIGRATE ${operation.path} (${operation.modelCount})');
-    }
-    if (report.pendingRecovery) {
-      _stdout.writeln(
-        'RECOVERY .dartitect/generation/model-primary-migration/source-journal.json',
-      );
-    }
-    if (report.applied) {
-      _stdout.writeln('APPLIED ${report.modelCount} model(s).');
-    } else {
-      _stdout.writeln(
-        'PREVIEW no files written. Use --apply to migrate primary '
-        'constructors.',
-      );
-    }
   }
 
   void _writeModelReport(
@@ -1315,7 +1218,6 @@ Usage: dartitect <command> [arguments]
 Read-only commands:
   scan [--json|--sarif] [--root PATH]
                                     Scan files and architecture boundaries.
-  baseline create [--dry-run]      Record existing violations by fingerprint.
   codex sync [--dry-run] [--overwrite-managed]
                                     Install managed, focused Codex skills.
   doctor [--json] [--deep] [--release]
@@ -1325,8 +1227,6 @@ Read-only commands:
   model check [--json]              Validate generated model freshness.
   contracts check <spec> [--baseline=PATH] [--json]
                                     Validate local OpenAPI 3.1 and generated freshness.
-  model migrate primary [--dry-run|--apply] [--json]
-                                    Preview or apply semantic constructor edits.
   dependencies audit [--json]      Audit direct/transitive packages offline.
   dependencies explain <package>   Explain the ledger decision/replacement.
   fleet versions <root...>         Report declared and locked SDK versions.

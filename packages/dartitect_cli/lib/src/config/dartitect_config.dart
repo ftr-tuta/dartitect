@@ -40,8 +40,7 @@ final class DartitectSuppression {
     required this.path,
     required this.reason,
     required this.owner,
-    this.expiresAt,
-    this.permanentJustification,
+    required this.expiresAt,
   });
 
   /// Stable `DTnnnn` code.
@@ -56,15 +55,11 @@ final class DartitectSuppression {
   /// Accountable owner.
   final String owner;
 
-  /// Optional UTC expiry date.
-  final DateTime? expiresAt;
-
-  /// Required justification when the suppression is permanent.
-  final String? permanentJustification;
+  /// Required UTC expiry date.
+  final DateTime expiresAt;
 
   /// Whether this suppression is expired at [now].
-  bool isExpiredAt(DateTime now) =>
-      expiresAt != null && !now.toUtc().isBefore(expiresAt!);
+  bool isExpiredAt(DateTime now) => !now.toUtc().isBefore(expiresAt);
 
   /// Stable JSON representation.
   Map<String, Object?> toJson() => <String, Object?>{
@@ -72,10 +67,7 @@ final class DartitectSuppression {
     'path': path,
     'reason': reason,
     'owner': owner,
-    if (expiresAt != null)
-      'expiresAt': expiresAt!.toIso8601String().substring(0, 10),
-    if (permanentJustification != null)
-      'permanentJustification': permanentJustification,
+    'expiresAt': expiresAt.toIso8601String().substring(0, 10),
   };
 }
 
@@ -1046,14 +1038,7 @@ final class DartitectConfig {
       if (raw is! Map<String, Object?>) {
         throw DartitectConfigException(pointer, 'expected an object');
       }
-      const known = <String>{
-        'code',
-        'path',
-        'reason',
-        'owner',
-        'expiresAt',
-        'permanentJustification',
-      };
+      const known = <String>{'code', 'path', 'reason', 'owner', 'expiresAt'};
       _rejectUnknown(raw, known, pointer);
       final code = _requiredString(raw, 'code', pointer);
       if (!RegExp(r'^DT\d{4}$').hasMatch(code)) {
@@ -1063,27 +1048,16 @@ final class DartitectConfig {
         );
       }
       final expires = raw['expiresAt'];
-      DateTime? expiresAt;
-      if (expires != null) {
-        if (expires is! String ||
-            !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(expires)) {
-          throw DartitectConfigException(
-            '$pointer/expiresAt',
-            'expected YYYY-MM-DD',
-          );
-        }
-        expiresAt = DateTime.tryParse('${expires}T00:00:00Z');
-        if (expiresAt == null) {
-          throw DartitectConfigException('$pointer/expiresAt', 'invalid date');
-        }
-      }
-      final permanent = raw['permanentJustification'];
-      if (expiresAt == null &&
-          (permanent is! String || permanent.trim().isEmpty)) {
+      if (expires is! String ||
+          !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(expires)) {
         throw DartitectConfigException(
-          '$pointer/permanentJustification',
-          'required when expiresAt is absent',
+          '$pointer/expiresAt',
+          'required in YYYY-MM-DD format',
         );
+      }
+      final expiresAt = DateTime.tryParse('${expires}T00:00:00Z');
+      if (expiresAt == null) {
+        throw DartitectConfigException('$pointer/expiresAt', 'invalid date');
       }
       output.add(
         DartitectSuppression(
@@ -1095,7 +1069,6 @@ final class DartitectConfig {
           reason: _requiredString(raw, 'reason', pointer),
           owner: _requiredString(raw, 'owner', pointer),
           expiresAt: expiresAt,
-          permanentJustification: permanent is String ? permanent.trim() : null,
         ),
       );
     }

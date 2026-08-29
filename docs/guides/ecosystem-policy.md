@@ -30,7 +30,7 @@ authorize publication, leak provider types, or contain secrets.
 ```console
 dartitect dependencies audit --json
 dartitect dependencies explain <package>
-dartitect scan --no-baseline
+dartitect scan
 dartitect verify --json
 ```
 

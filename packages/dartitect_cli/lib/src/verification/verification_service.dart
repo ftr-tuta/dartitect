@@ -19,8 +19,7 @@ final class DartitectVerificationService {
   /// This method never recovers journals, creates manifests, formats sources,
   /// or invokes a mutating generator path.
   Future<CommandEnvelope> verify() async {
-    final architecture = await DartitectProjectService(root)
-        .scanArchitecture(useBaseline: false);
+    final architecture = await DartitectProjectService(root).scanArchitecture();
     final findings = <DartitectFinding>[...architecture.findings];
     final violations = <DartitectFinding>[...architecture.violations];
 

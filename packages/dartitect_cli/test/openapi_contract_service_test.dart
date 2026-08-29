@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dartitect_cli/dartitect_cli.dart';
+import 'package:dartitect_cli/dartitect_contracts.dart';
 import 'package:test/test.dart';
 
 void main() {

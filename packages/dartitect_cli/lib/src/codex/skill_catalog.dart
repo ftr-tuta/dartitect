@@ -169,15 +169,15 @@ ownership, or concrete runtime boundaries.
 ## Invariants
 
 Inspection is read-only. Report evidence without modifying code, dependencies,
-configuration, baselines, or generated files. Treat `dartitect verify` and
-`scan --no-baseline` as canonical read-only evidence. Installed Riverpod, BLoC,
+configuration or generated files. Treat `dartitect verify` and `dartitect scan`
+as canonical read-only evidence. Installed Riverpod, BLoC,
 Provider, GetIt, MobX, Signals, or equivalent architecture runtimes are Native
 Strict errors. Provider leakage, service location, duplicate ownership, and
 dual-write are also errors.
 
 ## Workflow
 
-1. Record tests, analyzer, `dartitect doctor`, and `dartitect scan --no-baseline`.
+1. Record tests, analyzer, `dartitect doctor`, and `dartitect scan`.
 2. Inventory composition roots, owners, disposal order, repositories,
    background entrypoints, provider SDKs, and telemetry paths.
 3. Classify each boundary as conforming, non-conforming, or not evidenced.
@@ -193,7 +193,7 @@ CLI/MCP boundary.
 ## Validate
 
 Confirm the report is reproducible, contains no write or migration action, uses
-the unbaselined scan, and distinguishes unsupported architecture runtimes from
+the strict scan, and distinguishes unsupported architecture runtimes from
 consumer-owned infrastructure packages.
 ''',
       'references/inventory.md': r'''# Dartitect project inventory
@@ -216,8 +216,8 @@ test evidence, and conformance status. Do not add a proposed migration slice.
       'references/conformance-audit.md': r'''# Conformance audit
 
 Start with read-only CLI operations. `inspect`, `scan`, and `doctor` do not write.
-Run `scan --no-baseline` as the canonical gate. A reviewed baseline may describe
-known debt for other workflows, but it never changes conformance evidence.
+Run `dartitect scan` as the canonical gate. Greenfield projects cannot hide
+architecture findings behind debt baselines.
 
 The local MCP may assist discovery with bounded inspect, scan, doctor, explain,
 conformance, and preview tools. `dartitect_audit_conformance` reports strict
@@ -984,8 +984,8 @@ session recovery that does not auto-deliver uncertain records.
       'references/tooling.md': r'''# Tooling tests
 
 Use temporary roots and injected process/filesystem boundaries. Cover read-only
-commands, dry-run/apply separation, unknown config rejection, reviewed baseline
-fingerprints, stale plans, conflicts, recovery journals, symlink/path escape,
+commands, dry-run/apply separation, unknown config rejection, strict findings,
+expiring suppressions, stale plans, conflicts, recovery journals, symlink/path escape,
 permissions, Unicode and spaces, and idempotent managed-skill sync.
 
 Native setup tests remain offline by injecting download, archive, host, temp
@@ -1047,9 +1047,8 @@ outputs. Run `dartitect model check` in CI. Commit every
 `*.dartitect.g.dart` output and namespaced manifest so a clean
 checkout compiles without installing the CLI.
 
-Use `dartitect model migrate primary` to preview traditional-to-primary
-constructor edits. Only `--apply` may take the project lock, journal source
-bytes, revalidate, and commit or roll back the complete semantic edit.
+New model generators and analyzer quick fixes emit the required primary
+constructor syntax directly. The public CLI does not convert existing models.
 
 Never hand-edit or force-adopt a generated model. A digest conflict means the
 consumer bytes must be reviewed and ownership restored explicitly. A pending
@@ -1138,9 +1137,9 @@ The target-aware `features` section declares `local`, `online`, `cache`,
 compatibility; behavioral guarantees remain contract-matrix evidence.
 
 Scan only declared roots using real path segments; ignore nested caches and
-generated code. A baseline fingerprints code, path, and evidence without line
-number. New findings fail, obsolete entries warn, and local suppressions require
-a reason. Keep CLI and official analyzer-plugin diagnostics semantically aligned
+generated code. Every finding fails strict scan. Local suppressions require an
+owner, reason, and expiry, and release doctor rejects all suppressions. Keep CLI
+and official analyzer-plugin diagnostics semantically aligned
 through the versioned true/false-positive corpus while respecting their
 different hosts and entrypoints. Prefer element/library identity when resolved.
 Sensitive metadata needs a recognized telemetry sink. Generated fallback needs

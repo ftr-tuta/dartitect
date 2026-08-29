@@ -44,7 +44,7 @@ import 'package:flutter/widgets.dart';
       currentDirectory: root,
       stdoutSink: output,
       stderrSink: errors,
-    ).run(<String>['scan', '--sarif', '--no-baseline']);
+    ).run(<String>['scan', '--sarif']);
     final report = jsonDecode(output.toString()) as Map<String, Object?>;
     final runs = report['runs']! as List<Object?>;
     final run = runs.single! as Map<String, Object?>;
@@ -142,6 +142,15 @@ import 'package:flutter/widgets.dart';
     await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
     await File('${root.path}/dartitect.json').writeAsString(
       DartitectConfig(
+        suppressions: <DartitectSuppression>[
+          DartitectSuppression(
+            code: 'DT1001',
+            path: 'lib/domain/**',
+            reason: 'Temporary fixture exception',
+            owner: 'fixture',
+            expiresAt: DateTime.utc(2099, 12, 31),
+          ),
+        ],
         targets: DartitectTargetsConfig(const <DartitectPlatform>[
           DartitectPlatform.android,
         ]),
@@ -177,30 +186,53 @@ import 'package:flutter/widgets.dart';
       1,
     );
     expect(output.toString(), contains('DT2103'));
+    expect(output.toString(), contains('DT2104'));
     expect(output.toString(), contains('/storageContexts/preview/mode'));
   });
 
-  test(
-    'baseline hides existing violations but no-baseline reveals them',
-    () async {
-      final root = await Directory.systemTemp.createTemp('dartitect-baseline-');
-      addTearDown(() => root.delete(recursive: true));
-      await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
-      await Directory('${root.path}/lib/domain').create(recursive: true);
-      await File('${root.path}/lib/domain/a.dart')
-          .writeAsString("import 'package:flutter/widgets.dart';\n");
-      final output = StringBuffer();
-      final runner = DartitectCliRunner(
+  test('release doctor rejects inline suppressions without config', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-release-suppression-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
+    final source = File('${root.path}/lib/domain/value.dart');
+    await source.parent.create(recursive: true);
+    await source.writeAsString('''
+// dartitect-ignore: DT1001 -- temporary release fixture
+import 'package:flutter/widgets.dart';
+''');
+    final output = StringBuffer();
+
+    expect(
+      await DartitectCliRunner(
         currentDirectory: root,
         stdoutSink: output,
         stderrSink: StringBuffer(),
-      );
+      ).run(<String>['doctor', '--release', '--json']),
+      1,
+    );
+    expect(output.toString(), contains('DT2104'));
+  });
 
-      expect(await runner.run(<String>['baseline', 'create']), 0);
-      expect(await runner.run(<String>['scan']), 0);
-      expect(await runner.run(<String>['scan', '--no-baseline']), 1);
-    },
-  );
+  test('scan is always strict and baseline commands are rejected', () async {
+    final root = await Directory.systemTemp.createTemp('dartitect-baseline-');
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
+    await Directory('${root.path}/lib/domain').create(recursive: true);
+    await File('${root.path}/lib/domain/a.dart')
+        .writeAsString("import 'package:flutter/widgets.dart';\n");
+    final output = StringBuffer();
+    final runner = DartitectCliRunner(
+      currentDirectory: root,
+      stdoutSink: output,
+      stderrSink: StringBuffer(),
+    );
+
+    expect(await runner.run(<String>['scan']), 1);
+    expect(await runner.run(<String>['baseline', 'create']), 2);
+    expect(await runner.run(<String>['scan', '--no-baseline']), 2);
+  });
 
   test('codex sync is idempotent and preserves existing AGENTS.md', () async {
     final root = await Directory.systemTemp.createTemp('dartitect-codex-');

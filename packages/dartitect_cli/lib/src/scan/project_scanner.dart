@@ -21,6 +21,7 @@ final class ProjectScan {
     required this.findings,
     required this.violations,
     required this.dartFileCount,
+    required this.suppressionCount,
   });
 
   /// Name parsed conservatively from pubspec.yaml.
@@ -46,6 +47,9 @@ final class ProjectScan {
 
   /// Number of analyzed, non-generated Dart files.
   final int dartFileCount;
+
+  /// Number of config and inline architecture suppressions observed.
+  final int suppressionCount;
 }
 
 /// Conservative, deterministic, and read-only project scanner.
@@ -151,6 +155,7 @@ final class ProjectScanner {
       config: config,
       classifier: classifier,
     );
+    var suppressionCount = config?.suppressions.length ?? 0;
     final platforms = <String>[
       for (final name in _platformNames)
         if (await Directory(_join(root.path, name)).exists()) name,
@@ -186,6 +191,10 @@ final class ProjectScanner {
         lines,
         path: relativePath,
         findings: findings,
+      );
+      suppressionCount += suppressions.values.fold<int>(
+        0,
+        (total, codes) => total + codes.length,
       );
       final parsed = parseString(
         content: source,
@@ -252,6 +261,7 @@ final class ProjectScanner {
       findings: findings,
       violations: violations,
       dartFileCount: dartFiles.length,
+      suppressionCount: suppressionCount,
     );
   }
 

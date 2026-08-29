@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "entrypoints": {
+    "packages/dartitect/lib/dartitect.dart": {
+      "defaultAudience": "application-facing",
+      "overrides": {
+        "DartitectAssemblyBinding": "generated-code",
+        "DartitectLocalExtension": "extension-author",
+        "DartitectProjectExtension": "extension-author"
+      }
+    },
+    "packages/dartitect/lib/dartitect_credentials.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_cli/lib/dartitect_cli.dart": {"defaultAudience": "tooling-test"},
+    "packages/dartitect_cli/lib/dartitect_contracts.dart": {"defaultAudience": "tooling-test"},
+    "packages/dartitect_devtools/lib/dartitect_devtools.dart": {"defaultAudience": "tooling-test"},
+    "packages/dartitect_dio/lib/dartitect_dio.dart": {"defaultAudience": "adapter-author"},
+    "packages/dartitect_drift/lib/dartitect_drift.dart": {"defaultAudience": "adapter-author"},
+    "packages/dartitect_flutter/lib/dartitect_flutter.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_flutter/lib/dartitect_flutter_forms.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_flutter/lib/dartitect_flutter_queries.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_geometry/lib/dartitect_geometry.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_isolates/lib/dartitect_isolates.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_jobs/lib/dartitect_jobs.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_lints/lib/main.dart": {"defaultAudience": "tooling-test"},
+    "packages/dartitect_locale_br/lib/dartitect_locale_br.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_mcp/lib/dartitect_mcp.dart": {"defaultAudience": "tooling-test"},
+    "packages/dartitect_media/lib/dartitect_media.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_modeling/lib/dartitect_modeling.dart": {"defaultAudience": "generated-code"},
+    "packages/dartitect_modeling_analyzer/lib/dartitect_modeling_analyzer.dart": {"defaultAudience": "tooling-test"},
+    "packages/dartitect_objectbox/lib/dartitect_objectbox.dart": {"defaultAudience": "adapter-author"},
+    "packages/dartitect_observability/lib/dartitect_observability.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_privacy/lib/dartitect_privacy.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_resilience/lib/dartitect_resilience.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_sentry/lib/dartitect_sentry.dart": {"defaultAudience": "adapter-author"},
+    "packages/dartitect_sync/lib/dartitect_sync.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_testing/lib/dartitect_testing.dart": {"defaultAudience": "tooling-test"},
+    "packages/dartitect_transfer/lib/dartitect_attachments.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_transfer/lib/dartitect_transfer.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_workmanager/lib/dartitect_workmanager.dart": {"defaultAudience": "adapter-author"}
+  }
+}

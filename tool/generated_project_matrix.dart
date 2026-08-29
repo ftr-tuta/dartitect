@@ -135,7 +135,6 @@ Future<void> backgroundMain(SendPort output) async {
       'run',
       'dartitect_cli:dartitect',
       'scan',
-      '--no-baseline',
       '--root',
       project.path,
     ]);

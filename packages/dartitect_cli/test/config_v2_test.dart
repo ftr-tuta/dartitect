@@ -250,4 +250,28 @@ void main() {
       throwsA(isA<DartitectConfigException>()),
     );
   });
+
+  test('suppressions are narrow, owned, and always expiring', () {
+    final withoutExpiry = DartitectConfig().toJson();
+    withoutExpiry['suppressions'] = <Object?>[
+      <String, Object?>{
+        'code': 'DT1001',
+        'path': 'lib/domain/temporary.dart',
+        'reason': 'Temporary compatibility investigation',
+        'owner': 'architecture',
+        'permanentJustification': 'Never accepted in config v2',
+      },
+    ];
+
+    expect(
+      () => DartitectConfig.fromJson(withoutExpiry),
+      throwsA(
+        isA<DartitectConfigException>().having(
+          (error) => error.pointer,
+          'pointer',
+          '/suppressions/0/permanentJustification',
+        ),
+      ),
+    );
+  });
 }

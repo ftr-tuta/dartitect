@@ -26,7 +26,6 @@ Future<void> main(List<String> arguments) async {
       'scan',
       '--root',
       '.',
-      '--no-baseline',
     ]),
     const _Command('dart', <String>[
       'packages/dartitect_cli/bin/dartitect.dart',
@@ -194,6 +193,14 @@ Future<void> main(List<String> arguments) async {
       '--check',
     ]),
     const _Command('dart', <String>['run', 'tool/check_api_snapshot.dart']),
+    const _Command('dart', <String>[
+      'test',
+      'tool/check_api_snapshot_test.dart',
+    ]),
+    const _Command('dart', <String>[
+      'run',
+      'tool/check_generated_output_compatibility.dart',
+    ]),
     for (final package in <String>[
       'dartitect',
       'dartitect_devtools',
@@ -271,6 +278,10 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>[
       'test',
       'examples/openapi_contract_fixture',
+    ]),
+    const _Command('dart', <String>[
+      'test',
+      'examples/api_compatibility_fixture',
     ]),
     const _Command('dart', <String>[
       'run',

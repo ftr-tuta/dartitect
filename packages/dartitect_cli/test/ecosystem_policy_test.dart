@@ -50,8 +50,7 @@ void main() {
       final source = File('${root.path}/lib/domain/leak.dart');
       await source.parent.create(recursive: true);
       await source.writeAsString("import 'package:provider/provider.dart';\n");
-      final scan = await DartitectProjectService(root)
-          .scanArchitecture(useBaseline: false);
+      final scan = await DartitectProjectService(root).scanArchitecture();
       expect(scan.violations, isNotEmpty);
       expect(
         scan.violations.every(
