@@ -58,7 +58,7 @@ document their own `--dry-run`/apply form in `example/README.md`.
 - `ProjectScanner`, `DartitectFinding`, `DartitectRuleCodes`, source
   classification, and SARIF/report types expose architecture results.
 - `DartitectConfig`, `ConfigMigrator`, and `nativeStrictProfile` define stable
-  config v1 and architecture defaults.
+  config v2 and architecture defaults.
 - `DartitectBaseline` fingerprints code/path/evidence without line numbers.
 - `DartitectChangePlan`, semantic inputs/manifests, receipts, and
   `GenerationEngine` implement preview/revalidation/recovery.

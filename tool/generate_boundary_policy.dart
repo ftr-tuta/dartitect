@@ -145,7 +145,7 @@ ${codes.entries.map((entry) => "  /// Stable ${entry.value} diagnostic code.\n  
 
 /// Generated Native-First boundary policy shared without package coupling.
 abstract final class DartitectArchitectureRules {
-  /// Default named layer globs for stable config v1 and analyzer diagnostics.
+  /// Default named layer globs for stable config v2 and analyzer diagnostics.
   static const Map<String, List<String>> defaultLayers =
       <String, List<String>>{
 $layerEntries
@@ -231,7 +231,7 @@ final class DartitectSourceClassification {
 
 /// Deterministic path classifier shared by scan and lint hosts.
 final class DartitectBoundaryClassifier {
-  /// Creates a classifier from validated stable-v1 boundaries.
+  /// Creates a classifier from validated stable-v2 boundaries.
   const DartitectBoundaryClassifier({
     required this.layers,
     required this.compositionRoots,

@@ -43,7 +43,7 @@ final class DartitectWiringReport {
   };
 }
 
-/// Converges direct-constructor feature wiring from strict config v1.
+/// Converges direct-constructor feature wiring from strict config v2.
 final class DartitectWiringService {
   /// Creates a service for one project root.
   DartitectWiringService(Directory root) : root = root.absolute;
@@ -98,50 +98,49 @@ final class DartitectWiringService {
     final entries = config.features.declarations.entries.toList()
       ..sort((left, right) => left.key.compareTo(right.key));
     return <FileGenerationOperation>[
-      if (config.extensions.containsKey('dartitect.observability'))
-        ..._applicationOperations(config),
+      ..._applicationOperations(config),
       for (final entry in entries) ...<FileGenerationOperation>[
         FileGenerationOperation(
           relativePath:
               'lib/features/${entry.key}/composition/'
               '${entry.key}.wiring.dartitect.g.dart',
-          content: _render(entry.key, entry.value, config.scheduler),
+          content: _render(entry.key, entry.value, config.scheduler.provider),
           ownership: GeneratedOwnership.fullyGenerated,
           sourcePath: 'dartitect.json',
           rendererVersion: 2,
           semanticSchemaVersion: 1,
           inputSignature: jsonEncode(<String, Object?>{
             'name': entry.key,
-            'scheduler': config.scheduler,
+            'scheduler': config.scheduler.toJson(),
             'declaration': entry.value.toJson(),
           }),
         ),
-        if (<String>{
-          entry.value.persistence.native,
-          entry.value.persistence.web,
-        }.contains('drift'))
+        if (entry.value.storageContext case final String storageName
+            when config.storageContexts[storageName]?.provider == 'drift')
           _managedOperation(
             entry.key,
             entry.value,
             'infrastructure/${entry.key}_drift.wiring.dartitect.g.dart',
             _renderDrift(entry.key),
           ),
-        if (entry.value.persistence.native == 'objectbox')
+        if (entry.value.storageContext case final String storageName
+            when config.storageContexts[storageName]?.provider == 'objectbox')
           _managedOperation(
             entry.key,
             entry.value,
             'infrastructure/${entry.key}_objectbox.wiring.dartitect.g.dart',
             _renderObjectBox(entry.key),
           ),
-        if (entry.value.transport == 'dio')
+        if (entry.value.transport case final String transportName
+            when config.transports[transportName]?.provider == 'dio')
           _managedOperation(
             entry.key,
             entry.value,
             'infrastructure/${entry.key}_dio.wiring.dartitect.g.dart',
             _renderDio(entry.key),
           ),
-        if (config.scheduler == 'workmanager' &&
-            entry.value.headless.values.any((enabled) => enabled))
+        if (config.scheduler.provider == 'workmanager' &&
+            entry.value.headlessTargets.isNotEmpty)
           _managedOperation(
             entry.key,
             entry.value,
@@ -155,13 +154,9 @@ final class DartitectWiringService {
   static List<FileGenerationOperation> _applicationOperations(
     DartitectConfig config,
   ) {
-    final observability = config.extensions['dartitect.observability'];
-    final provider = observability is Map<String, Object?>
-        ? observability['provider']
-        : null;
-    final observabilityProvider = provider is String ? provider : 'none';
+    final observabilityProvider = config.observability.provider;
     final signature = jsonEncode(<String, Object?>{
-      'scheduler': config.scheduler,
+      'scheduler': config.scheduler.toJson(),
       'observability': observabilityProvider,
     });
     return <FileGenerationOperation>[
@@ -169,7 +164,7 @@ final class DartitectWiringService {
         relativePath:
             'lib/composition/application_module.wiring.dartitect.g.dart',
         content: _renderApplicationModule(
-          scheduler: config.scheduler,
+          scheduler: config.scheduler.provider,
           observability: observabilityProvider,
         ),
         ownership: GeneratedOwnership.fullyGenerated,
@@ -216,15 +211,16 @@ final class DartitectWiringService {
   ) {
     final type = _pascal(name);
     final headless = _renderStringList(
-      declaration.headless.entries
-          .where((entry) => entry.value)
-          .map((entry) => entry.key.wireName),
+      declaration.headlessTargets.map((target) => target.wireName),
+    );
+    final targets = _renderStringList(
+      declaration.targets.map((target) => target.wireName),
     );
     final capabilities = _renderStringList(
       declaration.capabilities.map((capability) => capability.wireName),
     );
     return '''// GENERATED CODE - DO NOT EDIT BY HAND.
-// Managed by `dartitect wiring sync` from strict config v1.
+// Managed by `dartitect wiring sync` from strict config v2.
 // ignore_for_file: prefer_initializing_formals
 
 import 'dart:async';
@@ -281,13 +277,13 @@ final class ${type}FeatureModule<R, V> implements AsyncDisposable {
 abstract final class ${type}FeatureWiring {
   static const String profile = '${declaration.profile.wireName}';
   static const String scope = '${declaration.scope.wireName}';
-  static const String persistenceNative = '${declaration.persistence.native}';
-  static const String persistenceWeb = '${declaration.persistence.web}';
-  static const String transport = '${declaration.transport}';
+  static const String? storageContext = ${jsonEncode(declaration.storageContext)};
+  static const String? transport = ${jsonEncode(declaration.transport)};
+  static const List<String> targets = $targets;
   static const String pagination = '${declaration.pagination.wireName}';
   static const String diagnostics = '${declaration.diagnostics.wireName}';
   static const String scheduler = '$scheduler';
-  static const List<String> headlessPlatforms = $headless;
+  static const List<String> headlessTargets = $headless;
   static const List<String> capabilities = $capabilities;
 
   /// Creates the public application-host factory while keeping graph ownership
@@ -317,7 +313,7 @@ abstract final class ${type}FeatureWiring {
     required String observability,
   }) =>
       '''// GENERATED CODE - DO NOT EDIT BY HAND.
-// Managed by `dartitect wiring sync` from strict config v1.
+// Managed by `dartitect wiring sync` from strict config v2.
 
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_flutter/dartitect_flutter.dart';
@@ -357,7 +353,7 @@ abstract final class ApplicationModule {
 
   static String _renderSessionModule() =>
       '''// GENERATED CODE - DO NOT EDIT BY HAND.
-// Managed by `dartitect wiring sync` from strict config v1.
+// Managed by `dartitect wiring sync` from strict config v2.
 
 import 'package:dartitect_flutter/dartitect_flutter.dart';
 

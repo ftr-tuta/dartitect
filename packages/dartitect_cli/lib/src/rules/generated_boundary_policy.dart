@@ -57,7 +57,7 @@ abstract final class DartitectRuleCodes {
 
 /// Generated Native-First boundary policy shared without package coupling.
 abstract final class DartitectArchitectureRules {
-  /// Default named layer globs for stable config v1 and analyzer diagnostics.
+  /// Default named layer globs for stable config v2 and analyzer diagnostics.
   static const Map<String, List<String>> defaultLayers = <String, List<String>>{
     'domain': <String>['**/domain/**'],
     'application': <String>['**/application/**'],
@@ -211,7 +211,7 @@ final class DartitectSourceClassification {
 
 /// Deterministic path classifier shared by scan and lint hosts.
 final class DartitectBoundaryClassifier {
-  /// Creates a classifier from validated stable-v1 boundaries.
+  /// Creates a classifier from validated stable-v2 boundaries.
   const DartitectBoundaryClassifier({
     required this.layers,
     required this.compositionRoots,

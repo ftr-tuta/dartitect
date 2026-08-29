@@ -77,7 +77,7 @@ Resources are generated from maintained project sources:
 - `dartitect://packages` and `dartitect://packages/{name}`;
 - `dartitect://diagnostics/{code}`;
 - `dartitect://guides/{slug}`;
-- `dartitect://config/v1`.
+- `dartitect://config/v2`.
 
 There is no free-form file resource.
 The guide catalog includes the ecosystem selection matrix and implementation

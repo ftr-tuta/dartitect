@@ -6,7 +6,7 @@ import '../model/model_generator.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
 
-/// Read-only RC6 verification shared by the public CLI, fleet, and MCP server.
+/// Read-only RC8 verification shared by the public CLI, fleet, and MCP server.
 final class DartitectVerificationService {
   /// Creates a verifier for one package or workspace root.
   DartitectVerificationService(Directory root) : root = root.absolute;
@@ -57,7 +57,7 @@ final class DartitectVerificationService {
     findings.sort(_compareFinding);
     violations.sort(_compareFinding);
     final providerStatus = _providerStatus(ecosystem, violations);
-    final featureStatus = _featureStatus(config?.features);
+    final featureStatus = _featureStatus(config);
     final project = <String, Object?>{
       ...architecture.project,
       'modelStatus': <String, Object?>{
@@ -151,41 +151,40 @@ final class DartitectVerificationService {
     };
   }
 
-  static Map<String, Object?> _featureStatus(
-    DartitectFeaturesConfig? features,
-  ) {
+  static Map<String, Object?> _featureStatus(DartitectConfig? config) {
     final declarations =
-        features?.declarations ?? const <String, DartitectFeatureDeclaration>{};
+        config?.features.declarations ??
+        const <String, DartitectFeatureDeclaration>{};
     final profiles =
         declarations.values
             .map((declaration) => declaration.profile.wireName)
             .toSet()
             .toList()
           ..sort();
-    final persistence = <String>{
-      for (final declaration in declarations.values)
-        declaration.persistence.native,
-      for (final declaration in declarations.values)
-        declaration.persistence.web,
-    }.toList()..sort();
-    final transport =
-        declarations.values
-            .map((declaration) => declaration.transport)
+    final persistence =
+        config?.storageContexts.values
+            .map((context) => context.provider)
             .toSet()
-            .toList()
-          ..sort();
+            .toList() ??
+        <String>[];
+    persistence.sort();
+    final transport =
+        config?.transports.values
+            .map((binding) => binding.provider)
+            .toSet()
+            .toList() ??
+        <String>[];
+    transport.sort();
     return <String, Object?>{
-      'configured': features != null,
+      'configured': config != null,
       'declarationCount': declarations.length,
       'profiles': profiles,
       'persistenceProviders': persistence,
       'transportProviders': transport,
       'headlessSyncCount': declarations.values
-          .where(
-            (declaration) => declaration.headless.values.any((value) => value),
-          )
+          .where((declaration) => declaration.headlessTargets.isNotEmpty)
           .length,
-      'status': features == null
+      'status': config == null
           ? 'not_configured'
           : declarations.isEmpty
           ? 'ready'

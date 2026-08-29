@@ -7,8 +7,8 @@ description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, 
 
 ## When to use
 
-Use this skill for CLI commands/services, stable config v1, verify/scanner/doctor policy,
-baselines, analyzer diagnostics, generators, Codex sync, native fixture setup,
+Use this skill for CLI commands/services, stable config v2, verify/scanner/doctor policy,
+analyzer diagnostics, generators, Codex sync, native fixture setup,
 or repository release gates.
 
 ## When not to use
@@ -19,9 +19,8 @@ opt-in MCP writes. Use runtime skills for application behavior.
 ## Invariants
 
 Inspection and `dartitect verify` are strictly read-only. Mutations preview by default or provide explicit
-dry-run/apply separation. Reject experimental versions and preserve unknown v1
-extension fields without interpreting them.
-Baselines cover reviewed existing debt only. Generators stage, validate, refuse
+dry-run/apply separation. Reject experimental versions and keep config blocks
+closed and typed. Generators stage, validate, refuse
 conflicts, and recover transactionally. Codex sync replaces only valid
 manifest-owned skills and preserves consumer-owned files/directories.
 Every reviewed project change binds only its semantic inputs in a sorted

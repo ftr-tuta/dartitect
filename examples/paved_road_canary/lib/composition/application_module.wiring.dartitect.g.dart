@@ -29,8 +29,8 @@ abstract final class ApplicationModule {
           );
           return ApplicationGraph(
             sessions: sessions,
-            scheduler: "workmanager",
-            observability: "developer",
+            scheduler: "none",
+            observability: "none",
           );
         },
       );

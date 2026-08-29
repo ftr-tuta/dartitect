@@ -298,7 +298,7 @@ environment:
           resources.resources.map((resource) => resource.uri),
           containsAll(<String>[
             'dartitect://packages',
-            'dartitect://config/v1',
+            'dartitect://config/v2',
           ]),
         );
         final templates = await environment.connection.listResourceTemplates();
@@ -393,7 +393,7 @@ environment:
           'dartitect_preview_create_feature',
           <String, Object?>{
             'name': 'accounts',
-            'profile': 'online',
+            'profile': 'local',
             'scope': 'session',
             'capabilities': 'credentials,forms',
           },
@@ -453,22 +453,20 @@ environment:
       final project = await _project();
       await File('${project.path}/dartitect.json').writeAsString(
         DartitectConfig(
+          transports: <String, DartitectTransportConfig>{
+            'api': DartitectTransportConfig(
+              provider: 'dio',
+              targets: const <DartitectPlatform>[DartitectPlatform.android],
+            ),
+          },
           features: DartitectFeaturesConfig(
             declarations: <String, DartitectFeatureDeclaration>{
               'notes': DartitectFeatureDeclaration(
                 profile: FeatureProfile.online,
                 scope: FeatureScope.application,
-                persistence: FeaturePersistenceMatrix(
-                  native: 'none',
-                  web: 'none',
-                ),
-                transport: 'dio',
+                transport: 'api',
                 pagination: FeaturePagination.none,
                 diagnostics: FeatureDiagnosticsLevel.basic,
-                headless: <DartitectPlatform, bool>{
-                  for (final platform in DartitectPlatform.values)
-                    platform: false,
-                },
               ),
             },
           ),

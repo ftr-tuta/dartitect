@@ -57,23 +57,32 @@ dependencies:
       final app = await _project(fleet, 'app', '^1.0.0-rc.4');
       await File('${app.path}/dartitect.json').writeAsString(
         DartitectConfig(
-          scheduler: 'workmanager',
+          storageContexts: <String, DartitectStorageContextConfig>{
+            'primary': DartitectStorageContextConfig(
+              provider: 'drift',
+              mode: DartitectStorageMode.durable,
+              targets: const <DartitectPlatform>[DartitectPlatform.android],
+            ),
+          },
+          transports: <String, DartitectTransportConfig>{
+            'api': DartitectTransportConfig(
+              provider: 'dio',
+              targets: const <DartitectPlatform>[DartitectPlatform.android],
+            ),
+          },
+          scheduler: DartitectSchedulerConfig(provider: 'workmanager'),
           features: DartitectFeaturesConfig(
             declarations: <String, DartitectFeatureDeclaration>{
               'orders': DartitectFeatureDeclaration(
                 profile: FeatureProfile.offlineFull,
                 scope: FeatureScope.application,
-                persistence: FeaturePersistenceMatrix(
-                  native: 'drift',
-                  web: 'drift',
-                ),
-                transport: 'dio',
+                storageContext: 'primary',
+                transport: 'api',
                 pagination: FeaturePagination.cursor,
                 diagnostics: FeatureDiagnosticsLevel.full,
-                headless: <DartitectPlatform, bool>{
-                  for (final platform in DartitectPlatform.values)
-                    platform: platform != DartitectPlatform.windows,
-                },
+                headlessTargets: const <DartitectPlatform>[
+                  DartitectPlatform.android,
+                ],
               ),
             },
           ),

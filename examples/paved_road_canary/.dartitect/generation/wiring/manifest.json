@@ -4,12 +4,28 @@
   "protocolVersion": 1,
   "outputs": [
     {
+      "path": "lib/composition/application_module.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "7f3a2ab46fe00de35b82d255bd849e69b6d497387b85c0a83133640b7e0c92f0",
+      "outputDigest": "b75e74172dced0caedec739079d2d735312bcd70e69697bac795c57b214a061c"
+    },
+    {
+      "path": "lib/composition/session_module.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "7f3a2ab46fe00de35b82d255bd849e69b6d497387b85c0a83133640b7e0c92f0",
+      "outputDigest": "deadeb01d95991b1dd9edc997dcb3d72233c9aa8eaaaac2eeee3463f37a6b9b7"
+    },
+    {
       "path": "lib/features/paved_road/composition/paved_road.wiring.dartitect.g.dart",
       "source": "dartitect.json",
       "rendererVersion": 2,
       "semanticSchemaVersion": 1,
-      "inputDigest": "8ea8368c1555cd0c57e3cd55c7c253852e45136567d669a27d591018a39c8c2c",
-      "outputDigest": "18ab8b5d8f7eaeffbba4bd16ce9359936ee0b0ad5ed4d9fa5f653d7c64aef781"
+      "inputDigest": "2cd597ed8b8185385151bab5bbdc29329562f566df806e0cd498a4877725de07",
+      "outputDigest": "7d7dbda2e3f56dcef5d4b72e5d1cd26e1fdfa39275cd8537278508d154f17207"
     }
   ]
 }

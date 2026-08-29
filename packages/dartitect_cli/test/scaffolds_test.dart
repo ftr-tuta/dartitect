@@ -50,18 +50,27 @@ void main() {
     expect(view, isNot(contains('infrastructure/')));
   });
 
-  test('four stable profiles render their required architectural seams', () {
+  test('five stable profiles render their required architectural seams', () {
     const factory = ScaffoldFactory(packageName: 'sample_app');
 
     final rendered = <FeatureProfile, List<FileGenerationOperation>>{
       for (final profile in FeatureProfile.values)
         profile: factory.profile(
-          FeatureScaffoldOptions(profile: profile, scope: FeatureScope.session),
+          FeatureScaffoldOptions(
+            profile: profile,
+            scope: FeatureScope.session,
+            storageContext: switch (profile) {
+              FeatureProfile.local || FeatureProfile.online => null,
+              _ => 'primary',
+            },
+            transport: profile == FeatureProfile.local ? null : 'api',
+          ),
           'catalog',
         ),
     };
 
     expect(FeatureProfile.values.map((value) => value.wireName), <String>[
+      'local',
       'online',
       'cache',
       'replica',
@@ -131,11 +140,10 @@ void main() {
       FeatureScaffoldOptions(
         profile: FeatureProfile.offlineFull,
         scope: FeatureScope.session,
-        persistenceNative: 'drift',
-        persistenceWeb: 'drift',
-        transport: 'dio',
+        storageContext: 'primary',
+        transport: 'api',
         pagination: FeaturePagination.cursor,
-        headlessPlatforms: const <DartitectPlatform>{DartitectPlatform.android},
+        headlessTargets: const <DartitectPlatform>{DartitectPlatform.android},
         diagnostics: FeatureDiagnosticsLevel.full,
         capabilities: const <DartitectCapability>{
           DartitectCapability.credentials,

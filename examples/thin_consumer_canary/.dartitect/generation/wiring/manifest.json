@@ -8,31 +8,31 @@
       "source": "dartitect.json",
       "rendererVersion": 1,
       "semanticSchemaVersion": 1,
-      "inputDigest": "8c5e8e9a2e15d8703232308f5374321588d5fe0b6c365045ac436ff802ae0423",
-      "outputDigest": "2c7928edb98ee9b5c57edf28b178cb20aa8c2220db8e76fefddc7a917c46a36d"
+      "inputDigest": "7b88a8f70d890464a77c2d0b0502a08ef5cd4cacfda2feaf4d8fa0ad7baba34d",
+      "outputDigest": "9a0ca4145816efb17bc98967df3ce3d42c5576cf778fc2621e268c51de544e18"
     },
     {
       "path": "lib/composition/session_module.wiring.dartitect.g.dart",
       "source": "dartitect.json",
       "rendererVersion": 1,
       "semanticSchemaVersion": 1,
-      "inputDigest": "8c5e8e9a2e15d8703232308f5374321588d5fe0b6c365045ac436ff802ae0423",
-      "outputDigest": "7e723a907efc80adccd982dcb7fba1118a3a952ea0c1e468801cf015012ffd5c"
+      "inputDigest": "7b88a8f70d890464a77c2d0b0502a08ef5cd4cacfda2feaf4d8fa0ad7baba34d",
+      "outputDigest": "deadeb01d95991b1dd9edc997dcb3d72233c9aa8eaaaac2eeee3463f37a6b9b7"
     },
     {
       "path": "lib/features/tasks/composition/tasks.wiring.dartitect.g.dart",
       "source": "dartitect.json",
       "rendererVersion": 2,
       "semanticSchemaVersion": 1,
-      "inputDigest": "3a4c5a1dca24a589231b9c1c7bc7e2d42c728a3f40e2d357074aae865a64c570",
-      "outputDigest": "252b2ccfb06339a6c72ee288815e933e6b9fbcf851c6ef2813e43c3084d7730f"
+      "inputDigest": "abd10d1bc08446a8d88fedc69d6093b4adb9f67dd487978c1475459948eb9568",
+      "outputDigest": "fe18dc6a9a39a082b5ce2667241e7764eb71df0cf593ee253fbaa88660bb8dba"
     },
     {
       "path": "lib/features/tasks/composition/tasks_workmanager.wiring.dartitect.g.dart",
       "source": "dartitect.json",
       "rendererVersion": 2,
       "semanticSchemaVersion": 1,
-      "inputDigest": "9e02af8b307753d00c98f695ab3c27b7b875500e08716449b8058c7b32609b87",
+      "inputDigest": "5e0a6674a801c1445b414ebd39758e4ea20b30a1f3efab1c8c799207f683dbc6",
       "outputDigest": "b8793ee241d667b55c5763bbc6b160830965f545f2ca74971de70c0f88141dfe"
     },
     {
@@ -40,7 +40,7 @@
       "source": "dartitect.json",
       "rendererVersion": 2,
       "semanticSchemaVersion": 1,
-      "inputDigest": "8dbe59ba212f66a52434a4b2f39284aff5960a79a3692d2220da04ef9fa34a58",
+      "inputDigest": "74ffd8187b09b92e2e4e0749efaf1db5fdcbac5e93b87723fc782fc6b369ac2b",
       "outputDigest": "4f56bfed5db2b41399cb2fa96a0eb3afd862cc4f4595559f6b08f6939c369e1a"
     },
     {
@@ -48,7 +48,7 @@
       "source": "dartitect.json",
       "rendererVersion": 2,
       "semanticSchemaVersion": 1,
-      "inputDigest": "bdc97e5d904b64c99b910eb89afc471f195ebcce754c3af984fd78e43b870ce5",
+      "inputDigest": "3b0d771f9c87d88a33d4759699c338a47826c5b17a390a7997930f809983fc61",
       "outputDigest": "fa12e2d2bc56d423785679515decefe4ef3c0eec8ee3172226a06c85ec44ca84"
     }
   ]

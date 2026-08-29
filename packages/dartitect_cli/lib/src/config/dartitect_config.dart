@@ -5,8 +5,8 @@ import 'package:dartitect/dartitect.dart';
 
 import '../rules/generated_boundary_policy.dart';
 
-/// First stable on-disk Dartitect configuration version.
-const int currentConfigVersion = 1;
+/// Current stable on-disk Dartitect configuration version.
+const int currentConfigVersion = 2;
 
 /// The only architectural profile supported by Dartitect 1.0.
 const String nativeStrictProfile = 'native_strict';
@@ -210,38 +210,177 @@ enum DartitectCapability {
       _enumByWireName(values, value, 'feature capability');
 }
 
-/// Native/web persistence selection for one feature.
-final class FeaturePersistenceMatrix {
-  /// Creates and validates a provider matrix.
-  FeaturePersistenceMatrix({required this.native, required this.web}) {
-    _validateProviderIdentifier(
-      native,
-      pointer: '/features/declarations/persistence/native',
-      builtIns: _persistenceProviders,
-    );
-    _validateProviderIdentifier(
-      web,
-      pointer: '/features/declarations/persistence/web',
-      builtIns: _persistenceProviders,
-    );
-    if (web == 'objectbox') {
+/// Explicit application target block.
+final class DartitectTargetsConfig {
+  /// Creates a non-empty, deterministic target set.
+  DartitectTargetsConfig(Iterable<DartitectPlatform> platforms)
+    : platforms = List<DartitectPlatform>.unmodifiable(
+        platforms.toSet().toList()
+          ..sort((left, right) => left.index.compareTo(right.index)),
+      ) {
+    if (this.platforms.isEmpty) {
       throw const DartitectConfigException(
-        '/features/declarations/persistence/web',
+        '/targets/platforms',
+        'expected at least one supported platform',
+      );
+    }
+  }
+
+  /// Platforms generated and supported by this project.
+  final List<DartitectPlatform> platforms;
+
+  /// Stable JSON representation.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'platforms': platforms.map((platform) => platform.wireName).toList(),
+  };
+}
+
+/// Storage durability available to feature assemblies.
+enum DartitectStorageMode {
+  /// Durable provider-backed operational state.
+  durable('durable'),
+
+  /// Process-local state allowed only for development and tests.
+  memory('memory');
+
+  const DartitectStorageMode(this.wireName);
+
+  /// Stable configuration spelling.
+  final String wireName;
+}
+
+/// One explicitly selected storage context shared by features.
+final class DartitectStorageContextConfig {
+  /// Creates a storage context for an exact target set.
+  DartitectStorageContextConfig({
+    required this.provider,
+    required this.mode,
+    required Iterable<DartitectPlatform> targets,
+  }) : targets = _platformSet(targets, '/storageContexts/targets') {
+    _validateProviderIdentifier(
+      provider,
+      pointer: '/storageContexts/provider',
+      builtIns: const <String>{'drift', 'objectbox', 'memory'},
+    );
+    if ((provider == 'memory') != (mode == DartitectStorageMode.memory)) {
+      throw const DartitectConfigException(
+        '/storageContexts/mode',
+        'memory providers require memory mode and durable providers require durable mode',
+      );
+    }
+    if (provider == 'objectbox' &&
+        this.targets.contains(DartitectPlatform.web)) {
+      throw const DartitectConfigException(
+        '/storageContexts/targets',
         'ObjectBox is not implemented on web',
       );
     }
   }
 
-  /// Provider for Android, iOS, macOS, Windows, and Linux.
-  final String native;
+  /// `drift`, `objectbox`, `memory`, or a project-local provider identifier.
+  final String provider;
 
-  /// Provider for web.
-  final String web;
+  /// Whether operational state survives a process restart.
+  final DartitectStorageMode mode;
+
+  /// Exact platforms supported by this context.
+  final List<DartitectPlatform> targets;
 
   /// Stable JSON representation.
   Map<String, Object?> toJson() => <String, Object?>{
-    'native': native,
-    'web': web,
+    'provider': provider,
+    'mode': mode.wireName,
+    'targets': targets.map((target) => target.wireName).toList(),
+  };
+}
+
+/// One explicit transport binding shared by features.
+final class DartitectTransportConfig {
+  /// Creates a transport binding for an exact target set.
+  DartitectTransportConfig({
+    required this.provider,
+    required Iterable<DartitectPlatform> targets,
+  }) : targets = _platformSet(targets, '/transports/targets') {
+    _validateProviderIdentifier(
+      provider,
+      pointer: '/transports/provider',
+      builtIns: const <String>{'dio'},
+    );
+  }
+
+  /// `dio` or a project-local provider identifier.
+  final String provider;
+
+  /// Exact platforms supported by this transport.
+  final List<DartitectPlatform> targets;
+
+  /// Stable JSON representation.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'provider': provider,
+    'targets': targets.map((target) => target.wireName).toList(),
+  };
+}
+
+/// Explicit observability selection; no remote destination is implicit.
+final class DartitectObservabilityConfig {
+  /// Creates an observability block.
+  DartitectObservabilityConfig({
+    this.provider = 'none',
+    Iterable<DartitectPlatform> targets = const <DartitectPlatform>[],
+  }) : targets = _optionalPlatformSet(targets) {
+    _validateProviderIdentifier(
+      provider,
+      pointer: '/observability/provider',
+      builtIns: const <String>{'none', 'developer', 'sentry'},
+    );
+  }
+
+  /// `none`, `developer`, `sentry`, or a project-local provider identifier.
+  final String provider;
+
+  /// Restricted targets, or empty to inherit application targets.
+  final List<DartitectPlatform> targets;
+
+  /// Stable JSON representation.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'provider': provider,
+    if (targets.isNotEmpty)
+      'targets': targets.map((target) => target.wireName).toList(),
+  };
+}
+
+/// Explicit scheduler selection; background work is disabled by default.
+final class DartitectSchedulerConfig {
+  /// Creates a scheduler block.
+  DartitectSchedulerConfig({
+    this.provider = 'none',
+    Iterable<DartitectPlatform> targets = const <DartitectPlatform>[],
+  }) : targets = _optionalPlatformSet(targets) {
+    _validateProviderIdentifier(
+      provider,
+      pointer: '/scheduler/provider',
+      builtIns: const <String>{'none', 'workmanager'},
+    );
+    if (provider == 'workmanager' &&
+        this.targets.contains(DartitectPlatform.windows)) {
+      throw const DartitectConfigException(
+        '/scheduler/targets',
+        'Workmanager is unsupported on Windows',
+      );
+    }
+  }
+
+  /// `none`, `workmanager`, or a project-local provider identifier.
+  final String provider;
+
+  /// Restricted targets, or empty to inherit application targets.
+  final List<DartitectPlatform> targets;
+
+  /// Stable JSON representation.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'provider': provider,
+    if (targets.isNotEmpty)
+      'targets': targets.map((target) => target.wireName).toList(),
   };
 }
 
@@ -251,49 +390,61 @@ final class DartitectFeatureDeclaration {
   DartitectFeatureDeclaration({
     required this.profile,
     required this.scope,
-    required this.persistence,
-    required this.transport,
     required this.pagination,
     required this.diagnostics,
-    required Map<DartitectPlatform, bool> headless,
+    this.storageContext,
+    this.transport,
+    Iterable<DartitectPlatform> targets = const <DartitectPlatform>[],
+    Iterable<DartitectPlatform> headlessTargets = const <DartitectPlatform>[],
     Iterable<DartitectCapability> capabilities = const <DartitectCapability>[],
-  }) : headless = Map<DartitectPlatform, bool>.unmodifiable(headless),
+  }) : targets = _optionalPlatformSet(targets),
+       headlessTargets = _optionalPlatformSet(headlessTargets),
        capabilities = List<DartitectCapability>.unmodifiable(
          capabilities.toSet().toList()
            ..sort((left, right) => left.wireName.compareTo(right.wireName)),
        ) {
-    _validateProviderIdentifier(
-      transport,
-      pointer: '/features/declarations/transport',
-      builtIns: const <String>{'dio'},
-    );
-    final missing = DartitectPlatform.values.where(
-      (platform) => !this.headless.containsKey(platform),
-    );
-    if (missing.isNotEmpty) {
-      throw DartitectConfigException(
-        '/features/declarations/headless',
-        'missing platform ${missing.first.wireName}',
-      );
-    }
-    if (profile == FeatureProfile.online) {
-      if (persistence.native != 'none' || persistence.web != 'none') {
-        throw const DartitectConfigException(
-          '/features/declarations/persistence',
-          'online profiles require persistence "none" on native and web',
-        );
-      }
-    } else if (persistence.native == 'none' || persistence.web == 'none') {
+    if (storageContext != null && !_configName.hasMatch(storageContext!)) {
       throw const DartitectConfigException(
-        '/features/declarations/persistence',
-        'cache, replica, and offline-full require persistence on native and web',
+        '/features/declarations/storageContext',
+        'expected an ASCII snake_case storage context name',
       );
     }
-    if (this.headless.values.any((enabled) => enabled) &&
+    if (transport != null && !_configName.hasMatch(transport!)) {
+      throw const DartitectConfigException(
+        '/features/declarations/transport',
+        'expected an ASCII snake_case transport name',
+      );
+    }
+    switch (profile) {
+      case FeatureProfile.local:
+        if (transport != null || this.headlessTargets.isNotEmpty) {
+          throw const DartitectConfigException(
+            '/features/declarations',
+            'local profiles prohibit transport, sync, and headless execution',
+          );
+        }
+      case FeatureProfile.online:
+        if (transport == null || storageContext != null) {
+          throw const DartitectConfigException(
+            '/features/declarations',
+            'online profiles require transport and prohibit persistence',
+          );
+        }
+      case FeatureProfile.cache ||
+          FeatureProfile.replica ||
+          FeatureProfile.offlineFull:
+        if (transport == null || storageContext == null) {
+          throw const DartitectConfigException(
+            '/features/declarations',
+            'cache, replica, and offline-full require explicit transport and storage context',
+          );
+        }
+    }
+    if (this.headlessTargets.isNotEmpty &&
         profile != FeatureProfile.replica &&
         profile != FeatureProfile.offlineFull) {
       throw const DartitectConfigException(
-        '/features/declarations/headless',
+        '/features/declarations/headlessTargets',
         'headless execution requires replica or offline-full',
       );
     }
@@ -305,11 +456,14 @@ final class DartitectFeatureDeclaration {
   /// Application or authenticated-session owner.
   final FeatureScope scope;
 
-  /// Native/web persistence providers.
-  final FeaturePersistenceMatrix persistence;
+  /// Named storage context, when this profile uses persistence.
+  final String? storageContext;
 
-  /// `dio` or a `custom:<slug>` transport.
-  final String transport;
+  /// Named transport, when this profile uses remote access.
+  final String? transport;
+
+  /// Restricted targets, or empty to inherit application targets.
+  final List<DartitectPlatform> targets;
 
   /// Pagination policy.
   final FeaturePagination pagination;
@@ -317,8 +471,8 @@ final class DartitectFeatureDeclaration {
   /// Payload-free diagnostics wiring level.
   final FeatureDiagnosticsLevel diagnostics;
 
-  /// Headless execution opt-in for every supported platform.
-  final Map<DartitectPlatform, bool> headless;
+  /// Exact targets that opt in to headless execution.
+  final List<DartitectPlatform> headlessTargets;
 
   /// Independently opted-in stable workflows.
   final List<DartitectCapability> capabilities;
@@ -327,14 +481,15 @@ final class DartitectFeatureDeclaration {
   Map<String, Object?> toJson() => <String, Object?>{
     'profile': profile.wireName,
     'scope': scope.wireName,
-    'persistence': persistence.toJson(),
-    'transport': transport,
+    if (storageContext != null) 'storageContext': storageContext,
+    if (transport != null) 'transport': transport,
+    if (targets.isNotEmpty)
+      'targets': targets.map((target) => target.wireName).toList(),
     'pagination': pagination.wireName,
     'diagnostics': diagnostics.wireName,
-    'headless': <String, Object?>{
-      for (final platform in DartitectPlatform.values)
-        platform.wireName: headless[platform]!,
-    },
+    'headlessTargets': headlessTargets
+        .map((target) => target.wireName)
+        .toList(),
     'capabilities': capabilities
         .map((capability) => capability.wireName)
         .toList(),
@@ -371,7 +526,7 @@ final class DartitectFeaturesConfig {
   };
 }
 
-/// Additive modeling configuration for stable config v1.
+/// Additive modeling configuration for stable config v2.
 final class DartitectModelingConfig {
   /// Creates an explicit modeling block.
   const DartitectModelingConfig({
@@ -404,7 +559,7 @@ final class DartitectModelingConfig {
   };
 }
 
-/// Stable v1 Native Strict configuration.
+/// Stable v2 Native Strict configuration.
 final class DartitectConfig {
   /// Creates the default strict configuration.
   DartitectConfig({
@@ -420,9 +575,14 @@ final class DartitectConfig {
     List<DartitectSuppression> suppressions = const <DartitectSuppression>[],
     this.modeling,
     DartitectFeaturesConfig? features,
-    Iterable<DartitectPlatform> platforms = DartitectPlatform.values,
-    this.scheduler = 'none',
-    Map<String, Object?> extensions = const <String, Object?>{},
+    DartitectTargetsConfig? targets,
+    Map<String, DartitectStorageContextConfig> storageContexts =
+        const <String, DartitectStorageContextConfig>{},
+    Map<String, DartitectTransportConfig> transports =
+        const <String, DartitectTransportConfig>{},
+    DartitectObservabilityConfig? observability,
+    DartitectSchedulerConfig? scheduler,
+    Iterable<String> extensionSources = const <String>[],
   }) : layers = _copyLayers(layers),
        compositionRoots = List<String>.unmodifiable(compositionRoots),
        generatedInfrastructure = List<String>.unmodifiable(
@@ -431,11 +591,20 @@ final class DartitectConfig {
        generatedSuffixes = List<String>.unmodifiable(generatedSuffixes),
        suppressions = List<DartitectSuppression>.unmodifiable(suppressions),
        features = features ?? DartitectFeaturesConfig(),
-       platforms = List<DartitectPlatform>.unmodifiable(
-         platforms.toSet().toList()
-           ..sort((left, right) => left.index.compareTo(right.index)),
-       ),
-       extensions = Map<String, Object?>.unmodifiable(extensions) {
+       targets =
+           targets ??
+           DartitectTargetsConfig(const <DartitectPlatform>[
+             DartitectPlatform.android,
+           ]),
+       storageContexts = _sortedConfigMap(storageContexts),
+       transports = _sortedConfigMap(transports),
+       observability = observability ?? DartitectObservabilityConfig(),
+       scheduler = scheduler ?? DartitectSchedulerConfig(),
+       extensionSources = List<String>.unmodifiable(
+         extensionSources.map(
+           (source) => _normalizeDartSource(source, '/extensionSources'),
+         ),
+       ) {
     if (configVersion != currentConfigVersion) {
       throw DartitectConfigException(
         '/configVersion',
@@ -448,22 +617,14 @@ final class DartitectConfig {
         'expected native_strict',
       );
     }
-    if (this.platforms.isEmpty) {
-      throw const DartitectConfigException(
-        '/platforms',
-        'expected at least one supported platform',
-      );
-    }
-    _validateProviderIdentifier(
-      scheduler,
-      pointer: '/scheduler',
-      builtIns: const <String>{'none', 'workmanager'},
-    );
-    for (final namespace in this.extensions.keys) {
-      if (!_extensionNamespace.hasMatch(namespace)) {
+    for (final name in <String>{
+      ...this.storageContexts.keys,
+      ...this.transports.keys,
+    }) {
+      if (!_configName.hasMatch(name)) {
         throw DartitectConfigException(
-          '/extensions/${_pointerToken(namespace)}',
-          'expected a reverse-domain or slug namespace',
+          '/${this.storageContexts.containsKey(name) ? 'storageContexts' : 'transports'}/${_pointerToken(name)}',
+          'expected an ASCII snake_case binding name',
         );
       }
     }
@@ -484,7 +645,7 @@ final class DartitectConfig {
     return DartitectConfig.fromJson(decoded);
   }
 
-  /// Validates a decoded stable-v1 JSON object.
+  /// Validates a decoded stable-v2 JSON object.
   factory DartitectConfig.fromJson(Map<String, Object?> json) {
     const known = <String>{
       'configVersion',
@@ -496,17 +657,20 @@ final class DartitectConfig {
       'suppressions',
       'modeling',
       'features',
-      'platforms',
+      'targets',
+      'storageContexts',
+      'transports',
+      'observability',
       'scheduler',
-      'extensions',
+      'extensionSources',
     };
     _rejectUnknown(json, known, '');
     final version = _requiredInt(json, 'configVersion', '');
     if (version != currentConfigVersion) {
       throw DartitectConfigException(
         '/configVersion',
-        'expected stable version $currentConfigVersion; only fleet upgrade '
-            'migrates an exact RC5 configuration',
+        'expected stable version $currentConfigVersion; only an explicit '
+            'Dartitect-project upgrade may migrate config v1',
       );
     }
     final profile = _requiredString(json, 'profile', '');
@@ -532,13 +696,16 @@ final class DartitectConfig {
       suppressions: _parseSuppressions(json['suppressions']),
       modeling: _parseModeling(json['modeling']),
       features: _parseFeatures(json['features']),
-      platforms: _parsePlatforms(json['platforms']),
-      scheduler: _requiredString(json, 'scheduler', ''),
-      extensions: _parseExtensions(json['extensions']),
+      targets: _parseTargets(json['targets']),
+      storageContexts: _parseStorageContexts(json['storageContexts']),
+      transports: _parseTransports(json['transports']),
+      observability: _parseObservability(json['observability']),
+      scheduler: _parseScheduler(json['scheduler']),
+      extensionSources: _parseExtensionSources(json['extensionSources']),
     );
   }
 
-  /// Stable schema version. The only accepted value is `1`.
+  /// Stable schema version. The only accepted value is `2`.
   final int configVersion;
 
   /// Strict architecture profile. The only accepted value is `native_strict`.
@@ -565,14 +732,23 @@ final class DartitectConfig {
   /// Strict feature declarations.
   final DartitectFeaturesConfig features;
 
-  /// Closed application target platforms.
-  final List<DartitectPlatform> platforms;
+  /// Explicit application target platforms.
+  final DartitectTargetsConfig targets;
 
-  /// `none`, `workmanager`, or `custom:<slug>`.
-  final String scheduler;
+  /// Named storage contexts shared across feature assemblies.
+  final Map<String, DartitectStorageContextConfig> storageContexts;
 
-  /// The only location where namespaced unknown data is preserved.
-  final Map<String, Object?> extensions;
+  /// Named transport bindings shared across feature assemblies.
+  final Map<String, DartitectTransportConfig> transports;
+
+  /// Explicit observability binding.
+  final DartitectObservabilityConfig observability;
+
+  /// Explicit scheduler binding.
+  final DartitectSchedulerConfig scheduler;
+
+  /// Confined Dart sources containing typed project-local extensions.
+  final List<String> extensionSources;
 
   /// Stable JSON representation.
   Map<String, Object?> toJson() => <String, Object?>{
@@ -584,10 +760,18 @@ final class DartitectConfig {
     'generatedSuffixes': generatedSuffixes,
     'suppressions': suppressions.map((value) => value.toJson()).toList(),
     if (modeling != null) 'modeling': modeling!.toJson(),
+    'targets': targets.toJson(),
+    'storageContexts': <String, Object?>{
+      for (final entry in storageContexts.entries)
+        entry.key: entry.value.toJson(),
+    },
+    'transports': <String, Object?>{
+      for (final entry in transports.entries) entry.key: entry.value.toJson(),
+    },
+    'observability': observability.toJson(),
+    'scheduler': scheduler.toJson(),
     'features': features.toJson(),
-    'platforms': platforms.map((platform) => platform.wireName).toList(),
-    'scheduler': scheduler,
-    'extensions': extensions,
+    'extensionSources': extensionSources,
   };
 
   /// Canonical two-space JSON with a trailing newline.
@@ -599,21 +783,114 @@ final class DartitectConfig {
       DartitectConfig.parse(await file.readAsString());
 
   void _validateImplementations() {
-    for (final entry in features.declarations.entries) {
-      final hasHeadless = entry.value.headless.values.any((value) => value);
-      if (scheduler == 'none' && hasHeadless) {
+    final applicationTargets = targets.platforms.toSet();
+    void validateRestrictedTargets(
+      Iterable<DartitectPlatform> restricted,
+      String pointer,
+    ) {
+      final outside = restricted.where(
+        (target) => !applicationTargets.contains(target),
+      );
+      if (outside.isNotEmpty) {
         throw DartitectConfigException(
-          '/features/declarations/${_pointerToken(entry.key)}/headless',
+          pointer,
+          '${outside.first.wireName} is not an application target',
+        );
+      }
+    }
+
+    validateRestrictedTargets(observability.targets, '/observability/targets');
+    validateRestrictedTargets(scheduler.targets, '/scheduler/targets');
+    for (final entry in storageContexts.entries) {
+      validateRestrictedTargets(
+        entry.value.targets,
+        '/storageContexts/${_pointerToken(entry.key)}/targets',
+      );
+    }
+    for (final entry in transports.entries) {
+      validateRestrictedTargets(
+        entry.value.targets,
+        '/transports/${_pointerToken(entry.key)}/targets',
+      );
+    }
+    for (final entry in features.declarations.entries) {
+      final pointer = '/features/declarations/${_pointerToken(entry.key)}';
+      final declaration = entry.value;
+      final featureTargets = declaration.targets.isEmpty
+          ? applicationTargets
+          : declaration.targets.toSet();
+      validateRestrictedTargets(declaration.targets, '$pointer/targets');
+      validateRestrictedTargets(
+        declaration.headlessTargets,
+        '$pointer/headlessTargets',
+      );
+      final invalidHeadless = declaration.headlessTargets.where(
+        (target) => !featureTargets.contains(target),
+      );
+      if (invalidHeadless.isNotEmpty) {
+        throw DartitectConfigException(
+          '$pointer/headlessTargets',
+          '${invalidHeadless.first.wireName} is not a feature target',
+        );
+      }
+      final storageName = declaration.storageContext;
+      if (storageName != null) {
+        final storage = storageContexts[storageName];
+        if (storage == null) {
+          throw DartitectConfigException(
+            '$pointer/storageContext',
+            'unknown storage context "$storageName"',
+          );
+        }
+        final unsupported = featureTargets.where(
+          (target) => !storage.targets.contains(target),
+        );
+        if (unsupported.isNotEmpty) {
+          throw DartitectConfigException(
+            '$pointer/storageContext',
+            '$storageName does not support ${unsupported.first.wireName}',
+          );
+        }
+      }
+      final transportName = declaration.transport;
+      if (transportName != null) {
+        final transport = transports[transportName];
+        if (transport == null) {
+          throw DartitectConfigException(
+            '$pointer/transport',
+            'unknown transport "$transportName"',
+          );
+        }
+        final unsupported = featureTargets.where(
+          (target) => !transport.targets.contains(target),
+        );
+        if (unsupported.isNotEmpty) {
+          throw DartitectConfigException(
+            '$pointer/transport',
+            '$transportName does not support ${unsupported.first.wireName}',
+          );
+        }
+      }
+      if (scheduler.provider == 'none' &&
+          declaration.headlessTargets.isNotEmpty) {
+        throw DartitectConfigException(
+          '$pointer/headlessTargets',
           'headless execution requires an implemented scheduler',
         );
       }
-      if (scheduler != 'workmanager') continue;
-      if (platforms.contains(DartitectPlatform.windows) &&
-          entry.value.headless[DartitectPlatform.windows]!) {
-        throw DartitectConfigException(
-          '/features/declarations/${_pointerToken(entry.key)}/headless/windows',
-          'workmanager is unsupported on Windows',
+      if (declaration.headlessTargets.isNotEmpty) {
+        final schedulerTargets = scheduler.targets.isEmpty
+            ? applicationTargets
+            : scheduler.targets.toSet();
+        final unsupported = declaration.headlessTargets.where(
+          (target) => !schedulerTargets.contains(target),
         );
+        if (unsupported.isNotEmpty) {
+          throw DartitectConfigException(
+            '$pointer/headlessTargets',
+            'scheduler does not support ${unsupported.first.wireName}',
+          );
+        }
       }
     }
   }
@@ -792,47 +1069,15 @@ final class DartitectConfig {
       const known = <String>{
         'profile',
         'scope',
-        'persistence',
+        'storageContext',
         'transport',
+        'targets',
         'pagination',
         'diagnostics',
-        'headless',
+        'headlessTargets',
         'capabilities',
       };
       _rejectUnknown(raw, known, pointer);
-      final persistenceRaw = raw['persistence'];
-      if (persistenceRaw is! Map<String, Object?>) {
-        throw DartitectConfigException(
-          '$pointer/persistence',
-          'expected an object',
-        );
-      }
-      _rejectUnknown(persistenceRaw, const <String>{
-        'native',
-        'web',
-      }, '$pointer/persistence');
-      final headlessRaw = raw['headless'];
-      if (headlessRaw is! Map<String, Object?>) {
-        throw DartitectConfigException(
-          '$pointer/headless',
-          'expected an object',
-        );
-      }
-      final platformNames = DartitectPlatform.values
-          .map((platform) => platform.wireName)
-          .toSet();
-      _rejectUnknown(headlessRaw, platformNames, '$pointer/headless');
-      final headless = <DartitectPlatform, bool>{};
-      for (final platform in DartitectPlatform.values) {
-        final rawValue = headlessRaw[platform.wireName];
-        if (rawValue is! bool) {
-          throw DartitectConfigException(
-            '$pointer/headless/${platform.wireName}',
-            'expected a boolean',
-          );
-        }
-        headless[platform] = rawValue;
-      }
       final capabilitiesRaw = raw['capabilities'];
       if (capabilitiesRaw is! List<Object?>) {
         throw DartitectConfigException(
@@ -865,22 +1110,22 @@ final class DartitectConfig {
             _requiredString(raw, 'profile', pointer),
           ),
           scope: FeatureScope.parse(_requiredString(raw, 'scope', pointer)),
-          persistence: FeaturePersistenceMatrix(
-            native: _requiredString(
-              persistenceRaw,
-              'native',
-              '$pointer/persistence',
-            ),
-            web: _requiredString(persistenceRaw, 'web', '$pointer/persistence'),
-          ),
-          transport: _requiredString(raw, 'transport', pointer),
+          storageContext: _optionalString(raw, 'storageContext', pointer),
+          transport: _optionalString(raw, 'transport', pointer),
+          targets: raw.containsKey('targets')
+              ? _parsePlatformList(raw['targets'], '$pointer/targets')
+              : const <DartitectPlatform>[],
           pagination: FeaturePagination.parse(
             _requiredString(raw, 'pagination', pointer),
           ),
           diagnostics: FeatureDiagnosticsLevel.parse(
             _requiredString(raw, 'diagnostics', pointer),
           ),
-          headless: headless,
+          headlessTargets: _parsePlatformList(
+            raw['headlessTargets'],
+            '$pointer/headlessTargets',
+            allowEmpty: true,
+          ),
           capabilities: capabilities,
         );
       } on DartitectConfigException catch (error) {
@@ -895,39 +1140,166 @@ final class DartitectConfig {
     return DartitectFeaturesConfig(declarations: declarations);
   }
 
-  static List<DartitectPlatform> _parsePlatforms(Object? value) {
-    if (value is! List<Object?> || value.isEmpty) {
-      throw const DartitectConfigException(
-        '/platforms',
-        'expected a non-empty array',
+  static DartitectTargetsConfig _parseTargets(Object? value) {
+    if (value is! Map<String, Object?>) {
+      throw const DartitectConfigException('/targets', 'expected an object');
+    }
+    _rejectUnknown(value, const <String>{'platforms'}, '/targets');
+    return DartitectTargetsConfig(
+      _parsePlatformList(value['platforms'], '/targets/platforms'),
+    );
+  }
+
+  static Map<String, DartitectStorageContextConfig> _parseStorageContexts(
+    Object? value,
+  ) {
+    final entries = _requiredObject(value, '/storageContexts');
+    return <String, DartitectStorageContextConfig>{
+      for (final entry in entries.entries)
+        entry.key: _parseStorageContext(
+          entry.value,
+          '/storageContexts/${_pointerToken(entry.key)}',
+        ),
+    };
+  }
+
+  static DartitectStorageContextConfig _parseStorageContext(
+    Object? value,
+    String pointer,
+  ) {
+    final object = _requiredObject(value, pointer);
+    _rejectUnknown(object, const <String>{
+      'provider',
+      'mode',
+      'targets',
+    }, pointer);
+    final modeName = _requiredString(object, 'mode', pointer);
+    final mode = DartitectStorageMode.values
+        .where((candidate) => candidate.wireName == modeName)
+        .firstOrNull;
+    if (mode == null) {
+      throw DartitectConfigException(
+        '$pointer/mode',
+        'expected durable or memory',
       );
+    }
+    try {
+      return DartitectStorageContextConfig(
+        provider: _requiredString(object, 'provider', pointer),
+        mode: mode,
+        targets: _parsePlatformList(object['targets'], '$pointer/targets'),
+      );
+    } on DartitectConfigException catch (error) {
+      throw DartitectConfigException(
+        error.pointer.replaceFirst('/storageContexts', pointer),
+        error.message,
+      );
+    }
+  }
+
+  static Map<String, DartitectTransportConfig> _parseTransports(Object? value) {
+    final entries = _requiredObject(value, '/transports');
+    return <String, DartitectTransportConfig>{
+      for (final entry in entries.entries)
+        entry.key: _parseTransport(
+          entry.value,
+          '/transports/${_pointerToken(entry.key)}',
+        ),
+    };
+  }
+
+  static DartitectTransportConfig _parseTransport(
+    Object? value,
+    String pointer,
+  ) {
+    final object = _requiredObject(value, pointer);
+    _rejectUnknown(object, const <String>{'provider', 'targets'}, pointer);
+    try {
+      return DartitectTransportConfig(
+        provider: _requiredString(object, 'provider', pointer),
+        targets: _parsePlatformList(object['targets'], '$pointer/targets'),
+      );
+    } on DartitectConfigException catch (error) {
+      throw DartitectConfigException(
+        error.pointer.replaceFirst('/transports', pointer),
+        error.message,
+      );
+    }
+  }
+
+  static DartitectObservabilityConfig _parseObservability(Object? value) {
+    final object = _requiredObject(value, '/observability');
+    _rejectUnknown(object, const <String>{
+      'provider',
+      'targets',
+    }, '/observability');
+    return DartitectObservabilityConfig(
+      provider: _requiredString(object, 'provider', '/observability'),
+      targets: object.containsKey('targets')
+          ? _parsePlatformList(object['targets'], '/observability/targets')
+          : const <DartitectPlatform>[],
+    );
+  }
+
+  static DartitectSchedulerConfig _parseScheduler(Object? value) {
+    final object = _requiredObject(value, '/scheduler');
+    _rejectUnknown(object, const <String>{'provider', 'targets'}, '/scheduler');
+    return DartitectSchedulerConfig(
+      provider: _requiredString(object, 'provider', '/scheduler'),
+      targets: object.containsKey('targets')
+          ? _parsePlatformList(object['targets'], '/scheduler/targets')
+          : const <DartitectPlatform>[],
+    );
+  }
+
+  static List<String> _parseExtensionSources(Object? value) {
+    if (value is! List<Object?>) {
+      throw const DartitectConfigException(
+        '/extensionSources',
+        'expected an array',
+      );
+    }
+    return <String>[
+      for (var index = 0; index < value.length; index += 1)
+        if (value[index] case final String source)
+          _normalizeDartSource(source, '/extensionSources/$index')
+        else
+          throw DartitectConfigException(
+            '/extensionSources/$index',
+            'expected a string',
+          ),
+    ];
+  }
+
+  static List<DartitectPlatform> _parsePlatformList(
+    Object? value,
+    String pointer, {
+    bool allowEmpty = false,
+  }) {
+    if (value is! List<Object?> || (!allowEmpty && value.isEmpty)) {
+      throw DartitectConfigException(pointer, 'expected a non-empty array');
     }
     final output = <DartitectPlatform>[];
     for (var index = 0; index < value.length; index += 1) {
       final item = value[index];
       if (item is! String) {
-        throw DartitectConfigException(
-          '/platforms/$index',
-          'expected a string',
-        );
+        throw DartitectConfigException('$pointer/$index', 'expected a string');
       }
       try {
         final platform = DartitectPlatform.parse(item);
         if (!output.contains(platform)) output.add(platform);
       } on FormatException catch (error) {
-        throw DartitectConfigException('/platforms/$index', error.message);
+        throw DartitectConfigException('$pointer/$index', error.message);
       }
     }
     return output;
   }
 
-  static Map<String, Object?> _parseExtensions(Object? value) {
+  static Map<String, Object?> _requiredObject(Object? value, String pointer) {
     if (value is! Map<String, Object?>) {
-      throw const DartitectConfigException('/extensions', 'expected an object');
+      throw DartitectConfigException(pointer, 'expected an object');
     }
-    return <String, Object?>{
-      for (final entry in value.entries) entry.key: entry.value,
-    };
+    return value;
   }
 
   static List<String> _globList(Object? value, String pointer) {
@@ -1012,6 +1384,15 @@ final class DartitectConfig {
     return value.trim();
   }
 
+  static String? _optionalString(
+    Map<String, Object?> json,
+    String key,
+    String parent,
+  ) {
+    if (!json.containsKey(key)) return null;
+    return _requiredString(json, key, parent);
+  }
+
   static void _rejectUnknown(
     Map<String, Object?> json,
     Set<String> known,
@@ -1021,8 +1402,7 @@ final class DartitectConfig {
       if (!known.contains(key)) {
         throw DartitectConfigException(
           '$parent/${_pointerToken(key)}',
-          'unknown field; extensions are allowed only under '
-              '/extensions/<namespace>',
+          'unknown field in closed config v2 schema',
         );
       }
     }
@@ -1048,6 +1428,47 @@ final class DartitectConfig {
     for (final entry in value.entries)
       entry.key: List<String>.unmodifiable(entry.value),
   });
+}
+
+List<DartitectPlatform> _platformSet(
+  Iterable<DartitectPlatform> targets,
+  String pointer,
+) {
+  final output = _optionalPlatformSet(targets);
+  if (output.isEmpty) {
+    throw DartitectConfigException(pointer, 'expected at least one target');
+  }
+  return output;
+}
+
+List<DartitectPlatform> _optionalPlatformSet(
+  Iterable<DartitectPlatform> targets,
+) => List<DartitectPlatform>.unmodifiable(
+  targets.toSet().toList()
+    ..sort((left, right) => left.index.compareTo(right.index)),
+);
+
+Map<String, T> _sortedConfigMap<T>(Map<String, T> values) {
+  final entries = values.entries.toList()
+    ..sort((left, right) => left.key.compareTo(right.key));
+  return Map<String, T>.unmodifiable(<String, T>{
+    for (final entry in entries) entry.key: entry.value,
+  });
+}
+
+String _normalizeDartSource(String value, String pointer) {
+  final normalized = value.trim().replaceAll('\\', '/');
+  if (normalized.isEmpty ||
+      normalized.startsWith('/') ||
+      RegExp(r'^[A-Za-z]:').hasMatch(normalized) ||
+      normalized.split('/').contains('..') ||
+      !normalized.endsWith('.dart')) {
+    throw DartitectConfigException(
+      pointer,
+      'expected a confined project-relative Dart source',
+    );
+  }
+  return normalized;
 }
 
 T _enumByWireName<T extends Enum>(
@@ -1088,15 +1509,7 @@ String _pointerToken(String value) =>
     value.replaceAll('~', '~0').replaceAll('/', '~1');
 
 final RegExp _featureName = RegExp(r'^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$');
-final RegExp _extensionNamespace = RegExp(
-  r'^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$',
-);
-const Set<String> _persistenceProviders = <String>{
-  'none',
-  'memory',
-  'drift',
-  'objectbox',
-};
+final RegExp _configName = RegExp(r'^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$');
 
 extension<T> on Iterable<T> {
   T? get firstOrNull {

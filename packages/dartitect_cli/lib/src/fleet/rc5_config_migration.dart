@@ -3,7 +3,7 @@ import 'dart:convert';
 import '../config/dartitect_config.dart';
 import '../rules/generated_boundary_policy.dart';
 
-/// Exact, one-way config-v1 migration result from RC5 to RC6.
+/// Exact, one-way Dartitect config migration to v2.
 final class DartitectRc5ConfigMigration {
   /// Creates a migration result.
   const DartitectRc5ConfigMigration({
@@ -11,7 +11,7 @@ final class DartitectRc5ConfigMigration {
     required this.changed,
   });
 
-  /// Strict RC6 configuration.
+  /// Strict RC8 configuration.
   final DartitectConfig config;
 
   /// Whether the input used the exact RC5 representation.
@@ -20,21 +20,27 @@ final class DartitectRc5ConfigMigration {
 
 /// Migrates only the released RC5 config-v1 representation.
 ///
-/// Already-strict RC6 input is validated and returned unchanged. No other
+/// Already-strict v2 input is validated and returned unchanged. No other
 /// legacy or experimental representation is accepted.
 DartitectRc5ConfigMigration migrateExactRc5Config(String source) {
   final decoded = jsonDecode(source);
   if (decoded is! Map<String, Object?>) {
     throw const DartitectConfigException('/', 'expected a JSON object');
   }
+  if (decoded['configVersion'] == currentConfigVersion) {
+    return DartitectRc5ConfigMigration(
+      config: DartitectConfig.fromJson(decoded),
+      changed: false,
+    );
+  }
   final appearsRc5 =
       decoded.containsKey('scaffolds') ||
       decoded.containsKey('ecosystem') ||
       _containsRc5Feature(decoded['features']);
   if (!appearsRc5) {
-    return DartitectRc5ConfigMigration(
-      config: DartitectConfig.fromJson(decoded),
-      changed: false,
+    throw const DartitectConfigException(
+      '/configVersion',
+      'only exact Dartitect config v1 or current config v2 can be upgraded',
     );
   }
   if (decoded['configVersion'] != 1 ||
@@ -63,18 +69,19 @@ DartitectRc5ConfigMigration migrateExactRc5Config(String source) {
   };
   _validateRc5Scaffolds(decoded['scaffolds']);
   _validateRc5Ecosystem(decoded['ecosystem']);
-  final migratedFeatures = _migrateFeatures(decoded['features']);
-  final hasHeadless = migratedFeatures.values.any((feature) {
+  final migrated = _migrateFeatures(decoded['features']);
+  final hasHeadless = migrated.declarations.values.any((feature) {
     final declaration = feature! as Map<String, Object?>;
-    final headless = declaration['headless']! as Map<String, Object?>;
-    return headless.values.any((enabled) => enabled == true);
+    return (declaration['headlessTargets']! as List<Object?>).isNotEmpty;
   });
-  final extensions = <String, Object?>{};
   if (unknownRoot.isNotEmpty) {
-    extensions['dartitect.rc5'] = <String, Object?>{'unknownRoot': unknownRoot};
+    throw DartitectConfigException(
+      '/${_pointer(unknownRoot.keys.first)}',
+      'unknown RC5 data cannot be represented in closed config v2',
+    );
   }
   final strict = <String, Object?>{
-    'configVersion': 1,
+    'configVersion': currentConfigVersion,
     'profile': nativeStrictProfile,
     'layers': decoded['layers'],
     'compositionRoots': decoded['compositionRoots'],
@@ -84,12 +91,24 @@ DartitectRc5ConfigMigration migrateExactRc5Config(String source) {
         DartitectArchitectureRules.defaultGeneratedSuffixes,
     'suppressions': decoded['suppressions'] ?? const <Object?>[],
     if (decoded['modeling'] != null) 'modeling': decoded['modeling'],
-    'features': <String, Object?>{'declarations': migratedFeatures},
-    'platforms': DartitectPlatform.values
-        .map((platform) => platform.wireName)
-        .toList(),
-    'scheduler': hasHeadless ? 'workmanager' : 'none',
-    'extensions': extensions,
+    'targets': <String, Object?>{
+      'platforms': DartitectPlatform.values
+          .map((platform) => platform.wireName)
+          .toList(),
+    },
+    'storageContexts': migrated.storageContexts,
+    'transports': migrated.transports,
+    'observability': const <String, Object?>{'provider': 'none'},
+    'scheduler': <String, Object?>{
+      'provider': hasHeadless ? 'workmanager' : 'none',
+      if (hasHeadless)
+        'targets': DartitectPlatform.values
+            .where((platform) => platform != DartitectPlatform.windows)
+            .map((platform) => platform.wireName)
+            .toList(),
+    },
+    'features': <String, Object?>{'declarations': migrated.declarations},
+    'extensionSources': const <Object?>[],
   };
   return DartitectRc5ConfigMigration(
     config: DartitectConfig.fromJson(strict),
@@ -156,8 +175,8 @@ void _validateRc5Ecosystem(Object? value) {
   }
 }
 
-Map<String, Object?> _migrateFeatures(Object? value) {
-  if (value == null) return <String, Object?>{};
+_MigratedFeatures _migrateFeatures(Object? value) {
+  if (value == null) return const _MigratedFeatures();
   if (value is! Map<String, Object?> ||
       value['declarations'] is! Map<String, Object?>) {
     throw const DartitectConfigException(
@@ -175,6 +194,8 @@ Map<String, Object?> _migrateFeatures(Object? value) {
     );
   }
   final output = <String, Object?>{};
+  final storageContexts = <String, Object?>{};
+  final transports = <String, Object?>{};
   final declarations = value['declarations']! as Map<String, Object?>;
   for (final entry in declarations.entries) {
     final pointer = '/features/declarations/${_pointer(entry.key)}';
@@ -211,24 +232,55 @@ Map<String, Object?> _migrateFeatures(Object? value) {
         diagnostics is! String) {
       throw DartitectConfigException(pointer, 'invalid exact RC5 declaration');
     }
+    final storageName = '${entry.key}_storage';
+    final transportName = '${entry.key}_transport';
+    final storageTargets = DartitectPlatform.values
+        .where(
+          (platform) =>
+              persistence != 'objectbox' || platform != DartitectPlatform.web,
+        )
+        .map((platform) => platform.wireName)
+        .toList();
+    storageContexts[storageName] = <String, Object?>{
+      'provider': persistence,
+      'mode': persistence == 'memory' ? 'memory' : 'durable',
+      'targets': storageTargets,
+    };
+    transports[transportName] = <String, Object?>{
+      'provider': transport,
+      'targets': storageTargets,
+    };
     output[entry.key] = <String, Object?>{
       'profile': profile,
       'scope': 'application',
-      'persistence': <String, Object?>{
-        'native': persistence,
-        'web': persistence == 'objectbox' ? 'memory' : persistence,
-      },
-      'transport': transport,
+      'storageContext': storageName,
+      'transport': transportName,
+      if (persistence == 'objectbox') 'targets': storageTargets,
       'pagination': pagination ? 'cursor' : 'none',
       'diagnostics': diagnostics,
-      'headless': <String, Object?>{
-        for (final platform in DartitectPlatform.values)
-          platform.wireName: headless && platform != DartitectPlatform.windows,
-      },
+      'headlessTargets': headless
+          ? storageTargets.where((target) => target != 'windows').toList()
+          : <Object?>[],
       'capabilities': <Object?>[],
     };
   }
-  return output;
+  return _MigratedFeatures(
+    declarations: output,
+    storageContexts: storageContexts,
+    transports: transports,
+  );
+}
+
+final class _MigratedFeatures {
+  const _MigratedFeatures({
+    this.declarations = const <String, Object?>{},
+    this.storageContexts = const <String, Object?>{},
+    this.transports = const <String, Object?>{},
+  });
+
+  final Map<String, Object?> declarations;
+  final Map<String, Object?> storageContexts;
+  final Map<String, Object?> transports;
 }
 
 String _pointer(String value) =>

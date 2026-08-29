@@ -1078,8 +1078,8 @@ description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, 
 
 ## When to use
 
-Use this skill for CLI commands/services, stable config v1, verify/scanner/doctor policy,
-baselines, analyzer diagnostics, generators, Codex sync, native fixture setup,
+Use this skill for CLI commands/services, stable config v2, verify/scanner/doctor policy,
+analyzer diagnostics, generators, Codex sync, native fixture setup,
 or repository release gates.
 
 ## When not to use
@@ -1090,9 +1090,8 @@ opt-in MCP writes. Use runtime skills for application behavior.
 ## Invariants
 
 Inspection and `dartitect verify` are strictly read-only. Mutations preview by default or provide explicit
-dry-run/apply separation. Reject experimental versions and preserve unknown v1
-extension fields without interpreting them.
-Baselines cover reviewed existing debt only. Generators stage, validate, refuse
+dry-run/apply separation. Reject experimental versions and keep config blocks
+closed and typed. Generators stage, validate, refuse
 conflicts, and recover transactionally. Codex sync replaces only valid
 manifest-owned skills and preserves consumer-owned files/directories.
 Every reviewed project change binds only its semantic inputs in a sorted
@@ -1122,11 +1121,10 @@ generated-consumer behavior, and unchanged tracked files after verification.
       'references/cli-scan-and-lints.md': r'''# CLI, scan, and lints
 
 Keep `inspect`, `scan`, and ordinary `doctor` read-only. Deep doctor is explicit
-and bounded. Accept exactly stable config v1 with `native_strict`; reject
-experimental versions, preserve unknown v1 extension keys without interpreting
-them, never store credentials, and provide no compatibility migrator.
-The additive `features` section declares `online`, `cache`, `replica`, or
-`offline-full` plus consumer provider identifiers. `verify` checks declarative
+and bounded. Accept exactly stable config v2 with `native_strict`; reject
+experimental versions, unknown keys, credentials, and opaque plugin data.
+The target-aware `features` section declares `local`, `online`, `cache`,
+`replica`, or `offline-full` and refers to named provider blocks. `verify` checks declarative
 compatibility; behavioral guarantees remain contract-matrix evidence.
 
 Scan only declared roots using real path segments; ignore nested caches and
@@ -1238,7 +1236,7 @@ by configured names. Do not put credentials in command arguments or environment.
 The closed read surface provides inspect, verify, bounded scan, doctor, finding
 explanation, conformance auditing, and modeling migration previews. Generated resources expose
 package metadata, diagnostics, canonical English guides, and credential-free
-config v1. There is no free-form file resource. Results include structured
+config v2. There is no free-form file resource. Results include structured
 content plus compatible JSON text. Read tools/previews are annotated read-only;
 only apply is mutable/destructive.
 ''',

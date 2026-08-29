@@ -21,20 +21,18 @@ Future<void> main() async {
               scope: index.isEven
                   ? FeatureScope.application
                   : FeatureScope.session,
-              persistence: FeaturePersistenceMatrix(
-                native: 'none',
-                web: 'none',
-              ),
-              transport: 'dio',
+              transport: 'primary',
               pagination: FeaturePagination.none,
               diagnostics: FeatureDiagnosticsLevel.basic,
-              headless: <DartitectPlatform, bool>{
-                for (final platform in DartitectPlatform.values)
-                  platform: false,
-              },
             ),
     };
     final config = DartitectConfig(
+      transports: <String, DartitectTransportConfig>{
+        'primary': DartitectTransportConfig(
+          provider: 'dio',
+          targets: const <DartitectPlatform>[DartitectPlatform.android],
+        ),
+      },
       features: DartitectFeaturesConfig(declarations: declarations),
     );
     await File('${root.path}/dartitect.json')

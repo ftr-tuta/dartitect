@@ -10,13 +10,15 @@ release-only.
 
 ```console
 dartitect create app shop \
-  --preset=offline-hybrid --transport=dio \
-  --observability=developer --scheduler=workmanager
+  --targets=android,ios,web
 
+# Declare named storage, transport, observability, and scheduler blocks in
+# shop/dartitect.json before creating a feature that refers to them.
 dartitect create feature orders \
   --profile=offline-full --scope=session \
-  --persistence-native=drift --persistence-web=drift \
-  --transport=dio --pagination=cursor --headless-sync \
+  --targets=android,ios,web \
+  --storage-context=primary --transport=api --pagination=cursor \
+  --headless-targets=android,ios \
   --diagnostics=full \
   --capabilities=credentials,attachments,forms,queries
 
@@ -24,16 +26,17 @@ dartitect wiring sync --dry-run --json
 dartitect wiring sync --apply
 ```
 
-The only feature profiles are `online`, `cache`, `replica`, and
+The only feature profiles are `local`, `online`, `cache`, `replica`, and
 `offline-full`. Tooling updates and removes only manifest-owned
 `*.dartitect.g.dart` outputs. Domain schema, repositories, remote mappings,
 conflict policy, queries, and UI remain consumer-owned and are never
 overwritten.
 
-`create app` generates a six-platform graph, session runtime, observability,
-credentials/scheduler seams, shutdown, and a `main.dart` of at most 15
-non-empty lines using `runDartitectApplication`. `create feature` records the
-strict declaration, creates consumer seams once, and materializes executable
+`create app` generates an empty shell for exactly the requested targets. It
+does not select transport, storage, scheduler, or observability providers and
+does not generate an example unless `--example=tasks` is requested.
+`create feature` records the strict declaration, creates consumer seams once,
+and materializes executable
 repository/provider/resource/command/pagination/outbox/sync/job/diagnostic/
 ViewModel and contract-fixture wiring.
 

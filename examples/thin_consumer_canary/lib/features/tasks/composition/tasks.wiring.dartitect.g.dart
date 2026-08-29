@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT EDIT BY HAND.
-// Managed by `dartitect wiring sync` from strict config v1.
+// Managed by `dartitect wiring sync` from strict config v2.
 // ignore_for_file: prefer_initializing_formals
 
 import 'dart:async';
@@ -56,13 +56,13 @@ final class TasksFeatureModule<R, V> implements AsyncDisposable {
 abstract final class TasksFeatureWiring {
   static const String profile = 'offline-full';
   static const String scope = 'application';
-  static const String persistenceNative = 'drift';
-  static const String persistenceWeb = 'drift';
-  static const String transport = 'dio';
+  static const String? storageContext = "primary";
+  static const String? transport = "api";
+  static const List<String> targets = <String>[];
   static const String pagination = 'cursor';
   static const String diagnostics = 'basic';
   static const String scheduler = 'workmanager';
-  static const List<String> headlessPlatforms = <String>[
+  static const List<String> headlessTargets = <String>[
     'android',
     'ios',
     'macos',

@@ -1,11 +1,10 @@
 # CLI, scan, and lints
 
 Keep `inspect`, `scan`, and ordinary `doctor` read-only. Deep doctor is explicit
-and bounded. Accept exactly stable config v1 with `native_strict`; reject
-experimental versions, preserve unknown v1 extension keys without interpreting
-them, never store credentials, and provide no compatibility migrator.
-The additive `features` section declares `online`, `cache`, `replica`, or
-`offline-full` plus consumer provider identifiers. `verify` checks declarative
+and bounded. Accept exactly stable config v2 with `native_strict`; reject
+experimental versions, unknown keys, credentials, and opaque plugin data.
+The target-aware `features` section declares `local`, `online`, `cache`,
+`replica`, or `offline-full` and refers to named provider blocks. `verify` checks declarative
 compatibility; behavioral guarantees remain contract-matrix evidence.
 
 Scan only declared roots using real path segments; ignore nested caches and

@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT EDIT BY HAND.
-// Managed by `dartitect wiring sync` from strict config v1.
+// Managed by `dartitect wiring sync` from strict config v2.
 // ignore_for_file: prefer_initializing_formals
 
 import 'dart:async';
@@ -56,13 +56,13 @@ final class PavedRoadFeatureModule<R, V> implements AsyncDisposable {
 abstract final class PavedRoadFeatureWiring {
   static const String profile = 'offline-full';
   static const String scope = 'application';
-  static const String persistenceNative = 'memory';
-  static const String persistenceWeb = 'memory';
-  static const String transport = 'custom:synthetic';
+  static const String? storageContext = "local_store";
+  static const String? transport = "synthetic";
+  static const List<String> targets = <String>[];
   static const String pagination = 'cursor';
   static const String diagnostics = 'full';
   static const String scheduler = 'none';
-  static const List<String> headlessPlatforms = <String>[];
+  static const List<String> headlessTargets = <String>[];
   static const List<String> capabilities = <String>[];
 
   /// Creates the public application-host factory while keeping graph ownership

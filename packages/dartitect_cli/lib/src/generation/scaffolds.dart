@@ -9,35 +9,25 @@ final class FeatureScaffoldOptions {
   FeatureScaffoldOptions({
     required this.profile,
     required this.scope,
-    String? persistenceNative,
-    String? persistenceWeb,
-    this.transport = 'dio',
+    this.storageContext,
+    this.transport,
+    Set<DartitectPlatform> targets = const <DartitectPlatform>{},
     this.pagination = FeaturePagination.none,
-    Set<DartitectPlatform> headlessPlatforms = const <DartitectPlatform>{},
+    Set<DartitectPlatform> headlessTargets = const <DartitectPlatform>{},
     this.diagnostics = FeatureDiagnosticsLevel.basic,
     Set<DartitectCapability> capabilities = const <DartitectCapability>{},
-  }) : persistenceNative =
-           persistenceNative ?? _defaultPersistence(profile, web: false),
-       persistenceWeb =
-           persistenceWeb ?? _defaultPersistence(profile, web: true),
-       headlessPlatforms = Set<DartitectPlatform>.unmodifiable(
-         headlessPlatforms,
-       ),
+  }) : targets = Set<DartitectPlatform>.unmodifiable(targets),
+       headlessTargets = Set<DartitectPlatform>.unmodifiable(headlessTargets),
        capabilities = Set<DartitectCapability>.unmodifiable(capabilities) {
     DartitectFeatureDeclaration(
       profile: profile,
       scope: scope,
-      persistence: FeaturePersistenceMatrix(
-        native: this.persistenceNative,
-        web: this.persistenceWeb,
-      ),
+      storageContext: storageContext,
       transport: transport,
+      targets: targets,
       pagination: pagination,
       diagnostics: diagnostics,
-      headless: <DartitectPlatform, bool>{
-        for (final platform in DartitectPlatform.values)
-          platform: this.headlessPlatforms.contains(platform),
-      },
+      headlessTargets: headlessTargets,
       capabilities: capabilities,
     );
   }
@@ -48,31 +38,26 @@ final class FeatureScaffoldOptions {
   /// Application or session graph lifetime.
   final FeatureScope scope;
 
-  /// Consumer-selected native persistence provider.
-  final String persistenceNative;
+  /// Consumer-selected named storage context.
+  final String? storageContext;
 
-  /// Consumer-selected web persistence provider.
-  final String persistenceWeb;
+  /// Consumer-selected named transport.
+  final String? transport;
 
-  /// Consumer-selected transport provider.
-  final String transport;
+  /// Feature target restriction; empty inherits application targets.
+  final Set<DartitectPlatform> targets;
 
   /// Generated pagination policy.
   final FeaturePagination pagination;
 
   /// Platforms that opt in to headless execution.
-  final Set<DartitectPlatform> headlessPlatforms;
+  final Set<DartitectPlatform> headlessTargets;
 
   /// Generated payload-free diagnostics level.
   final FeatureDiagnosticsLevel diagnostics;
 
   /// Stable opt-in workflows.
   final Set<DartitectCapability> capabilities;
-
-  static String _defaultPersistence(
-    FeatureProfile profile, {
-    required bool web,
-  }) => profile == FeatureProfile.online ? 'none' : 'memory';
 }
 
 /// Validated Dart identifier naming pair.
@@ -128,6 +113,7 @@ final class ScaffoldFactory {
       ),
     ];
     final operations = switch (options.profile) {
+      FeatureProfile.local => <FileGenerationOperation>[...base],
       FeatureProfile.online => <FileGenerationOperation>[
         ...base,
         ..._remoteReadBlueprint(name),
@@ -159,7 +145,7 @@ final class ScaffoldFactory {
               'lib/features/${name.snake}/application/${name.snake}_cursor_page.dart',
           content: _cursorPage(name),
         ),
-      if (options.headlessPlatforms.isNotEmpty)
+      if (options.headlessTargets.isNotEmpty)
         FileGenerationOperation(
           relativePath:
               'lib/features/${name.snake}/composition/${name.snake}_headless_sync.dart',

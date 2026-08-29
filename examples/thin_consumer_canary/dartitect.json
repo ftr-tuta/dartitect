@@ -1,5 +1,5 @@
 {
-  "configVersion": 1,
+  "configVersion": 2,
   "profile": "native_strict",
   "layers": {
     "domain": [
@@ -37,26 +37,37 @@
     ".router.dart"
   ],
   "suppressions": [],
+  "targets": {
+    "platforms": ["android", "ios", "macos", "windows", "linux", "web"]
+  },
+  "storageContexts": {
+    "primary": {
+      "provider": "drift",
+      "mode": "durable",
+      "targets": ["android", "ios", "macos", "windows", "linux", "web"]
+    }
+  },
+  "transports": {
+    "api": {
+      "provider": "dio",
+      "targets": ["android", "ios", "macos", "windows", "linux", "web"]
+    }
+  },
+  "observability": {"provider": "developer"},
+  "scheduler": {
+    "provider": "workmanager",
+    "targets": ["android", "ios", "macos", "linux", "web"]
+  },
   "features": {
     "declarations": {
       "tasks": {
         "profile": "offline-full",
         "scope": "application",
-        "persistence": {
-          "native": "drift",
-          "web": "drift"
-        },
-        "transport": "dio",
+        "storageContext": "primary",
+        "transport": "api",
         "pagination": "cursor",
         "diagnostics": "basic",
-        "headless": {
-          "android": true,
-          "ios": true,
-          "macos": true,
-          "windows": false,
-          "linux": true,
-          "web": true
-        },
+        "headlessTargets": ["android", "ios", "macos", "linux", "web"],
         "capabilities": [
           "credentials",
           "attachments",
@@ -66,18 +77,5 @@
       }
     }
   },
-  "platforms": [
-    "android",
-    "ios",
-    "macos",
-    "windows",
-    "linux",
-    "web"
-  ],
-  "scheduler": "workmanager",
-  "extensions": {
-    "dartitect.observability": {
-      "provider": "developer"
-    }
-  }
+  "extensionSources": []
 }

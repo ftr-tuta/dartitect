@@ -62,7 +62,7 @@ final class DartitectWorkmanagerCapability {
   /// Whether the scheduler can be invoked.
   bool get supported => maturity != DartitectWorkmanagerMaturity.unsupported;
 
-  /// Returns the closed report required by config-v1.
+  /// Returns the closed report required by config v2.
   static DartitectWorkmanagerCapability forPlatform(
     DartitectWorkmanagerPlatform platform,
   ) => switch (platform) {

@@ -845,15 +845,15 @@ final class DartitectFleetService {
             .toSet()
             .toList()
           ..sort();
-    final persistence = <String>{
-      for (final declaration in declarations.values)
-        declaration.persistence.native,
-      for (final declaration in declarations.values)
-        declaration.persistence.web,
-    }.toList()..sort();
+    final persistence =
+        config.storageContexts.values
+            .map((context) => context.provider)
+            .toSet()
+            .toList()
+          ..sort();
     final transport =
-        declarations.values
-            .map((declaration) => declaration.transport)
+        config.transports.values
+            .map((binding) => binding.provider)
             .toSet()
             .toList()
           ..sort();
@@ -869,7 +869,7 @@ final class DartitectFleetService {
           <String, Object?>{
             'name': entry.key,
             'profile': entry.value.profile.wireName,
-            'persistence': entry.value.persistence.toJson(),
+            'storageContext': entry.value.storageContext,
             'transport': entry.value.transport,
           },
       ],

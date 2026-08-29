@@ -186,14 +186,77 @@ import 'package:flutter/widgets.dart';
     );
   }, timeout: const Timeout(Duration(minutes: 2)));
 
+  test('create app requires targets and rejects productive defaults', () async {
+    final root = await Directory.systemTemp.createTemp('dartitect-app-');
+    addTearDown(() => root.delete(recursive: true));
+    final output = StringBuffer();
+    final errors = StringBuffer();
+    final runner = DartitectCliRunner(
+      currentDirectory: root,
+      stdoutSink: output,
+      stderrSink: errors,
+    );
+
+    expect(
+      await runner.run(<String>['create', 'app', 'sample', '--dry-run']),
+      2,
+    );
+    expect(errors.toString(), contains('--targets is required'));
+    errors.clear();
+
+    expect(
+      await runner.run(<String>[
+        'create',
+        'app',
+        'sample',
+        '--targets=android,web',
+        '--transport=dio',
+        '--dry-run',
+      ]),
+      2,
+    );
+    expect(errors.toString(), contains('valid only for create feature'));
+    errors.clear();
+
+    expect(
+      await runner.run(<String>[
+        'create',
+        'app',
+        'sample',
+        '--targets=android,web',
+        '--dry-run',
+      ]),
+      0,
+    );
+    expect(output.toString(), contains('TARGETS android,web'));
+    expect(output.toString(), isNot(contains('EXAMPLE')));
+    expect(errors.toString(), isEmpty);
+  });
+
   test(
     'create feature accepts paved-road profile and provider options',
     () async {
       final root = await Directory.systemTemp.createTemp('dartitect-profile-');
       addTearDown(() => root.delete(recursive: true));
       await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
-      await File('${root.path}/dartitect.json')
-          .writeAsString(DartitectConfig(scheduler: 'workmanager').encode());
+      await File('${root.path}/dartitect.json').writeAsString(
+        DartitectConfig(
+          storageContexts: <String, DartitectStorageContextConfig>{
+            'primary': DartitectStorageContextConfig(
+              provider: 'drift',
+              mode: DartitectStorageMode.durable,
+              targets: const <DartitectPlatform>[DartitectPlatform.android],
+            ),
+          },
+          transports: <String, DartitectTransportConfig>{
+            'api': DartitectTransportConfig(
+              provider: 'dio',
+              targets: const <DartitectPlatform>[DartitectPlatform.android],
+            ),
+          },
+          scheduler: DartitectSchedulerConfig(provider: 'workmanager'),
+        ).encode(),
+      );
       final output = StringBuffer();
       final errors = StringBuffer();
       final runner = DartitectCliRunner(
@@ -207,11 +270,10 @@ import 'package:flutter/widgets.dart';
         'feature',
         'orders',
         '--profile=offline-full',
-        '--persistence-native=drift',
-        '--persistence-web=drift',
-        '--transport=dio',
+        '--storage-context=primary',
+        '--transport=api',
         '--pagination=cursor',
-        '--headless-sync',
+        '--headless-targets=android',
         '--diagnostics=full',
         '--dry-run',
       ]);
@@ -247,9 +309,8 @@ import 'package:flutter/widgets.dart';
           'feature',
           'orders',
           '--profile=online',
-          '--persistence-native=drift',
-          '--persistence-web=drift',
-          '--transport=dio',
+          '--storage-context=primary',
+          '--transport=api',
           '--dry-run',
         ]),
         2,

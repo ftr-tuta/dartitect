@@ -1,5 +1,5 @@
 {
-  "configVersion": 1,
+  "configVersion": 2,
   "profile": "native_strict",
   "layers": {
     "domain": ["**/domain/**"],
@@ -12,28 +12,35 @@
   "generatedInfrastructure": ["**/infrastructure/**/*.g.dart"],
   "generatedSuffixes": [".g.dart", ".dartitect.g.dart"],
   "suppressions": [],
+  "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
+  "storageContexts": {
+    "local_store": {
+      "provider": "memory",
+      "mode": "memory",
+      "targets": ["android", "ios", "macos", "windows", "linux", "web"]
+    }
+  },
+  "transports": {
+    "synthetic": {
+      "provider": "custom:synthetic",
+      "targets": ["android", "ios", "macos", "windows", "linux", "web"]
+    }
+  },
+  "observability": {"provider": "none"},
+  "scheduler": {"provider": "none"},
   "features": {
     "declarations": {
       "paved_road": {
         "profile": "offline-full",
         "scope": "application",
-        "persistence": {"native": "memory", "web": "memory"},
-        "transport": "custom:synthetic",
+        "storageContext": "local_store",
+        "transport": "synthetic",
         "pagination": "cursor",
         "diagnostics": "full",
-        "headless": {
-          "android": false,
-          "ios": false,
-          "macos": false,
-          "windows": false,
-          "linux": false,
-          "web": false
-        },
+        "headlessTargets": [],
         "capabilities": []
       }
     }
   },
-  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
-  "scheduler": "none",
-  "extensions": {}
+  "extensionSources": []
 }

@@ -2,7 +2,7 @@ import 'package:dartitect_cli/dartitect_cli.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('exact RC5 aliases and coexistence config become strict RC6', () {
+  test('exact RC5 aliases become closed target-aware config v2', () {
     final result = migrateExactRc5Config('''{
   "configVersion": 1,
   "profile": "native_strict",
@@ -33,13 +33,18 @@ void main() {
 
     expect(result.changed, isTrue);
     expect(result.config.profile, nativeStrictProfile);
-    expect(result.config.scheduler, 'workmanager');
+    expect(result.config.configVersion, 2);
+    expect(result.config.scheduler.provider, 'workmanager');
     final orders = result.config.features.declarations['orders']!;
     expect(orders.scope, FeatureScope.application);
-    expect(orders.persistence.native, 'objectbox');
-    expect(orders.persistence.web, 'memory');
+    expect(orders.storageContext, 'orders_storage');
+    expect(
+      result.config.storageContexts['orders_storage']!.provider,
+      'objectbox',
+    );
+    expect(orders.targets, isNot(contains(DartitectPlatform.web)));
     expect(orders.pagination, FeaturePagination.cursor);
-    expect(orders.headless[DartitectPlatform.windows], isFalse);
+    expect(orders.headlessTargets, isNot(contains(DartitectPlatform.windows)));
     expect(result.config.encode(), isNot(contains('scaffolds')));
     expect(result.config.encode(), isNot(contains('ecosystem')));
   });
