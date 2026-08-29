@@ -148,6 +148,10 @@
         "declaration": "final class CyclicValueException implements Exception"
       },
       {
+        "name": "DartitectAssemblyBinding",
+        "declaration": "final class DartitectAssemblyBinding<T extends Object>"
+      },
+      {
         "name": "DartitectDiagnosticBuffer",
         "declaration": "final class DartitectDiagnosticBuffer implements DartitectDiagnosticReporter, Disposable"
       },

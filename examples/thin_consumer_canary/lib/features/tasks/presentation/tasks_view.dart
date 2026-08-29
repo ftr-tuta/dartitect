@@ -7,11 +7,13 @@ import 'tasks_view_model.dart';
 
 /// Composition boundary for the Tasks feature.
 final class TasksPage extends StatelessWidget {
-  const TasksPage({super.key});
+  const TasksPage({required this.repository, super.key});
+
+  final TasksRepository repository;
 
   @override
   Widget build(BuildContext context) => ViewModelHost<TasksViewModel>.create(
-    create: TasksComposition.createViewModel,
+    create: () => TasksComposition.createViewModel(repository),
     start: (viewModel) => viewModel.start(),
     builder: (context, viewModel) => TasksView(viewModel: viewModel),
   );

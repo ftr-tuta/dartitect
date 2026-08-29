@@ -31,7 +31,7 @@
   "features": {
     "declarations": {
       "paved_road": {
-        "profile": "offline-full",
+        "profile": "cache",
         "scope": "application",
         "storageContext": "local_store",
         "transport": "synthetic",

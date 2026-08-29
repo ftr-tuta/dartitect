@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dart_style/dart_style.dart';
+import 'package:dartitect/dartitect.dart';
+
 import '../config/dartitect_config.dart';
 import '../extensions/local_extension_compiler.dart';
 import 'generation_engine.dart';
@@ -112,7 +115,10 @@ final class DartitectWiringService {
           relativePath:
               'lib/features/${entry.key}/composition/'
               '${entry.key}.wiring.dartitect.g.dart',
-          content: _render(entry.key, entry.value, config.scheduler.provider),
+          content: _formatDart(
+            _render(entry.key, entry.value, config.scheduler.provider),
+            '${entry.key}.wiring.dartitect.g.dart',
+          ),
           ownership: GeneratedOwnership.fullyGenerated,
           sourcePath: 'dartitect.json',
           rendererVersion: 2,
@@ -173,24 +179,30 @@ final class DartitectWiringService {
       FileGenerationOperation(
         relativePath:
             'lib/composition/application_module.wiring.dartitect.g.dart',
-        content: _renderApplicationModule(
-          scheduler: config.scheduler.provider,
-          observability: observabilityProvider,
-          extensions: extensions,
+        content: _formatDart(
+          _renderApplicationModule(
+            scheduler: config.scheduler.provider,
+            observability: observabilityProvider,
+            extensions: extensions,
+          ),
+          'application_module.wiring.dartitect.g.dart',
         ),
         ownership: GeneratedOwnership.fullyGenerated,
         sourcePath: 'dartitect.json',
-        rendererVersion: 1,
-        semanticSchemaVersion: 1,
+        rendererVersion: 2,
+        semanticSchemaVersion: 2,
         inputSignature: signature,
       ),
       FileGenerationOperation(
         relativePath: 'lib/composition/session_module.wiring.dartitect.g.dart',
-        content: _renderSessionModule(),
+        content: _formatDart(
+          _renderSessionModule(),
+          'session_module.wiring.dartitect.g.dart',
+        ),
         ownership: GeneratedOwnership.fullyGenerated,
         sourcePath: 'dartitect.json',
-        rendererVersion: 1,
-        semanticSchemaVersion: 1,
+        rendererVersion: 2,
+        semanticSchemaVersion: 2,
         inputSignature: signature,
       ),
     ];
@@ -203,7 +215,7 @@ final class DartitectWiringService {
     String content,
   ) => FileGenerationOperation(
     relativePath: 'lib/features/$name/$suffix',
-    content: content,
+    content: _formatDart(content, suffix),
     ownership: GeneratedOwnership.fullyGenerated,
     sourcePath: 'dartitect.json',
     rendererVersion: 2,
@@ -221,6 +233,52 @@ final class DartitectWiringService {
     String scheduler,
   ) {
     final type = _pascal(name);
+    final slots = _assemblySlots(declaration);
+    final typeParameters = <String>[
+      for (final slot in slots) '${slot.typeName} extends Object',
+      'ViewModel extends Object',
+    ].join(', ');
+    final typeArguments = <String>[
+      for (final slot in slots) slot.typeName,
+      'ViewModel',
+    ].join(', ');
+    final bindingTypeParameters = slots
+        .map((slot) => '${slot.typeName} extends Object')
+        .join(', ');
+    final bindingTypeArguments = slots.map((slot) => slot.typeName).join(', ');
+    final bindingParameters = slots
+        .map(
+          (slot) =>
+              '    required DartitectAssemblyBinding<${slot.typeName}> '
+              '${slot.fieldName},',
+        )
+        .join('\n');
+    final bindingArguments = slots
+        .map(
+          (slot) =>
+              '          ${slot.fieldName}: '
+              '${slot.fieldName}.bind(transaction),',
+        )
+        .join('\n');
+    final getters = slots
+        .map(
+          (slot) =>
+              '  ${slot.typeName} get ${slot.fieldName} => '
+              '_graph.root.${slot.fieldName};',
+        )
+        .join('\n');
+    final bindingFields = slots
+        .map((slot) => '  required final ${slot.typeName} ${slot.fieldName},')
+        .join('\n');
+    final storageFact = declaration.storageContext == null
+        ? ''
+        : "  static const String storageContext = '${declaration.storageContext}';\n";
+    final transportFact = declaration.transport == null
+        ? ''
+        : "  static const String transport = '${declaration.transport}';\n";
+    final schedulerFact = declaration.headlessTargets.isEmpty
+        ? ''
+        : "  static const String scheduler = '$scheduler';\n";
     final headless = _renderStringList(
       declaration.headlessTargets.map((target) => target.wireName),
     );
@@ -232,174 +290,286 @@ final class DartitectWiringService {
     );
     return '''// GENERATED CODE - DO NOT EDIT BY HAND.
 // Managed by `dartitect wiring sync` from strict config v2.
-// ignore_for_file: prefer_initializing_formals, unnecessary_nullable_for_final_variable_declarations
 
 import 'dart:async';
 
 import 'package:dartitect/dartitect.dart';
 
-/// Direct constructor inputs for the $type feature graph.
-final class ${type}FeatureModule<R, V> implements AsyncDisposable {
-  ${type}FeatureModule({
-    required this.repository,
-    required this.persistenceProvider,
-    required this.transportProvider,
-    required this.resource,
-    required this.command,
-    required this.pagination,
-    required this.outbox,
-    required this.syncDataset,
-    required this.job,
-    required this.diagnostics,
-    required this.contractFixture,
-    required this.createViewModel,
-    required FutureOr<void> Function() dispose,
-  }) : _dispose = dispose;
+/// Capability-closed typed assembly for the $type feature graph.
+final class ${type}FeatureAssembly<$typeParameters> implements AsyncDisposable {
+  ${type}FeatureAssembly._(this._graph, this.createViewModel);
 
-  final R repository;
-  final Object? persistenceProvider;
-  final Object transportProvider;
-  final Object? resource;
-  final Object? command;
-  final Object? pagination;
-  final Object? outbox;
-  final Object? syncDataset;
-  final Object? job;
-  final Object? diagnostics;
-  final Object contractFixture;
-  final V Function(R repository) createViewModel;
-  final FutureOr<void> Function() _dispose;
-  var _disposed = false;
+  /// Acquires exactly the owned or borrowed bindings selected by config v2.
+  static Future<${type}FeatureAssembly<$typeArguments>> create<$typeParameters>({
+$bindingParameters
+    required ViewModel Function(
+      ${type}FeatureAssembly<$typeArguments> assembly,
+    ) createViewModel,
+  }) async {
+    final graph = await ResourceTransaction.create(
+      (transaction) => _${type}FeatureBindings<$bindingTypeArguments>(
+$bindingArguments
+      ),
+      label: '$name-feature-assembly',
+    );
+    return ${type}FeatureAssembly<$typeArguments>._(
+      graph,
+      createViewModel,
+    );
+  }
 
-  V buildViewModel() {
-    if (_disposed) throw StateError('$type feature module is disposed.');
-    return createViewModel(repository);
+  final OwnedGraph<_${type}FeatureBindings<$bindingTypeArguments>> _graph;
+
+$getters
+
+  /// Constructs presentation state from this exact typed assembly.
+  final ViewModel Function(
+    ${type}FeatureAssembly<$typeArguments> assembly,
+  ) createViewModel;
+
+  /// Whether every owned binding has completed teardown.
+  bool get isDisposed => _graph.isDisposed;
+
+  /// Creates the ViewModel while the assembly remains live.
+  ViewModel buildViewModel() {
+    if (!_graph.isAccepting) {
+      throw StateError('$type feature assembly is disposed.');
+    }
+    return createViewModel(this);
   }
 
   @override
-  Future<void> disposeAsync() async {
-    if (_disposed) return;
-    _disposed = true;
-    await _dispose();
-  }
+  Future<void> disposeAsync() => _graph.disposeAsync();
 }
+
+final class _${type}FeatureBindings<$bindingTypeParameters>({
+$bindingFields
+});
 
 /// Closed generated facts used by composition and capability reporting.
 abstract final class ${type}FeatureWiring {
   static const String profile = '${declaration.profile.wireName}';
   static const String scope = '${declaration.scope.wireName}';
-  static const String? storageContext = ${jsonEncode(declaration.storageContext)};
-  static const String? transport = ${jsonEncode(declaration.transport)};
-  static const List<String> targets = $targets;
+$storageFact$transportFact  static const List<String> targets = $targets;
   static const String pagination = '${declaration.pagination.wireName}';
   static const String diagnostics = '${declaration.diagnostics.wireName}';
-  static const String scheduler = '$scheduler';
-  static const List<String> headlessTargets = $headless;
+$schedulerFact  static const List<String> headlessTargets = $headless;
   static const List<String> capabilities = $capabilities;
 
   /// Creates the public application-host factory while keeping graph ownership
   /// and atomic publication inside generated code.
-  static BootstrapCoordinator<V> Function() application<R, V>({
-    required FutureOr<${type}FeatureModule<R, V>> Function() createModule,
+  static BootstrapCoordinator<ViewModel> Function()
+  application<$typeParameters>({
+    required FutureOr<${type}FeatureAssembly<$typeArguments>> Function()
+    createAssembly,
   }) =>
-      () => BootstrapCoordinator<V>(
+      () => BootstrapCoordinator<ViewModel>(
         stages: const <BootstrapStage>[],
         buildRoot: (transaction, context) async {
           context.throwIfUnavailable();
-          final module = transaction.own<${type}FeatureModule<R, V>>(
-            await createModule(),
+          final assembly = transaction.own<
+            ${type}FeatureAssembly<$typeArguments>
+          >(
+            await createAssembly(),
             (value) => value.disposeAsync(),
-            label: '$name-feature-module',
+            label: '$name-feature-assembly',
           );
           context.throwIfUnavailable();
-          return module.buildViewModel();
+          return assembly.buildViewModel();
         },
       );
 }
 ''';
   }
 
+  static List<_AssemblySlot> _assemblySlots(
+    DartitectFeatureDeclaration declaration,
+  ) => <_AssemblySlot>[
+    const _AssemblySlot('Repository', 'repository'),
+    if (declaration.storageContext != null)
+      const _AssemblySlot('Storage', 'storage'),
+    if (declaration.transport != null)
+      const _AssemblySlot('Transport', 'transport'),
+    if (declaration.profile == FeatureProfile.cache ||
+        declaration.profile == FeatureProfile.replica ||
+        declaration.profile == FeatureProfile.offlineFull)
+      const _AssemblySlot('LocalAuthority', 'localAuthority'),
+    if (declaration.pagination == FeaturePagination.cursor)
+      const _AssemblySlot('Pagination', 'pagination'),
+    if (declaration.profile == FeatureProfile.offlineFull)
+      const _AssemblySlot('Outbox', 'outbox'),
+    if (declaration.profile == FeatureProfile.replica ||
+        declaration.profile == FeatureProfile.offlineFull)
+      const _AssemblySlot('SyncDataset', 'syncDataset'),
+    if (declaration.headlessTargets.isNotEmpty)
+      const _AssemblySlot('HeadlessJob', 'headlessJob'),
+    if (declaration.diagnostics != FeatureDiagnosticsLevel.off)
+      const _AssemblySlot('Diagnostics', 'diagnostics'),
+    for (final capability in declaration.capabilities)
+      _AssemblySlot(_pascal(capability.wireName), capability.wireName),
+  ];
+
   static String _renderApplicationModule({
     required String scheduler,
     required String observability,
     required List<DartitectLocalExtensionIr> extensions,
   }) {
-    final imports =
-        <String>{
-            for (final extension in extensions) extension.libraryUri,
-            for (final extension in extensions) ...extension.bindingLibraryUris,
-          }
-          ..remove('package:dartitect/dartitect.dart')
-          ..remove('package:dartitect_flutter/dartitect_flutter.dart');
+    final typeParameters = <String>[
+      'Session extends Object',
+      'SessionFailure extends Object',
+    ];
+    final typeArguments = <String>['Session', 'SessionFailure'];
+    final constructorParameters = <String>['    required this.sessions,'];
+    final fields = <String>[
+      '  final SessionRuntimeController<Session, SessionFailure> sessions;',
+    ];
+    final createParameters = <String>[];
+    final construction = <String>[
+      '''          final sessions = transaction.own(
+            SessionRuntimeController<Session, SessionFailure>(),
+            (controller) => controller.disposeAsync(),
+            label: 'application.sessions',
+          );''',
+    ];
+    final arguments = <String>['            sessions: sessions,'];
+    final imports = <String>{
+      for (final extension in extensions) extension.libraryUri,
+      for (final extension in extensions) ...extension.bindingLibraryUris,
+    };
+
+    if (scheduler == 'workmanager') {
+      imports.add('package:dartitect_workmanager/dartitect_workmanager.dart');
+      constructorParameters.add('    required this.scheduler,');
+      fields.add('  final DartitectWorkmanagerScheduler scheduler;');
+      construction.add(
+        '          final scheduler = DartitectWorkmanagerScheduler();',
+      );
+      arguments.add('            scheduler: scheduler,');
+    } else if (scheduler != 'none') {
+      typeParameters.add('Scheduler extends Object');
+      typeArguments.add('Scheduler');
+      constructorParameters.add('    required this.scheduler,');
+      fields.add('  final Scheduler scheduler;');
+      createParameters.addAll(<String>[
+        '    required FutureOr<Scheduler> Function() createScheduler,',
+        '    required FutureOr<void> Function(Scheduler) disposeScheduler,',
+      ]);
+      construction.add(
+        '''          final scheduler = transaction.own<Scheduler>(
+            await createScheduler(),
+            disposeScheduler,
+            label: 'application.scheduler',
+          );''',
+      );
+      arguments.add('            scheduler: scheduler,');
+    }
+
+    if (observability == 'developer') {
+      imports.add(
+        'package:dartitect_observability/dartitect_observability.dart',
+      );
+      constructorParameters.add('    required this.observability,');
+      fields.add('  final ObservabilityRuntime observability;');
+      construction.add('''          final observability = transaction.own(
+            ObservabilityRuntime(),
+            (runtime) => runtime.disposeAsync(),
+            label: 'application.observability',
+          );''');
+      arguments.add('            observability: observability,');
+    } else if (observability == 'sentry') {
+      imports.add(
+        'package:dartitect_observability/dartitect_observability.dart',
+      );
+      constructorParameters.add('    required this.observability,');
+      fields.add('  final ObservabilityRuntime observability;');
+      createParameters.add(
+        '    required FutureOr<ObservabilityRuntime> Function() '
+        'createObservability,',
+      );
+      construction.add('''          final observability = transaction.own(
+            await createObservability(),
+            (runtime) => runtime.disposeAsync(),
+            label: 'application.observability',
+          );''');
+      arguments.add('            observability: observability,');
+    } else if (observability != 'none') {
+      typeParameters.add('Observability extends Object');
+      typeArguments.add('Observability');
+      constructorParameters.add('    required this.observability,');
+      fields.add('  final Observability observability;');
+      createParameters.addAll(<String>[
+        '    required FutureOr<Observability> Function() createObservability,',
+        '    required FutureOr<void> Function(Observability) disposeObservability,',
+      ]);
+      construction.add(
+        '''          final observability = transaction.own<Observability>(
+            await createObservability(),
+            disposeObservability,
+            label: 'application.observability',
+          );''',
+      );
+      arguments.add('            observability: observability,');
+    }
+
+    imports
+      ..remove('package:dartitect/dartitect.dart')
+      ..remove('package:dartitect_flutter/dartitect_flutter.dart');
     final orderedImports = imports.toList()..sort();
     final extensionImports = orderedImports
         .map((uri) => "import '$uri';")
         .join('\n');
-    final constructorParameters = extensions
-        .map((extension) => '    required this.${extension.fieldName},')
-        .join('\n');
-    final fields = extensions
-        .map(
-          (extension) =>
-              '  final ${extension.bindingType} ${extension.fieldName};',
-        )
-        .join('\n');
-    final construction = extensions
-        .map((extension) {
-          final declaration = '${extension.fieldName}Declaration';
-          return '''          final $declaration = ${extension.declarationType}();
+    for (final extension in extensions) {
+      constructorParameters.add('    required this.${extension.fieldName},');
+      fields.add('  final ${extension.bindingType} ${extension.fieldName};');
+      final declaration = '${extension.fieldName}Declaration';
+      construction.add(
+        '''          final $declaration = ${extension.declarationType}();
           final ${extension.bindingType} ${extension.fieldName} =
               transaction.own<${extension.bindingType}>(
                 await $declaration.build(),
                 $declaration.dispose,
                 label: 'project-extension.${extension.fieldName}',
-              );''';
-        })
-        .join('\n');
-    final arguments = extensions
-        .map(
-          (extension) =>
-              '            ${extension.fieldName}: ${extension.fieldName},',
-        )
-        .join('\n');
+              );''',
+      );
+      arguments.add(
+        '            ${extension.fieldName}: ${extension.fieldName},',
+      );
+    }
+    final genericDeclaration = typeParameters.join(', ');
+    final genericArguments = typeArguments.join(', ');
+    final createSignature = createParameters.isEmpty
+        ? '()'
+        : '({\n${createParameters.join('\n')}\n  })';
+    final asyncImport = createParameters.isEmpty
+        ? ''
+        : "import 'dart:async';\n\n";
     return '''// GENERATED CODE - DO NOT EDIT BY HAND.
 // Managed by `dartitect wiring sync` from strict config v2.
 
+$asyncImport
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_flutter/dartitect_flutter.dart';
-${extensionImports.isEmpty ? '' : '\n$extensionImports'}
+${extensionImports.isEmpty ? '' : extensionImports}
 
 /// Directly constructed application graph; it is not a service locator.
-final class ApplicationGraph {
+final class ApplicationGraph<$genericDeclaration> {
   const ApplicationGraph({
-    required this.sessions,
-    required this.scheduler,
-    required this.observability,
-${constructorParameters.isEmpty ? '' : '$constructorParameters\n'}
+${constructorParameters.join('\n')}
   });
 
-  final SessionRuntimeController<Object, Object> sessions;
-  final String scheduler;
-  final String observability;
-${fields.isEmpty ? '' : '$fields\n'}
+${fields.join('\n')}
 }
 
 /// Tooling-materialized application composition module.
 abstract final class ApplicationModule {
-  static BootstrapCoordinator<ApplicationGraph> create() =>
-      BootstrapCoordinator<ApplicationGraph>(
+  static BootstrapCoordinator<ApplicationGraph<$genericArguments>>
+  create<$genericDeclaration>$createSignature =>
+      BootstrapCoordinator<ApplicationGraph<$genericArguments>>(
         stages: const <BootstrapStage>[],
         buildRoot: (transaction, _) async {
-          final sessions = transaction.own(
-            SessionRuntimeController<Object, Object>(),
-            (controller) => controller.disposeAsync(),
-          );
-${construction.isEmpty ? '' : '$construction\n'}
-          return ApplicationGraph(
-            sessions: sessions,
-            scheduler: ${jsonEncode(scheduler)},
-            observability: ${jsonEncode(observability)},
-${arguments.isEmpty ? '' : '$arguments\n'}
+${construction.join('\n')}
+          return ApplicationGraph<$genericArguments>(
+${arguments.join('\n')}
           );
         },
       );
@@ -646,6 +816,18 @@ abstract final class ${type}WorkmanagerJob {
     return "<String>[\n${materialized.map((value) => "    '$value',").join('\n')}\n  ]";
   }
 
+  static String _formatDart(String source, String uri) => DartFormatter(
+    languageVersion: DartFormatter.latestLanguageVersion,
+    pageWidth: 80,
+  ).format(source, uri: uri);
+
   static String _join(String left, String right) =>
       '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
+}
+
+final class _AssemblySlot {
+  const _AssemblySlot(this.typeName, this.fieldName);
+
+  final String typeName;
+  final String fieldName;
 }

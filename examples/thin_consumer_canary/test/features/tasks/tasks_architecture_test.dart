@@ -14,6 +14,9 @@ void main() {
         .where((file) => file.path.endsWith('.dart'));
     for (final file in files) {
       final source = file.readAsStringSync();
+      final name = file.uri.pathSegments.last;
+      expect(name, isNot(startsWith('fake_')));
+      expect(name, isNot(startsWith('memory_')));
       if (file.path.contains('/presentation/') ||
           file.path.contains('/domain/')) {
         expect(source, isNot(contains('package:dio/')));

@@ -6,16 +6,16 @@
     {
       "path": "lib/composition/application_module.wiring.dartitect.g.dart",
       "source": "dartitect.json",
-      "rendererVersion": 1,
-      "semanticSchemaVersion": 1,
+      "rendererVersion": 2,
+      "semanticSchemaVersion": 2,
       "inputDigest": "eb73c32aaf707a3f481395a56541e1d1932fb6f431c75cd2a22189088a0a771a",
-      "outputDigest": "663accdb6de304293be319861efca096492f9f4105f35808fdf5d2ae7fb2549d"
+      "outputDigest": "e6c1536c513616cb597b3cc0df98ecb1ccc8ca79c95ab88604ae4116810b0a66"
     },
     {
       "path": "lib/composition/session_module.wiring.dartitect.g.dart",
       "source": "dartitect.json",
-      "rendererVersion": 1,
-      "semanticSchemaVersion": 1,
+      "rendererVersion": 2,
+      "semanticSchemaVersion": 2,
       "inputDigest": "eb73c32aaf707a3f481395a56541e1d1932fb6f431c75cd2a22189088a0a771a",
       "outputDigest": "deadeb01d95991b1dd9edc997dcb3d72233c9aa8eaaaac2eeee3463f37a6b9b7"
     },
@@ -25,7 +25,7 @@
       "rendererVersion": 2,
       "semanticSchemaVersion": 1,
       "inputDigest": "abd10d1bc08446a8d88fedc69d6093b4adb9f67dd487978c1475459948eb9568",
-      "outputDigest": "e367c37d5bed835d27c2b59fd3ea1f30819316150a69cdaa88e8bd5b39931ec8"
+      "outputDigest": "5dc8098153be10b0e94573ddd3d3035b5777c6c8c41e3d27743fe9837f9ea496"
     },
     {
       "path": "lib/features/tasks/composition/tasks_workmanager.wiring.dartitect.g.dart",

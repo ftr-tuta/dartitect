@@ -246,9 +246,10 @@ import 'package:generated_extensions/composition/application_module.wiring.darti
 
 void main() {
   test('generated local extensions are owned and disposed', () async {
-    final coordinator = ApplicationModule.create();
+    final coordinator = ApplicationModule.create<Never, Never>();
     final attempt = await coordinator.run();
-    final success = attempt as BootstrapSucceeded<ApplicationGraph>;
+    final success =
+        attempt as BootstrapSucceeded<ApplicationGraph<Never, Never>>;
     final graph = success.graph;
     expect(graph.root.localClock.disposed, isFalse);
     expect(graph.root.localAudit.disposed, isFalse);
@@ -288,6 +289,23 @@ void main() {
     );
   }
   if (scenario.background) {
+    final main = File('${project.path}/lib/main.dart');
+    final mainSource = await main.readAsString();
+    await main.writeAsString(
+      mainSource
+          .replaceFirst(
+            "import 'package:dartitect_flutter/dartitect_flutter.dart';",
+            "import 'package:dartitect_flutter/dartitect_flutter.dart';\n"
+                "import 'package:dartitect_observability/dartitect_observability.dart';",
+          )
+          .replaceFirst(
+            '  create: ApplicationModule.create<Never, Never>,',
+            '  create: () => ApplicationModule.create<Never, Never>(\n'
+                '    createObservability: ObservabilityRuntime.new,\n'
+                '  ),',
+          ),
+      flush: true,
+    );
     final pubspec = File('${project.path}/pubspec.yaml');
     final source = await pubspec.readAsString();
     await pubspec.writeAsString(

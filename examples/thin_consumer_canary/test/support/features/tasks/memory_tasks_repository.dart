@@ -1,6 +1,5 @@
 import 'package:dartitect/dartitect.dart';
-
-import '../domain/tasks_repository.dart';
+import 'package:thin_consumer_canary/features/tasks/domain/tasks_repository.dart';
 
 /// Deterministic memory implementation owned by the composition root.
 final class MemoryTasksRepository implements TasksRepository {

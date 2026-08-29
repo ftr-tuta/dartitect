@@ -199,12 +199,12 @@ final class ScaffoldFactory {
       ),
       FileGenerationOperation(
         relativePath:
-            '$root/infrastructure/memory_${name.snake}_repository.dart',
+            'test/support/features/${name.snake}/memory_${name.snake}_repository.dart',
         content: _memoryRepository(name, contractLayer: contractLayer),
       ),
       FileGenerationOperation(
         relativePath: '$root/composition/${name.snake}_composition.dart',
-        content: _composition(name),
+        content: _composition(name, contractLayer: contractLayer),
       ),
       FileGenerationOperation(
         relativePath: '$root/presentation/${name.snake}_view_model.dart',
@@ -260,7 +260,7 @@ final class ScaffoldFactory {
       ),
       FileGenerationOperation(
         relativePath:
-            '$root/infrastructure/memory_${name.snake}_repository.dart',
+            'test/support/features/${name.snake}/memory_${name.snake}_repository.dart',
         content: _memoryRepository(name, contractLayer: 'domain'),
       ),
       FileGenerationOperation(
@@ -306,7 +306,8 @@ final class ${name.pascal}Service {
         content: _remoteMapper(name),
       ),
       FileGenerationOperation(
-        relativePath: '$root/infrastructure/fake_${name.snake}_remote.dart',
+        relativePath:
+            'test/support/features/${name.snake}/fake_${name.snake}_remote.dart',
         content: _fakeRemote(name),
       ),
       FileGenerationOperation(
@@ -326,7 +327,7 @@ final class ${name.pascal}Service {
       ),
       FileGenerationOperation(
         relativePath:
-            '$root/infrastructure/fake_${name.snake}_local_store.dart',
+            'test/support/features/${name.snake}/fake_${name.snake}_local_store.dart',
         content: _fakeLocalStore(name),
       ),
       FileGenerationOperation(
@@ -345,7 +346,7 @@ final class ${name.pascal}Service {
       ),
       FileGenerationOperation(
         relativePath:
-            '$root/infrastructure/fake_${name.snake}_outbox_store.dart',
+            'test/support/features/${name.snake}/fake_${name.snake}_outbox_store.dart',
         content: _fakeOutboxStore(name),
       ),
       FileGenerationOperation(
@@ -364,7 +365,8 @@ final class ${name.pascal}Service {
         content: _syncDataset(name),
       ),
       FileGenerationOperation(
-        relativePath: '$root/infrastructure/fake_${name.snake}_sync_ports.dart',
+        relativePath:
+            'test/support/features/${name.snake}/fake_${name.snake}_sync_ports.dart',
         content: _fakeSyncPorts(name),
       ),
       FileGenerationOperation(
@@ -509,10 +511,9 @@ ${name.pascal}Model map${name.pascal}RemoteDto(
 
   String _fakeRemote(ScaffoldName name) =>
       '''import 'package:dartitect/dartitect.dart';
-
-import '../application/${name.snake}_remote_port.dart';
-import '../domain/${name.snake}_model.dart';
-import '../domain/${name.snake}_repository.dart';
+import 'package:$packageName/features/${name.snake}/application/${name.snake}_remote_port.dart';
+import 'package:$packageName/features/${name.snake}/domain/${name.snake}_model.dart';
+import 'package:$packageName/features/${name.snake}/domain/${name.snake}_repository.dart';
 
 final class Fake${name.pascal}Remote implements ${name.pascal}RemotePort {
   @override
@@ -561,10 +562,9 @@ abstract interface class ${name.pascal}LocalStore {
       '''import 'dart:async';
 
 import 'package:dartitect/dartitect.dart';
-
-import '../application/${name.snake}_local_store.dart';
-import '../domain/${name.snake}_model.dart';
-import '../domain/${name.snake}_repository.dart';
+import 'package:$packageName/features/${name.snake}/application/${name.snake}_local_store.dart';
+import 'package:$packageName/features/${name.snake}/domain/${name.snake}_model.dart';
+import 'package:$packageName/features/${name.snake}/domain/${name.snake}_repository.dart';
 
 final class Fake${name.pascal}LocalStore implements ${name.pascal}LocalStore {
   final StreamController<void> changes = StreamController<void>.broadcast();
@@ -624,9 +624,8 @@ typedef ${name.pascal}MutationLane =
   String _fakeOutboxStore(ScaffoldName name) =>
       '''import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
-
-import '../application/${name.snake}_mutation.dart';
-import '../domain/${name.snake}_repository.dart';
+import 'package:$packageName/features/${name.snake}/application/${name.snake}_mutation.dart';
+import 'package:$packageName/features/${name.snake}/domain/${name.snake}_repository.dart';
 
 final class Fake${name.pascal}OutboxStore
     implements MutationOutboxStore<String, ${name.pascal}Mutation, ${name.pascal}Failure> {
@@ -676,8 +675,9 @@ final class Fake${name.pascal}OutboxStore
       '''import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
 import 'package:$packageName/features/${name.snake}/application/${name.snake}_mutation.dart';
-import 'package:$packageName/features/${name.snake}/infrastructure/fake_${name.snake}_outbox_store.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/features/${name.snake}/fake_${name.snake}_outbox_store.dart';
 
 void main() {
   test('fake persists the exact idempotency key', () async {
@@ -839,11 +839,13 @@ import '${name.snake}_view_model.dart';
 
 /// Composition boundary for the ${name.pascal} feature.
 final class ${name.pascal}Page extends StatelessWidget {
-  const ${name.pascal}Page({super.key});
+  const ${name.pascal}Page({required this.repository, super.key});
+
+  final ${name.pascal}Repository repository;
 
   @override
   Widget build(BuildContext context) => ViewModelHost<${name.pascal}ViewModel>.create(
-    create: ${name.pascal}Composition.createViewModel,
+    create: () => ${name.pascal}Composition.createViewModel(repository),
     start: (viewModel) => viewModel.start(),
     builder: (context, viewModel) => ${name.pascal}View(viewModel: viewModel),
   );
@@ -945,8 +947,7 @@ abstract interface class ${name.pascal}Repository {
     required String contractLayer,
   }) =>
       '''import 'package:dartitect/dartitect.dart';
-
-import '../$contractLayer/${name.snake}_repository.dart';
+import 'package:$packageName/features/${name.snake}/$contractLayer/${name.snake}_repository.dart';
 
 /// Deterministic memory implementation owned by the composition root.
 final class Memory${name.pascal}Repository implements ${name.pascal}Repository {
@@ -962,23 +963,23 @@ final class Memory${name.pascal}Repository implements ${name.pascal}Repository {
 }
 ''';
 
-  String _composition(ScaffoldName name) =>
-      '''import '../infrastructure/memory_${name.snake}_repository.dart';
+  String _composition(ScaffoldName name, {required String contractLayer}) =>
+      '''import '../$contractLayer/${name.snake}_repository.dart';
 import '../presentation/${name.snake}_view_model.dart';
 
 /// Explicit provider-aware composition boundary for ${name.pascal}.
 abstract final class ${name.pascal}Composition {
-  static ${name.pascal}ViewModel createViewModel() {
-    final repository = Memory${name.pascal}Repository();
-    return ${name.pascal}ViewModel(repository);
-  }
+  static ${name.pascal}ViewModel createViewModel(
+    ${name.pascal}Repository repository,
+  ) => ${name.pascal}ViewModel(repository);
 }
 ''';
 
   String _repositoryContractTest(ScaffoldName name) =>
       '''import 'package:dartitect/dartitect.dart';
-import 'package:$packageName/features/${name.snake}/infrastructure/memory_${name.snake}_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/features/${name.snake}/memory_${name.snake}_repository.dart';
 
 void main() {
   test('memory repository satisfies the public contract', () async {
@@ -995,12 +996,16 @@ void main() {
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../support/features/${name.snake}/memory_${name.snake}_repository.dart';
+
 void main() {
   testWidgets('page owns its ViewModel and renders local data', (tester) async {
     await tester.pumpWidget(
-      const Directionality(
+      Directionality(
         textDirection: TextDirection.ltr,
-        child: ${name.pascal}Page(),
+        child: ${name.pascal}Page(
+          repository: Memory${name.pascal}Repository(),
+        ),
       ),
     );
     await tester.pump();

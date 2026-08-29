@@ -11,7 +11,7 @@
         "dartitect.dart",
         "dartitect_credentials.dart"
       ],
-      "publicSymbolCount": 114
+      "publicSymbolCount": 115
     },
     {
       "name": "dartitect_cli",

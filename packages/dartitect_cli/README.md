@@ -77,8 +77,12 @@ document their own `--dry-run`/apply form in `example/README.md`.
 - `DartitectVerificationService` and `DartitectCliRunner` map services to stable
   JSON and exit codes.
 - `FeatureProfile` and scaffold/generation types expose the `online`, `cache`,
-  `replica`, and `offline-full` paths plus reviewed file-ownership contracts
-  for tooling authors. Pre-1.0 blueprint aliases are not accepted.
+  `replica`, and `offline-full` paths plus capability-closed typed assemblies
+  and reviewed file-ownership contracts for tooling authors. Absent
+  capabilities generate no field, and test doubles remain under
+  `test/support`. Generated assemblies consume typed owned-or-borrowed bindings
+  transactionally and own their complete teardown; consumers do not implement
+  a module-wide disposal callback. Pre-1.0 blueprint aliases are not accepted.
 
 ## Ownership and lifecycle
 

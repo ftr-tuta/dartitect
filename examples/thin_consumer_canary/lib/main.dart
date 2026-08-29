@@ -2,12 +2,11 @@ import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'composition/application_module.wiring.dartitect.g.dart';
-import 'features/tasks/presentation/tasks_view.dart';
 
-void main() => runDartitectApplication<ApplicationGraph>(
-  create: ApplicationModule.create,
+void main() => runDartitectApplication<ApplicationGraph<Never, Never>>(
+  create: ApplicationModule.create<Never, Never>,
   application: (_) => const MaterialApp(
     title: 'ThinConsumerCanary',
-    home: Scaffold(body: Center(child: TasksPage())),
+    home: Scaffold(body: SizedBox.shrink()),
   ),
 );

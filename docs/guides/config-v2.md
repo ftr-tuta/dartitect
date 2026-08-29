@@ -26,6 +26,26 @@ No productive provider is implicit. `memory` must be named with `mode: memory`,
 is for development/tests only, and fails release doctor. Built-in providers are
 ordinary typed config blocks, never extensions.
 
+`dartitect wiring sync` compiles each declaration into a capability-closed
+`<Feature>FeatureAssembly`. Its generic bindings are non-null and present only
+when selected: storage, transport, local authority, pagination, outbox, sync,
+headless job, diagnostics, and opt-in workflows. The generated application
+graph uses the consumer's exact session/failure types and concrete built-in
+scheduler/observability types. Project-local providers become explicit typed
+factory inputs. No generated graph contains `Object`, provider-name fields, or
+nullable capability slots.
+
+Composition supplies every generated slot with a
+`DartitectAssemblyBinding.borrowed` or `DartitectAssemblyBinding.owned` value.
+Owned values are registered while a `ResourceTransaction` is still open,
+rollback atomically when construction fails, and are released in reverse order
+by the generated `OwnedGraph`. Consumer code does not provide a catch-all
+disposal callback.
+
+Scaffolds inject consumer repositories into composition. Deterministic memory
+and fake implementations are generated only below `test/support`; an
+explicitly requested `--example` may include example-only data in its app.
+
 ```json
 {
   "configVersion": 2,

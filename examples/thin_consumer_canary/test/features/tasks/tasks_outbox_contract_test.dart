@@ -1,8 +1,9 @@
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
 import 'package:thin_consumer_canary/features/tasks/application/tasks_mutation.dart';
-import 'package:thin_consumer_canary/features/tasks/infrastructure/fake_tasks_outbox_store.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/features/tasks/fake_tasks_outbox_store.dart';
 
 void main() {
   test('fake persists the exact idempotency key', () async {

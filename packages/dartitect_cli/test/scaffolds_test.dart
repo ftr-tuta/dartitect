@@ -13,7 +13,7 @@ void main() {
       withoutDomain.map((operation) => operation.relativePath),
       containsAll(<String>[
         'lib/features/orders/application/orders_repository.dart',
-        'lib/features/orders/infrastructure/memory_orders_repository.dart',
+        'test/support/features/orders/memory_orders_repository.dart',
         'lib/features/orders/composition/orders_composition.dart',
         'lib/features/orders/presentation/orders_view_model.dart',
         'lib/features/orders/presentation/orders_view.dart',
@@ -46,7 +46,14 @@ void main() {
         )
         .content;
     expect(view, contains('ViewModelHost<OrdersViewModel>.create'));
+    expect(view, contains('required this.repository'));
     expect(view, isNot(contains('infrastructure/')));
+    expect(
+      withoutDomain
+          .where((operation) => operation.relativePath.startsWith('lib/'))
+          .map((operation) => operation.relativePath),
+      everyElement(isNot(anyOf(contains('/fake_'), contains('/memory_')))),
+    );
   });
 
   test('five stable profiles render their required architectural seams', () {
@@ -77,6 +84,10 @@ void main() {
     ]);
     for (final operations in rendered.values) {
       final paths = operations.map((operation) => operation.relativePath);
+      expect(
+        paths.where((path) => path.startsWith('lib/')),
+        everyElement(isNot(anyOf(contains('/fake_'), contains('/memory_')))),
+      );
       expect(paths, contains(endsWith('catalog_model.dart')));
       expect(paths, contains(endsWith('catalog_view_model.dart')));
       expect(paths, contains(endsWith('catalog_composition.dart')));

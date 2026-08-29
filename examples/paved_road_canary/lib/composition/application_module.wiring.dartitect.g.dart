@@ -4,39 +4,29 @@
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_flutter/dartitect_flutter.dart';
 
-
 /// Directly constructed application graph; it is not a service locator.
-final class ApplicationGraph {
-  const ApplicationGraph({
-    required this.sessions,
-    required this.scheduler,
-    required this.observability,
+final class ApplicationGraph<
+  Session extends Object,
+  SessionFailure extends Object
+> {
+  const ApplicationGraph({required this.sessions});
 
-  });
-
-  final SessionRuntimeController<Object, Object> sessions;
-  final String scheduler;
-  final String observability;
-
+  final SessionRuntimeController<Session, SessionFailure> sessions;
 }
 
 /// Tooling-materialized application composition module.
 abstract final class ApplicationModule {
-  static BootstrapCoordinator<ApplicationGraph> create() =>
-      BootstrapCoordinator<ApplicationGraph>(
+  static BootstrapCoordinator<ApplicationGraph<Session, SessionFailure>>
+  create<Session extends Object, SessionFailure extends Object>() =>
+      BootstrapCoordinator<ApplicationGraph<Session, SessionFailure>>(
         stages: const <BootstrapStage>[],
         buildRoot: (transaction, _) async {
           final sessions = transaction.own(
-            SessionRuntimeController<Object, Object>(),
+            SessionRuntimeController<Session, SessionFailure>(),
             (controller) => controller.disposeAsync(),
+            label: 'application.sessions',
           );
-
-          return ApplicationGraph(
-            sessions: sessions,
-            scheduler: "none",
-            observability: "none",
-
-          );
+          return ApplicationGraph<Session, SessionFailure>(sessions: sessions);
         },
       );
 }

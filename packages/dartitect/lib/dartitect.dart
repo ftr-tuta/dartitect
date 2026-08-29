@@ -9,6 +9,7 @@ export 'src/diagnostics/diagnostics_protocol.dart';
 export 'src/extensions/local_extension.dart';
 export 'src/feature_profile.dart';
 export 'src/id_generator.dart';
+export 'src/lifecycle/assembly_binding.dart';
 export 'src/lifecycle/bootstrap_coordinator.dart';
 export 'src/lifecycle/contracts.dart';
 export 'src/lifecycle/owned_graph.dart';

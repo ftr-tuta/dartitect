@@ -1,6 +1,7 @@
 import 'package:dartitect/dartitect.dart';
-import 'package:thin_consumer_canary/features/tasks/infrastructure/memory_tasks_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/features/tasks/memory_tasks_repository.dart';
 
 void main() {
   test('memory repository satisfies the public contract', () async {

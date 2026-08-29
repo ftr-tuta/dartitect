@@ -538,19 +538,28 @@ final class DartitectCliRunner {
     if (await widgetTest.exists()) await widgetTest.delete();
     final mainFile = File(_join(project.path, 'lib/main.dart'));
     await mainFile.writeAsString(
-      '''import 'package:dartitect_flutter/dartitect_flutter.dart';
+      '''${example == 'tasks' ? "import 'package:dartitect/dartitect.dart';\n" : ''}import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'composition/application_module.wiring.dartitect.g.dart';
-${example == 'tasks' ? "import 'features/tasks/presentation/tasks_view.dart';" : ''}
+${example == 'tasks' ? "import 'features/tasks/domain/tasks_repository.dart';\nimport 'features/tasks/presentation/tasks_view.dart';" : ''}
 
-void main() => runDartitectApplication<ApplicationGraph>(
-  create: ApplicationModule.create,
+void main() => runDartitectApplication<ApplicationGraph<Never, Never>>(
+  create: ApplicationModule.create<Never, Never>,
   application: (_) => const MaterialApp(
     title: '${name.pascal}',
-    home: ${example == 'tasks' ? 'TasksPage()' : 'SizedBox.shrink()'},
+    home: ${example == 'tasks' ? 'TasksPage(repository: _ExampleTasksRepository())' : 'SizedBox.shrink()'},
   ),
 );
+${example == 'tasks' ? '''
+final class _ExampleTasksRepository implements TasksRepository {
+  const _ExampleTasksRepository();
+
+  @override
+  Future<Result<List<String>, TasksFailure>> load() async =>
+      const Ok<List<String>>(<String>['Example task']);
+}
+''' : ''}
 ''',
       flush: true,
     );
