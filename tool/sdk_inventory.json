@@ -296,7 +296,7 @@
       "entrypoints": [
         "dartitect_testing.dart"
       ],
-      "publicSymbolCount": 73
+      "publicSymbolCount": 83
     },
     {
       "name": "dartitect_transfer",

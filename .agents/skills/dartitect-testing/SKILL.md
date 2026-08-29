@@ -30,7 +30,11 @@ cancellation/concurrency, lifecycle temperature, disposal, and provider failure.
 Choose deterministic fakes for policy and real fixtures for integration.
 For a public feature profile, run the matching `FeatureContractMatrix.online`,
 `.cache`, `.replica`, or `.offlineFull`; each required row gets a fresh typed
-fixture and returns a framework-neutral result with disposal evidence.
+runtime driver. The matrix owns faults, event journal, observed store,
+acknowledgements, graph registrations, and `ResourceCensus`; fixtures never
+return facts or a residual map. Derive success, expected failure, crash,
+cancellation, concurrency, restart, and teardown evidence from those observed
+instruments.
 
 Read [references/runtime-and-reactive.md](references/runtime-and-reactive.md),
 [references/sync.md](references/sync.md),

@@ -3190,8 +3190,8 @@
         "declaration": "final class BootstrapHarnessResult<R>"
       },
       {
-        "name": "CacheFeatureContractFixture",
-        "declaration": "abstract interface class CacheFeatureContractFixture implements OnlineFeatureContractFixture"
+        "name": "CacheFeatureContractDriver",
+        "declaration": "abstract interface class CacheFeatureContractDriver implements OnlineFeatureContractDriver"
       },
       {
         "name": "CensusLease",
@@ -3255,11 +3255,15 @@
       },
       {
         "name": "FeatureContractFixtures",
-        "declaration": "final class FeatureContractFixtures<T extends OnlineFeatureContractFixture>"
+        "declaration": "final class FeatureContractFixtures<T extends OnlineFeatureContractDriver>"
+      },
+      {
+        "name": "FeatureContractHarness",
+        "declaration": "final class FeatureContractHarness"
       },
       {
         "name": "FeatureContractMatrix",
-        "declaration": "final class FeatureContractMatrix<T extends OnlineFeatureContractFixture>"
+        "declaration": "final class FeatureContractMatrix<T extends OnlineFeatureContractDriver>"
       },
       {
         "name": "FeatureContractObservation",
@@ -3270,12 +3274,48 @@
         "declaration": "final class FeatureContractResult"
       },
       {
+        "name": "FeatureFaultController",
+        "declaration": "final class FeatureFaultController"
+      },
+      {
+        "name": "FeatureGraphLease",
+        "declaration": "final class FeatureGraphLease implements Disposable"
+      },
+      {
+        "name": "FeatureHeadlessAckKind",
+        "declaration": "enum FeatureHeadlessAckKind"
+      },
+      {
+        "name": "FeatureHeadlessAcknowledgement",
+        "declaration": "final class FeatureHeadlessAcknowledgement"
+      },
+      {
+        "name": "FeatureInjectedCrash",
+        "declaration": "final class FeatureInjectedCrash implements Exception"
+      },
+      {
+        "name": "FeatureObservedStore",
+        "declaration": "final class FeatureObservedStore"
+      },
+      {
+        "name": "FeatureObservedStoreSnapshot",
+        "declaration": "final class FeatureObservedStoreSnapshot"
+      },
+      {
+        "name": "FeatureOperationLease",
+        "declaration": "final class FeatureOperationLease implements Disposable"
+      },
+      {
         "name": "FeatureProfile",
         "declaration": "enum FeatureProfile"
       },
       {
-        "name": "FeatureResidualCensus",
-        "declaration": "final class FeatureResidualCensus"
+        "name": "FeatureRuntimeEvent",
+        "declaration": "final class FeatureRuntimeEvent"
+      },
+      {
+        "name": "FeatureRuntimeEventKind",
+        "declaration": "enum FeatureRuntimeEventKind"
       },
       {
         "name": "InMemorySyncCheckpointStore",
@@ -3342,12 +3382,12 @@
         "declaration": "final class MapperContractRun<Source, Target>"
       },
       {
-        "name": "OfflineFullFeatureContractFixture",
-        "declaration": "abstract interface class OfflineFullFeatureContractFixture implements ReplicaFeatureContractFixture"
+        "name": "OfflineFullFeatureContractDriver",
+        "declaration": "abstract interface class OfflineFullFeatureContractDriver implements ReplicaFeatureContractDriver"
       },
       {
-        "name": "OnlineFeatureContractFixture",
-        "declaration": "abstract interface class OnlineFeatureContractFixture implements AsyncDisposable"
+        "name": "OnlineFeatureContractDriver",
+        "declaration": "abstract interface class OnlineFeatureContractDriver implements AsyncDisposable"
       },
       {
         "name": "OwnedGraphHarness",
@@ -3398,8 +3438,8 @@
         "declaration": "final class RecordingTracer extends Tracer"
       },
       {
-        "name": "ReplicaFeatureContractFixture",
-        "declaration": "abstract interface class ReplicaFeatureContractFixture implements CacheFeatureContractFixture"
+        "name": "ReplicaFeatureContractDriver",
+        "declaration": "abstract interface class ReplicaFeatureContractDriver implements CacheFeatureContractDriver"
       },
       {
         "name": "RepositoryContractCase",

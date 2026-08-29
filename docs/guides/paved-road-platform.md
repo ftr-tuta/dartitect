@@ -68,8 +68,10 @@ Windows.
 
 ## Evidence
 
-Typed contract fixtures must execute every row for the selected profile and
-finish `disposeAsync` with a zero resource census. Provider fixtures prove
+Typed contract drivers must execute every row for the selected profile. The
+matrix derives evidence from its own event journal, observed stores, revisions,
+acknowledgements, fresh graph registrations, and `ResourceCensus`; drivers
+cannot return facts or a residual map. Provider fixtures prove
 atomic domain/outbox writes, restart, checkpoint, fencing, uncertainty,
 conflict, migrations, UID persistence, and cleanup. `paved_road_canary` and
 `thin_consumer_canary` ensure the generated road does not leak coordinators,

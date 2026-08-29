@@ -1,34 +1,63 @@
+import 'dart:async';
+
+import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_testing/dartitect_testing.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('offline-full runs every typed row with cleanup and census', () async {
-    var creates = 0;
-    final matrix = FeatureContractMatrix<_Fixture>.offlineFull(
-      fixtures: FeatureContractFixtures<_Fixture>(
-        create: () {
-          creates += 1;
-          return _Fixture();
-        },
+  test(
+    'offline-full derives every row from observed runtime evidence',
+    () async {
+      var creates = 0;
+      final matrix = FeatureContractMatrix<_ObservedDriver>.offlineFull(
+        fixtures: FeatureContractFixtures<_ObservedDriver>(
+          create: (harness) {
+            creates += 1;
+            return _ObservedDriver(harness);
+          },
+        ),
+      );
+
+      final results = await matrix.run();
+
+      expect(results, hasLength(15));
+      expect(results.every((result) => result.succeeded), isTrue);
+      expect(results.every((result) => result.disposeAttempted), isTrue);
+      expect(results.every((result) => result.censusChecked), isTrue);
+      expect(
+        creates,
+        results.length + 1,
+        reason: 'restart creates a second graph',
+      );
+      final crash = results.singleWhere(
+        (result) => result.contract == FeatureContract.unexpectedCrash,
+      );
+      expect(
+        crash.observation!.facts,
+        contains(FeatureContractFact.crashPreserved),
+      );
+      final checkpoint = results.singleWhere(
+        (result) => result.contract == FeatureContract.durableCheckpoint,
+      );
+      final applied = checkpoint.observation!.events.singleWhere(
+        (event) => event.kind == FeatureRuntimeEventKind.datasetApplied,
+      );
+      final persisted = checkpoint.observation!.events.singleWhere(
+        (event) => event.kind == FeatureRuntimeEventKind.checkpointWritten,
+      );
+      expect(applied.sequence, lessThan(persisted.sequence));
+    },
+  );
+
+  test('a driver cannot pass by returning self-reported facts', () async {
+    final matrix = FeatureContractMatrix<_IncompleteDriver>.online(
+      fixtures: FeatureContractFixtures<_IncompleteDriver>(
+        create: _IncompleteDriver.new,
       ),
     );
 
     final results = await matrix.run();
-    expect(results, hasLength(13));
-    expect(results.every((result) => result.succeeded), isTrue);
-    expect(results.every((result) => result.disposeAttempted), isTrue);
-    expect(results.every((result) => result.censusChecked), isTrue);
-    expect(creates, results.length);
-  });
 
-  test('empty evidence cannot pass a required behavioral row', () async {
-    final matrix = FeatureContractMatrix<_EmptyFixture>.online(
-      fixtures: FeatureContractFixtures<_EmptyFixture>(
-        create: _EmptyFixture.new,
-      ),
-    );
-
-    final results = await matrix.run();
     expect(
       results
           .where((result) => !result.succeeded)
@@ -36,21 +65,41 @@ void main() {
       containsAll(<FeatureContract>[
         FeatureContract.onlineRead,
         FeatureContract.expectedFailure,
+        FeatureContract.unexpectedCrash,
         FeatureContract.cancellation,
+        FeatureContract.concurrency,
+        FeatureContract.restart,
       ]),
+    );
+    expect(
+      results
+          .where((result) => result.observation != null)
+          .expand((result) => result.observation!.facts),
+      isEmpty,
     );
   });
 
-  test('residual census fails the row after mandatory disposal', () async {
-    final matrix = FeatureContractMatrix<_ResidualFixture>.online(
-      fixtures: FeatureContractFixtures<_ResidualFixture>(
-        create: _ResidualFixture.new,
+  test('matrix-owned ResourceCensus fails after mandatory disposal', () async {
+    final matrix = FeatureContractMatrix<_LeakingDriver>.online(
+      fixtures: FeatureContractFixtures<_LeakingDriver>(
+        create: _LeakingDriver.new,
       ),
     );
 
     final results = await matrix.run();
+
     expect(results.every((result) => !result.succeeded), isTrue);
     expect(results.every((result) => result.disposeAttempted), isTrue);
+    expect(results.every((result) => result.censusChecked), isTrue);
+    expect(
+      results
+          .singleWhere(
+            (result) => result.contract == FeatureContract.zeroResiduals,
+          )
+          .error
+          .toString(),
+      contains('census'),
+    );
   });
 
   test('read-only diagnostics harness rejects mutating methods', () {
@@ -70,139 +119,108 @@ void main() {
   });
 }
 
-class _Fixture implements OfflineFullFeatureContractFixture {
+final class _ObservedDriver implements OfflineFullFeatureContractDriver {
+  _ObservedDriver(this.harness);
+
+  final FeatureContractHarness harness;
   var _disposed = false;
 
-  FeatureContractObservation _observation(
+  @override
+  Future<void> stimulate(
     FeatureContract contract,
-    Set<FeatureContractFact> facts,
-  ) => FeatureContractObservation(contract: contract, facts: facts);
+    CancellationSignal cancellation,
+  ) async {
+    if (_disposed) throw StateError('Driver is disposed.');
+    switch (contract) {
+      case FeatureContract.onlineRead:
+        harness.store.remoteSucceeded();
+        harness.store.publish();
+      case FeatureContract.expectedFailure:
+        if (!harness.faults.takeExpectedFailure()) {
+          throw StateError('Expected failure was not injected.');
+        }
+        harness.store.expectedFailure();
+      case FeatureContract.unexpectedCrash:
+        harness.faults.throwIfCrashArmed();
+      case FeatureContract.cancellation:
+        await cancellation.whenCancelled;
+        cancellation.throwIfCancelled();
+      case FeatureContract.concurrency:
+        final operation = harness.store.beginOperation();
+        try {
+          await Future<void>.delayed(const Duration(milliseconds: 2));
+        } finally {
+          operation.dispose();
+        }
+      case FeatureContract.restart:
+        if (harness.store.hasDurableState) {
+          harness.store.readDurableState();
+        } else {
+          harness.store.writeDurableState();
+        }
+      case FeatureContract.zeroResiduals:
+        return;
+      case FeatureContract.localAuthority:
+        harness.store.readLocalSnapshot();
+        harness.store.commitRemoteLocally();
+      case FeatureContract.refreshObservation:
+        final revision = harness.store.commitRemoteLocally();
+        harness.store.observeRevision(revision);
+      case FeatureContract.durableCheckpoint:
+        final revision = harness.store.applyDataset();
+        harness.store.writeCheckpoint(revision);
+      case FeatureContract.fencing:
+        harness.store.commitCurrentFence(2);
+        harness.store.rejectStaleFence(1);
+      case FeatureContract.headlessExecution:
+        final graph = harness.openHeadlessGraph();
+        try {
+          harness.acceptHeadless('request-1', graph.graphId);
+          harness.duplicateHeadless('request-1', graph.graphId);
+          harness.completeHeadless('request-1', graph.graphId);
+        } finally {
+          graph.dispose();
+        }
+      case FeatureContract.atomicOutbox:
+        harness.store.commitDomainAndOutbox('operation-1');
+        harness.store.rollbackDomainAndOutbox();
+      case FeatureContract.uncertainDelivery:
+        harness.store.attemptDelivery('operation-1');
+        harness.store.persistUncertainty('operation-1');
+      case FeatureContract.conflictRecovery:
+        harness.store.persistConflict('operation-1');
+        harness.store.resolveConflict('operation-1');
+    }
+  }
 
   @override
   Future<void> disposeAsync() async => _disposed = true;
-
-  @override
-  FeatureResidualCensus get residualCensus => _disposed
-      ? const FeatureResidualCensus.empty()
-      : FeatureResidualCensus(<String, int>{'fixture': 1});
-
-  @override
-  FeatureContractObservation stimulateOnlineRead() =>
-      _observation(FeatureContract.onlineRead, <FeatureContractFact>{
-        FeatureContractFact.typedSuccess,
-        FeatureContractFact.valuePublished,
-      });
-
-  @override
-  FeatureContractObservation stimulateExpectedFailure() =>
-      _observation(FeatureContract.expectedFailure, <FeatureContractFact>{
-        FeatureContractFact.typedFailure,
-        FeatureContractFact.crashPreserved,
-      });
-
-  @override
-  FeatureContractObservation stimulateCancellation() =>
-      _observation(FeatureContract.cancellation, <FeatureContractFact>{
-        FeatureContractFact.cancellationObserved,
-        FeatureContractFact.stalePublicationRejected,
-      });
-
-  @override
-  FeatureContractObservation stimulateLocalAuthority() =>
-      _observation(FeatureContract.localAuthority, <FeatureContractFact>{
-        FeatureContractFact.localSnapshotObserved,
-        FeatureContractFact.remoteCommittedLocally,
-      });
-
-  @override
-  FeatureContractObservation stimulateRefreshObservation() => _observation(
-    FeatureContract.refreshObservation,
-    <FeatureContractFact>{FeatureContractFact.exactRevisionObserved},
-  );
-
-  @override
-  FeatureContractObservation stimulateCacheRestart() =>
-      _observation(FeatureContract.cacheRestart, <FeatureContractFact>{
-        FeatureContractFact.freshGraphCreated,
-        FeatureContractFact.durableStateRecovered,
-      });
-
-  @override
-  FeatureContractObservation stimulateDurableCheckpoint() =>
-      _observation(FeatureContract.durableCheckpoint, <FeatureContractFact>{
-        FeatureContractFact.dataCommittedBeforeCheckpoint,
-        FeatureContractFact.checkpointPersisted,
-      });
-
-  @override
-  FeatureContractObservation stimulateFencing() =>
-      _observation(FeatureContract.fencing, <FeatureContractFact>{
-        FeatureContractFact.staleFencingRejected,
-        FeatureContractFact.currentFencingCommitted,
-      });
-
-  @override
-  FeatureContractObservation stimulateHeadlessExecution() =>
-      _observation(FeatureContract.headlessExecution, <FeatureContractFact>{
-        FeatureContractFact.freshHeadlessGraph,
-        FeatureContractFact.duplicateHeadlessRequestHandled,
-        FeatureContractFact.headlessGraphDrained,
-      });
-
-  @override
-  FeatureContractObservation stimulateAtomicOutbox() =>
-      _observation(FeatureContract.atomicOutbox, <FeatureContractFact>{
-        FeatureContractFact.domainAndOutboxAtomic,
-        FeatureContractFact.atomicRollback,
-      });
-
-  @override
-  FeatureContractObservation stimulateUncertainDelivery() =>
-      _observation(FeatureContract.uncertainDelivery, <FeatureContractFact>{
-        FeatureContractFact.uncertaintyPersisted,
-        FeatureContractFact.uncertainRetryStopped,
-      });
-
-  @override
-  FeatureContractObservation stimulateConflictRecovery() =>
-      _observation(FeatureContract.conflictRecovery, <FeatureContractFact>{
-        FeatureContractFact.conflictPersisted,
-        FeatureContractFact.explicitConflictPolicy,
-      });
 }
 
-class _EmptyFixture implements OnlineFeatureContractFixture {
-  var _disposed = false;
+class _IncompleteDriver implements OnlineFeatureContractDriver {
+  _IncompleteDriver(this.harness);
 
-  FeatureContractObservation _empty(FeatureContract contract) =>
-      FeatureContractObservation(
-        contract: contract,
-        facts: const <FeatureContractFact>{},
-      );
+  final FeatureContractHarness harness;
 
   @override
-  Future<void> disposeAsync() async => _disposed = true;
+  Future<void> stimulate(
+    FeatureContract contract,
+    CancellationSignal cancellation,
+  ) async {}
 
   @override
-  FeatureResidualCensus get residualCensus => _disposed
-      ? const FeatureResidualCensus.empty()
-      : FeatureResidualCensus(<String, int>{'fixture': 1});
-
-  @override
-  FeatureContractObservation stimulateCancellation() =>
-      _empty(FeatureContract.cancellation);
-
-  @override
-  FeatureContractObservation stimulateExpectedFailure() =>
-      _empty(FeatureContract.expectedFailure);
-
-  @override
-  FeatureContractObservation stimulateOnlineRead() =>
-      _empty(FeatureContract.onlineRead);
+  Future<void> disposeAsync() async {}
 }
 
-final class _ResidualFixture extends _EmptyFixture {
+final class _LeakingDriver extends _IncompleteDriver {
+  _LeakingDriver(super.harness) : _leak = harness.resources.acquire('timer');
+
+  // Deliberately not released: the matrix-owned census must catch it.
+  final CensusLease _leak;
+
   @override
-  FeatureResidualCensus get residualCensus =>
-      FeatureResidualCensus(<String, int>{'timer': 1});
+  Future<void> disposeAsync() async {
+    // Keep the field reachable to prove this is an intentional leak fixture.
+    if (_leak.isDisposed) throw StateError('Leak was unexpectedly released.');
+  }
 }
