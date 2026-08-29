@@ -1,8 +1,11 @@
 # Dartitect
 
-> **Developer note:** Dartitect is not a new GetIt and does not try to be a library for everyone. I created it specifically to meet my own needs and to make several codebases that follow the same architectural, ownership, and planning principles easier to maintain. It is deliberately opinionated; if those principles do not fit your application, there is no reason to adopt Dartitect.
+> **Scope:** Dartitect is an opinionated SDK for new Dart and Flutter projects.
+> It does not convert, incrementally adopt, or coexist with an existing
+> application architecture. Projects originally created with Dartitect can be
+> upgraded between supported Dartitect versions.
 
-Dartitect is a set of focused Dart and Flutter packages for constructor-based
+Dartitect is a greenfield-only set of focused Dart and Flutter packages for constructor-based
 composition, explicit resource ownership, typed expected failures, native
 reactive state, offline-first coordination, and architecture tooling. It is not
 an application framework: the consuming application continues to own its
@@ -30,15 +33,17 @@ telemetry contents on its behalf.
 
 `native_strict` is the only architecture profile. A Dartitect application does
 not install Riverpod, BLoC, Provider, GetIt, MobX, Signals, another container,
-or another state/lifecycle runtime. Feature profiles (`online`, `cache`,
-`replica`, and `offline-full`) select behavior, not architecture.
+or another state/lifecycle runtime. Feature profiles (`local`, `online`,
+`cache`, `replica`, and `offline-full`) select behavior, not architecture.
 
 Before adding a capability to this repository, ask:
 
 > É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
 
-It enters Dartitect only when all three answers are yes. Company/product
-capabilities remain in `softgran_*`, `agrox_*`, or the application.
+It enters Dartitect only when all three answers are yes. Non-neutral reusable
+plumbing belongs in a typed extension local to the project; business rules,
+domain behavior, schema, semantic mapping, conflict policy, and UI remain in
+the application.
 
 ## Package selection map
 
@@ -71,7 +76,7 @@ independently documented and exports only public entrypoints under `lib/`.
 
 The [ecosystem selection guide](docs/guides/ecosystem-selection.md) gives the
 detailed decision matrix. The [implementation recipes](docs/guides/implementation-recipes.md)
-show complete boundary-oriented flows. The [RC6 paved-road guide](docs/guides/paved-road-platform.md)
+show complete boundary-oriented flows. The [greenfield platform guide](docs/guides/paved-road-platform.md)
 connects feature profiles, hosts, resilience, jobs, transfer, diagnostics, and
 contract matrices without turning them into a framework.
 
@@ -188,7 +193,7 @@ The CLI is the deterministic interface for local development and CI:
 
 ```console
 dart run dartitect_cli:dartitect inspect --json
-dart run dartitect_cli:dartitect scan --no-baseline
+dart run dartitect_cli:dartitect scan
 dart run dartitect_cli:dartitect doctor
 dart run dartitect_cli:dartitect model check --json
 dart run dartitect_cli:dartitect wiring sync --dry-run --json

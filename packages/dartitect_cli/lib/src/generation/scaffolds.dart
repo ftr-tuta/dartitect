@@ -193,7 +193,7 @@ final class ScaffoldFactory {
 - `ViewModelHost.create` owns its value; `ViewModelHost.value` borrows it.
 - Keep routing and UI effects in Widgets.
 - Before adding infrastructure, ask: É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
-- It belongs in Dartitect only when all three answers are yes; otherwise keep it in `softgran_*`, `agrox_*`, or the application.
+- It belongs in Dartitect only when all three answers are yes; otherwise use a typed project-local extension or keep business behavior in the application.
 ''',
     ),
   ];

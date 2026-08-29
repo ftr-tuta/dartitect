@@ -44,8 +44,9 @@ Before accepting any new capability, answer this question:
 
 > É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
 
-All three answers must be yes. Otherwise keep the capability in `softgran_*`,
-`agrox_*`, or the application and do not add it to Dartitect.
+All three answers must be yes. Otherwise keep reusable infrastructure in a
+typed project-local extension and business behavior in the application; do not
+add either to Dartitect.
 
 - Preserve native-first constructor injection and explicit owned/borrowed state.
 - Add tests through public entrypoints and real provider boundaries where needed.

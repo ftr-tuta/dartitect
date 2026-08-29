@@ -1,7 +1,10 @@
-# RC6 complete vertical platform
+# Greenfield vertical platform
 
-RC6 is the feature-complete source cohort for Dartitect 1.0. This change does
-not create a tag, release, or stable `1.0.0`; stable promotion is release-only.
+RC6 established the initial paved-road source cohort; it did not complete the
+vertical platform. RC8 completes the remaining generated closure, operational
+storage, race safety, semantic API, and observed-evidence requirements before
+1.0. This work does not create a tag, release, or stable `1.0.0`; promotion is
+release-only.
 
 ## Canonical creation
 
@@ -69,5 +72,5 @@ Before extending the platform, ask:
 
 > É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
 
-All three answers must be yes; otherwise the behavior belongs in
-`softgran_*`, `agrox_*`, or the application.
+All three answers must be yes; otherwise reusable infrastructure belongs in a
+typed project-local extension and business behavior remains in the application.

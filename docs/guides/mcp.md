@@ -112,8 +112,8 @@ Before exposing another MCP operation, ask:
 
 > É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
 
-All three answers must be yes; company/product actions remain in `softgran_*`,
-`agrox_*`, or the application.
+All three answers must be yes; non-neutral reusable infrastructure belongs in a
+typed project-local extension and business actions remain in the application.
 
 ## Root and data security
 

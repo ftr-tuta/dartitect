@@ -83,4 +83,5 @@ journaled RC5-to-RC6 conversion.
 > É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
 
 A capability enters Dartitect only when all three answers are yes; otherwise
-it remains in `softgran_*`, `agrox_*`, or the application.
+reusable infrastructure belongs in a typed project-local extension and
+business behavior remains in the application.

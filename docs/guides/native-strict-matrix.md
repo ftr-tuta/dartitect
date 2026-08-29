@@ -18,6 +18,6 @@ Riverpod, BLoC, Provider, GetIt, MobX, Signals, and similar architecture
 runtimes are not valid dependencies of a native-strict application. This is an
 ownership contract, not a quality judgment about those packages.
 
-Use `dartitect scan --no-baseline`, `dartitect doctor`, and
-`dartitect verify --root .` as the repository gate. Baselines describe
-reviewed legacy debt only and never weaken a new native-strict graph.
+Use `dartitect scan`, `dartitect doctor`, and `dartitect verify --root .` as the
+project gate. A greenfield Native Strict project must resolve every finding;
+architecture debt baselines are not supported.

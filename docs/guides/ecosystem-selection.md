@@ -9,9 +9,11 @@ optional. Provider SDKs, entities/schemas,
 credentials, and vendor configuration remain consumer-owned; opt-in immutable
 model boilerplate may be generated into consumer-owned committed parts.
 
-For a new application or feature, use `$dartitect-design`. An existing codebase
-may use `$dartitect-audit` for read-only conformance evidence. A Dartitect
-application still has one `native_strict` architecture runtime; another DI,
+For a new application or feature, use `$dartitect-design`. A project originally
+created with Dartitect may use `$dartitect-audit` for read-only conformance and
+upgrade evidence. Dartitect does not inspect an unrelated project as a first
+step toward adoption. A Dartitect application has one `native_strict`
+architecture runtime; another DI,
 container, service locator, or application-state runtime is prohibited.
 
 ## Capability matrix
@@ -37,7 +39,7 @@ container, service locator, or application-state runtime is prohibited.
 | Brazilian postal code values | `dartitect_locale_br` | `package:dartitect_locale_br/dartitect_locale_br.dart` | Dart, Flutter, web | `$dartitect-runtime` | General Brazilian form widgets or unrelated document formats are expected |
 | Polygon pole of inaccessibility | `dartitect_geometry` | `package:dartitect_geometry/dartitect_geometry.dart` | Dart, Flutter, web | `$dartitect-runtime` | A GIS engine or mutable geometry model is expected |
 | Deterministic boundary helpers | `dartitect_testing` | `package:dartitect_testing/dartitect_testing.dart` | Dart, Flutter, web | `$dartitect-testing` | The real provider/code-generation boundary is what the test must prove |
-| Inspect, scan, doctor, config, baselines, generators, Codex sync | `dartitect_cli` | `package:dartitect_cli/dartitect_cli.dart`; `dartitect` executable | Dart VM | `$dartitect-tooling` | Application runtime behavior or a remote service is expected |
+| Inspect, scan, doctor, config, generators, Codex sync | `dartitect_cli` | `package:dartitect_cli/dartitect_cli.dart`; `dartitect` executable | Dart VM | `$dartitect-tooling` | Application runtime behavior or a remote service is expected |
 | Analyzer diagnostics | `dartitect_lints` | plugin `package:dartitect_lints/main.dart` | Dart analyzer | `$dartitect-tooling` | The host cannot run analyzer plugins; use `dartitect scan` instead |
 | Local MCP tools/resources | `dartitect_mcp` | `package:dartitect_mcp/dartitect_mcp.dart`; local STDIO executable | Dart VM, STDIO | `$dartitect-mcp` | Shell/CI automation, arbitrary files, HTTP/OAuth, or running-app access is required |
 
@@ -49,7 +51,7 @@ to `$dartitect-tooling`; it is not an application entrypoint.
 | Scenario | Start with | Combine when needed |
 | --- | --- | --- |
 | New application or feature | `$dartitect-design` | Route the selected boundary to one or more focused skills |
-| Existing codebase conformance audit | `$dartitect-audit` | Read-only evidence; no conversion plan is emitted |
+| Dartitect project conformance audit | `$dartitect-audit` | Read-only evidence; no adoption or conversion plan is emitted |
 | Immutable generated values | `$dartitect-modeling` | `$dartitect-tooling` for CI/release integration |
 | Simple Flutter runtime | `$dartitect-runtime` | `$dartitect-testing` |
 | Reactive lifecycle and UI | `$dartitect-reactive` | `$dartitect-runtime`, `$dartitect-testing` |

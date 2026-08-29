@@ -59,7 +59,7 @@ or provider boundary when the required Dartitect packages are not yet clear.
 
 ## When not to use
 
-Use `$dartitect-audit` to inspect an existing codebase without changing it.
+Use `$dartitect-audit` to inspect a Dartitect-created project without changing it.
 Route detailed runtime, reactive, offline-first, telemetry, adapter, testing,
 CLI, or MCP work to the matching focused skill after suitability and the stack
 are decided.
@@ -150,15 +150,15 @@ application architecture runtimes.
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-audit
-description: Audit an existing Dart or Flutter codebase for Native Strict conformance without changing it. Use for read-only evidence and strict architecture classification.
+description: Audit a Dartitect-created project for Native Strict conformance without changing it. Use for read-only evidence after development or a Dartitect SDK upgrade.
 ---
 
 # Audit Dartitect conformance
 
 ## When to use
 
-Use this skill when existing architecture, globals, providers, violations, or
-lifecycle assumptions must be assessed against Native Strict boundaries.
+Use this skill when a project created with Dartitect must revalidate its
+architecture, globals, providers, lifecycle, or SDK upgrade evidence.
 
 ## When not to use
 
@@ -183,8 +183,8 @@ dual-write are also errors.
 3. Classify each boundary as conforming, non-conforming, or not evidenced.
 4. Record prohibited runtime packages separately from advisory alternatives and
    approved consumer-owned infrastructure.
-5. Return a conformance report, bounded adoption observations, and the exact
-   commands used; do not mutate or claim automatic conversion.
+5. Return a conformance report, upgrade observations, and the exact commands
+   used; do not mutate or claim adoption or automatic conversion.
 
 Read [references/inventory.md](references/inventory.md) for evidence collection
 and [references/conformance-audit.md](references/conformance-audit.md) for the
@@ -196,7 +196,7 @@ Confirm the report is reproducible, contains no write or migration action, uses
 the unbaselined scan, and distinguishes unsupported architecture runtimes from
 consumer-owned infrastructure packages.
 ''',
-      'references/inventory.md': r'''# Existing-codebase inventory
+      'references/inventory.md': r'''# Dartitect project inventory
 
 Record:
 

@@ -12,7 +12,7 @@ or provider boundary when the required Dartitect packages are not yet clear.
 
 ## When not to use
 
-Use `$dartitect-audit` to inspect an existing codebase without changing it.
+Use `$dartitect-audit` to inspect a Dartitect-created project without changing it.
 Route detailed runtime, reactive, offline-first, telemetry, adapter, testing,
 CLI, or MCP work to the matching focused skill after suitability and the stack
 are decided.
@@ -56,5 +56,5 @@ Before adding a capability, answer:
 
 > É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
 
-All three answers must be “yes”. Otherwise the capability belongs in
-`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.
+All three answers must be “yes”. Otherwise reusable infrastructure belongs in
+a typed project-local extension and business behavior stays in the application.
