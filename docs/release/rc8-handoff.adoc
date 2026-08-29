@@ -1,0 +1,57 @@
+= RC8 source-candidate handoff
+:date: 2026-08-29
+
+== Delivered boundary
+
+This branch prepares +1.0.0-rc.8+ for greenfield Dartitect projects. It creates
+no tag, GitHub Release, pub.dev publication, or repository-rule change. RC7 is
+intentionally skipped. A separate authorization after merge and green +main+
+Actions is required before +v1.0.0-rc.8+ can be materialized.
+
+The supported continuity path is Dartitect RC6/config-v1 to RC8/config-v2 for a
+project originally created with Dartitect. There is no general application
+conversion, gradual adoption, architecture debt baseline, competing-runtime
+mode, global extension registry, preset marketplace, or concrete SDK extension.
+
+== RC8 closure
+
+* config v2 separates targets, storage contexts, transports, observability,
+  scheduler, features, and typed project-local extension sources;
+* generated assemblies contain only selected typed capabilities and own their
+  complete lifecycle;
+* credential leases, Dio interception, and authenticated replay are generation
+  fenced and policy explicit;
+* operational storage contexts own SDK outbox/checkpoint/journal/lease/receipt/
+  transfer records while application domain schema remains consumer-owned;
+* sync triggers are injected, coalesced, generation fenced, and never create a
+  hidden retry;
+* contract matrices derive evidence from runtime events, stores, revisions,
+  acknowledgements, and the real resource census;
+* the Task vertical canary exercises local database authority, durable outbox,
+  idempotency, checkpoint, fencing, conflict, uncertainty, restart, headless
+  work, logout, and teardown;
+* bounded local OpenAPI 3.1 tooling generates transport contracts but never
+  infers DTO-to-domain mappings;
+* semantic API snapshots record full declarations and audiences; consumer-tax
+  enforces minimal dependency/capability closure; and
+* the release authority defines 24 packages, 30 public entrypoints, five
+  publication cohorts, compatible ranges, platforms, the publication DAG, and
+  the unmaterialized candidate tag.
+
+== Consumer-owned boundary
+
+Business rules, domain types/schema/migrations, repositories, semantic mapping,
+conflict and retry policy, endpoints outside generated transport contracts,
+provider configuration, credentials, and UI remain in the project. Reusable
+non-neutral infrastructure may use +DartitectLocalExtension<B>+ only from
+semantically analyzed sources whose real paths remain inside that project.
+
+== Handoff gates
+
+The source handoff requires +dart run tool/verify.dart --skip-get+, release
+audit, semantic API compatibility, generated-project matrices, packaged/Git
+canary contracts, target builds available on the local host, +git diff --check+,
+canonical author verification, and a clean tracked tree. Hosted native cells,
++CI / Required+, branch freshness, resolved review conversations, post-merge
++main+ Actions, external private-consumer validation, tag creation, and release
+publication remain external follow-up evidence and are not claimed here.

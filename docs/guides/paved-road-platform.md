@@ -1,10 +1,9 @@
 # Greenfield vertical platform
 
-RC6 established the initial paved-road source cohort; it did not complete the
-vertical platform. RC8 completes the remaining generated closure, operational
-storage, race safety, semantic API, and observed-evidence requirements before
-1.0. This work does not create a tag, release, or stable `1.0.0`; promotion is
-release-only.
+RC8 completes the generated closure, operational storage, race safety,
+semantic API, consumer-tax, OpenAPI, and observed-evidence requirements before
+1.0. This source delivery does not create a tag, release, or stable `1.0.0`;
+promotion is release-only.
 
 ## Canonical creation
 

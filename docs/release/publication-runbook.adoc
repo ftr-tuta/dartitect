@@ -1,4 +1,4 @@
-= Lockstep 1.0 publication runbook
+= Compatible-cohort 1.0 publication runbook
 
 Status:: Manual trigger; technical evidence fully automated
 Machine authority:: `tool/actions_readiness_policy.json`
@@ -35,28 +35,9 @@ cross-tree, or altered input stops before tag, Release, or package publication.
 == Publication order
 
 pub.dev uses the exact `publicationOrder` in
-`tool/package_release_contract.json`:
-
-[source,text]
-----
-dartitect
-dartitect_cli
-dartitect_geometry
-dartitect_lints
-dartitect_locale_br
-dartitect_privacy
-dartitect_flutter
-dartitect_isolates
-dartitect_mcp
-dartitect_media
-dartitect_observability
-dartitect_sync
-dartitect_drift
-dartitect_dio
-dartitect_objectbox
-dartitect_sentry
-dartitect_testing
-----
+`tool/package_release_contract.json`. The generated
+`docs/release/package-cohorts.adoc` records all 24 packages, five publication
+cohorts, and the current baseline without duplicating a hand-maintained order.
 
 The workflow stops on the first publication failure. pub.dev versions are
 immutable, so a partial cohort is never overwritten or completed from another

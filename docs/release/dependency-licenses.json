@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedFor": "lockstep candidate cohort 1.0.0-rc.8",
+  "generatedFor": "release baseline 1.0.0-rc.8",
   "packages": [
     {
       "name": "_fe_analyzer_shared",
@@ -202,7 +202,8 @@
       "name": "dartitect_api_compatibility_fixture",
       "version": "0.0.0",
       "source": "root",
-      "license": "NOASSERTION"
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_cli",
@@ -327,7 +328,8 @@
       "name": "dartitect_openapi_contract_fixture",
       "version": "0.0.0",
       "source": "root",
-      "license": "NOASSERTION"
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_privacy",

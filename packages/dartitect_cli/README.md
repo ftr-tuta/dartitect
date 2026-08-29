@@ -45,6 +45,8 @@ dartitect inspect --json
 dartitect inspect --consumer-tax --json
 dartitect scan
 dartitect doctor
+dartitect contracts check api/openapi.yaml --json
+dartitect contracts sync api/openapi.yaml --dry-run
 dartitect model check --json
 dartitect model sync
 dartitect codex sync --dry-run
@@ -62,6 +64,11 @@ document their own `--dry-run`/apply form in `example/README.md`.
   classification, and SARIF/report types expose architecture results.
 - `DartitectConfig`, `ConfigMigrator`, and `nativeStrictProfile` define stable
   config v2 and architecture defaults.
+- `LocalExtensionCompiler` analyzes typed extension declarations confined to
+  the project without executing their code or loading a plugin.
+- `OpenApiContractService` validates local OpenAPI 3.1 JSON/YAML, classifies
+  additive/breaking changes, and generates bounded contract code through the
+  focused `dartitect_contracts.dart` tooling entrypoint.
 - `DartitectChangePlan`, semantic inputs/manifests, receipts, and
   `GenerationEngine` implement preview/revalidation/recovery.
 - `DartitectModelGenerator` consumes shared semantic modeling IR and emits
@@ -78,7 +85,7 @@ document their own `--dry-run`/apply form in `example/README.md`.
   preserving consumer-owned skill directories.
 - `DartitectVerificationService` and `DartitectCliRunner` map services to stable
   JSON and exit codes.
-- `FeatureProfile` and scaffold/generation types expose the `online`, `cache`,
+- `FeatureProfile` and scaffold/generation types expose the `local`, `online`, `cache`,
   `replica`, and `offline-full` paths plus capability-closed typed assemblies
   and reviewed file-ownership contracts for tooling authors. Absent
   capabilities generate no field, and test doubles remain under
@@ -138,6 +145,9 @@ Use `dartitect_lints` for editor feedback,
 bounded local agent interface. Read
 [getting started](../../docs/guides/getting-started.md),
 [model generation](../../docs/guides/model-generation.md),
+[OpenAPI contracts](../../docs/guides/openapi-contracts.md),
+[project-local extensions](../../docs/guides/project-local-extensions.md),
+[consumer tax](../../docs/guides/consumer-tax.md),
 [fleet tooling](../../docs/guides/fleet-tooling.md), and
 [MCP](../../docs/guides/mcp.md).
 

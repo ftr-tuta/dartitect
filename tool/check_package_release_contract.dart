@@ -67,9 +67,7 @@ void main(List<String> arguments) {
     };
     if (cohorts == null ||
         cohorts.keys.toSet().difference(cohortNames).isNotEmpty ||
-        cohortNames
-            .difference(cohorts?.keys.toSet() ?? const <String>{})
-            .isNotEmpty) {
+        cohortNames.difference(cohorts.keys.toSet()).isNotEmpty) {
       errors.add('Publication cohorts must define the five reviewed cohorts.');
     }
     final cohortPackages = <String>[

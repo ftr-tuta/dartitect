@@ -303,7 +303,7 @@ environment:
         );
         final packageText =
             (package.contents.single as TextResourceContents).text;
-        expect(packageText, contains('development'));
+        expect(packageText, contains('release candidate'));
         final diagnostic = await environment.connection.readResource(
           ReadResourceRequest(uri: 'dartitect://diagnostics/DT1001'),
         );

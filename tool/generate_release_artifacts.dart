@@ -211,20 +211,22 @@ String _dartManifest(
     ..writeln(
       "  static const String candidateTag = '${contract['candidateTag']}';",
     )
-    ..writeln('  static const Map<String, String> compatibleRanges =')
-    ..writeln('      <String, String>{');
+    ..writeln(
+      '  static const Map<String, String> compatibleRanges = <String, String>{',
+    );
   for (final name in order) {
-    buffer.writeln("        '$name': '${range(name)}',");
+    buffer.writeln("    '$name': '${range(name)}',");
   }
   buffer
-    ..writeln('      };')
-    ..writeln('  static const Map<String, String> packageVersions =')
-    ..writeln('      <String, String>{');
+    ..writeln('  };')
+    ..writeln(
+      '  static const Map<String, String> packageVersions = <String, String>{',
+    );
   for (final name in order) {
-    buffer.writeln("        '$name': '${_object(packages[name])['version']}',");
+    buffer.writeln("    '$name': '${_object(packages[name])['version']}',");
   }
   buffer
-    ..writeln('      };')
+    ..writeln('  };')
     ..writeln('}');
   return buffer.toString();
 }

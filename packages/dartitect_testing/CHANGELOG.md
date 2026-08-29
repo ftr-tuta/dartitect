@@ -3,6 +3,8 @@
 ## 1.0.0-rc.8
 
 - Prepare the package for the RC8 greenfield platform baseline and compatible post-1.0 publication cohorts.
+- Replace self-reported feature facts with observed events, stores, revisions,
+  acknowledgements, fresh graphs, and the real `ResourceCensus`.
 
 ## 1.0.0-rc.6
 

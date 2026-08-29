@@ -3,6 +3,8 @@
 ## 1.0.0-rc.8
 
 - Prepare the package for the RC8 greenfield platform baseline and compatible post-1.0 publication cohorts.
+- Add `DartitectViewModel` ownership, notification forwarding, diagnostics, and
+  idempotent reverse-order command/resource disposal.
 
 ## 1.0.0-rc.6
 

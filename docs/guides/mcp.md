@@ -59,8 +59,9 @@ all previews are read-only. Scan and verify accept bounded `offset`/`limit`;
 verify combines architecture, modeling freshness, native-strict ecosystem, and
 provider status. Deep doctor is opt-in and time-bounded.
 
-`dartitect_audit_conformance` declares existing projects `audit_only`, uses the
-unbaselined scan as evidence, and never returns an architecture conversion.
+`dartitect_audit_conformance` audits a project created with Dartitect after
+development or a supported SDK upgrade. It uses the strict scan as evidence
+and never returns an application-conversion plan.
 
 RC8 adds confined, closed-schema tools:
 
@@ -89,9 +90,9 @@ protocol work; use `$dartitect-tooling` and the CLI directly for scripts or CI.
 Add `--allow-writes` to the server arguments only when reviewed local writes
 are required. This flag alone is insufficient.
 
-Model sync and primary-constructor migration use the same preview/apply gate as
-init, feature creation, wiring sync, baseline, and managed skill
-synchronization. Preview payloads contain
+Model sync and primary-constructor quick fixes use the same preview/apply gate
+as init, feature creation, wiring sync, and managed skill synchronization.
+Preview payloads contain
 operations and semantic manifests, never consumer source bodies.
 
 Apply requires all of:

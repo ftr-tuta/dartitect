@@ -40,6 +40,7 @@ container, service locator, or application-state runtime is prohibited.
 | Polygon pole of inaccessibility | `dartitect_geometry` | `package:dartitect_geometry/dartitect_geometry.dart` | Dart, Flutter, web | `$dartitect-runtime` | A GIS engine or mutable geometry model is expected |
 | Deterministic boundary helpers | `dartitect_testing` | `package:dartitect_testing/dartitect_testing.dart` | Dart, Flutter, web | `$dartitect-testing` | The real provider/code-generation boundary is what the test must prove |
 | Inspect, scan, doctor, config, generators, Codex sync | `dartitect_cli` | `package:dartitect_cli/dartitect_cli.dart`; `dartitect` executable | Dart VM | `$dartitect-tooling` | Application runtime behavior or a remote service is expected |
+| Bounded OpenAPI 3.1 contracts | `dartitect_cli` | `package:dartitect_cli/dartitect_contracts.dart`; `dartitect contracts` | Dart VM | `$dartitect-tooling` | Network refs, streaming, multipart, security execution, or inferred domain mapping is expected |
 | Analyzer diagnostics | `dartitect_lints` | plugin `package:dartitect_lints/main.dart` | Dart analyzer | `$dartitect-tooling` | The host cannot run analyzer plugins; use `dartitect scan` instead |
 | Local MCP tools/resources | `dartitect_mcp` | `package:dartitect_mcp/dartitect_mcp.dart`; local STDIO executable | Dart VM, STDIO | `$dartitect-mcp` | Shell/CI automation, arbitrary files, HTTP/OAuth, or running-app access is required |
 
@@ -60,7 +61,7 @@ to `$dartitect-tooling`; it is not an application entrypoint.
 | Dio, Drift, ObjectBox, Sentry, or custom provider | `$dartitect-adapters` | `$dartitect-observability` or `$dartitect-offline-first` according to policy |
 | Telemetry policy and capture | `$dartitect-observability` | `$dartitect-adapters` only after selecting a provider |
 | Failure/lifecycle/provider verification | `$dartitect-testing` | The focused implementation skill |
-| CLI, scanner, lints, generators, native setup, release gates | `$dartitect-tooling` | Keep MCP work separate |
+| CLI, scanner, lints, OpenAPI contracts, generators, native setup, release gates | `$dartitect-tooling` | Keep MCP work separate |
 | Local agent inspection and reviewed previews | `$dartitect-mcp` | Use the CLI directly for scripts and CI |
 
 Cross-cutting flows intentionally invoke more than one skill. Each skill

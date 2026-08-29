@@ -3,6 +3,8 @@
 ## 1.0.0-rc.8
 
 - Prepare the package for the RC8 greenfield platform baseline and compatible post-1.0 publication cohorts.
+- Add config v2, capability-specific assemblies, confined local-extension
+  analysis, bounded OpenAPI contracts, semantic API gates, and consumer-tax.
 
 ## 1.0.0-rc.6
 

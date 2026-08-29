@@ -51,7 +51,7 @@ ObjectBox primary-constructor evidence is intentionally two-part: the exact
 5.3.2 primary +var+ candidate must fail under its pinned Analyzer 10.2 resolver,
 and the narrowly excepted traditional entity must generate and pass a real
 native Store test. The mixed Dartitect+ObjectBox+Drift evidence keeps generator
-contexts and data writers in separate bounded packages; it proves coexistence,
+contexts and data writers in separate bounded packages; it proves isolation,
 not a same-package resolver, bridge, dual-write, or cross-engine transaction.
 
 == Receipts and release rule

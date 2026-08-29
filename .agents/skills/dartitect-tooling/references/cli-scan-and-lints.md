@@ -7,6 +7,11 @@ The target-aware `features` section declares `local`, `online`, `cache`,
 `replica`, or `offline-full` and refers to named provider blocks. `verify` checks declarative
 compatibility; behavioral guarantees remain contract-matrix evidence.
 
+`dartitect contracts check|sync` accepts only confined local OpenAPI 3.1 JSON
+or YAML and local refs. Keep network access, streaming, multipart, callbacks,
+webhooks, automatic security execution, and inferred domain mapping outside the
+generator. Preview before apply and classify additive versus breaking changes.
+
 Scan only declared roots using real path segments; ignore nested caches and
 generated code. Every finding fails strict scan. Local suppressions require an
 owner, reason, and expiry, and release doctor rejects all suppressions. Keep CLI

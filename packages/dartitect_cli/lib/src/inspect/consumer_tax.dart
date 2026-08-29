@@ -111,7 +111,10 @@ final class ConsumerTaxInspector {
         ? await DartitectConfig.load(configFile)
         : DartitectConfig(features: DartitectFeaturesConfig());
     final profile = _effectiveProfile(config);
-    final budget = _budgets[profile]!;
+    final budget = Map<String, int>.from(_budgets[profile]!);
+    if (config.observability.provider == 'sentry') {
+      budget['directDependencyCount'] = budget['directDependencyCount']! + 2;
+    }
     final files = await _dartFiles();
     final importedPackages = <String>{};
     final requiredSymbols = <String>{};
@@ -388,6 +391,7 @@ String _effectiveProfile(DartitectConfig config) {
 }
 
 Map<String, bool> _capabilityOptIns(DartitectConfig config) => <String, bool>{
+  'observability': config.observability.provider != 'none',
   'transport': config.transports.isNotEmpty,
   'storage': config.storageContexts.isNotEmpty,
   'sync': config.features.declarations.values.any(
@@ -482,6 +486,11 @@ const _languageSymbols = <String>{
 };
 
 const _capabilityPackages = <String, Set<String>>{
+  'observability': <String>{
+    'dartitect_observability',
+    'dartitect_sentry',
+    'sentry',
+  },
   'transport': <String>{'dio', 'dartitect_dio'},
   'storage': <String>{'drift', 'dartitect_drift'},
   'sync': <String>{'dartitect_sync'},

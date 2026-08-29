@@ -1,6 +1,6 @@
 ---
 name: dartitect-tooling
-description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, fleet, lints, semantic compiler, generators, native setup, and release gates. Use for shell/CI architecture tooling; MCP configuration and protocol work belongs to the MCP skill.
+description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, fleet, bounded OpenAPI contracts, lints, semantic compiler, generators, native setup, and release gates. Use for shell/CI architecture tooling; MCP configuration and protocol work belongs to the MCP skill.
 ---
 
 # Operate Dartitect tooling
@@ -8,7 +8,7 @@ description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, 
 ## When to use
 
 Use this skill for CLI commands/services, stable config v2, verify/scanner/doctor policy,
-analyzer diagnostics, generators, Codex sync, native fixture setup,
+bounded local OpenAPI contracts, analyzer diagnostics, generators, Codex sync, native fixture setup,
 or repository release gates.
 
 ## When not to use

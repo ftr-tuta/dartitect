@@ -9,7 +9,6 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:dart_mcp/server.dart';
 import 'package:dartitect_cli/dartitect_cli.dart';
-import 'package:dartitect_cli/src/model/primary_constructor_migration.dart';
 
 import 'catalog/generated_catalog.dart';
 import 'policy.dart';
@@ -746,17 +745,15 @@ base class DartitectMcpServer extends MCPServer
     Map<String, Object?> arguments,
   ) async {
     final root = await _resolveProject(arguments);
-    final report = await PrimaryConstructorMigration(root).inspect();
+    final report = await DartitectModelGenerator(root).inspect();
     final results = <Map<String, Object?>>[
-      for (final diagnostic in report.diagnostics)
+      for (final diagnostic in report.findings)
         <String, Object?>{'category': 'diagnostic', ...diagnostic.toJson()},
-      for (final operation in report.operations)
-        <String, Object?>{'category': 'migration', ...operation.toJson()},
     ];
     return _ok(<String, Object?>{
       'command': 'verify primary constructor policy',
-      'pendingRecovery': report.pendingRecovery,
-      'modelCount': report.modelCount,
+      'pendingRecovery': report.plan?.pendingRecovery ?? false,
+      'modelCount': report.operations.length,
       ..._paginateValues(results, arguments),
     });
   }

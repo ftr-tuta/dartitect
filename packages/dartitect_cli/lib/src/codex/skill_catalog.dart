@@ -1085,7 +1085,7 @@ concurrency, pending recovery, and stable JSON/SARIF/exit codes.
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-tooling
-description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, fleet, lints, semantic compiler, generators, native setup, and release gates. Use for shell/CI architecture tooling; MCP configuration and protocol work belongs to the MCP skill.
+description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, fleet, bounded OpenAPI contracts, lints, semantic compiler, generators, native setup, and release gates. Use for shell/CI architecture tooling; MCP configuration and protocol work belongs to the MCP skill.
 ---
 
 # Operate Dartitect tooling
@@ -1093,7 +1093,7 @@ description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, 
 ## When to use
 
 Use this skill for CLI commands/services, stable config v2, verify/scanner/doctor policy,
-analyzer diagnostics, generators, Codex sync, native fixture setup,
+bounded local OpenAPI contracts, analyzer diagnostics, generators, Codex sync, native fixture setup,
 or repository release gates.
 
 ## When not to use
@@ -1140,6 +1140,11 @@ experimental versions, unknown keys, credentials, and opaque plugin data.
 The target-aware `features` section declares `local`, `online`, `cache`,
 `replica`, or `offline-full` and refers to named provider blocks. `verify` checks declarative
 compatibility; behavioral guarantees remain contract-matrix evidence.
+
+`dartitect contracts check|sync` accepts only confined local OpenAPI 3.1 JSON
+or YAML and local refs. Keep network access, streaming, multipart, callbacks,
+webhooks, automatic security execution, and inferred domain mapping outside the
+generator. Preview before apply and classify additive versus breaking changes.
 
 Scan only declared roots using real path segments; ignore nested caches and
 generated code. Every finding fails strict scan. Local suppressions require an

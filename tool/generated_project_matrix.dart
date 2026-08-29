@@ -287,71 +287,117 @@ void main() {
 }
 ''', flush: true);
   }
-  if (feature?.profile == 'offline-full') {
-    final pubspec = File('${project.path}/pubspec.yaml');
-    final source = await pubspec.readAsString();
-    await pubspec.writeAsString(
-      source
-          .replaceFirst(
-            'dev_dependencies:\n',
-            '  dartitect_sync:\n'
-                '    path: ${_yamlPath('${workspace.path}/packages/dartitect_sync')}\n'
-                'dev_dependencies:\n',
-          )
-          .replaceFirst(
-            'dependency_overrides:\n',
-            'dependency_overrides:\n'
-                '  dartitect_jobs:\n'
-                '    path: ${_yamlPath('${workspace.path}/packages/dartitect_jobs')}\n'
-                '  dartitect_resilience:\n'
-                '    path: ${_yamlPath('${workspace.path}/packages/dartitect_resilience')}\n'
-                '  dartitect_sync:\n'
-                '    path: ${_yamlPath('${workspace.path}/packages/dartitect_sync')}\n',
-          ),
-      flush: true,
-    );
-  }
+  await _addLocalSdkDependencies(workspace, project, <String>{
+    if (scenario.observability != 'none') 'dartitect_observability',
+    if (scenario.observability == 'sentry') 'dartitect_sentry',
+    if (feature?.transport ?? false) 'dartitect_dio',
+    if (feature?.storage ?? false) 'dartitect_drift',
+    if (feature?.profile == 'offline-full') 'dartitect_sync',
+  });
   if (scenario.background) {
     final main = File('${project.path}/lib/main.dart');
     final mainSource = await main.readAsString();
     await main.writeAsString(
       mainSource
-          .replaceFirst(
-            "import 'package:dartitect_flutter/dartitect_flutter.dart';",
-            "import 'package:dartitect_flutter/dartitect_flutter.dart';\n"
-                "import 'package:dartitect_observability/dartitect_observability.dart';",
-          )
-          .replaceFirst(
-            '  create: ApplicationModule.create<Never, Never>,',
-            '  create: () => ApplicationModule.create<Never, Never>(\n'
-                '    createObservability: ObservabilityRuntime.new,\n'
-                '  ),',
-          ),
+              .replaceFirst(
+                "import 'package:dartitect_flutter/dartitect_flutter.dart';",
+                "import 'package:dartitect_flutter/dartitect_flutter.dart';\n"
+                    "import 'package:dartitect_observability/dartitect_observability.dart';\n"
+                    "import 'package:dartitect_sentry/dartitect_sentry.dart';\n"
+                    "import 'package:sentry/sentry.dart';",
+              )
+              .replaceFirst(
+                '  create: ApplicationModule.create<Never, Never>,',
+                '  create: () => ApplicationModule.create<Never, Never>(\n'
+                    '    createObservability: _createObservability,\n'
+                    '  ),',
+              ) +
+          '''
+
+final _sentryHub = Hub(
+  SentryOptions()
+    ..dsn = 'https://public@example.invalid/1'
+    ..transport = _DiscardingSentryTransport(),
+);
+
+ObservabilityRuntime _createObservability() => ObservabilityRuntime(
+  logSinks: <LogSinkRegistration>[
+    LogSinkRegistration.borrowed(SentryLogSink(hub: _sentryHub)),
+  ],
+);
+
+final class _DiscardingSentryTransport implements Transport {
+  @override
+  Future<SentryId?> send(SentryEnvelope envelope) async => null;
+}
+''',
       flush: true,
     );
     final pubspec = File('${project.path}/pubspec.yaml');
     final source = await pubspec.readAsString();
     await pubspec.writeAsString(
-      source
-          .replaceFirst(
+      source.replaceFirst(
+        'dev_dependencies:\n',
+        '  sentry: ^9.27.0\n'
             'dev_dependencies:\n',
-            '  dartitect_observability:\n'
-                '    path: ${_yamlPath('${workspace.path}/packages/dartitect_observability')}\n'
-                '  dartitect_sentry:\n'
-                '    path: ${_yamlPath('${workspace.path}/packages/dartitect_sentry')}\n'
-                'dev_dependencies:\n',
-          )
-          .replaceFirst(
-            'dependency_overrides:\n',
-            'dependency_overrides:\n'
-                '  dartitect_observability:\n'
-                '    path: ${_yamlPath('${workspace.path}/packages/dartitect_observability')}\n'
-                '  dartitect_sentry:\n'
-                '    path: ${_yamlPath('${workspace.path}/packages/dartitect_sentry')}\n',
-          ),
+      ),
       flush: true,
     );
   }
+}
+
+Future<void> _addLocalSdkDependencies(
+  Directory workspace,
+  Directory project,
+  Set<String> selected,
+) async {
+  if (selected.isEmpty) return;
+  const dependencies = <String, Set<String>>{
+    'dartitect_observability': {'dartitect'},
+    'dartitect_jobs': {'dartitect'},
+    'dartitect_resilience': {'dartitect'},
+    'dartitect_transfer': {'dartitect'},
+    'dartitect_sync': {'dartitect', 'dartitect_jobs', 'dartitect_resilience'},
+    'dartitect_dio': {
+      'dartitect',
+      'dartitect_observability',
+      'dartitect_transfer',
+    },
+    'dartitect_drift': {
+      'dartitect',
+      'dartitect_observability',
+      'dartitect_sync',
+    },
+    'dartitect_sentry': {'dartitect_observability'},
+  };
+  final closure = <String>{...selected};
+  var changed = true;
+  while (changed) {
+    changed = false;
+    for (final package in closure.toList(growable: false)) {
+      for (final dependency in dependencies[package] ?? const <String>{}) {
+        changed = closure.add(dependency) || changed;
+      }
+    }
+  }
+  final direct = selected.toList()..sort();
+  final overrides = closure.difference(const <String>{'dartitect'}).toList()
+    ..sort();
+  final pubspec = File('${project.path}/pubspec.yaml');
+  var source = await pubspec.readAsString();
+  source = source.replaceFirst(
+    'dev_dependencies:\n',
+    '${direct.map((package) => '  $package:\n'
+            '    path: ${_yamlPath('${workspace.path}/packages/$package')}\n').join()}'
+        'dev_dependencies:\n',
+  );
+  source = source.replaceFirst(
+    'dependency_overrides:\n',
+    'dependency_overrides:\n'
+        '${overrides.map((package) => '  $package:\n'
+            '    path: ${_yamlPath('${workspace.path}/packages/$package')}\n').join()}',
+  );
+  await pubspec.writeAsString(source, flush: true);
 }
 
 Future<void> _verifyProviderNeutralScaffold(

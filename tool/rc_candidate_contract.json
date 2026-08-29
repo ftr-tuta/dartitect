@@ -63,6 +63,8 @@
     "tool/sdk_inventory.json",
     "tool/generate_release_artifacts.dart",
     "docs/release/package-cohorts.adoc",
+    "docs/release/rc8-handoff.adoc",
+    "docs/guides/openapi-contracts.md",
     "packages/dartitect_cli/lib/src/release/generated_release_manifest.dart",
     "packages/dartitect_mcp/lib/src/catalog/generated_catalog.dart",
     "docs/release/sbom.spdx.json",

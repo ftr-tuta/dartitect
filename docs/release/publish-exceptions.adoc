@@ -26,5 +26,5 @@ protocol surface.
 The release audit accepts exactly one warning for `dartitect_mcp`: the
 `dart_mcp` tight-constraint warning at version `0.5.2`. It rejects a warning for
 any other dependency, a changed warning count, or the same warning in another
-package. `dartitect_mcp` and its `dartitect_cli` dependency are both on the
-lockstep prerelease line.
+package. `dartitect_mcp` and its `dartitect_cli` dependency are both inside the
+compatibility ranges generated from the RC8 release authority.

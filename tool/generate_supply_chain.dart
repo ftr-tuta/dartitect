@@ -107,7 +107,7 @@ Future<void> main(List<String> arguments) async {
         'relationships': relationships,
       })}\n';
   final licenses =
-      '${encoder.convert(<String, Object?>{'schemaVersion': 1, 'generatedFor': 'lockstep candidate cohort $cohort', 'packages': licenseInventory})}\n';
+      '${encoder.convert(<String, Object?>{'schemaVersion': 1, 'generatedFor': 'release baseline $cohort', 'packages': licenseInventory})}\n';
   final sbomFile = File('${output.path}/sbom.spdx.json');
   final licenseFile = File('${output.path}/dependency-licenses.json');
   if (arguments.contains('--check')) {

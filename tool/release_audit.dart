@@ -90,6 +90,8 @@ Future<void> main(List<String> arguments) async {
     'docs/release/pub-dev-identity-audit.adoc',
     'docs/release/publish-exceptions.adoc',
     'docs/release/publication-runbook.adoc',
+    'docs/release/package-cohorts.adoc',
+    'docs/release/rc8-handoff.adoc',
     'tool/api_surface.snapshot.json',
     'tool/package_release_contract.json',
     'tool/provider_constructor_evidence.json',
@@ -122,7 +124,7 @@ Future<void> main(List<String> arguments) async {
       packages.add(entity);
     }
   }
-  final publicationOrder = _packagePublicationOrder(root);
+  final publicationOrder = packagePublicationOrder(root);
   final publicationPositions = <String, int>{
     for (var index = 0; index < publicationOrder.length; index += 1)
       publicationOrder[index]: index,
@@ -165,12 +167,12 @@ String _cohortVersion(Directory root) {
   return value['cohortVersion']! as String;
 }
 
-List<String> _packagePublicationOrder(Directory root) {
+List<String> packagePublicationOrder(Directory root) {
   final contract = jsonDecode(
     File('${root.path}/tool/package_release_contract.json').readAsStringSync(),
   );
   if (contract is! Map<String, Object?> ||
-      contract['schemaVersion'] != 1 ||
+      contract['schemaVersion'] != 2 ||
       contract['publicationOrder'] is! List<Object?>) {
     throw const FormatException('Invalid package release contract.');
   }

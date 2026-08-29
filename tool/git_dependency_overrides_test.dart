@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:test/test.dart';
@@ -36,12 +37,12 @@ void main() {
   test(
     'supports any combination of the complete twenty-four-package cohort',
     () {
-      final contract = File('${root.path}/tool/package_release_contract.json')
-          .readAsStringSync();
-      final names = RegExp(
-        r'^      "(dartitect(?:_[a-z]+)*)"',
-        multiLine: true,
-      ).allMatches(contract).map((match) => match.group(1)!).toSet();
+      final contract = jsonDecode(
+        File('${root.path}/tool/package_release_contract.json')
+            .readAsStringSync(),
+      ) as Map<String, Object?>;
+      final packages = contract['packages']! as Map<String, Object?>;
+      final names = packages.keys.toSet();
       final output = buildGitDependencyOverrides(
         root,
         names,

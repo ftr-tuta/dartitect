@@ -73,6 +73,8 @@ independently documented and exports only public entrypoints under `lib/`.
 | Deterministic contract tests | [`dartitect_testing`](packages/dartitect_testing/) | Real provider fixtures when generated/native behavior is under test |
 | Read-only local diagnostics inspection | [`dartitect_devtools`](packages/dartitect_devtools/) | Explicit development-entrypoint registration only; never product activation |
 | Inspection, generation, editor diagnostics, or agent context | [`dartitect_cli`](packages/dartitect_cli/), [`dartitect_lints`](packages/dartitect_lints/), [`dartitect_mcp`](packages/dartitect_mcp/) | Managed Codex skills synchronized by the CLI |
+| OpenAPI 3.1 JSON contracts | `dartitect contracts check|sync` | Local specs/refs only; generated DTOs and endpoint descriptors never infer domain mappings or execute security schemes |
+| Non-neutral reusable infrastructure | `DartitectLocalExtension<B>` in the consumer workspace | Typed project-local binding generated from confined semantic source analysis; no plugin execution, registry, marketplace, or SDK preset |
 
 The [ecosystem selection guide](docs/guides/ecosystem-selection.md) gives the
 detailed decision matrix. The [implementation recipes](docs/guides/implementation-recipes.md)
@@ -195,6 +197,8 @@ The CLI is the deterministic interface for local development and CI:
 dart run dartitect_cli:dartitect inspect --json
 dart run dartitect_cli:dartitect scan
 dart run dartitect_cli:dartitect doctor
+dart run dartitect_cli:dartitect inspect --consumer-tax --json
+dart run dartitect_cli:dartitect contracts check api/openapi.yaml --json
 dart run dartitect_cli:dartitect model check --json
 dart run dartitect_cli:dartitect wiring sync --dry-run --json
 dart run dartitect_cli:dartitect codex sync --dry-run
@@ -205,6 +209,11 @@ consumer-owned; only manifest-owned outputs can be converged by the tool. The
 analyzer plugin supplies editor feedback, while `dartitect scan` is the CI and
 unsupported-host fallback. MCP is local STDIO, read-only by default, and maps
 to the typed project service rather than a shell. See [model generation](docs/guides/model-generation.md),
+[config v2](docs/guides/config-v2.md),
+[typed project-local extensions](docs/guides/project-local-extensions.md),
+[bounded OpenAPI contracts](docs/guides/openapi-contracts.md),
+[credential generations](docs/guides/credential-generations.md),
+[consumer tax](docs/guides/consumer-tax.md),
 [MCP](docs/guides/mcp.md), and [fleet tooling](docs/guides/fleet-tooling.md).
 
 ## Ownership and lifecycle rules

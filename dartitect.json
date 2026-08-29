@@ -26,7 +26,8 @@
     "**/integration_test/**",
     "**/composition/**",
     "**/*_composition_root.dart",
-    "tool/drift_web_fixture/**"
+    "tool/drift_web_fixture/**",
+    "tool/drift_fixture/**"
   ],
   "generatedInfrastructure": [
     "**/infrastructure/**/*.g.dart"

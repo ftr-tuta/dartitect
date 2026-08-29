@@ -27,6 +27,7 @@ Result<int, StateError> load() => const Ok<int>(1);
       expect(report.metrics, contains('analysisMillis'));
       expect(report.metrics, contains('buildMillis'));
       expect(report.capabilityOptIns, <String, bool>{
+        'observability': false,
         'transport': false,
         'storage': false,
         'sync': false,
@@ -35,6 +36,37 @@ Result<int, StateError> load() => const Ok<int>(1);
       expect(report.requiredSymbols, containsAll(<String>['Result', 'Ok']));
     },
   );
+
+  test('Sentry opt-in expands only its direct dependency budget', () async {
+    final root = await _project(
+      dependencies: const <String>[
+        'dartitect',
+        'dartitect_observability',
+        'dartitect_sentry',
+        'sentry',
+      ],
+      source: '''
+import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_observability/dartitect_observability.dart';
+import 'package:dartitect_sentry/dartitect_sentry.dart';
+import 'package:sentry/sentry.dart';
+
+Object? use(Result<int, StateError> result, ObservabilityRuntime runtime,
+        SentryLogSink sink, Hub hub) => result;
+''',
+      config: DartitectConfig(
+        features: DartitectFeaturesConfig(),
+        observability: DartitectObservabilityConfig(provider: 'sentry'),
+      ),
+    );
+    addTearDown(() => root.delete(recursive: true));
+
+    final report = await ConsumerTaxInspector(root).inspect();
+
+    expect(report.isCompliant, isTrue);
+    expect(report.budgets['directDependencyCount'], 7);
+    expect(report.capabilityOptIns['observability'], isTrue);
+  });
 
   test(
     'structural plumbing and unselected dependencies fail ratchets',
@@ -103,6 +135,7 @@ final engine = SyncEngine(null);
 Future<Directory> _project({
   required List<String> dependencies,
   required String source,
+  DartitectConfig? config,
 }) async {
   final root = await Directory.systemTemp.createTemp('dartitect-consumer-tax-');
   await File('${root.path}/pubspec.yaml').writeAsString('''
@@ -113,7 +146,7 @@ dependencies:
 ${dependencies.map((dependency) => '  $dependency: any').join('\n')}
 ''');
   await File('${root.path}/dartitect.json').writeAsString(
-    DartitectConfig(features: DartitectFeaturesConfig()).encode(),
+    (config ?? DartitectConfig(features: DartitectFeaturesConfig())).encode(),
   );
   final target = File('${root.path}/lib/composition.dart');
   await target.parent.create(recursive: true);

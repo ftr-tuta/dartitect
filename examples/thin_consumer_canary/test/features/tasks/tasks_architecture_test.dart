@@ -42,10 +42,11 @@ void main() {
       'Timer(',
     ];
     final generated = <File>[];
-    for (final file in lib
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((candidate) => candidate.path.endsWith('.dart'))) {
+    for (final file
+        in lib
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((candidate) => candidate.path.endsWith('.dart'))) {
       final source = file.readAsStringSync();
       if (file.path.endsWith('.dartitect.g.dart')) {
         generated.add(file);

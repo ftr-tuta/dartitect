@@ -8,7 +8,7 @@ Machine contract:: `tool/rc_candidate_contract.json`
 == Package names
 
 An unauthenticated `GET /api/packages/{name}` request to the official pub.dev
-API returned HTTP 404 for each of the 23 names in the lockstep publication
+API returned HTTP 404 for each of the 24 names in the RC8 publication
 order. No existing package currently collides with the intended cohort:
 
 `dartitect`, `dartitect_geometry`, `dartitect_locale_br`, `dartitect_privacy`,

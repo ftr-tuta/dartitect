@@ -12,8 +12,8 @@ dartitect fleet upgrade apps/a apps/b \
 
 Upgrade preview is deterministic across the complete cohort. Apply acquires a
 fleet lock and project locks in order, journals every affected byte, upgrades
-dependencies, runs the exact Dartitect RC6/v1-to-RC8/v2 upgrade, synchronizes primary
-constructors, models, wiring, and operational schemas, then executes only the
+dependencies, runs the exact Dartitect RC6/v1-to-RC8/v2 upgrade, synchronizes
+primary constructors, models, wiring, and operational schemas, then executes only the
 allowlisted pub-get, analyze, test, and contract-matrix commands.
 
 No project commits until every project passes. Failure restores every codebase
