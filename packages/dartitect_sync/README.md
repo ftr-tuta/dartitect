@@ -2,10 +2,10 @@
 
 ## Purpose
 
-Provider-neutral primitives for three separate offline/background concerns:
+Provider-neutral primitives for four separate offline/background concerns:
 durable mutation plus outbox delivery, ordered dataset synchronization, and
-headless synchronization commands. The package imports no Flutter, HTTP,
-database, or platform scheduler.
+headless synchronization commands, plus explicit trigger coordination. The
+package imports no Flutter, HTTP, database, or platform scheduler.
 
 ## When to use
 
@@ -49,6 +49,10 @@ Choose one mechanism for each concern:
    `dartitect_jobs`, deduplicates a bounded request set, acknowledges
    acceptance, creates one fresh `OwnedGraph`, and produces a terminal
    completion/failure acknowledgment without hidden retries.
+4. A `SyncTriggerCoordinator` subscribes to injected manual, lifecycle,
+   connectivity, scheduler, push, and session sources. It unions datasets,
+   keeps the highest-priority cause, permits at most one coalesced follow-up per
+   active run, and fences every batch by session generation.
 
 These flows may call the same repositories, but their durability records and
 retry ownership are distinct. A mutation outbox is not a dataset checkpoint; a
@@ -168,13 +172,26 @@ Headless synchronization:
   expected failed outcomes. `HeadlessSyncHandler` is built inside the fresh
   graph.
 
+Trigger coordination:
+
+- `SyncTriggerSources` supplies exactly six inert streams; `start()` attaches
+  and `disposeAsync()` removes every listener and drains active work.
+- `SyncTriggerIntent`, `SyncTriggerBatch`, and `SyncTriggerCause` keep dataset
+  selection, deadline, generation, and priority explicit.
+- `SyncTriggerPhase` exposes `idle`, `scheduled`, `running`, `blocked`,
+  `offline`, and `backoff`. Offline resumes only from injected connectivity;
+  blocked/backoff resume only through explicit consumer calls.
+- `SyncTriggerRunDisposition` reports consumer policy. The coordinator creates
+  no backoff timer, retry, scheduler registration, or dataset policy.
+
 ## Ownership and lifecycle
 
-The engine, runs, mutation command, and headless endpoint are owned by the
-composition that creates them. Checkpoint, lease, journal, outbox, repository,
-transport, clock, observer, and provider resources are borrowed unless the
-consumer graph explicitly owns them. Dispose producers first, then engine/
-endpoint/commands, then persistence and transport dependencies.
+The engine, runs, mutation command, trigger coordinator, and headless endpoint
+are owned by the composition that creates them. Checkpoint, lease, journal,
+outbox, repository, transport, clock, observer, and provider resources are
+borrowed unless the consumer graph explicitly owns them. Dispose trigger
+producers first, then coordinator/engine/endpoint/commands, then persistence
+and transport dependencies.
 
 Every foreground or headless execution builds or uses a graph owned by its
 entrypoint. Only validated data crosses isolates. Headless disposal rejects new
@@ -200,6 +217,11 @@ authoritative. Dependencies run only after their selected prerequisites
 succeed. One engine may own multiple runs; a configured lease controls external
 authority, not in-process scheduling.
 
+Trigger deadlines cancel only the selected runner signal. Session-generation
+changes and offline transitions cancel active work and discard stale-generation
+completion. A blocked or backoff disposition never schedules its own retry;
+the consumer must release it and provide any reschedule policy.
+
 For fencing, call `ensureAuthority()` immediately before the local commit and
 compare `fencingToken` inside the same storage transaction. Checking the lease
 without atomic compare-and-commit provides no fencing guarantee.
@@ -221,6 +243,8 @@ recorded terminal future while retained.
   isolate.
 - Never assume exactly-once delivery, global scheduling, or crash-proof
   persistence from in-memory ports.
+- Never treat trigger coalescing as retry, scheduler, connectivity, or session
+  ownership.
 
 `resumeIncomplete` starts replacement attempts for incomplete journal summaries
 and omits journal-confirmed completed datasets, but the checkpoint store remains
@@ -235,6 +259,9 @@ renewal/expiry/fencing, cancellation, deadlines, cleanup failures, terminal
 receipt inspection, headless duplicate requests, protocol rejection, and graph
 teardown. `dartitect_testing` includes in-memory stores, manual leases/clocks,
 crash harnesses, and sync contract harnesses.
+Trigger tests should also cover cause priority, dataset union, one follow-up,
+generation fencing, offline/backoff release, deadline cancellation, stream
+errors, and zero remaining listeners/timers after teardown.
 
 ## Related packages and guides
 

@@ -38,7 +38,7 @@ does not generate an example unless `--example=tasks` is requested.
 `create feature` records the strict declaration, creates consumer seams once,
 and materializes executable
 repository/provider/resource/command/pagination/outbox/sync/job/diagnostic/
-ViewModel and contract-fixture wiring.
+ViewModel wiring.
 
 ## Stable opt-in workflows
 
@@ -57,6 +57,10 @@ ViewModel and contract-fixture wiring.
   closed presentation states, and restoration.
 - `package:dartitect_workmanager/dartitect_workmanager.dart`: fresh graph per
   callback, versioned envelopes, deadlines, receipts, and cancellation.
+- `package:dartitect_sync/dartitect_sync.dart`: injected manual, lifecycle,
+  connectivity, scheduler, push, and session trigger sources; generation
+  fencing; one coalesced follow-up; and explicit offline/blocked/backoff state
+  without hidden retries.
 
 Workmanager capability maturity is stable on Android/iOS/macOS, preview on
 web/Linux because of upstream lifecycle limits, and typed unsupported on

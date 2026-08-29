@@ -3132,6 +3132,46 @@
         "declaration": "final class SyncRunTerminalException<K, C, F extends Object> implements Exception"
       },
       {
+        "name": "SyncTriggerBatch",
+        "declaration": "final class SyncTriggerBatch<K>"
+      },
+      {
+        "name": "SyncTriggerCancellationReason",
+        "declaration": "enum SyncTriggerCancellationReason"
+      },
+      {
+        "name": "SyncTriggerCause",
+        "declaration": "enum SyncTriggerCause"
+      },
+      {
+        "name": "SyncTriggerCoordinator",
+        "declaration": "final class SyncTriggerCoordinator<K> implements AsyncDisposable"
+      },
+      {
+        "name": "SyncTriggerIntent",
+        "declaration": "final class SyncTriggerIntent<K>"
+      },
+      {
+        "name": "SyncTriggerPhase",
+        "declaration": "enum SyncTriggerPhase"
+      },
+      {
+        "name": "SyncTriggerRunDisposition",
+        "declaration": "enum SyncTriggerRunDisposition"
+      },
+      {
+        "name": "SyncTriggerRunner",
+        "declaration": "typedef SyncTriggerRunner<in K> = Future<SyncTriggerRunDisposition> Function(SyncTriggerBatch<K>, CancellationSignal)"
+      },
+      {
+        "name": "SyncTriggerSnapshot",
+        "declaration": "final class SyncTriggerSnapshot<K>"
+      },
+      {
+        "name": "SyncTriggerSources",
+        "declaration": "final class SyncTriggerSources<K>"
+      },
+      {
         "name": "SystemSyncClock",
         "declaration": "final class SystemSyncClock implements SyncClock"
       },

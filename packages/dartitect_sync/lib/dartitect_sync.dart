@@ -10,3 +10,4 @@ export 'src/mutation_lane.dart';
 export 'src/offline/mutation_command.dart';
 export 'src/operational_storage.dart';
 export 'src/ports.dart';
+export 'src/trigger_coordinator.dart';
