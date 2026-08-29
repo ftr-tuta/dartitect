@@ -13,6 +13,6 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.text('First Tasks'), findsOneWidget);
+    expect(find.text('First Task'), findsOneWidget);
   });
 }

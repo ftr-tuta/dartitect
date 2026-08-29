@@ -7,17 +7,17 @@ import 'package:thin_consumer_canary/features/tasks/domain/tasks_repository.dart
 
 final class FakeTasksLocalStore implements TasksLocalStore {
   final StreamController<void> changes = StreamController<void>.broadcast();
-  final List<TasksModel> values = <TasksModel>[];
+  final List<Task> values = <Task>[];
 
   @override
   Stream<void> watch() => changes.stream;
 
   @override
-  Future<Result<List<TasksModel>, TasksFailure>> read(
+  Future<Result<List<Task>, TasksFailure>> read(
     CancellationSignal cancellation,
   ) async {
     cancellation.throwIfCancelled();
-    return Ok<List<TasksModel>>(List.unmodifiable(values));
+    return Ok<List<Task>>(List.unmodifiable(values));
   }
 
   Future<void> dispose() => changes.close();

@@ -5,10 +5,12 @@ import 'package:thin_consumer_canary/features/tasks/domain/tasks_repository.dart
 
 final class FakeTasksRemote implements TasksRemotePort {
   @override
-  Future<Result<List<TasksModel>, TasksFailure>> read(
+  Future<Result<List<Task>, TasksFailure>> read(
     CancellationSignal cancellation,
   ) async {
     cancellation.throwIfCancelled();
-    return Ok<List<TasksModel>>(<TasksModel>[TasksModel(id: 'fixture')]);
+    return const Ok<List<Task>>(<Task>[
+      Task(id: 'fixture', title: 'Fixture task'),
+    ]);
   }
 }
