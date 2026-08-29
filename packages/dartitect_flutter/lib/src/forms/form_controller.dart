@@ -40,7 +40,7 @@ abstract interface class DartitectFormDraftStore<T, F extends Object> {
     CancellationSignal cancellation,
   );
 
-  /// Persists the complete current value under [version].
+  /// Persists the complete current value under [DartitectFormDraft.version].
   Future<Result<void, F>> save(
     DartitectFormDraft<T> draft,
     CancellationSignal cancellation,

@@ -18,7 +18,7 @@ executables:
   dartitect_mcp: dartitect_mcp
 
 dependencies:
-  crypto: 3.0.7
+  crypto: ^3.0.7
   dart_mcp: 0.5.2
   dartitect_cli: '>=1.0.0-rc.6 <1.0.0'
 
