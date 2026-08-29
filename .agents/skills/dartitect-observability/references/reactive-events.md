@@ -23,8 +23,8 @@ reported once, disabled, and cannot change runtime state or the caller's error.
 dispose. `SafeDartitectDiagnosticReporter` isolates reentrancy and destination
 failure. Off detail allocates no subject ID; lifecycle detail retains every
 failure/crash terminal; topology detail supports
-`DiagnosticsTopologyHarness`. Construction/reporting APIs remain experimental
-under ADR 0034/0043 and install no remote destination or global Flutter hook.
+`DiagnosticsTopologyHarness`. Construction/reporting APIs are stable under ADR
+0044 and install no remote destination or global Flutter hook.
 The optional DevTools bridge registers exactly `capabilities`, `snapshot`, and
 `events` RPCs per isolate; it has no mutation surface and is absent from product
 builds.

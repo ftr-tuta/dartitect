@@ -14,8 +14,8 @@ UUID v4 generation, and first-frame splash ownership.
 == Decision
 
 This ADR supersedes ADR 0024's package count while preserving its dependency
-direction. As extended by ADR-0038, the 1.0 target contains seventeen packages and eighteen public
-entrypoints. It adds:
+direction. As extended by ADR-0038 and ADR-0044, the 1.0 target contains
+twenty-four packages. This ADR adds:
 
 * +dartitect_privacy+, an isolated Flutter plugin for explicit iOS ATT status
   and requests;

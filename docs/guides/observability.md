@@ -55,9 +55,9 @@ It emits only the fixed `reactive.change` message and allowlisted facts through
 Sentry integration is the same chain ending in `SentryLogSink`, whose Hub stays
 borrowed. There is no persistence or network destination by default.
 
-## Versioned local diagnostics protocol
+## Stable local diagnostics protocol v2
 
-Diagnostics protocol v1 is separate from telemetry payloads. It covers fixed
+Diagnostics protocol v2 is separate from telemetry payloads. It covers fixed
 owner, node, command, resource, family, effect, sync, and isolate categories
 using only fixed lifecycle phases, opaque process-local IDs, monotonic sequence,
 generation, and revision. The exact decoder rejects unknown fields. Do not
@@ -69,8 +69,8 @@ Inject a `DartitectDiagnosticReporterRegistration` into one
 and memory-only; disposal clears all retained event references. Destination
 failure and reentrancy are isolated by `SafeDartitectDiagnosticReporter`.
 Detail can be off, lifecycle-only, or complete local topology without changing
-application behavior. The construction/reporting surface is experimental under
-ADR 0034; there is no remote exporter or global Flutter hook by default.
+application behavior. The construction/reporting surface is stable under ADR
+0044; there is no remote exporter or global Flutter hook by default.
 
 ## Flutter and providers
 

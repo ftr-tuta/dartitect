@@ -1,28 +1,23 @@
 # Native Strict Flutter-to-Dartitect matrix
 
-Dartitect 1.0 defines a Native Strict profile for Dartitect-owned code. Existing
-projects may adopt a feature or boundary incrementally beside another runtime,
-provided each feature has one composition/state/lifecycle authority and no
-provider or service-locator API leaks into the Dartitect-owned graph.
+`native_strict` is the sole Dartitect 1.0 architecture profile. Feature
+behavior profiles never relax it.
 
-| Flutter/application responsibility | Native Strict contract | Primary Dartitect surface | Consumer-owned boundary |
+| Responsibility | Native-strict contract | Public surface | Consumer-owned seam |
 | --- | --- | --- | --- |
-| View | Receives a ViewModel or immutable presentation input; never locates repositories, clients, Stores, or application services from `BuildContext` | `ViewModelHost`, builders, `EffectListener` | Widget tree, Material/Cupertino presentation, routing |
-| ViewModel | Constructed at an explicit app/session/feature/route root; owns only its declared lifetime | `dartitect_flutter`, `ResourceOwner`, `OwnedGraph` | Feature policy and injected application ports |
-| Writes | Relevant writes are methods, Commands, or explicit transactions; getters, selectors, computeds, and `build` are effect-free | `Command0`/`Command1`, command lanes, reactive transactions | Domain mutation policy and provider transaction implementation |
-| Expected failure | Exhaustive typed success/failure; unexpected exceptions remain crashes with their original stack | `Result<T, F>` | Domain/application failure types and user-facing rendering |
-| Dependency injection | Constructor injection from visible composition roots; no service locator or context lookup | Owned graphs and explicit constructors | Which concrete repository/client/provider is selected |
-| Repository | Application/domain port points inward; SDK types stay in infrastructure | Optional Dio/ObjectBox adapters at composition only | Entities, schema, database/HTTP operations, serialization, idempotency, conflict and retry policy |
-| Unidirectional data flow | Authoritative state publishes down; intent travels through a method/Command; reads never write | Values, computeds, resources, collections, Commands | Feature-specific state shape and event-to-intent mapping |
-| Session lifetime | One generation owns session resources; logout/switch removes routes, closes admission, drains, then disposes | `OwnedRuntimeSlot`, `SessionStateController` | Authentication, credentials, tenant/account policy |
-| One-shot effects | Typed, bounded, at-most-once local delivery; context exists only in the mounted Flutter consumer | `EffectChannel`, `EffectListener` | Navigation, dialogs, snack bars, and route-active policy |
-| Local-first state | Local repository publication is presentation authority; remote work writes through the repository and waits for causal observation | `LiveResource`, `PagedLiveResource`, mutation/outbox and sync orchestration contracts | Store transaction, durable outbox, checkpoint codec, scheduling, fencing support and distributed protocol |
+| App startup | Binding, first-frame gate, atomic publication, teardown | `runDartitectApplication` | Widget returned for the committed graph |
+| Composition | Direct constructors; no container or locator | generated `ApplicationModule`, `SessionModule`, `FeatureModule` | repositories, domain policy, mappings, UI |
+| View/ViewModel | Constructor-injected state; no provider lookup | `ViewModelHost`, Commands, reactive APIs | presentation and application ports |
+| Session | Typed route removal, 10-second default deadline, retry/abort | `SessionRuntimeController` | authentication and route policy |
+| Persistence | One writer per dataset; local authority where declared | Drift/ObjectBox operational kits | domain schema, queries, migrations |
+| Failure | Expected failures are values; crashes keep original stacks | `Result<T, F>` and sealed workflow results | domain failure types and rendering |
+| Headless | Fresh owned graph, versioned envelope, deadline, receipt | jobs, sync, Workmanager | recurrence, credentials, payload codec |
+| Diagnostics | Closed payload-free v2 facts; zero disabled subject allocation | core diagnostics and DevTools | provider destination selection |
 
-Riverpod, BLoC, Provider, GetIt, MobX, Signals, and similar runtimes may remain
-outside a Dartitect-owned feature boundary. They are incompatible only when
-they become a second composition/state/lifecycle authority for the same graph.
-This is a scope contract, not a quality judgment about those packages.
+Riverpod, BLoC, Provider, GetIt, MobX, Signals, and similar architecture
+runtimes are not valid dependencies of a native-strict application. This is an
+ownership contract, not a quality judgment about those packages.
 
-Use `dartitect scan --no-baseline` as the canonical conformance gate for a new
-project. Baselines describe reviewed legacy debt only and never weaken that
-greenfield gate.
+Use `dartitect scan --no-baseline`, `dartitect doctor`, and
+`dartitect verify --root .` as the repository gate. Baselines describe
+reviewed legacy debt only and never weaken a new native-strict graph.

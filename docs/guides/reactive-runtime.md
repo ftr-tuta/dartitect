@@ -1,9 +1,9 @@
 # Opting into the reactive runtime
 
-This guide describes a Dartitect-owned feature graph. Existing applications may
-adopt that graph incrementally beside another application-state runtime only
-when the integration boundary is explicit and the two runtimes never own or
-publish the same feature state.
+This guide describes a Dartitect-owned feature graph. `native_strict` is the
+only architecture profile: a Dartitect feature graph cannot coexist with a
+second application-state runtime. Migrate the whole ownership boundary before
+making Dartitect authoritative for it.
 
 The `package:dartitect_flutter/dartitect_flutter.dart` entrypoint is the stable
 thin surface for `ViewModelHost`, `Command0`/`Command1`, `ListenableSelector`,
@@ -84,7 +84,7 @@ native primitives. Each hot activation creates a fresh session/subscription.
 Streams carry typed `Result<T, F>` events; an actual stream error remains an
 unexpected crash with its original stack rather than being converted to `F`.
 
-## Experimental derived async resources
+## Derived async resources
 
 Use `DerivedAsyncResource<T, F>` only when an asynchronous value has an
 explicit, non-empty set of Flutter `Listenable` dependencies. The adapter
@@ -115,9 +115,9 @@ final resource = DerivedAsyncResource<AccountView, LoadFailure>(
 For keyed sharing, return `DerivedAsyncResource(...).liveResource` from an
 existing `ResourceFamily<K, T, F>` factory. The family—not the dependency value
 or loader—owns key equality, leases, idle TTL, count/weight limits, prewarm, and
-eviction. The API is experimental under ADR 0034 and is removed before stable
-1.0 if it has no recorded real consumer, fails generation/leak gates, or would
-require implicit tracking or global hooks.
+eviction. The API is stable under ADR 0044 after passing generation, lifecycle,
+resource-census, and diagnostics gates; it still rejects implicit tracking and
+global hooks.
 
 ## Invalidation and causal refresh
 
@@ -294,8 +294,8 @@ of fixed kind `resource`. The resource emits state/lifecycle facts, never its
 data or failure. Use `DiagnosticsTopologyHarness` from `dartitect_testing` to
 reconstruct opaque relationships and terminal lifecycle in tests. IDs must
 come from the emitter's injected generator and must never be application IDs.
-The construction/reporting APIs remain experimental under ADR 0034 until real
-consumer, performance, ownership, and discard reviews approve stabilization.
+The construction/reporting APIs are stable under ADR 0044 after consumer,
+performance, ownership, and discard review.
 
 ## Headless builders and consumer presentation
 
@@ -322,5 +322,4 @@ live regions, keyboard-focusable controls, text scaling, and route-owned
 retry/refresh/load-more callbacks. The reference workloads demonstrate this
 consumer boundary while disposing the paged resource before its local source.
 
-The advanced entrypoints are prepared in `1.0.0-rc.5`; changes arrive in
-reviewed increments and remain opt-in throughout the candidate line.
+The advanced entrypoints are stable in `1.0.0-rc.6` and remain explicit opt-ins.

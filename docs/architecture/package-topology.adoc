@@ -6,6 +6,7 @@ dartitect
 ├── dartitect_modeling
 ├── dartitect_resilience
 ├── dartitect_jobs
+│   └── dartitect_workmanager (+ Flutter, workmanager)
 ├── dartitect_transfer
 ├── dartitect_sync
 ├── dartitect_isolates
@@ -26,7 +27,7 @@ dartitect_geometry
 
 dartitect_modeling
 └── dartitect_modeling_analyzer
-    ├── dartitect_cli
+    ├── dartitect_cli (+ core FeatureProfile)
     └── dartitect_lints
 
 dartitect_cli
@@ -52,6 +53,11 @@ Public entrypoints:
 * +package:dartitect_isolates/dartitect_isolates.dart+
 * +package:dartitect_flutter/dartitect_flutter.dart+
 * +package:dartitect_flutter/dartitect_flutter_reactive.dart+
+* +package:dartitect_flutter/dartitect_flutter_forms.dart+
+* +package:dartitect_flutter/dartitect_flutter_queries.dart+
+* +package:dartitect/dartitect_credentials.dart+
+* +package:dartitect_transfer/dartitect_attachments.dart+
+* +package:dartitect_workmanager/dartitect_workmanager.dart+
 * one same-named entrypoint for observability, Dio, Drift, ObjectBox, Sentry, testing,
   privacy, media, locale BR, geometry, CLI, lints, and MCP.
 
@@ -75,9 +81,11 @@ locale BR, and geometry are pure Dart.
 Flutter APIs stay in +dartitect_flutter+; privacy is iOS-only and media supports
 Android/iOS through narrow platform channels. Drift is executor-neutral across
 native and web, while ObjectBox is native-only and keeps its Store local to one
-isolate. The modeling analyzer, CLI, lints, and MCP are host tools. Dio and
-Sentry are opt-in adapters. DevTools is a development-only VM bridge with a
-bundled Flutter Web extension and no product registration.
+isolate. Workmanager adapts jobs on Android, iOS, macOS, web, and Linux; its
+stable Dartitect contract reports web/Linux as preview and Windows as typed
+unsupported. The modeling analyzer, CLI, lints, and MCP are host tools. Dio
+and Sentry are opt-in adapters. DevTools is a development-only VM bridge with
+a bundled Flutter Web extension and no product registration.
 
 The machine inventory in +tool/sdk_inventory.json+ records each reviewed
 package, version, internal dependency, entrypoint, public-symbol count, and

@@ -42,3 +42,12 @@ Test real-process startup/shutdown, stdout purity, structured plus text output,
 bounded pagination, root/path/symlink rejection, resource catalog freshness,
 write-disabled behavior, preview/apply annotations, expiry, replay, stale state,
 confirmation, locking, revalidation, and sanitized failures.
+
+## Dartitect inclusion gate
+
+Before adding a capability, answer:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be “yes”. Otherwise the capability belongs in
+`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.

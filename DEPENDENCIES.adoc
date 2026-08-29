@@ -27,6 +27,15 @@ retry, single-flight, circuit-breaker, bulkhead, and rate-limit primitives.
 provider-neutral bounded headless job runtime.
 | Consumers can invoke handlers directly or provide another dispatcher.
 
+| dartitect_workmanager
+| workmanager 0.10.9, dartitect, dartitect_jobs, Flutter SDK
+| APPROVED EXCEPTION
+| Adapts versioned job envelopes and fresh owned graphs to the upstream
+background scheduler while reporting web/Linux preview maturity and typed
+Windows non-support.
+| Remove the adapter and connect a consumer scheduler directly to
+`JobDispatcher`.
+
 | dartitect_transfer
 | dartitect
 | SDK

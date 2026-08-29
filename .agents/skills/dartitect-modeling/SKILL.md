@@ -64,3 +64,12 @@ round-trip/malformed/bounds, projection selection, lossless/lossy mapping and
 hooks. Also cover create/update/no-op/orphan convergence, migration preview/
 apply/recovery, consumer edits, manifest corruption/path escapes, CRLF,
 concurrency, pending recovery, and stable JSON/SARIF/exit codes.
+
+## Dartitect inclusion gate
+
+Before adding a capability, answer:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be “yes”. Otherwise the capability belongs in
+`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.

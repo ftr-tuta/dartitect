@@ -44,3 +44,12 @@ real SDK boundary plus deterministic failure cases.
 Verify typed failure mapping, cancellation/concurrency where applicable,
 minimal telemetry, provider ownership, reverse disposal, no duplicate
 instrumentation, real boundary compatibility, and zero residual resources.
+
+## Dartitect inclusion gate
+
+Before adding a capability, answer:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be “yes”. Otherwise the capability belongs in
+`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.

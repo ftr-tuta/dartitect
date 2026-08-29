@@ -38,6 +38,5 @@ ObjectBox has no web support. CLI and MCP run on the Dart VM. Material widgets
 belong only in Material presentation code. Provider adapters never belong in
 domain, application, ViewModel, or presentation layers.
 
-For incremental adoption, an installed overlapping runtime is a warning until
-evidence shows provider leakage, service location, duplicate ownership, or a
-concrete boundary crossing. Select one bounded adoption slice at a time.
+Native Strict does not provide an overlap or coexistence mode for competing
+application architecture runtimes.

@@ -48,3 +48,12 @@ being implemented.
 Test `Ok`/`Err`, crash rethrow, cancellation or busy policy, disposal order,
 owned/borrowed host behavior, stale completion, and zero notifications or
 resources after disposal.
+
+## Dartitect inclusion gate
+
+Before adding a capability, answer:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be “yes”. Otherwise the capability belongs in
+`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.

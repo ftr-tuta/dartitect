@@ -16,8 +16,8 @@ last-known data without upstream activity, and cold discards both. Use an
 `AsyncLifecycleBarrier` so disposal closes admission, cancels cooperatively,
 drains admitted work, and rejects stale publication.
 
-`DerivedAsyncResource<T, F>` is experimental and accepts a non-empty,
-identity-unique list of explicit Flutter `Listenable` dependencies. It uses
+`DerivedAsyncResource<T, F>` is stable and accepts a non-empty, identity-unique
+list of explicit Flutter `Listenable` dependencies. It uses
 restart-latest cancellation plus dependency and lifecycle generation guards;
 an old non-cooperative result never publishes. Select preserve, discard, or
 stale-while-revalidate last-data policy and explicit equality. It wraps one

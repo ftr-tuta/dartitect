@@ -32,10 +32,9 @@ Choose owner and activation policy, model the authoritative source, select the
 required refresh completion type, then add bounded families/collections and the
 smallest builder entrypoint. State backpressure, retry, retention, and disposal
 semantics explicitly.
-For an experimental derived resource, also name every dependency, stale-data
-policy, equality rule, cancellation behavior, generation guard, and discard
-criterion. Reuse the existing family boundary rather than creating a parallel
-key cache.
+For a derived resource, also name every dependency, stale-data policy, equality
+rule, cancellation behavior, and generation guard. Reuse the existing family
+boundary rather than creating a parallel key cache.
 
 Read [references/lifecycle-and-resources.md](references/lifecycle-and-resources.md),
 [references/families-and-collections.md](references/families-and-collections.md),
@@ -48,3 +47,12 @@ Test hot/warm/cold transitions, stale-publication rejection, expected failure,
 crash-and-explicit-retry, backpressure, exact causal refresh, bounded eviction,
 atomic collection failure, selected rebuilds, TickerMode pause, and complete
 graph cleanup.
+
+## Dartitect inclusion gate
+
+Before adding a capability, answer:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be “yes”. Otherwise the capability belongs in
+`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.

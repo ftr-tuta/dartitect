@@ -1,6 +1,6 @@
 ---
 name: dartitect-audit
-description: Audit an existing Dart or Flutter codebase for Native Strict conformance and incremental adoption without changing it. Use for read-only evidence and overlap classification.
+description: Audit an existing Dart or Flutter codebase for Native Strict conformance without changing it. Use for read-only evidence and strict architecture classification.
 ---
 
 # Audit Dartitect conformance
@@ -21,9 +21,9 @@ ownership, or concrete runtime boundaries.
 Inspection is read-only. Report evidence without modifying code, dependencies,
 configuration, baselines, or generated files. Treat `dartitect verify` and
 `scan --no-baseline` as canonical read-only evidence. Installed Riverpod, BLoC,
-Provider, GetIt, MobX, Signals, or equivalent runtimes are overlap warnings by
-themselves. Escalate to an error only on evidenced leakage, service location,
-duplicate ownership, dual-write, or a concrete boundary crossing.
+Provider, GetIt, MobX, Signals, or equivalent architecture runtimes are Native
+Strict errors. Provider leakage, service location, duplicate ownership, and
+dual-write are also errors.
 
 ## Workflow
 
@@ -45,3 +45,12 @@ CLI/MCP boundary.
 Confirm the report is reproducible, contains no write or migration action, uses
 the unbaselined scan, and distinguishes unsupported architecture runtimes from
 consumer-owned infrastructure packages.
+
+## Dartitect inclusion gate
+
+Before adding a capability, answer:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be “yes”. Otherwise the capability belongs in
+`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.

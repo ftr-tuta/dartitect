@@ -9,7 +9,7 @@ Goals:: V1S-16 and V1S-17
 Machine contract:: `tool/rc_bundle_contract.json`
 
 The signed-bundle channel is the non-pub.dev RC distribution mode. It preserves
-the exact 23-package topological cohort as immutable `tar.gz` assets on one
+the exact 24-package topological cohort as immutable `tar.gz` assets on one
 GitHub prerelease, binds those assets to an OpenPGP-signed manifest and signed
 Git tag, and verifies every uploaded byte by downloading it again. It does not
 claim pub.dev ownership or publisher identity.
@@ -58,7 +58,7 @@ before advancing. Only after all remote downloads match does the tool write
 
 `dart run tool/check_rc_artifacts.dart --contract-only` validates the tooling
 without asserting a release exists. The formal command first re-runs V1S-15,
-then checks all 23 local and remote receipt digests, manifest identity,
+then checks all 24 local and remote receipt digests, manifest identity,
 OpenPGP signature, signed exact-SHA tag, prerelease URL, topological receipts,
 and append-only terminal observation. Missing authorization, signing material,
 hardware evidence, tag, remote asset, or digest remains a failure.

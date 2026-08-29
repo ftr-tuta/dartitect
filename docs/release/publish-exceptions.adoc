@@ -14,11 +14,12 @@ The release audit therefore accepts exactly one warning for
 `dartitect_lints`: the `lib/main.dart` library-name warning. It rejects every
 other warning, a changed warning count, or the same warning in another package.
 
-== Experimental MCP protocol pin
+== Reviewed MCP protocol pin
 
-`dartitect_mcp 1.0.0-rc.5` intentionally pins `dart_mcp` exactly to `0.5.2`. The
-protocol package is experimental, and the reviewed server behavior, schemas,
-annotations and real-client tests cover that exact release. Pub validation
+`dartitect_mcp 1.0.0-rc.6` intentionally pins `dart_mcp` exactly to `0.5.2`. The
+upstream protocol dependency is pre-1.0, while Dartitect's public MCP contract
+is stable and its reviewed server behavior, schemas, annotations and
+real-client tests cover that exact release. Pub validation
 recommends allowing multiple versions, which would silently admit an unreviewed
 protocol surface.
 

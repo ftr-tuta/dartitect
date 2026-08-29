@@ -28,14 +28,17 @@ runtimes as simultaneous owners of the same feature, or expects a library to
 choose schemas, conflict policy, retries, authentication, navigation, or
 telemetry contents on its behalf.
 
-The strict architecture profile is intentionally narrow, but adoption does not
-have to be all-or-nothing. A mature application can introduce a Dartitect value,
-adapter, command, or owned feature graph next to Riverpod, BLoC, Provider,
-GetIt, MobX, Signals, or a similar tool. The boundary must be explicit: existing
-infrastructure may call into or be injected into the Dartitect-owned feature,
-but it must not become a second owner or service-location path inside that
-feature. New greenfield Dartitect code should use constructor injection and one
-state/lifecycle authority.
+`native_strict` is the only architecture profile. A Dartitect application does
+not install Riverpod, BLoC, Provider, GetIt, MobX, Signals, another container,
+or another state/lifecycle runtime. Feature profiles (`online`, `cache`,
+`replica`, and `offline-full`) select behavior, not architecture.
+
+Before adding a capability to this repository, ask:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+It enters Dartitect only when all three answers are yes. Company/product
+capabilities remain in `softgran_*`, `agrox_*`, or the application.
 
 ## Package selection map
 
@@ -46,13 +49,17 @@ independently documented and exports only public entrypoints under `lib/`.
 | --- | --- | --- |
 | Pure Dart results, cancellation, ownership, or bounded work | [`dartitect`](packages/dartitect/) | [`dartitect_isolates`](packages/dartitect_isolates/) for a typed native worker |
 | Flutter MVVM with native listenables | [`dartitect_flutter`](packages/dartitect_flutter/) | Import `dartitect_flutter_reactive.dart` only for the owned reactive runtime |
+| Credentials and authenticated-session rebuild | [`dartitect`](packages/dartitect/) | Import `dartitect_credentials.dart`; storage and credential values stay consumer-owned |
+| Restorable forms and local-authority queries | [`dartitect_flutter`](packages/dartitect_flutter/) | Import `dartitect_flutter_forms.dart` or `dartitect_flutter_queries.dart` explicitly |
 | Immutable values, bounded JSON, projections, or boundary mapping | [`dartitect_modeling`](packages/dartitect_modeling/) | [`dartitect_modeling_analyzer`](packages/dartitect_modeling_analyzer/) is for tooling authors, not applications |
 | Reactive resources, families, collections, and local-authority paging | `dartitect_flutter_reactive.dart` | A persistence adapter only after repository and ownership boundaries exist |
 | Durable local mutation and outbox delivery | [`dartitect_sync`](packages/dartitect_sync/) | [`dartitect_drift`](packages/dartitect_drift/) or [`dartitect_objectbox`](packages/dartitect_objectbox/) for consumer-owned transactions |
 | Ordered multi-dataset synchronization | [`dartitect_sync`](packages/dartitect_sync/) | Checkpoint, journal, and lease implementations selected by the application |
 | Bounded retry, single-flight, breakers, bulkheads, or rate limiting | [`dartitect_resilience`](packages/dartitect_resilience/) | Consumer failure classification, budget, deadline, clock, scheduler, and randomness |
 | Generic headless/background work | [`dartitect_jobs`](packages/dartitect_jobs/) | [`dartitect_isolates`](packages/dartitect_isolates/) when the host uses an isolate worker |
+| Workmanager scheduling | [`dartitect_workmanager`](packages/dartitect_workmanager/) | Stable contract; web/Linux capability maturity is preview and Windows is typed unsupported |
 | Resumable chunk transfer | [`dartitect_transfer`](packages/dartitect_transfer/) | [`dartitect_dio`](packages/dartitect_dio/) for an optional transport adapter |
+| Attachments | `package:dartitect_transfer/dartitect_attachments.dart` | Consumer picker/share/gallery/file ports and an optional background scheduler |
 | HTTP infrastructure | [`dartitect_dio`](packages/dartitect_dio/) | [`dartitect_observability`](packages/dartitect_observability/) for neutral telemetry policy |
 | Persistence with Drift | [`dartitect_drift`](packages/dartitect_drift/) | Consumer-generated database, schema, migrations, codecs, and executor |
 | Persistence with ObjectBox | [`dartitect_objectbox`](packages/dartitect_objectbox/) | Consumer entities, generated model, native fixture, and Store opener |
@@ -64,7 +71,7 @@ independently documented and exports only public entrypoints under `lib/`.
 
 The [ecosystem selection guide](docs/guides/ecosystem-selection.md) gives the
 detailed decision matrix. The [implementation recipes](docs/guides/implementation-recipes.md)
-show complete boundary-oriented flows. The [RC5 paved-road guide](docs/guides/paved-road-platform.md)
+show complete boundary-oriented flows. The [RC6 paved-road guide](docs/guides/paved-road-platform.md)
 connects feature profiles, hosts, resilience, jobs, transfer, diagnostics, and
 contract matrices without turning them into a framework.
 
@@ -184,6 +191,7 @@ dart run dartitect_cli:dartitect inspect --json
 dart run dartitect_cli:dartitect scan --no-baseline
 dart run dartitect_cli:dartitect doctor
 dart run dartitect_cli:dartitect model check --json
+dart run dartitect_cli:dartitect wiring sync --dry-run --json
 dart run dartitect_cli:dartitect codex sync --dry-run
 ```
 
@@ -220,7 +228,7 @@ to the typed project service rather than a shell. See [model generation](docs/gu
 | One local write authority and an atomic domain-plus-outbox transaction | Dual-write across stores or a transaction claimed across persistence engines |
 | Versioned transferable DTOs and isolate-local resource construction | Live database, Store, client, subscription, owner, or ViewModel objects crossing isolates |
 | Sanitized fixed telemetry facts | Credentials, payloads, identity, entity keys, or identifying paths in telemetry |
-| Incremental coexistence at an explicit boundary | Mixing Riverpod/BLoC/Provider/GetIt/MobX/Signals ownership into a Dartitect graph |
+| Drift and ObjectBox in separate bounded contexts with one writer per dataset | Any second architecture/state/container runtime in a Dartitect application |
 
 The prohibited cases are incompatibilities, not style preferences: Dartitect
 cannot provide deterministic ownership, atomicity, or privacy when those
@@ -233,12 +241,12 @@ The workspace requires Dart `^3.13.0`; Flutter packages require Flutter
 READMEs. Drift accepts consumer-owned native and web executors. ObjectBox has no
 web support. The CLI, modeling analyzer, and MCP server run on the Dart VM.
 
-All packages currently share the `1.0.0-rc.5` source cohort. Do not copy Git
+All packages currently share the `1.0.0-rc.6` source cohort. Do not copy Git
 coordinates from this README. Experimental Git consumption is supported only
 for a tag that has a corresponding published GitHub Release, using the complete
 compatible cohort and dependency coordinates from that Release's notes. If no
 such Release exists, there is no supported consumption path. See the
-[experimental consumption guide](docs/guides/git-candidate-consumption.md).
+[Git candidate consumption guide](docs/guides/git-candidate-consumption.md).
 
 ## Security, contribution, and license
 

@@ -23,6 +23,7 @@
     "dartitect_media": {"platforms": ["Android", "iOS", "Flutter other notSupported"], "stability": "development"},
     "dartitect_modeling": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
     "dartitect_modeling_analyzer": {"platforms": ["Dart VM", "Dart analyzer"], "stability": "development"},
-    "dartitect_mcp": {"platforms": ["Dart VM", "STDIO"], "stability": "development"}
+    "dartitect_mcp": {"platforms": ["Dart VM", "STDIO"], "stability": "development"},
+    "dartitect_workmanager": {"platforms": ["Android", "iOS", "macOS", "web preview", "Linux preview", "Windows unsupported"], "stability": "stable API in RC6"}
   }
 }

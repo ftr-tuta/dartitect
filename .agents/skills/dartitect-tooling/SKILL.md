@@ -47,3 +47,12 @@ Test idempotency, conflicts, stale state, interrupted recovery, path/symlink
 confinement, permissions, CRLF, Unicode/spaces, unknown-key preservation, stable
 JSON/exit codes, irrelevant-asset stability, real cross-process exclusion,
 generated-consumer behavior, and unchanged tracked files after verification.
+
+## Dartitect inclusion gate
+
+Before adding a capability, answer:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be “yes”. Otherwise the capability belongs in
+`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.

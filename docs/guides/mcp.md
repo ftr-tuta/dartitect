@@ -2,15 +2,16 @@
 
 ## Scope
 
-`dartitect_mcp 1.0.0-rc.5` is local and STDIO-only. It uses
+`dartitect_mcp 1.0.0-rc.6` is local and STDIO-only. It uses
 `dart_mcp 0.5.2`. Streamable HTTP, OAuth/authorization, remote ChatGPT plugins,
 MCP UI, arbitrary shell/files, scaffolding `create`, and access to running
-applications are out of scope.
+applications are out of scope. The bounded `dartitect_preview_create_feature`
+tool is the only create workflow exposed.
 
 ## Read-only setup
 
 The candidate is not on pub.dev. Declare
-`dartitect_mcp: 1.0.0-rc.5` under `dev_dependencies`, apply the complete Git
+`dartitect_mcp: 1.0.0-rc.6` under `dev_dependencies`, apply the complete Git
 override closure from the [candidate consumption guide](git-candidate-consumption.md),
 then run `dart run dartitect_mcp:dartitect_mcp --root .`.
 
@@ -55,11 +56,21 @@ block for every tool result.
 
 Inspect, scan, verify, doctor, finding explanation, conformance auditing, and
 all previews are read-only. Scan and verify accept bounded `offset`/`limit`;
-verify combines architecture, modeling freshness, ecosystem overlap, and
+verify combines architecture, modeling freshness, native-strict ecosystem, and
 provider status. Deep doctor is opt-in and time-bounded.
 
 `dartitect_audit_conformance` declares existing projects `audit_only`, uses the
-unbaselined scan as evidence, and never returns migration or coexistence steps.
+unbaselined scan as evidence, and never returns an architecture conversion.
+
+RC6 adds confined, closed-schema tools:
+
+- `dartitect_preview_create_feature`;
+- `dartitect_preview_wiring_sync`;
+- `dartitect_explain_feature_graph`;
+- `dartitect_list_consumer_owned_seams`;
+- `dartitect_verify_primary_constructor_policy`.
+
+They paginate bounded results and never return arbitrary consumer file bodies.
 
 Resources are generated from maintained project sources:
 
@@ -79,7 +90,8 @@ Add `--allow-writes` to the server arguments only when reviewed local writes
 are required. This flag alone is insufficient.
 
 Model sync and primary-constructor migration use the same preview/apply gate as
-init, baseline, and managed skill synchronization. Preview payloads contain
+init, feature creation, wiring sync, baseline, and managed skill
+synchronization. Preview payloads contain
 operations and semantic manifests, never consumer source bodies.
 
 Apply requires all of:
@@ -95,6 +107,13 @@ Apply requires all of:
 Plans expire after ten minutes by default and are single-use even after a failed
 attempt. Expiry, replay, concurrency, stale state, lock, permission, and I/O
 failures return structured errors without disclosing absolute paths.
+
+Before exposing another MCP operation, ask:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be yes; company/product actions remain in `softgran_*`,
+`agrox_*`, or the application.
 
 ## Root and data security
 

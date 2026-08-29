@@ -1,13 +1,13 @@
 ---
 name: dartitect-design
-description: Select the smallest Dartitect package and skill stack for a new or incrementally adopting Dart/Flutter application or feature. Use for architecture choices; do not use for conformance auditing or detailed implementation.
+description: Select the smallest Dartitect package and skill stack for a new Dart/Flutter application or feature. Use for architecture choices; do not use for conformance auditing or detailed implementation.
 ---
 
 # Design with Dartitect
 
 ## When to use
 
-Use this skill before implementing a new application, incremental feature, composition root,
+Use this skill before implementing a new application, feature, composition root,
 or provider boundary when the required Dartitect packages are not yet clear.
 
 ## When not to use
@@ -19,12 +19,12 @@ are decided.
 
 ## Invariants
 
-Choose the smallest stack that satisfies the feature. Existing Riverpod, BLoC,
-Provider, GetIt, MobX, Signals, or equivalent dependencies are overlap warnings
-when merely installed; do not require an all-at-once rewrite. Keep domain/application
-contracts provider-neutral, use constructor injection, and make every resource
-owned or borrowed. Do not add a container, global runtime, provider package, or
-remote telemetry without a stated requirement.
+Choose the smallest stack that satisfies the feature. Riverpod, BLoC, Provider,
+GetIt, MobX, Signals, and equivalent architecture runtimes are incompatible with
+the Native Strict application graph. Keep domain/application contracts
+provider-neutral, use constructor injection, and make every resource owned or
+borrowed. Do not add a container, global runtime, provider package, or remote
+telemetry without a stated requirement.
 
 ## Workflow
 
@@ -37,9 +37,8 @@ remote telemetry without a stated requirement.
 3. Identify platforms, authoritative data source, failure model, lifecycle
    owner, isolate boundaries, and telemetry policy.
 4. Select only the packages and focused skills needed for those boundaries.
-5. For an existing project, define one consumer-owned adoption boundary and
-   reject provider leakage, service location, duplicate ownership, or concrete
-   runtime boundaries within it.
+5. Reject provider leakage, service location, duplicate ownership, and
+   competing application runtimes.
 6. Record explicit exclusions so optional packages do not become defaults.
 
 Read [references/selection-matrix.md](references/selection-matrix.md) when
@@ -50,3 +49,12 @@ choosing packages or routing the implementation.
 Confirm every selected package owns a concrete responsibility, every provider
 stays at infrastructure composition, and removing any unneeded package would not
 break a stated requirement.
+
+## Dartitect inclusion gate
+
+Before adding a capability, answer:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be “yes”. Otherwise the capability belongs in
+`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.
