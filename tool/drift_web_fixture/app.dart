@@ -7,7 +7,7 @@ import 'package:drift/drift.dart';
 import 'package:web/web.dart' as web;
 
 import '../drift_fixture/executor.dart';
-import '../drift_fixture/fixture_database.dart';
+import '../drift_fixture/infrastructure/fixture_database.dart';
 
 Future<void> main() async {
   try {

@@ -3,11 +3,15 @@
   "skills": {
     "dartitect-design": [
       "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect/lib/dartitect_credentials.dart",
       "packages/dartitect_sync/lib/dartitect_sync.dart",
       "packages/dartitect_resilience/lib/dartitect_resilience.dart",
       "packages/dartitect_jobs/lib/dartitect_jobs.dart",
       "packages/dartitect_transfer/lib/dartitect_transfer.dart",
+      "packages/dartitect_transfer/lib/dartitect_attachments.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter_forms.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter_queries.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart",
       "packages/dartitect_isolates/lib/dartitect_isolates.dart",
       "packages/dartitect_observability/lib/dartitect_observability.dart",
@@ -24,6 +28,7 @@
       "packages/dartitect_privacy/lib/dartitect_privacy.dart",
       "packages/dartitect_media/lib/dartitect_media.dart",
       "packages/dartitect_mcp/lib/dartitect_mcp.dart",
+      "packages/dartitect_workmanager/lib/dartitect_workmanager.dart",
       "packages/dartitect_modeling/lib/dartitect_modeling.dart",
       "packages/dartitect_modeling_analyzer/lib/dartitect_modeling_analyzer.dart",
       "tool/setup_objectbox_vm.dart"
@@ -50,19 +55,25 @@
     ],
     "dartitect-runtime": [
       "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect/lib/dartitect_credentials.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter.dart",
       "packages/dartitect_resilience/lib/dartitect_resilience.dart"
     ],
     "dartitect-reactive": [
       "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter_forms.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter_queries.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart"
     ],
     "dartitect-offline-first": [
       "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect/lib/dartitect_credentials.dart",
       "packages/dartitect_sync/lib/dartitect_sync.dart",
       "packages/dartitect_resilience/lib/dartitect_resilience.dart",
       "packages/dartitect_jobs/lib/dartitect_jobs.dart",
       "packages/dartitect_transfer/lib/dartitect_transfer.dart",
+      "packages/dartitect_transfer/lib/dartitect_attachments.dart",
+      "packages/dartitect_workmanager/lib/dartitect_workmanager.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart",
       "packages/dartitect_isolates/lib/dartitect_isolates.dart",
       "packages/dartitect_dio/lib/dartitect_dio.dart",
@@ -79,6 +90,8 @@
     "dartitect-adapters": [
       "packages/dartitect_dio/lib/dartitect_dio.dart",
       "packages/dartitect_transfer/lib/dartitect_transfer.dart",
+      "packages/dartitect_transfer/lib/dartitect_attachments.dart",
+      "packages/dartitect_workmanager/lib/dartitect_workmanager.dart",
       "packages/dartitect_drift/lib/dartitect_drift.dart",
       "packages/dartitect_media/lib/dartitect_media.dart",
       "packages/dartitect_objectbox/lib/dartitect_objectbox.dart",

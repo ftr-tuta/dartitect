@@ -7,10 +7,10 @@ environment:
   sdk: ^3.13.0
 
 dependencies:
-  dartitect: 1.0.0-rc.5
-  dartitect_drift: 1.0.0-rc.5
-  dartitect_observability: 1.0.0-rc.5
-  dartitect_sync: 1.0.0-rc.5
+  dartitect: 1.0.0-rc.6
+  dartitect_drift: 1.0.0-rc.6
+  dartitect_observability: 1.0.0-rc.6
+  dartitect_sync: 1.0.0-rc.6
   drift: 2.34.3
 
 dev_dependencies:

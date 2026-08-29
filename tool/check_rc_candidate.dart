@@ -16,13 +16,13 @@ void main() {
           .readAsStringSync(),
     ),
   );
-  const cohort = '1.0.0-rc.5';
+  const cohort = '1.0.0-rc.6';
   if (candidate['schemaVersion'] != 1 ||
       candidate['cohortVersion'] != cohort ||
       candidate['candidateState'] != 'SOURCE_CANDIDATE_ASSEMBLED' ||
       candidate['targetChannel'] != 'UNMATERIALIZED' ||
-      candidate['packageCount'] != 23 ||
-      candidate['publicEntrypointCount'] != 24) {
+      candidate['packageCount'] != 24 ||
+      candidate['publicEntrypointCount'] != 29) {
     errors.add('RC candidate metadata is incomplete or overstates readiness.');
   }
   if (release['cohortVersion'] != cohort) {
@@ -51,7 +51,7 @@ void main() {
   }
   final git = _object(candidate['gitConsumption']);
   if (git['repository'] != 'https://github.com/ftr-tuta/dartitect.git' ||
-      git['tag'] != 'v1.0.0-rc.5' ||
+      git['tag'] != 'v1.0.0-rc.6' ||
       git['materialized'] != false ||
       git['annotated'] != true ||
       git['signed'] != false ||
@@ -94,8 +94,8 @@ void main() {
       errors.add('$name changelog does not begin with $cohort.');
     }
   }
-  if (packages.length != 23 || !packages.containsAll(order)) {
-    errors.add('The candidate does not contain the exact 23-package cohort.');
+  if (packages.length != 24 || !packages.containsAll(order)) {
+    errors.add('The candidate does not contain the exact 24-package cohort.');
   }
 
   final snapshot = _object(
@@ -104,9 +104,9 @@ void main() {
     ),
   );
   if (snapshot['sdkVersion'] != cohort ||
-      _object(snapshot['entrypoints']).length != 24) {
+      _object(snapshot['entrypoints']).length != 29) {
     errors.add(
-      'The public API snapshot is not an RC snapshot of 24 entrypoints.',
+      'The public API snapshot is not an RC snapshot of 29 entrypoints.',
     );
   }
   final inventory = _object(
@@ -114,7 +114,7 @@ void main() {
   );
   final inventoryPackages = inventory['packages'];
   if (inventoryPackages is! List<Object?> ||
-      inventoryPackages.length != 23 ||
+      inventoryPackages.length != 24 ||
       inventoryPackages.whereType<Map<String, Object?>>().any(
         (package) => package['version'] != cohort,
       )) {
@@ -148,7 +148,7 @@ void main() {
     return;
   }
   stdout.writeln(
-    'RC source candidate passed for 23 packages at $cohort; no tag, release, '
+    'RC source candidate passed for 24 packages at $cohort; no tag, release, '
     'or publication is materialized and every external channel remains '
     'fail-closed.',
   );

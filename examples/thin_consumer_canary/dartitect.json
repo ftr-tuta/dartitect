@@ -1,0 +1,83 @@
+{
+  "configVersion": 1,
+  "profile": "native_strict",
+  "layers": {
+    "domain": [
+      "**/domain/**"
+    ],
+    "application": [
+      "**/application/**"
+    ],
+    "data": [
+      "**/data/**"
+    ],
+    "infrastructure": [
+      "**/infrastructure/**"
+    ],
+    "presentation": [
+      "**/presentation/**",
+      "**/*_page.dart",
+      "**/*_view.dart",
+      "**/*_view_model.dart"
+    ]
+  },
+  "compositionRoots": [
+    "lib/main.dart",
+    "test/**",
+    "**/composition/**",
+    "**/*_composition_root.dart"
+  ],
+  "generatedInfrastructure": [
+    "**/infrastructure/**/*.g.dart"
+  ],
+  "generatedSuffixes": [
+    ".g.dart",
+    ".freezed.dart",
+    ".gr.dart",
+    ".router.dart"
+  ],
+  "suppressions": [],
+  "features": {
+    "declarations": {
+      "tasks": {
+        "profile": "offline-full",
+        "scope": "application",
+        "persistence": {
+          "native": "drift",
+          "web": "drift"
+        },
+        "transport": "dio",
+        "pagination": "cursor",
+        "diagnostics": "basic",
+        "headless": {
+          "android": true,
+          "ios": true,
+          "macos": true,
+          "windows": false,
+          "linux": true,
+          "web": true
+        },
+        "capabilities": [
+          "credentials",
+          "attachments",
+          "forms",
+          "queries"
+        ]
+      }
+    }
+  },
+  "platforms": [
+    "android",
+    "ios",
+    "macos",
+    "windows",
+    "linux",
+    "web"
+  ],
+  "scheduler": "workmanager",
+  "extensions": {
+    "dartitect.observability": {
+      "provider": "developer"
+    }
+  }
+}

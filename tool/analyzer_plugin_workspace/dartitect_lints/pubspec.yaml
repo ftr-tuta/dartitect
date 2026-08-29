@@ -1,6 +1,6 @@
 name: dartitect_lints
 description: Local-only bridge for the unpublished workspace plugin DAG.
-version: 1.0.0-rc.5
+version: 1.0.0-rc.6
 publish_to: none
 
 environment:

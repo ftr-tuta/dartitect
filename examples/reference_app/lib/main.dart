@@ -102,6 +102,13 @@ final class _ReferenceAppState extends State<ReferenceApp> {
                       body: Center(child: CircularProgressIndicator.adaptive()),
                     ),
                   ),
+                SessionTransitionFailed<ReferenceSessionDescription>() =>
+                  const MaterialApp(
+                    key: ValueKey<String>('transition-failed-shell'),
+                    home: Scaffold(
+                      body: Center(child: Text('Session transition failed')),
+                    ),
+                  ),
                 SessionAnonymous<ReferenceSessionDescription>() ||
                 SessionSignedOut<ReferenceSessionDescription>() =>
                   const MaterialApp(

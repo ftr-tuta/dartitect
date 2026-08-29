@@ -23,15 +23,16 @@
   "generatedInfrastructure": [
     "**/infrastructure/**/*.g.dart"
   ],
+  "generatedSuffixes": [
+    ".g.dart",
+    ".freezed.dart",
+    ".gr.dart",
+    ".router.dart",
+    ".dartitect.g.dart"
+  ],
   "suppressions": [],
-  "scaffolds": {
-    "layout": "feature_first",
-    "blueprints": [
-      "simple",
-      "remote-read",
-      "local-first",
-      "offline-mutation",
-      "sync-dataset"
-    ]
-  }
+  "features": {"declarations": {}},
+  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
+  "scheduler": "none",
+  "extensions": {}
 }

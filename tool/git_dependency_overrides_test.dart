@@ -12,10 +12,10 @@ void main() {
       root,
       const <String>['dartitect_flutter'],
       repository: 'https://example.invalid/dartitect.git',
-      ref: 'v1.0.0-rc.5',
+      ref: 'v1.0.0-rc.6',
     );
     expect(_packages(output), <String>['dartitect', 'dartitect_flutter']);
-    expect(output, contains('ref: v1.0.0-rc.5'));
+    expect(output, contains('ref: v1.0.0-rc.6'));
   });
 
   test('computes deeper adapter closure in publication order', () {
@@ -34,7 +34,7 @@ void main() {
   });
 
   test(
-    'supports any combination of the complete twenty-three-package cohort',
+    'supports any combination of the complete twenty-four-package cohort',
     () {
       final contract = File('${root.path}/tool/package_release_contract.json')
           .readAsStringSync();
@@ -46,9 +46,9 @@ void main() {
         root,
         names,
         repository: 'https://example.invalid/dartitect.git',
-        ref: 'v1.0.0-rc.5',
+        ref: 'v1.0.0-rc.6',
       );
-      expect(_packages(output).toSet(), hasLength(23));
+      expect(_packages(output).toSet(), hasLength(24));
     },
   );
 
@@ -58,7 +58,7 @@ void main() {
         root,
         const <String>['not_dartitect'],
         repository: 'https://example.invalid/dartitect.git',
-        ref: 'v1.0.0-rc.5',
+        ref: 'v1.0.0-rc.6',
       ),
       throwsArgumentError,
     );

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "series": "1.0.x",
-  "cohortVersion": "1.0.0-rc.5",
-  "internalConstraint": ">=1.0.0-rc.5 <1.0.0",
+  "cohortVersion": "1.0.0-rc.6",
+  "internalConstraint": ">=1.0.0-rc.6 <1.0.0",
   "publicationLayers": [
     [
       "dartitect",
@@ -24,7 +24,8 @@
     [
       "dartitect_modeling_analyzer",
       "dartitect_sentry",
-      "dartitect_sync"
+      "dartitect_sync",
+      "dartitect_workmanager"
     ],
     [
       "dartitect_dio",
@@ -57,6 +58,7 @@
     "dartitect_modeling_analyzer",
     "dartitect_sentry",
     "dartitect_sync",
+    "dartitect_workmanager",
     "dartitect_dio",
     "dartitect_drift",
     "dartitect_objectbox",
@@ -75,7 +77,7 @@
   },
   "gitCandidate": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "tag": "v1.0.0-rc.5",
+    "tag": "v1.0.0-rc.6",
     "materialized": false,
     "annotated": true,
     "signed": false,

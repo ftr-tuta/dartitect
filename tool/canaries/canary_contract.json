@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "cohortVersion": "1.0.0-rc.5",
+  "cohortVersion": "1.0.0-rc.6",
   "artifactSource": "git-archive-exact-head",
   "digestAlgorithm": "sha256",
   "installation": {
@@ -12,7 +12,7 @@
   },
   "gitInstallation": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "ref": "v1.0.0-rc.5",
+    "ref": "v1.0.0-rc.6",
     "annotatedTagRequired": true,
     "dependencyOverrides": true,
     "transitiveClosureRequired": true,
@@ -55,28 +55,40 @@
       "residualResourceCensus": 0
     },
     {
-      "id": "interop",
-      "source": "tool/canaries/interop",
-      "pubspec": "tool/canaries/interop/pubspec.yaml",
+      "id": "thin_consumer",
+      "source": "examples/thin_consumer_canary",
+      "pubspec": "tool/canaries/thin_consumer/pubspec.yaml",
       "requiredPackages": [
         "dartitect",
         "dartitect_cli",
-        "dartitect_modeling_analyzer"
+        "dartitect_dio",
+        "dartitect_drift",
+        "dartitect_flutter",
+        "dartitect_jobs",
+        "dartitect_observability",
+        "dartitect_resilience",
+        "dartitect_sync",
+        "dartitect_transfer",
+        "dartitect_workmanager"
       ],
       "forbiddenPackages": [
-        "dartitect_drift",
         "dartitect_objectbox"
       ],
       "commands": [
         "flutter pub get",
-        "dart analyze",
-        "dart test"
+        "dart run dartitect_cli:dartitect wiring sync --dry-run --json",
+        "flutter analyze",
+        "flutter test",
+        "flutter build web --release"
       ],
       "coverage": [
-        "interop_positive",
-        "interop_negative",
-        "overlap_warning",
-        "boundary_error"
+        "offline_hybrid_generated_wiring",
+        "all_opt_in_capabilities",
+        "six_platform_scaffold",
+        "consumer_owned_wiring_absence",
+        "workmanager_preview_and_unsupported",
+        "wiring_noop_zero_writes",
+        "main_paved_road_15_lines"
       ],
       "residualResourceCensus": 0
     },
@@ -199,10 +211,5 @@
       "residualResourceCensus": 0
     }
   ],
-  "deferredToV1S13": [
-    "hosted Android 14/API 34 emulator execution in GitHub Actions",
-    "Android API 24 build compatibility without an emulator",
-    "iOS deployment-floor builds and current hosted simulator execution",
-    "current-run lifecycle, callback, cleanup, and source-tree manifests"
-  ]
+  "deferredToV1S13": []
 }

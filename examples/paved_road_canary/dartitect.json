@@ -10,21 +10,30 @@
   },
   "compositionRoots": ["lib/main.dart", "test/**"],
   "generatedInfrastructure": ["**/infrastructure/**/*.g.dart"],
+  "generatedSuffixes": [".g.dart", ".dartitect.g.dart"],
   "suppressions": [],
-  "scaffolds": {
-    "layout": "feature_first",
-    "blueprints": ["simple", "remote-read", "local-first", "offline-mutation", "sync-dataset"]
-  },
   "features": {
     "declarations": {
       "paved_road": {
         "profile": "offline-full",
-        "persistence": "memory",
-        "transport": "synthetic",
-        "cursorPagination": true,
-        "headlessSync": true,
-        "diagnostics": "full"
+        "scope": "application",
+        "persistence": {"native": "memory", "web": "memory"},
+        "transport": "custom:synthetic",
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headless": {
+          "android": false,
+          "ios": false,
+          "macos": false,
+          "windows": false,
+          "linux": false,
+          "web": false
+        },
+        "capabilities": []
       }
     }
-  }
+  },
+  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
+  "scheduler": "none",
+  "extensions": {}
 }

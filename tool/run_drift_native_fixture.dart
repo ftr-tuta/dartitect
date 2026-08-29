@@ -7,7 +7,7 @@ import 'package:drift/drift.dart';
 import 'package:sqlite3/sqlite3.dart' as sqlite;
 
 import 'drift_fixture/executor.dart';
-import 'drift_fixture/fixture_database.dart';
+import 'drift_fixture/infrastructure/fixture_database.dart';
 
 Future<void> main() async {
   final temporary = await Directory.systemTemp.createTemp(

@@ -1,0 +1,30 @@
+name: thin_consumer_canary
+description: Thin offline-hybrid canary using every stable opt-in capability.
+version: 1.0.0-rc.6
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dependencies:
+  dartitect: ^1.0.0-rc.6
+  dartitect_dio: ^1.0.0-rc.6
+  dartitect_drift: ^1.0.0-rc.6
+  dartitect_flutter: ^1.0.0-rc.6
+  dartitect_observability: ^1.0.0-rc.6
+  dartitect_sync: ^1.0.0-rc.6
+  dartitect_transfer: ^1.0.0-rc.6
+  dartitect_workmanager: ^1.0.0-rc.6
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  dartitect_cli: ^1.0.0-rc.6
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

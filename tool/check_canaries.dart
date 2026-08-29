@@ -38,6 +38,13 @@ Future<void> main(List<String> arguments) async {
         .readAsString(),
   );
   _validateContract(contract, release);
+  _assertConsumerOwnedSeams(
+    Directory('${workspace.path}/examples/paved_road_canary'),
+  );
+  _assertConsumerOwnedSeams(
+    Directory('${workspace.path}/examples/thin_consumer_canary'),
+    enforceMainBudget: true,
+  );
 
   final sourceSha = (await _run(workspace, 'git', const <String>[
     'rev-parse',
@@ -193,9 +200,19 @@ Future<Map<String, Object?>> _runCanary({
       await run('dart', const <String>['test']);
       await run('dart', const <String>['test', '--platform', 'chrome']);
       break;
-    case 'interop':
-      await run('dart', const <String>['analyze']);
-      await run('dart', const <String>['test']);
+    case 'thin_consumer':
+      _assertConsumerOwnedSeams(consumer, enforceMainBudget: true);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'wiring',
+        'sync',
+        '--dry-run',
+        '--json',
+      ]);
+      await run('flutter', const <String>['analyze']);
+      await run('flutter', const <String>['test']);
+      await run('flutter', const <String>['build', 'web', '--release']);
       break;
     case 'minimal':
       await run('dart', const <String>[
@@ -362,6 +379,61 @@ Future<List<Map<String, Object?>>> _validateResolvedGraph({
   return graph;
 }
 
+void _assertConsumerOwnedSeams(
+  Directory project, {
+  bool enforceMainBudget = false,
+}) {
+  const forbidden = <String>[
+    'BootstrapCoordinator',
+    'transaction.own',
+    'DioOwner',
+    'DriftDatabaseOwner',
+    'ObjectBoxStoreOwner',
+    'ObjectBoxObservationOwner',
+    'SyncEngine',
+    'MutationCommand',
+    'JobDispatcher',
+    'DartitectDiagnosticsEmitter',
+  ];
+  final lib = Directory('${project.path}/lib');
+  if (!lib.existsSync()) {
+    throw StateError('Consumer lib directory is missing: ${project.path}.');
+  }
+  for (final file
+      in lib
+          .listSync(recursive: true, followLinks: false)
+          .whereType<File>()
+          .where(
+            (file) =>
+                file.path.endsWith('.dart') &&
+                !file.path.endsWith('.dartitect.g.dart'),
+          )) {
+    final source = file.readAsStringSync();
+    for (final symbol in forbidden) {
+      if (source.contains(symbol)) {
+        throw StateError(
+          'Consumer-owned ${file.path} contains generated wiring symbol '
+          '$symbol.',
+        );
+      }
+    }
+  }
+  if (enforceMainBudget) {
+    final main = File('${project.path}/lib/main.dart');
+    final nonEmpty = main
+        .readAsLinesSync()
+        .where((line) => line.trim().isNotEmpty)
+        .length;
+    if (nonEmpty > 15 ||
+        !main.readAsStringSync().contains('runDartitectApplication')) {
+      throw StateError(
+        'Thin consumer main must have at most 15 non-empty lines and use '
+        'runDartitectApplication.',
+      );
+    }
+  }
+}
+
 Future<void> _copyConsumer(
   Directory source,
   Directory destination, {
@@ -467,13 +539,13 @@ void _validateContract(
   if (ids.length != 6 ||
       !ids.containsAll(const <String>{
         'modeling',
-        'interop',
+        'thin_consumer',
         'minimal',
         'offline_first',
         'drift_provider',
         'native_capabilities',
       })) {
-    throw StateError('All six RC5 formal canaries are required.');
+    throw StateError('All six RC6 formal canaries are required.');
   }
   const requiredCoverage = <String>{
     'pure_dart_modeling',
@@ -482,10 +554,13 @@ void _validateContract(
     'mapper',
     'chrome',
     'clean_clone',
-    'interop_positive',
-    'interop_negative',
-    'overlap_warning',
-    'boundary_error',
+    'offline_hybrid_generated_wiring',
+    'all_opt_in_capabilities',
+    'six_platform_scaffold',
+    'consumer_owned_wiring_absence',
+    'workmanager_preview_and_unsupported',
+    'wiring_noop_zero_writes',
+    'main_paved_road_15_lines',
     'flutter_simple',
     'flutter_mvvm',
     'objectbox_local_first',

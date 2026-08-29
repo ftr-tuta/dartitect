@@ -21,6 +21,25 @@ Future<void> main(List<String> arguments) async {
       '.',
     ]),
     const _Command('flutter', <String>['analyze']),
+    const _Command('dart', <String>[
+      'packages/dartitect_cli/bin/dartitect.dart',
+      'scan',
+      '--root',
+      '.',
+      '--no-baseline',
+    ]),
+    const _Command('dart', <String>[
+      'packages/dartitect_cli/bin/dartitect.dart',
+      'doctor',
+      '--root',
+      '.',
+    ]),
+    const _Command('dart', <String>[
+      'packages/dartitect_cli/bin/dartitect.dart',
+      'verify',
+      '--root',
+      '.',
+    ]),
     const _Command('dart', <String>['run', 'tool/check_goal_gates.dart']),
     const _Command('dart', <String>['run', 'tool/check_optional_slices.dart']),
     const _Command('dart', <String>['run', 'tool/check_goal09_evidence.dart']),
@@ -61,6 +80,7 @@ Future<void> main(List<String> arguments) async {
       'tool/check_benchmark_artifacts.dart',
     ]),
     const _Command('dart', <String>['run', 'tool/check_model_benchmark.dart']),
+    const _Command('dart', <String>['run', 'tool/benchmark_wiring_sync.dart']),
     const _Command('dart', <String>[
       'test',
       'packages/dartitect/benchmark/paved_road_primitives_benchmark_test.dart',
@@ -201,10 +221,33 @@ Future<void> main(List<String> arguments) async {
       'dartitect_objectbox',
       'dartitect_privacy',
       'dartitect_media',
+      'dartitect_workmanager',
     ])
       _Command('flutter', <String>['test', 'packages/$package']),
     const _Command('flutter', <String>['test', 'examples/reference_app']),
     const _Command('flutter', <String>['test', 'examples/paved_road_canary']),
+    const _Command('flutter', <String>[
+      'test',
+      'examples/thin_consumer_canary',
+    ]),
+    const _Command('dart', <String>[
+      'packages/dartitect_cli/bin/dartitect.dart',
+      'wiring',
+      'sync',
+      '--dry-run',
+      '--json',
+      '--root',
+      'examples/paved_road_canary',
+    ]),
+    const _Command('dart', <String>[
+      'packages/dartitect_cli/bin/dartitect.dart',
+      'wiring',
+      'sync',
+      '--dry-run',
+      '--json',
+      '--root',
+      'examples/thin_consumer_canary',
+    ]),
     if (nativeObjectBox)
       _Command(
         'flutter',
