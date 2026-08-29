@@ -7,6 +7,16 @@ final class DartitectValue {
   const DartitectValue();
 }
 
+/// Marks a DTO, payload, envelope, or snapshot for constructor policy only.
+///
+/// This marker never enables generation. It lets DT1030 require an unnamed
+/// primary constructor on an immutable data carrier without creating a part,
+/// codec, equality implementation, mapper, or provider schema.
+final class DartitectDataCarrier {
+  /// Creates the passive, no-generation policy marker.
+  const DartitectDataCarrier();
+}
+
 /// Unknown-object-key behavior for generated JSON codecs.
 enum DartitectUnknownKeys {
   /// Reject keys that are not declared by the model.

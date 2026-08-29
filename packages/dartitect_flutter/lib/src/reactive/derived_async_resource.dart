@@ -7,7 +7,6 @@ import 'live_resource.dart';
 import 'resource_lifecycle.dart';
 
 /// One explicitly versioned read of an asynchronous derived resource.
-@experimentalDartitectApi
 final class DerivedAsyncRead {
   const DerivedAsyncRead._({
     required this.dependencyGeneration,
@@ -22,12 +21,11 @@ final class DerivedAsyncRead {
 }
 
 /// Computes one derived result from dependencies captured by application code.
-@experimentalDartitectApi
 typedef DerivedAsyncLoader<T, F extends Object> = Future<Result<T, F>> Function(
   DerivedAsyncRead read,
 );
 
-/// Experimental async resource derived from explicit Flutter listenables.
+/// Stable async resource derived from explicit Flutter listenables.
 ///
 /// Dependencies are subscribed only during a hot resource generation. A
 /// dependency change cancels the active read, advances a generation, and waits
@@ -38,7 +36,6 @@ typedef DerivedAsyncLoader<T, F extends Object> = Future<Result<T, F>> Function(
 /// observation, lease, and disposal contracts. It can be returned directly by
 /// a [ResourceFamily] factory, whose typed key, TTL, count, weight, and eviction
 /// policy remain authoritative for family lifetime.
-@experimentalDartitectApi
 final class DerivedAsyncResource<T, F extends Object>
     implements Listenable, AsyncDisposable {
   /// Creates a derived resource with explicit [dependencies].

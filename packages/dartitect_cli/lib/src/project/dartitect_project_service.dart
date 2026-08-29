@@ -238,7 +238,6 @@ final class DartitectProjectService {
         'target': 'greenfield_only',
         'existingProjects': 'audit_only',
         'migration': false,
-        'coexistence': false,
       },
       'project': report.project,
       'compliant': compliant,
@@ -427,18 +426,6 @@ final class DartitectProjectService {
     if (await configFile.exists()) {
       try {
         config = await DartitectConfig.load(configFile);
-        for (final key in config.unknown.keys) {
-          findings.add(
-            DartitectFinding(
-              code: 'DT2002',
-              severity: FindingSeverity.warning,
-              message: 'Unknown configuration key is preserved: $key.',
-              path: 'dartitect.json',
-              evidence: '/$key',
-              remediation: 'Check whether the key belongs to a newer SDK.',
-            ),
-          );
-        }
       } on DartitectConfigException catch (error) {
         findings.add(
           DartitectFinding(
@@ -811,6 +798,10 @@ final class DartitectProjectService {
     }
     return lines.join(lineEnding);
   }
+
+  /// Applies the closed hosted-constraint codemod without touching disk.
+  static String renderDependencyUpgradeSource(String source, String target) =>
+      _renderDependencyUpgrade(source, _validatedTargetCohort(target));
 
   Future<void> _commitDependencyUpgrade(String content) async {
     final directory = Directory(_join(root.path, '.dartitect'));
@@ -1277,16 +1268,22 @@ final class DartitectProjectService {
     'dartitect_flutter',
     'dartitect_geometry',
     'dartitect_isolates',
+    'dartitect_jobs',
     'dartitect_lints',
     'dartitect_locale_br',
     'dartitect_mcp',
     'dartitect_media',
+    'dartitect_modeling',
+    'dartitect_modeling_analyzer',
     'dartitect_objectbox',
     'dartitect_observability',
     'dartitect_privacy',
+    'dartitect_resilience',
     'dartitect_sentry',
     'dartitect_sync',
     'dartitect_testing',
+    'dartitect_transfer',
+    'dartitect_workmanager',
   };
 
   Future<List<Directory>> _workspacePackages() async {

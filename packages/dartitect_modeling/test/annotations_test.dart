@@ -4,6 +4,7 @@ import 'package:test/test.dart';
 void main() {
   test('modeling capabilities remain independently configurable', () {
     const value = DartitectValue();
+    const carrier = DartitectDataCarrier();
     const json = DartitectJson();
     const projection = DartitectProjection(
       name: 'summary',
@@ -18,6 +19,7 @@ void main() {
     );
 
     expect(value, isA<DartitectValue>());
+    expect(carrier, isA<DartitectDataCarrier>());
     expect(json.unknownKeys, DartitectUnknownKeys.reject);
     expect(json.trusted, isFalse);
     expect(projection.name, 'summary');

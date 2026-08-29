@@ -1,12 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dartitect/dartitect.dart' show FeatureProfile;
+
 import '../config/dartitect_config.dart';
 import '../diagnostics/models.dart';
 import '../diagnostics/sarif.dart';
 import '../fleet/fleet_service.dart';
 import '../generation/generation_engine.dart';
 import '../generation/scaffolds.dart';
+import '../generation/wiring_service.dart';
 import '../model/model_generator.dart';
 import '../model/primary_constructor_migration.dart';
 import '../policy/ecosystem_policy.dart';
@@ -43,7 +46,9 @@ final class DartitectCliRunner {
     Directory? currentDirectory,
   }) : _stdout = stdoutSink ?? stdout,
        _stderr = stderrSink ?? stderr,
-       _currentDirectory = (currentDirectory ?? Directory.current).absolute;
+       _currentDirectory = Directory(
+         (currentDirectory ?? Directory.current).resolveSymbolicLinksSync(),
+       );
 
   final StringSink _stdout;
   final StringSink _stderr;
@@ -67,7 +72,9 @@ final class DartitectCliRunner {
       final parsed = _CliArguments(arguments.skip(1).toList());
       final root = parsed.root == null
           ? _currentDirectory
-          : Directory(_absolute(parsed.root!));
+          : Directory(
+              Directory(_absolute(parsed.root!)).resolveSymbolicLinksSync(),
+            );
       return switch (command) {
         'scan' => await _readOnly('scan', root, parsed),
         'doctor' => await _readOnly('doctor', root, parsed),
@@ -78,6 +85,7 @@ final class DartitectCliRunner {
         'baseline' => await _baseline(root, parsed),
         'codex' => await _codex(root, parsed),
         'model' => await _model(root, parsed),
+        'wiring' => await _wiring(root, parsed),
         'dependencies' => await _dependencies(root, parsed),
         'fleet' => await _fleet(root, parsed),
         _ => _usageError('Unknown command "$command".'),
@@ -175,7 +183,7 @@ final class DartitectCliRunner {
   Future<int> _create(Directory root, _CliArguments arguments) async {
     if (arguments.positionals.length < 2) {
       throw const _UsageException(
-        'Usage: dartitect create <app|simple|remote-read|local-first|offline-mutation|sync-dataset|feature|viewmodel|repository|service> <name>.',
+        'Usage: dartitect create <app|feature|viewmodel|repository|service> <name>.',
       );
     }
     final kind = arguments.positionals[0];
@@ -185,35 +193,30 @@ final class DartitectCliRunner {
     }
     arguments.requireOnlyFlags(<String>{
       'dry-run',
-      'domain',
       'verbose',
       'observability',
-      'adapters',
-      'blueprint',
+      'preset',
+      'scheduler',
       'profile',
-      'persistence',
+      'scope',
+      'persistence-native',
+      'persistence-web',
       'transport',
       'pagination',
-      'cursor-pagination',
       'headless-sync',
       'diagnostics',
+      'capabilities',
     });
     if (kind == 'app') {
       _rejectFeatureOptions(arguments);
-      if (arguments.flags.contains('domain')) {
-        throw const _UsageException(
-          '--domain is valid only for create feature.',
-        );
-      }
       return _createApp(
         root,
         name,
         dryRun: arguments.flags.contains('dry-run'),
+        preset: arguments.options['preset'] ?? 'minimal',
+        transport: arguments.options['transport'] ?? 'dio',
         observability: arguments.options['observability'] ?? 'developer',
-        adapters: _parseAdapters(arguments.options['adapters']),
-        blueprint: arguments.options['blueprint'] == null
-            ? null
-            : ScaffoldBlueprint.parse(arguments.options['blueprint']!),
+        scheduler: arguments.options['scheduler'] ?? 'workmanager',
       );
     }
 
@@ -224,56 +227,67 @@ final class DartitectCliRunner {
     final profileName = arguments.options['profile'];
     final hasFeatureOptions =
         profileName != null ||
-        arguments.options['persistence'] != null ||
+        arguments.options['scope'] != null ||
+        arguments.options['persistence-native'] != null ||
+        arguments.options['persistence-web'] != null ||
         arguments.options['transport'] != null ||
         arguments.options['pagination'] != null ||
         arguments.options['diagnostics'] != null ||
-        arguments.flags.contains('cursor-pagination') ||
+        arguments.options['capabilities'] != null ||
         arguments.flags.contains('headless-sync');
     if (kind != 'feature' && hasFeatureOptions) {
       throw const _UsageException(
         'Feature profile options are valid only for create feature.',
       );
     }
-    if (kind == 'feature' && hasFeatureOptions && profileName == null) {
-      throw const _UsageException(
-        '--profile is required when feature profile options are used.',
-      );
+    if (kind == 'feature' && profileName == null) {
+      throw const _UsageException('--profile is required for create feature.');
     }
-    final pagination =
-        arguments.options['pagination'] ??
-        (arguments.flags.contains('cursor-pagination') ? 'cursor' : 'none');
+    final pagination = arguments.options['pagination'] ?? 'none';
     if (!const <String>{'none', 'cursor'}.contains(pagination)) {
       throw _UsageException('Unsupported pagination mode "$pagination".');
     }
+    final featureOptions = kind == 'feature'
+        ? FeatureScaffoldOptions(
+            profile: FeatureProfile.parse(profileName!),
+            scope: FeatureScope.parse(
+              arguments.options['scope'] ?? 'application',
+            ),
+            persistenceNative: arguments.options['persistence-native'],
+            persistenceWeb: arguments.options['persistence-web'],
+            transport: arguments.options['transport'] ?? 'dio',
+            pagination: FeaturePagination.parse(pagination),
+            headlessPlatforms: arguments.flags.contains('headless-sync')
+                ? const <DartitectPlatform>{
+                    DartitectPlatform.android,
+                    DartitectPlatform.ios,
+                    DartitectPlatform.macos,
+                    DartitectPlatform.web,
+                    DartitectPlatform.linux,
+                  }
+                : const <DartitectPlatform>{},
+            diagnostics: FeatureDiagnosticsLevel.parse(
+              arguments.options['diagnostics'] ?? 'basic',
+            ),
+            capabilities: _parseCapabilities(arguments.options['capabilities']),
+          )
+        : null;
     final operations = switch (kind) {
-      'feature' when profileName != null => scaffold.profile(
-        FeatureScaffoldOptions(
-          profile: FeatureProfile.parse(profileName),
-          persistence: arguments.options['persistence'],
-          transport: arguments.options['transport'],
-          cursorPagination: pagination == 'cursor',
-          headlessSync: arguments.flags.contains('headless-sync'),
-          diagnostics: FeatureDiagnosticsLevel.parse(
-            arguments.options['diagnostics'] ?? 'basic',
-          ),
-        ),
-        name,
-      ),
-      'feature' => scaffold.feature(
-        name,
-        includeDomain: arguments.flags.contains('domain'),
-      ),
+      'feature' => scaffold.profile(featureOptions!, name),
       'viewmodel' => scaffold.viewModel(name),
       'repository' => scaffold.repository(name),
       'service' => scaffold.service(name),
-      'simple' ||
-      'remote-read' ||
-      'local-first' ||
-      'offline-mutation' ||
-      'sync-dataset' => scaffold.blueprint(ScaffoldBlueprint.parse(kind), name),
       _ => throw _UsageException('Unknown create target "$kind".'),
     };
+    if (featureOptions != null) {
+      return _createFeature(
+        root,
+        name,
+        featureOptions,
+        operations,
+        dryRun: arguments.flags.contains('dry-run'),
+      );
+    }
     final result = await GenerationEngine(
       root,
       namespace: GenerationNamespace.scaffolding,
@@ -282,14 +296,160 @@ final class DartitectCliRunner {
     return DartitectExitCode.success.code;
   }
 
+  Future<int> _createFeature(
+    Directory root,
+    String input,
+    FeatureScaffoldOptions options,
+    List<FileGenerationOperation> seams, {
+    required bool dryRun,
+  }) async {
+    final name = ScaffoldName(input);
+    final configFile = File(_join(root.path, 'dartitect.json'));
+    final priorSource = await configFile.exists()
+        ? await configFile.readAsString()
+        : null;
+    final prior = priorSource == null
+        ? DartitectConfig()
+        : DartitectConfig.parse(priorSource);
+    final declaration = DartitectFeatureDeclaration(
+      profile: options.profile,
+      scope: options.scope,
+      persistence: FeaturePersistenceMatrix(
+        native: options.persistenceNative,
+        web: options.persistenceWeb,
+      ),
+      transport: options.transport,
+      pagination: options.pagination,
+      diagnostics: options.diagnostics,
+      headless: <DartitectPlatform, bool>{
+        for (final platform in DartitectPlatform.values)
+          platform: options.headlessPlatforms.contains(platform),
+      },
+      capabilities: options.capabilities,
+    );
+    final existing = prior.features.declarations[name.snake];
+    if (existing != null &&
+        jsonEncode(existing.toJson()) != jsonEncode(declaration.toJson())) {
+      throw DartitectConfigException(
+        '/features/declarations/${name.snake}',
+        'feature already exists with a different declaration',
+      );
+    }
+    final declarations = <String, DartitectFeatureDeclaration>{
+      ...prior.features.declarations,
+      name.snake: declaration,
+    };
+    final next = DartitectConfig(
+      configVersion: prior.configVersion,
+      profile: prior.profile,
+      layers: prior.layers,
+      compositionRoots: prior.compositionRoots,
+      generatedInfrastructure: prior.generatedInfrastructure,
+      generatedSuffixes: prior.generatedSuffixes,
+      suppressions: prior.suppressions,
+      modeling: prior.modeling,
+      features: DartitectFeaturesConfig(declarations: declarations),
+      platforms: prior.platforms,
+      scheduler: prior.scheduler,
+      extensions: prior.extensions,
+    );
+    final seamEngine = GenerationEngine(
+      root,
+      namespace: GenerationNamespace.scaffolding,
+    );
+    final seamPreview = await seamEngine.plan(seams);
+    if (seamPreview.hasConflicts) {
+      throw GenerationException(
+        'Consumer-owned feature seams conflict with existing files.',
+      );
+    }
+    final wiring = DartitectWiringService(root);
+    final wiringPreview = await wiring.inspect(config: next);
+    if (wiringPreview.plan.hasConflicts) {
+      throw GenerationException(
+        'Managed feature wiring conflicts with consumer bytes.',
+      );
+    }
+    if (dryRun) {
+      _stdout.writeln('UPDATE dartitect.json');
+      _writeGeneration(
+        GenerationResult(
+          plan: seamPreview,
+          dryRun: true,
+          createdPaths: const <String>[],
+        ),
+      );
+      for (final operation in wiringPreview.plan.operations) {
+        _stdout.writeln(
+          '${operation.disposition.name.toUpperCase()} '
+          '${operation.operation.relativePath}',
+        );
+      }
+      return DartitectExitCode.success.code;
+    }
+
+    GenerationResult? seamResult;
+    try {
+      seamResult = await seamEngine.apply(seams);
+      await _replaceConfig(configFile, next.encode());
+      final wiringResult = await wiring.apply(config: next);
+      _writeGeneration(seamResult);
+      for (final operation in wiringResult.plan.operations) {
+        _stdout.writeln(
+          '${operation.disposition.name.toUpperCase()} '
+          '${operation.operation.relativePath}',
+        );
+      }
+      return DartitectExitCode.success.code;
+    } catch (_) {
+      if (priorSource == null) {
+        if (await configFile.exists()) await configFile.delete();
+      } else {
+        await _replaceConfig(configFile, priorSource);
+      }
+      for (final path
+          in seamResult?.createdPaths.reversed ?? const <String>[]) {
+        final created = File(_join(root.path, path));
+        if (await created.exists()) await created.delete();
+      }
+      rethrow;
+    }
+  }
+
+  static Future<void> _replaceConfig(File target, String source) async {
+    await target.parent.create(recursive: true);
+    final temporary = File('${target.path}.dartitect.tmp');
+    final backup = File('${target.path}.dartitect.bak');
+    await temporary.writeAsString(source, flush: true);
+    final hadTarget = await target.exists();
+    if (hadTarget) await target.rename(backup.path);
+    try {
+      await temporary.rename(target.path);
+      if (await backup.exists()) await backup.delete();
+    } catch (_) {
+      if (await temporary.exists()) await temporary.delete();
+      if (await backup.exists()) await backup.rename(target.path);
+      rethrow;
+    }
+  }
+
   Future<int> _createApp(
     Directory parent,
     String input, {
     required bool dryRun,
+    required String preset,
+    required String transport,
     required String observability,
-    required List<String> adapters,
-    required ScaffoldBlueprint? blueprint,
+    required String scheduler,
   }) async {
+    if (!const <String>{'minimal', 'offline-hybrid'}.contains(preset)) {
+      throw _UsageException('Unsupported app preset "$preset".');
+    }
+    if (transport != 'dio' &&
+        !RegExp(r'^custom:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$')
+            .hasMatch(transport)) {
+      throw _UsageException('Unsupported transport "$transport".');
+    }
     if (!const <String>{
       'none',
       'developer',
@@ -297,17 +457,10 @@ final class DartitectCliRunner {
     }.contains(observability)) {
       throw _UsageException('Unsupported observability mode "$observability".');
     }
-    final enabledAdapters = <String>{...adapters};
-    if (observability == 'sentry') enabledAdapters.add('sentry');
-    for (final adapter in enabledAdapters) {
-      if (!const <String>{
-        'dio',
-        'drift',
-        'objectbox',
-        'sentry',
-      }.contains(adapter)) {
-        throw _UsageException('Unsupported adapter "$adapter".');
-      }
+    if (scheduler != 'workmanager' &&
+        !RegExp(r'^custom:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$')
+            .hasMatch(scheduler)) {
+      throw _UsageException('Unsupported scheduler "$scheduler".');
     }
     final name = ScaffoldName(input);
     final target = Directory(_join(parent.path, name.snake));
@@ -320,11 +473,15 @@ final class DartitectCliRunner {
       _stdout.writeln('CREATE ${name.snake}/ (via flutter create)');
       _stdout.writeln('CREATE ${name.snake}/dartitect.json');
       _stdout.writeln('CREATE ${name.snake}/AGENTS.md');
-      _stdout.writeln('APPLY native_mvvm Tasks feature');
+      _stdout.writeln('APPLY $preset application/session graphs');
       return DartitectExitCode.success.code;
     }
 
     await parent.create(recursive: true);
+    final localSdk = _findLocalSdkRoot();
+    final workspaceMember =
+        localSdk != null &&
+        _isWithinDirectory(parent.absolute.path, localSdk.absolute.path);
     final temporary = await parent.createTemp('.${name.snake}.dartitect-app-');
     var moved = false;
     try {
@@ -345,9 +502,11 @@ final class DartitectCliRunner {
       await _customizeFlutterApp(
         temporary,
         name,
+        preset: preset,
+        transport: transport,
         observability: observability,
-        adapters: enabledAdapters.toList()..sort(),
-        blueprint: blueprint,
+        scheduler: scheduler,
+        workspaceMember: workspaceMember,
       );
       await temporary.rename(target.path);
       moved = true;
@@ -363,9 +522,11 @@ final class DartitectCliRunner {
   Future<void> _customizeFlutterApp(
     Directory project,
     ScaffoldName name, {
+    required String preset,
+    required String transport,
     required String observability,
-    required List<String> adapters,
-    required ScaffoldBlueprint? blueprint,
+    required String scheduler,
+    required bool workspaceMember,
   }) async {
     final pubspec = File(_join(project.path, 'pubspec.yaml'));
     var source = await pubspec.readAsString();
@@ -374,14 +535,18 @@ final class DartitectCliRunner {
       'dartitect',
       'dartitect_flutter',
       if (observability != 'none') 'dartitect_observability',
-      if (blueprint == ScaffoldBlueprint.offlineMutation ||
-          blueprint == ScaffoldBlueprint.syncDataset)
+      if (transport == 'dio') 'dartitect_dio',
+      if (observability == 'sentry') 'dartitect_sentry',
+      if (preset == 'offline-hybrid') ...<String>{
+        'dartitect_drift',
         'dartitect_sync',
-      for (final adapter in adapters) 'dartitect_$adapter',
+        'dartitect_transfer',
+      },
+      if (scheduler == 'workmanager') 'dartitect_workmanager',
     }.toList()..sort();
     final localOverridePackages = _localSdkPackageClosure(sdkPackages);
-    final dependencyBlock = localSdk == null
-        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.5\n').join()
+    final dependencyBlock = localSdk == null || workspaceMember
+        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.6\n').join()
         : sdkPackages
               .map(
                 (package) =>
@@ -393,7 +558,12 @@ final class DartitectCliRunner {
       'dev_dependencies:\n',
       '${dependencyBlock}dev_dependencies:\n',
     );
-    if (localSdk != null) {
+    if (workspaceMember) {
+      source = source.replaceFirst(
+        'environment:\n',
+        'resolution: workspace\n\nenvironment:\n',
+      );
+    } else if (localSdk != null) {
       source =
           '$source\ndependency_overrides:\n${localOverridePackages.map((package) => '  $package:\n'
               '    path: ${_yamlQuote(_join(localSdk.path, 'packages/$package'))}\n').join()}';
@@ -407,50 +577,80 @@ final class DartitectCliRunner {
       '''import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:flutter/material.dart';
 
+import 'composition/application_module.wiring.dartitect.g.dart';
 import 'features/tasks/presentation/tasks_view.dart';
 
-void main() {
-  final binding = WidgetsFlutterBinding.ensureInitialized();
-  final firstFrame = FirstFrameGate.defer(binding);
-  try {
-    runApp(const ${name.pascal}App());
-  } finally {
-    firstFrame.release();
-  }
-}
-
-final class ${name.pascal}App extends StatelessWidget {
-  const ${name.pascal}App({super.key});
-
-  @override
-  Widget build(BuildContext context) => const MaterialApp(
+void main() => runDartitectApplication<ApplicationGraph>(
+  create: ApplicationModule.create,
+  application: (_) => const MaterialApp(
     title: '${name.pascal}',
     home: Scaffold(body: Center(child: TasksPage())),
-  );
-}
+  ),
+);
 ''',
       flush: true,
     );
 
     final scaffold = ScaffoldFactory(packageName: name.snake);
+    final headlessPlatforms = preset == 'offline-hybrid'
+        ? const <DartitectPlatform>{
+            DartitectPlatform.android,
+            DartitectPlatform.ios,
+            DartitectPlatform.macos,
+            DartitectPlatform.web,
+            DartitectPlatform.linux,
+          }
+        : const <DartitectPlatform>{};
+    final featureOptions = FeatureScaffoldOptions(
+      profile: preset == 'offline-hybrid'
+          ? FeatureProfile.offlineFull
+          : FeatureProfile.online,
+      scope: FeatureScope.application,
+      persistenceNative: preset == 'offline-hybrid' ? 'drift' : 'none',
+      persistenceWeb: preset == 'offline-hybrid' ? 'drift' : 'none',
+      transport: transport,
+      pagination: preset == 'offline-hybrid'
+          ? FeaturePagination.cursor
+          : FeaturePagination.none,
+      headlessPlatforms: headlessPlatforms,
+    );
     await GenerationEngine(
       project,
       namespace: GenerationNamespace.scaffolding,
     ).apply(<FileGenerationOperation>[
-      ...scaffold.init(),
+      ...scaffold.init(
+        config: DartitectConfig(
+          scheduler: scheduler,
+          features: DartitectFeaturesConfig(
+            declarations: <String, DartitectFeatureDeclaration>{
+              'tasks': DartitectFeatureDeclaration(
+                profile: featureOptions.profile,
+                scope: featureOptions.scope,
+                persistence: FeaturePersistenceMatrix(
+                  native: featureOptions.persistenceNative,
+                  web: featureOptions.persistenceWeb,
+                ),
+                transport: featureOptions.transport,
+                pagination: featureOptions.pagination,
+                diagnostics: featureOptions.diagnostics,
+                headless: <DartitectPlatform, bool>{
+                  for (final platform in DartitectPlatform.values)
+                    platform: headlessPlatforms.contains(platform),
+                },
+                capabilities: featureOptions.capabilities,
+              ),
+            },
+          ),
+          extensions: <String, Object?>{
+            'dartitect.observability': <String, Object?>{
+              'provider': observability,
+            },
+          },
+        ),
+      ),
       ...scaffold.agents(),
-      if (blueprint == null)
-        ...scaffold.feature('tasks', includeDomain: false)
-      else
-        ...scaffold.blueprint(blueprint, 'tasks'),
+      ...scaffold.profile(featureOptions, 'tasks'),
     ]);
-    if (adapters.contains('drift')) {
-      final recipe = File(
-        _join(project.path, 'docs/drift-composition-root.md'),
-      );
-      await recipe.parent.create(recursive: true);
-      await recipe.writeAsString(_driftCompositionRootRecipe, flush: true);
-    }
     final format = await Process.run('dart', <String>[
       'format',
       'lib',
@@ -458,6 +658,14 @@ final class ${name.pascal}App extends StatelessWidget {
     ], workingDirectory: project.path);
     if (format.exitCode != 0) {
       throw GenerationException('Generated app formatting failed.');
+    }
+    await DartitectWiringService(project).apply();
+    if (preset == 'offline-hybrid') {
+      final recipe = File(
+        _join(project.path, 'docs/drift-composition-root.md'),
+      );
+      await recipe.parent.create(recursive: true);
+      await recipe.writeAsString(_driftCompositionRootRecipe, flush: true);
     }
   }
 
@@ -583,6 +791,46 @@ final class ${name.pascal}App extends StatelessWidget {
       );
       return DartitectExitCode.findings.code;
     }
+  }
+
+  Future<int> _wiring(Directory root, _CliArguments arguments) async {
+    if (arguments.positionals.length != 1 ||
+        arguments.positionals.single != 'sync') {
+      throw const _UsageException(
+        'Usage: dartitect wiring sync [--dry-run|--apply] [--json].',
+      );
+    }
+    arguments.requireOnlyFlags(<String>{'json', 'verbose', 'dry-run', 'apply'});
+    if (arguments.flags.contains('dry-run') &&
+        arguments.flags.contains('apply')) {
+      throw const _UsageException(
+        '--dry-run and --apply are mutually exclusive.',
+      );
+    }
+    final service = DartitectWiringService(root);
+    final report = arguments.flags.contains('apply')
+        ? await service.apply()
+        : await service.inspect();
+    if (arguments.flags.contains('json')) {
+      _stdout.writeln(jsonEncode(report.toJson()));
+    } else {
+      for (final operation in report.plan.operations) {
+        _stdout.writeln(
+          '${operation.disposition.name.toUpperCase()} '
+          '${operation.operation.relativePath}',
+        );
+      }
+      if (report.applied) {
+        _stdout.writeln('APPLIED ${report.writes} managed write(s).');
+      } else {
+        _stdout.writeln(
+          'PREVIEW no files written. Use --apply to synchronize.',
+        );
+      }
+    }
+    return report.isFresh
+        ? DartitectExitCode.success.code
+        : DartitectExitCode.findings.code;
   }
 
   Future<int> _modelMigratePrimary(
@@ -789,18 +1037,29 @@ final class ${name.pascal}App extends StatelessWidget {
           'json',
           'verbose',
           'dry-run',
+          'apply',
           'to',
         });
-        if (!arguments.flags.contains('dry-run') ||
-            arguments.options['to'] == null) {
+        if (arguments.flags.contains('dry-run') &&
+            arguments.flags.contains('apply')) {
           throw const _UsageException(
-            'fleet upgrade requires --dry-run and --to=1.0.0-rc.N.',
+            '--dry-run and --apply are mutually exclusive.',
           );
         }
-        report = await service.previewUpgrade(
-          roots,
-          targetCohort: arguments.options['to']!,
-        );
+        if (arguments.options['to'] == null) {
+          throw const _UsageException(
+            'fleet upgrade requires --to=1.0.0-rc.6.',
+          );
+        }
+        report = arguments.flags.contains('apply')
+            ? await service.applyUpgrade(
+                roots,
+                targetCohort: arguments.options['to']!,
+              )
+            : await service.previewUpgrade(
+                roots,
+                targetCohort: arguments.options['to']!,
+              );
       default:
         throw _UsageException('Unknown fleet command "$command".');
     }
@@ -814,7 +1073,11 @@ final class ${name.pascal}App extends StatelessWidget {
         _stdout.writeln('${project['root']}: ${_fleetProjectSummary(project)}');
       }
       if (command == 'upgrade') {
-        _stdout.writeln('DRY-RUN no files written.');
+        _stdout.writeln(
+          arguments.flags.contains('apply')
+              ? 'COMMITTED all fleet projects.'
+              : 'DRY-RUN no files written.',
+        );
       }
     }
     return report.exitCode;
@@ -843,26 +1106,28 @@ final class ${name.pascal}App extends StatelessWidget {
         : '${findings + violations} architecture findings';
   }
 
-  static List<String> _parseAdapters(String? value) {
-    if (value == null || value.trim().isEmpty) return <String>[];
+  static Set<DartitectCapability> _parseCapabilities(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return const <DartitectCapability>{};
+    }
     return value
         .split(',')
-        .map((adapter) => adapter.trim())
-        .where((adapter) => adapter.isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+        .map((capability) => capability.trim())
+        .where((capability) => capability.isNotEmpty)
+        .map(DartitectCapability.parse)
+        .toSet();
   }
 
   static void _rejectFeatureOptions(_CliArguments arguments) {
     const optionNames = <String>{
       'profile',
-      'persistence',
-      'transport',
+      'scope',
+      'persistence-native',
+      'persistence-web',
       'pagination',
-      'cursor-pagination',
       'headless-sync',
       'diagnostics',
+      'capabilities',
     };
     final used = arguments.flags.intersection(optionNames);
     if (used.isNotEmpty) {
@@ -921,6 +1186,19 @@ final class ${name.pascal}App extends StatelessWidget {
     return _join(_currentDirectory.path, path);
   }
 
+  static bool _isWithinDirectory(String candidate, String parent) {
+    final normalizedCandidate = candidate.endsWith(Platform.pathSeparator)
+        ? candidate.substring(0, candidate.length - 1)
+        : candidate;
+    final normalizedParent = parent.endsWith(Platform.pathSeparator)
+        ? parent.substring(0, parent.length - 1)
+        : parent;
+    return normalizedCandidate == normalizedParent ||
+        normalizedCandidate.startsWith(
+          '$normalizedParent${Platform.pathSeparator}',
+        );
+  }
+
   Directory? _findLocalSdkRoot() {
     var candidate = _currentDirectory;
     while (true) {
@@ -963,6 +1241,7 @@ final class ${name.pascal}App extends StatelessWidget {
         'dartitect_sync',
       },
       'dartitect_sentry': {'dartitect_observability'},
+      'dartitect_workmanager': {'dartitect', 'dartitect_jobs'},
     };
     var changed = true;
     while (changed) {
@@ -1035,27 +1314,27 @@ Read-only commands:
   fleet check <root...>            Scan explicit fleet roots without writes.
   fleet policy <root...> --bundle=PATH --sha256=DIGEST
                                     Audit with a pinned local policy bundle.
-  fleet upgrade <root...> --dry-run --to=1.0.0-rc.N
-                                    Preview revalidatable cohort upgrades only.
+  fleet upgrade <root...> --to=1.0.0-rc.6 --apply [--json]
+                                    Upgrade a cohort transactionally.
 
 Convergent synchronizers (preview by default):
   model sync [--dry-run|--apply] [--json]
                                     Preview or converge generated models.
+  wiring sync [--dry-run|--apply] [--json]
+                                    Preview or converge direct feature wiring.
 
 Mutating commands (all accept --dry-run):
   init                              Create dartitect.json without overwrite.
-  create app <name> [--observability=MODE] [--adapters=a,b] [--blueprint=NAME]
+  create app <name> [--preset=minimal|offline-hybrid] [--transport=dio]
+                    [--observability=MODE] [--scheduler=workmanager]
                                     Create a six-platform Flutter app.
-  create feature <name> [--domain] Create a feature-first vertical slice.
-  create feature <name> --profile=PROFILE [--persistence=PROVIDER]
-                       [--transport=PROVIDER] [--pagination=cursor]
+  create feature <name> --profile=PROFILE [--scope=application|session]
+                       [--persistence-native=PROVIDER]
+                       [--persistence-web=PROVIDER] [--transport=PROVIDER]
+                       [--pagination=cursor]
                        [--headless-sync] [--diagnostics=off|basic|full]
+                       [--capabilities=credentials,attachments,forms,queries]
                                     Create online/cache/replica/offline-full wiring.
-  create simple <name>             Create an immutable MVVM slice.
-  create remote-read <name>        Add a typed remote port and mapper.
-  create local-first <name>        Add local authority and pull reactivity.
-  create offline-mutation <name>   Add an outbox-backed mutation lane.
-  create sync-dataset <name>       Add dataset/checkpoint sync contracts.
   create viewmodel <name>           Create a native ViewModel and test.
   create repository <name>          Create a contract and fake.
   create service <name>             Create a constructor-injected service.

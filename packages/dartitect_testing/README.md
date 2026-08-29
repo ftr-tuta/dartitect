@@ -59,7 +59,7 @@ Future<void> main() async {
   require profile-specific typed fixtures and return test-framework-neutral row
   results.
 - Host, resilience, jobs, transfer, local-history, restoration, and read-only
-  DevTools harnesses cover the RC5 paved road without provider substitution.
+  DevTools harnesses cover the RC6 paved road without provider substitution.
 - `RepositoryContractHarness` runs consumer-supplied repository cases.
 - `ProjectionContractHarness` and `MapperContractHarness` record selector,
   expected-failure, and bidirectional round-trip evidence.
@@ -118,8 +118,8 @@ the provider integration. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.5` source candidate. Add it only from a
+The workspace contains the `1.0.0-rc.6` source candidate. Add it only from a
 matching tagged GitHub Release and compatible cohort coordinates in that
 Release's notes. If no compatible Release exists, there is no supported
 consumption path. See the
-[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).
+[Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

@@ -192,6 +192,8 @@ import 'package:flutter/widgets.dart';
       final root = await Directory.systemTemp.createTemp('dartitect-profile-');
       addTearDown(() => root.delete(recursive: true));
       await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
+      await File('${root.path}/dartitect.json')
+          .writeAsString(DartitectConfig(scheduler: 'workmanager').encode());
       final output = StringBuffer();
       final errors = StringBuffer();
       final runner = DartitectCliRunner(
@@ -205,7 +207,8 @@ import 'package:flutter/widgets.dart';
         'feature',
         'orders',
         '--profile=offline-full',
-        '--persistence=drift',
+        '--persistence-native=drift',
+        '--persistence-web=drift',
         '--transport=dio',
         '--pagination=cursor',
         '--headless-sync',
@@ -214,7 +217,7 @@ import 'package:flutter/widgets.dart';
       ]);
 
       expect(exitCode, 0);
-      expect(output.toString(), contains('orders_feature_profile.dart'));
+      expect(output.toString(), contains('orders.wiring.dartitect.g.dart'));
       expect(output.toString(), contains('orders_cursor_page.dart'));
       expect(output.toString(), contains('orders_headless_sync.dart'));
       expect(errors.toString(), isEmpty);
@@ -244,7 +247,8 @@ import 'package:flutter/widgets.dart';
           'feature',
           'orders',
           '--profile=online',
-          '--persistence=drift',
+          '--persistence-native=drift',
+          '--persistence-web=drift',
           '--transport=dio',
           '--dry-run',
         ]),

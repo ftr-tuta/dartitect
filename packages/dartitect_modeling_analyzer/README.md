@@ -104,7 +104,7 @@ types live in `dartitect_modeling`. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.5` source candidate. Use only coordinates
+The workspace contains the `1.0.0-rc.6` source candidate. Use only coordinates
 published in a matching tagged GitHub Release; without one, there is no
 supported consumption path. See the
-[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).
+[Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

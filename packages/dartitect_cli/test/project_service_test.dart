@@ -236,24 +236,20 @@ void main() {
     },
   );
 
-  test(
-    'conformance audit never emits a migration or coexistence plan',
-    () async {
-      final root = await _project();
+  test('conformance audit never emits a migration plan', () async {
+    final root = await _project();
 
-      final audit = await DartitectProjectService(root).auditConformance();
+    final audit = await DartitectProjectService(root).auditConformance();
 
-      expect(audit['command'], 'conformance audit');
-      expect(audit['canonicalGate'], 'dartitect scan --no-baseline');
-      expect(audit, isNot(contains('steps')));
-      expect(audit['support'], <String, Object?>{
-        'target': 'greenfield_only',
-        'existingProjects': 'audit_only',
-        'migration': false,
-        'coexistence': false,
-      });
-    },
-  );
+    expect(audit['command'], 'conformance audit');
+    expect(audit['canonicalGate'], 'dartitect scan --no-baseline');
+    expect(audit, isNot(contains('steps')));
+    expect(audit['support'], <String, Object?>{
+      'target': 'greenfield_only',
+      'existingProjects': 'audit_only',
+      'migration': false,
+    });
+  });
 
   test(
     'baseline commit is idempotent and leaves no transaction artifacts',

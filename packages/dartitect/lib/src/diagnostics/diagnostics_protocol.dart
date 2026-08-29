@@ -3,24 +3,10 @@ import 'dart:async';
 import '../id_generator.dart';
 import '../lifecycle/contracts.dart';
 
-/// Marks a Dartitect API that remains experimental during the candidate line.
-///
-/// Experimental APIs may change before the stable release and require an ADR,
-/// a real consumer use, and an explicit discard contract before stabilization.
-final class ExperimentalDartitectApi {
-  /// Creates the marker used by experimental Dartitect declarations.
-  const ExperimentalDartitectApi();
-}
-
-/// Shared marker for APIs that have not completed the stabilization gate.
-const experimentalDartitectApi = ExperimentalDartitectApi();
-
 /// Current wire schema emitted by [DartitectDiagnosticsEmitter].
-@experimentalDartitectApi
 const int dartitectDiagnosticsProtocolVersion = 2;
 
 /// Fixed subject categories supported by diagnostics protocol version 2.
-@experimentalDartitectApi
 enum DartitectDiagnosticSubjectKind {
   /// An owned reactive or lifecycle composition root.
   owner,
@@ -60,7 +46,6 @@ enum DartitectDiagnosticSubjectKind {
 }
 
 /// Fixed lifecycle facts supported by diagnostics protocol version 2.
-@experimentalDartitectApi
 enum DartitectDiagnosticPhase {
   /// A subject entered the diagnostic topology.
   created,
@@ -97,7 +82,6 @@ enum DartitectDiagnosticPhase {
 }
 
 /// Runtime diagnostic detail without event sampling.
-@experimentalDartitectApi
 enum DartitectDiagnosticDetail {
   /// Allocates no subject identifiers and emits no events.
   off,
@@ -110,7 +94,6 @@ enum DartitectDiagnosticDetail {
 }
 
 /// Opaque process-local identifier allocated only by a diagnostics emitter.
-@experimentalDartitectApi
 final class DartitectDiagnosticId {
   DartitectDiagnosticId._(this.value) {
     if (!_pattern.hasMatch(value)) {
@@ -141,7 +124,6 @@ final class DartitectDiagnosticId {
 }
 
 /// Versioned, payload-free fact emitted by the diagnostic runtime.
-@experimentalDartitectApi
 final class DartitectDiagnosticEvent {
   DartitectDiagnosticEvent._({
     required this.sequence,
@@ -287,14 +269,12 @@ T _enumByName<T extends Enum>(List<T> values, String name) {
 }
 
 /// Synchronous destination for allowlisted diagnostic events.
-@experimentalDartitectApi
 abstract interface class DartitectDiagnosticReporter {
   /// Receives one immutable, payload-free event.
   void report(DartitectDiagnosticEvent event);
 }
 
 /// Reporter that deliberately ignores every event.
-@experimentalDartitectApi
 final class NoOpDartitectDiagnosticReporter
     implements DartitectDiagnosticReporter {
   /// Creates a no-op reporter.
@@ -305,7 +285,6 @@ final class NoOpDartitectDiagnosticReporter
 }
 
 /// Explicit borrowed or owned diagnostic destination.
-@experimentalDartitectApi
 final class DartitectDiagnosticReporterRegistration {
   /// Borrows [reporter] and never disposes it.
   const DartitectDiagnosticReporterRegistration.borrowed(this.reporter)
@@ -329,7 +308,6 @@ final class DartitectDiagnosticReporterRegistration {
 }
 
 /// Failure-isolating, reentrancy-safe wrapper around an injected reporter.
-@experimentalDartitectApi
 final class SafeDartitectDiagnosticReporter
     implements DartitectDiagnosticReporter {
   /// Wraps [reporter] and reports only its first failure when disabled.
@@ -387,7 +365,6 @@ final class SafeDartitectDiagnosticReporter
 }
 
 /// Bounded in-memory diagnostic ring that clears all references on disposal.
-@experimentalDartitectApi
 final class DartitectDiagnosticBuffer
     implements DartitectDiagnosticReporter, Disposable {
   /// Creates a buffer with a positive fixed [capacity].
@@ -455,7 +432,6 @@ final class DartitectDiagnosticBuffer
 }
 
 /// Process-local protocol emitter with injected identifiers and destination.
-@experimentalDartitectApi
 final class DartitectDiagnosticsEmitter implements AsyncDisposable {
   /// Creates an emitter. Reporter failure never escapes [emit] or [subject].
   DartitectDiagnosticsEmitter({
@@ -621,7 +597,6 @@ final class DartitectDiagnosticsEmitter implements AsyncDisposable {
 }
 
 /// Opaque handle used to emit facts without accepting domain payloads.
-@experimentalDartitectApi
 final class DartitectDiagnosticSubject {
   DartitectDiagnosticSubject._(
     this._emitter,

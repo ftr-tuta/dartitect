@@ -50,20 +50,22 @@ void main() {
     expect(view, isNot(contains('infrastructure/')));
   });
 
-  test('five stable blueprints render their required architectural seams', () {
+  test('four stable profiles render their required architectural seams', () {
     const factory = ScaffoldFactory(packageName: 'sample_app');
 
-    final rendered = <ScaffoldBlueprint, List<FileGenerationOperation>>{
-      for (final blueprint in ScaffoldBlueprint.values)
-        blueprint: factory.blueprint(blueprint, 'catalog'),
+    final rendered = <FeatureProfile, List<FileGenerationOperation>>{
+      for (final profile in FeatureProfile.values)
+        profile: factory.profile(
+          FeatureScaffoldOptions(profile: profile, scope: FeatureScope.session),
+          'catalog',
+        ),
     };
 
-    expect(ScaffoldBlueprint.values.map((value) => value.cliName), <String>[
-      'simple',
-      'remote-read',
-      'local-first',
-      'offline-mutation',
-      'sync-dataset',
+    expect(FeatureProfile.values.map((value) => value.wireName), <String>[
+      'online',
+      'cache',
+      'replica',
+      'offline-full',
     ]);
     for (final operations in rendered.values) {
       final paths = operations.map((operation) => operation.relativePath);
@@ -89,7 +91,7 @@ void main() {
       expect(model, contains('this : labels = immutableListCopy(labels);'));
     }
     expect(
-      rendered[ScaffoldBlueprint.remoteRead]!.map(
+      rendered[FeatureProfile.online]!.map(
         (operation) => operation.relativePath,
       ),
       containsAll(<String>[
@@ -99,13 +101,13 @@ void main() {
       ]),
     );
     expect(
-      rendered[ScaffoldBlueprint.localFirst]!
+      rendered[FeatureProfile.cache]!
           .map((operation) => operation.content)
           .join(),
       contains('PullReactiveSource'),
     );
     expect(
-      rendered[ScaffoldBlueprint.offlineMutation]!
+      rendered[FeatureProfile.offlineFull]!
           .map((operation) => operation.content)
           .join(),
       allOf(
@@ -115,32 +117,29 @@ void main() {
       ),
     );
     expect(
-      rendered[ScaffoldBlueprint.syncDataset]!
+      rendered[FeatureProfile.replica]!
           .map((operation) => operation.content)
           .join(),
       allOf(contains('SyncDataset'), contains('SyncCheckpointStore')),
     );
   });
 
-  test('public profiles preserve blueprint aliases and add bounded wiring', () {
+  test('public profiles add complete bounded declarations without aliases', () {
     const factory = ScaffoldFactory(packageName: 'sample_app');
-    expect(ScaffoldBlueprint.remoteRead.profileAlias, FeatureProfile.online);
-    expect(ScaffoldBlueprint.localFirst.profileAlias, FeatureProfile.cache);
-    expect(ScaffoldBlueprint.syncDataset.profileAlias, FeatureProfile.replica);
-    expect(
-      ScaffoldBlueprint.offlineMutation.profileAlias,
-      FeatureProfile.offlineFull,
-    );
-    expect(ScaffoldBlueprint.simple.profileAlias, isNull);
 
     final operations = factory.profile(
       FeatureScaffoldOptions(
         profile: FeatureProfile.offlineFull,
-        persistence: 'drift',
+        scope: FeatureScope.session,
+        persistenceNative: 'drift',
+        persistenceWeb: 'drift',
         transport: 'dio',
-        cursorPagination: true,
-        headlessSync: true,
+        pagination: FeaturePagination.cursor,
+        headlessPlatforms: const <DartitectPlatform>{DartitectPlatform.android},
         diagnostics: FeatureDiagnosticsLevel.full,
+        capabilities: const <DartitectCapability>{
+          DartitectCapability.credentials,
+        },
       ),
       'catalog',
     );
@@ -149,24 +148,11 @@ void main() {
     expect(
       paths,
       containsAll(<String>[
-        'lib/features/catalog/composition/catalog_feature_profile.dart',
         'lib/features/catalog/application/catalog_cursor_page.dart',
         'lib/features/catalog/composition/catalog_headless_sync.dart',
       ]),
     );
-    expect(
-      operations
-          .singleWhere(
-            (operation) =>
-                operation.relativePath.endsWith('catalog_feature_profile.dart'),
-          )
-          .content,
-      allOf(
-        contains("profile = 'offline-full'"),
-        contains("persistence = 'drift'"),
-        contains("transport = 'dio'"),
-      ),
-    );
+    expect(paths, isNot(contains(endsWith('catalog_feature_profile.dart'))));
     expect(
       operations.every(
         (operation) => operation.ownership == GeneratedOwnership.generatedOnce,

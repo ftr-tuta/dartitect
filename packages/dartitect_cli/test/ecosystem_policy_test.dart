@@ -23,8 +23,8 @@ void main() {
     final finding = report.findings.singleWhere(
       (finding) => finding.package == 'provider',
     );
-    expect(finding.code, 'DT1019');
-    expect(finding.severity, FindingSeverity.warning);
+    expect(finding.code, 'DT1017');
+    expect(finding.severity, FindingSeverity.error);
     expect(finding.directOwners, <String>['client_a', 'client_b']);
     expect(finding.dependencyPaths, <String>[
       'client_a > provider',
@@ -33,7 +33,7 @@ void main() {
   });
 
   test(
-    'installed overlap warns while concrete source leakage remains error',
+    'installed architecture runtime and concrete leakage are errors',
     () async {
       final root = await _graphFixture(
         direct: const <String>['provider'],
@@ -44,8 +44,8 @@ void main() {
         root,
         EcosystemPolicy.bundled,
       ).audit();
-      expect(installed.findings.single.code, 'DT1019');
-      expect(installed.findings.single.severity, FindingSeverity.warning);
+      expect(installed.findings.single.code, 'DT1017');
+      expect(installed.findings.single.severity, FindingSeverity.error);
 
       final source = File('${root.path}/lib/domain/leak.dart');
       await source.parent.create(recursive: true);

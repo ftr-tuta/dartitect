@@ -1,4 +1,4 @@
-/// Experimental, local-only MCP access to Dartitect project tooling.
+/// Stable, local-only MCP access to Dartitect project tooling.
 library;
 
 export 'src/policy.dart';

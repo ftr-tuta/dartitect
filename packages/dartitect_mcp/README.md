@@ -96,7 +96,8 @@ client asks.
 - No bypass of root confinement, state revalidation, serialization, or lock.
 - No hand-edited generated catalog.
 
-The package is experimental and pins `dart_mcp` `0.5.2`.
+The Dartitect MCP contract is stable and pins the reviewed `dart_mcp` `0.5.2`
+transport surface.
 
 ## Testing
 
@@ -115,7 +116,7 @@ Use the `dartitect-mcp` managed skill for agent workflows. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.5` source candidate. Use only coordinates
+The workspace contains the `1.0.0-rc.6` source candidate. Use only coordinates
 from a matching tag with a published GitHub Release and complete compatible
 cohort notes. If none exists, there is no supported consumption path. See the
-[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).
+[Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

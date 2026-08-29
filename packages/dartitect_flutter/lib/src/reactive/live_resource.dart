@@ -29,12 +29,10 @@ enum SourceBackpressure {
   /// The next read begins after the cancelled operation drains. A provider that
   /// ignores cooperative cancellation is still generation-guarded and cannot
   /// publish its late result.
-  @experimentalDartitectApi
   restartLatest,
 }
 
 /// Last-known-data presentation while a live resource refreshes.
-@experimentalDartitectApi
 enum LiveResourceStalePolicy {
   /// Publishes waiting/failure/crash states with the last known data attached.
   preserveLastData,
@@ -232,11 +230,10 @@ final class LiveResource<T, F extends Object> implements Listenable {
     SourceFrameScheduler frameScheduler = const FlutterSourceFrameScheduler(),
     ReactiveTimerFactory timerFactory = const SystemReactiveTimerFactory(),
     LiveResourceCrashReporter reporter = const NoOpLiveResourceCrashReporter(),
-    @experimentalDartitectApi
     LiveResourceStalePolicy stalePolicy =
         LiveResourceStalePolicy.preserveLastData,
-    @experimentalDartitectApi bool Function(T previous, T next)? dataEquals,
-    @experimentalDartitectApi DartitectDiagnosticSubject? diagnostics,
+    bool Function(T previous, T next)? dataEquals,
+    DartitectDiagnosticSubject? diagnostics,
   }) {
     if (diagnostics != null &&
         diagnostics.kind != DartitectDiagnosticSubjectKind.resource) {
@@ -303,7 +300,6 @@ final class LiveResource<T, F extends Object> implements Listenable {
   final SourceBackpressure backpressure;
 
   /// Configured last-known-data behavior during refresh.
-  @experimentalDartitectApi
   final LiveResourceStalePolicy stalePolicy;
 
   /// Current data state.

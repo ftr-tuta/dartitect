@@ -64,13 +64,18 @@ void main() {
             'dartitect_preview_codex_sync',
             'dartitect_preview_model_sync',
             'dartitect_preview_model_primary_migration',
+            'dartitect_preview_create_feature',
+            'dartitect_preview_wiring_sync',
+            'dartitect_explain_feature_graph',
+            'dartitect_list_consumer_owned_seams',
+            'dartitect_verify_primary_constructor_policy',
             'dartitect_apply_change',
           ]),
         );
-        expect(tools, hasLength(12));
+        expect(tools, hasLength(17));
         expect(
           tools.map((tool) => tool.name).join(' '),
-          isNot(contains('create')),
+          isNot(anyOf(contains('shell'), contains('execute'))),
         );
         final apply = tools.singleWhere(
           (tool) => tool.name == 'dartitect_apply_change',
@@ -362,6 +367,154 @@ environment:
         <String, Object?>{'planId': planId, 'confirmed': true},
       );
       expect(_errorCode(replay), 'plan_replayed');
+    });
+
+    test(
+      'previews and applies feature creation through a stale-safe plan',
+      () async {
+        final project = await _project();
+        final environment = _Environment(
+          DartitectMcpPolicy(
+            allowedRoots: <Directory>[project],
+            allowWrites: true,
+            createPlanId: () => 'create-feature-plan-0001',
+          ),
+        );
+        addTearDown(environment.close);
+        await environment.initialize();
+
+        final invalid = await environment.call(
+          'dartitect_preview_create_feature',
+          <String, Object?>{'profile': 'online'},
+        );
+        expect(_errorCode(invalid), 'invalid_input');
+
+        final preview = await environment.call(
+          'dartitect_preview_create_feature',
+          <String, Object?>{
+            'name': 'accounts',
+            'profile': 'online',
+            'scope': 'session',
+            'capabilities': 'credentials,forms',
+          },
+        );
+        expect(preview.isError, isNot(true));
+        expect(File('${project.path}/dartitect.json').existsSync(), isFalse);
+        expect(
+          jsonEncode(preview.structuredContent),
+          allOf(contains('accounts'), contains('consumer')),
+        );
+
+        final applied = await environment.call(
+          'dartitect_apply_change',
+          <String, Object?>{
+            'planId': preview.structuredContent?['planId']! as String,
+            'confirmed': true,
+          },
+        );
+        expect(applied.isError, isNot(true));
+        final config = await DartitectConfig.load(
+          File('${project.path}/dartitect.json'),
+        );
+        expect(
+          config.features.declarations['accounts']?.scope,
+          FeatureScope.session,
+        );
+        expect(
+          File(
+            '${project.path}/lib/features/accounts/composition/'
+            'accounts.wiring.dartitect.g.dart',
+          ).existsSync(),
+          isTrue,
+        );
+
+        final graph = await environment.call(
+          'dartitect_explain_feature_graph',
+          <String, Object?>{'feature': 'accounts'},
+        );
+        expect(graph.structuredContent?['runtimeContainer'], isFalse);
+        final seams = await environment.call(
+          'dartitect_list_consumer_owned_seams',
+          <String, Object?>{'feature': 'accounts', 'limit': 2},
+        );
+        expect(
+          (seams.structuredContent?['results'] as List<Object?>),
+          hasLength(2),
+        );
+        expect(
+          ((seams.structuredContent?['page'] as Map<String, Object?>)['total']
+              as int),
+          greaterThan(2),
+        );
+      },
+    );
+
+    test('wiring preview revalidates state before reviewed apply', () async {
+      final project = await _project();
+      await File('${project.path}/dartitect.json').writeAsString(
+        DartitectConfig(
+          features: DartitectFeaturesConfig(
+            declarations: <String, DartitectFeatureDeclaration>{
+              'notes': DartitectFeatureDeclaration(
+                profile: FeatureProfile.online,
+                scope: FeatureScope.application,
+                persistence: FeaturePersistenceMatrix(
+                  native: 'none',
+                  web: 'none',
+                ),
+                transport: 'dio',
+                pagination: FeaturePagination.none,
+                diagnostics: FeatureDiagnosticsLevel.basic,
+                headless: <DartitectPlatform, bool>{
+                  for (final platform in DartitectPlatform.values)
+                    platform: false,
+                },
+              ),
+            },
+          ),
+        ).encode(),
+      );
+      var sequence = 0;
+      final environment = _Environment(
+        DartitectMcpPolicy(
+          allowedRoots: <Directory>[project],
+          allowWrites: true,
+          createPlanId: () => 'wiring-plan-${sequence++}'.padRight(24, '0'),
+        ),
+      );
+      addTearDown(environment.close);
+      await environment.initialize();
+
+      final stalePreview = await environment.call(
+        'dartitect_preview_wiring_sync',
+      );
+      await File('${project.path}/lib/main.dart')
+          .writeAsString('void main() { print(1); }\n');
+      final stale = await environment.call(
+        'dartitect_apply_change',
+        <String, Object?>{
+          'planId': stalePreview.structuredContent?['planId']! as String,
+          'confirmed': true,
+        },
+      );
+      expect(_errorCode(stale), 'stale_plan');
+
+      final preview = await environment.call('dartitect_preview_wiring_sync');
+      final applied = await environment.call(
+        'dartitect_apply_change',
+        <String, Object?>{
+          'planId': preview.structuredContent?['planId']! as String,
+          'confirmed': true,
+        },
+      );
+      expect(applied.isError, isNot(true));
+      expect(
+        File(
+          '${project.path}/lib/features/notes/composition/'
+          'notes.wiring.dartitect.g.dart',
+        ).existsSync(),
+        isTrue,
+      );
     });
 
     test(

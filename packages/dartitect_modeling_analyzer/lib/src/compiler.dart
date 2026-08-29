@@ -177,7 +177,10 @@ final class ModelingCompiler {
       definingUnit: defining.unit,
       definingPath: libraryPath,
       lineInfo: defining.lineInfo,
-      hasModels: candidates.isNotEmpty,
+      hasModels: candidates.any(
+        (candidate) =>
+            hasLexicalGeneratedModelAnnotation(candidate.declaration),
+      ),
     );
     if (partDiagnostic != null) {
       diagnostics.add(partDiagnostic);
@@ -248,11 +251,14 @@ final class ModelingCompiler {
 
     final recognized =
         <({ModelingCapability capability, Annotation annotation})>[];
+    var dataCarrier = false;
     for (final annotation in declaration.metadata) {
       final lexicalName = annotation.name.toSource().split('.').last;
       final capability = _capabilityForAnnotation(annotation);
       if (capability != null) {
         recognized.add((capability: capability, annotation: annotation));
+      } else if (_isDataCarrierAnnotation(annotation)) {
+        dataCarrier = true;
       } else if (_annotationNames.contains(lexicalName)) {
         reject(
           'DT1032',
@@ -261,7 +267,7 @@ final class ModelingCompiler {
         );
       }
     }
-    if (recognized.isEmpty) {
+    if (recognized.isEmpty && !dataCarrier) {
       return ModelingClassCompilation(
         model: null,
         diagnostics: List<ModelingDiagnostic>.unmodifiable(diagnostics),
@@ -301,6 +307,13 @@ final class ModelingCompiler {
         'DT1035',
         'Model primary constructors must be unnamed.',
         primaryNode,
+      );
+    }
+
+    if (recognized.isEmpty) {
+      return ModelingClassCompilation(
+        model: null,
+        diagnostics: List<ModelingDiagnostic>.unmodifiable(diagnostics),
       );
     }
 
@@ -768,6 +781,12 @@ bool hasLexicalModelingAnnotation(ClassDeclaration declaration) => declaration
     .map((annotation) => annotation.name.toSource().split('.').last)
     .any(_annotationNames.contains);
 
+/// Whether [declaration] requests generated modeling output.
+bool hasLexicalGeneratedModelAnnotation(ClassDeclaration declaration) =>
+    declaration.metadata
+        .map((annotation) => annotation.name.toSource().split('.').last)
+        .any(_generatedAnnotationNames.contains);
+
 ModelingCapability? _capabilityForAnnotation(Annotation annotation) {
   final element = annotation.element;
   if (element?.library?.uri.toString() !=
@@ -781,6 +800,13 @@ ModelingCapability? _capabilityForAnnotation(Annotation annotation) {
     'DartitectMapper' => ModelingCapability.mapper,
     _ => null,
   };
+}
+
+bool _isDataCarrierAnnotation(Annotation annotation) {
+  final element = annotation.element;
+  return element?.library?.uri.toString() ==
+          'package:dartitect_modeling/src/annotations.dart' &&
+      element?.enclosingElement?.displayName == 'DartitectDataCarrier';
 }
 
 _FieldMetadata _fieldMetadata(
@@ -1277,6 +1303,14 @@ String _join(String left, String right) =>
     '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
 
 const Set<String> _annotationNames = <String>{
+  'DartitectValue',
+  'DartitectJson',
+  'DartitectProjection',
+  'DartitectMapper',
+  'DartitectDataCarrier',
+};
+
+const Set<String> _generatedAnnotationNames = <String>{
   'DartitectValue',
   'DartitectJson',
   'DartitectProjection',

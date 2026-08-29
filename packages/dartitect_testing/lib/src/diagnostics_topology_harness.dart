@@ -1,7 +1,6 @@
 import 'package:dartitect/dartitect.dart';
 
 /// Payload-free reconstructed state for one diagnostic subject.
-@experimentalDartitectApi
 final class DiagnosticTopologyNode {
   DiagnosticTopologyNode._({
     required this.id,
@@ -41,7 +40,6 @@ final class DiagnosticTopologyNode {
 ///
 /// It accepts only [DartitectDiagnosticEvent], whose type has no domain
 /// payload, error text, stack, key, query, identity, or arbitrary metadata.
-@experimentalDartitectApi
 final class DiagnosticsTopologyHarness {
   final Map<DartitectDiagnosticId, DiagnosticTopologyNode> _nodes =
       <DartitectDiagnosticId, DiagnosticTopologyNode>{};

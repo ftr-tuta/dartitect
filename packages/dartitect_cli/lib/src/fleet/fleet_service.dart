@@ -1,12 +1,38 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 
 import '../config/dartitect_config.dart';
+import '../generation/generation_engine.dart';
+import '../generation/wiring_service.dart';
+import '../model/model_generator.dart';
+import '../model/primary_constructor_migration.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
 import '../verification/verification_service.dart';
+import 'rc5_config_migration.dart';
+
+/// Result from one closed, allowlisted fleet validation command.
+final class DartitectFleetCommandResult {
+  /// Creates a sanitized process result.
+  const DartitectFleetCommandResult({required this.exitCode, this.output = ''});
+
+  /// Process exit status.
+  final int exitCode;
+
+  /// Bounded output sanitized before it enters receipts.
+  final String output;
+}
+
+/// Injectable boundary for the fleet's closed pub/analyze/test allowlist.
+typedef DartitectFleetCommandRunner =
+    Future<DartitectFleetCommandResult> Function(
+      Directory root,
+      String executable,
+      List<String> arguments,
+    );
 
 /// One deterministic, path-sanitized result from a fleet operation.
 final class DartitectFleetReport {
@@ -46,10 +72,16 @@ final class DartitectFleetReport {
 /// Read-only, offline operations across explicitly selected project roots.
 final class DartitectFleetService {
   /// Creates a fleet service rooted at the caller's explicit workspace.
-  DartitectFleetService(Directory fleetRoot) : fleetRoot = fleetRoot.absolute;
+  DartitectFleetService(
+    Directory fleetRoot, {
+    DartitectFleetCommandRunner? commandRunner,
+  }) : fleetRoot = fleetRoot.absolute,
+       _commandRunner = commandRunner ?? _runFleetCommand;
 
   /// Boundary within which all projects and policy files must resolve.
   final Directory fleetRoot;
+
+  final DartitectFleetCommandRunner _commandRunner;
 
   /// Reports declared and locked Dartitect versions without running pub.
   Future<DartitectFleetReport> versions(Iterable<String> roots) async {
@@ -133,7 +165,7 @@ final class DartitectFleetService {
         'capabilities': report.capabilities,
         'modelStatus': report.project['modelStatus'],
         'providerStatus': report.project['providerStatus'],
-        'ecosystem': report.project['ecosystem'],
+        'architectureProfile': report.project['architectureProfile'],
         'findings': <Object?>[
           for (final finding in report.findings) finding.toJson(),
         ],
@@ -190,20 +222,401 @@ final class DartitectFleetService {
     final projects = await _projects(roots);
     final results = <Map<String, Object?>>[];
     for (final project in projects) {
-      final plan = await DartitectProjectService(project.directory)
-          .previewDependencyUpgrade(targetCohort);
-      results.add(<String, Object?>{
-        'root': project.label,
-        'plan': <String, Object?>{
-          ...plan.toJson(),
-          'stateToken': plan.stateToken,
-        },
-      });
+      final plan = await _previewUpgradeProject(project, targetCohort);
+      results.add(<String, Object?>{'root': project.label, 'plan': plan});
     }
     return DartitectFleetReport(
       command: 'fleet upgrade --dry-run',
       projects: List<Map<String, Object?>>.unmodifiable(results),
       exitCode: 0,
+    );
+  }
+
+  /// Applies an exact RC5-to-RC6 cohort transaction and validates every root.
+  Future<DartitectFleetReport> applyUpgrade(
+    Iterable<String> roots, {
+    required String targetCohort,
+  }) async {
+    if (targetCohort != '1.0.0-rc.6') {
+      throw const FormatException(
+        'Fleet apply supports only the exact RC5 to RC6 migration.',
+      );
+    }
+    final projects = await _projects(roots);
+    await _recoverFleetJournalIfNeeded();
+    return _withFleetLocks(projects, () async {
+      final previews = <String, Map<String, Object?>>{
+        for (final project in projects)
+          project.label: await _previewUpgradeProject(project, targetCohort),
+      };
+      final snapshot = await _FleetSnapshot.capture(projects);
+      await _writeFleetJournal(snapshot);
+      final receipts = <Map<String, Object?>>[];
+      try {
+        for (final project in projects) {
+          final commandReceipts = await _applyUpgradeProject(
+            project,
+            targetCohort,
+          );
+          final preview = previews[project.label]!;
+          final receipt = <String, Object?>{
+            'schemaVersion': 1,
+            'root': project.label,
+            'targetCohort': targetCohort,
+            'stateToken': preview['stateToken'],
+            'operations': preview['operations'],
+            'commands': commandReceipts,
+            'result': 'committed',
+          };
+          await _writeProjectReceipt(project, receipt);
+          receipts.add(receipt);
+        }
+        await _validateProjectDigests(projects);
+        await _deleteFleetJournal();
+        return DartitectFleetReport(
+          command: 'fleet upgrade --apply',
+          projects: List<Map<String, Object?>>.unmodifiable(receipts),
+          exitCode: 0,
+        );
+      } catch (error, stackTrace) {
+        await snapshot.restore();
+        await snapshot.validate();
+        await _deleteFleetJournal();
+        Error.throwWithStackTrace(error, stackTrace);
+      }
+    });
+  }
+
+  Future<Map<String, Object?>> _previewUpgradeProject(
+    _FleetProject project,
+    String targetCohort,
+  ) async {
+    if (targetCohort != '1.0.0-rc.6') {
+      throw const FormatException(
+        'Fleet upgrade accepts only --to=1.0.0-rc.6.',
+      );
+    }
+    final pubspec = await File(_join(project.directory.path, 'pubspec.yaml'))
+        .readAsString();
+    _requireExactRc5Dependencies(pubspec);
+    final dependency = await DartitectProjectService(project.directory)
+        .previewDependencyUpgrade(targetCohort);
+    final operations = <String>[...dependency.operations];
+    DartitectConfig? migratedConfig;
+    final configFile = File(_join(project.directory.path, 'dartitect.json'));
+    if (await configFile.exists()) {
+      final migration = migrateExactRc5Config(await configFile.readAsString());
+      migratedConfig = migration.config;
+      operations.add(
+        migration.changed ? 'UPDATE dartitect.json' : 'NO-OP dartitect.json',
+      );
+      final wiring = await DartitectWiringService(project.directory)
+          .inspect(config: migratedConfig);
+      operations.addAll(<String>[
+        for (final operation in wiring.plan.operations)
+          '${operation.disposition.name.toUpperCase()} ${operation.operation.relativePath}',
+      ]);
+    }
+    final primary = await PrimaryConstructorMigration(project.directory)
+        .inspect();
+    if (primary.diagnostics.isNotEmpty) {
+      throw const FormatException(
+        'Primary-constructor policy diagnostics block fleet upgrade.',
+      );
+    }
+    operations.addAll(<String>[
+      for (final operation in primary.operations) 'UPDATE ${operation.path}',
+    ]);
+    final models = await DartitectModelGenerator(project.directory).inspect();
+    if (models.diagnostics.isNotEmpty) {
+      throw const FormatException('Model diagnostics block fleet upgrade.');
+    }
+    operations.addAll(<String>[
+      for (final operation
+          in models.plan?.operations ?? const <PlannedFileOperation>[])
+        '${operation.disposition.name.toUpperCase()} ${operation.operation.relativePath}',
+    ]);
+    final normalized = operations.toSet().toList()..sort();
+    final inputDigest = await _projectDigest(project.directory);
+    final stateToken = sha256
+        .convert(
+          utf8.encode(
+            '$targetCohort\u0000$inputDigest\u0000${normalized.join('\u0000')}',
+          ),
+        )
+        .toString();
+    return <String, Object?>{
+      'schemaVersion': 1,
+      'targetCohort': targetCohort,
+      'stateToken': stateToken,
+      'operations': normalized,
+      'validationCommands': await _validationCommandLabels(project.directory),
+      if (migratedConfig != null)
+        'featureCount': migratedConfig.features.declarations.length,
+    };
+  }
+
+  Future<List<Map<String, Object?>>> _applyUpgradeProject(
+    _FleetProject project,
+    String targetCohort,
+  ) async {
+    final pubspec = File(_join(project.directory.path, 'pubspec.yaml'));
+    final upgraded = DartitectProjectService.renderDependencyUpgradeSource(
+      await pubspec.readAsString(),
+      targetCohort,
+    );
+    await _atomicWrite(pubspec, utf8.encode(upgraded));
+
+    final configFile = File(_join(project.directory.path, 'dartitect.json'));
+    DartitectConfig? config;
+    if (await configFile.exists()) {
+      config = migrateExactRc5Config(await configFile.readAsString()).config;
+      await _atomicWrite(configFile, utf8.encode(config.encode()));
+    }
+
+    final primary = await PrimaryConstructorMigration(project.directory)
+        .inspect();
+    if (primary.diagnostics.isNotEmpty) {
+      throw const FormatException(
+        'Primary-constructor policy diagnostics block fleet apply.',
+      );
+    }
+    if (primary.operations.isNotEmpty) {
+      await PrimaryConstructorMigration(project.directory).apply();
+    }
+    final models = await DartitectModelGenerator(project.directory).inspect();
+    if (models.diagnostics.isNotEmpty) {
+      throw const FormatException('Model diagnostics block fleet apply.');
+    }
+    await DartitectModelGenerator(project.directory).apply();
+    if (config != null) {
+      await DartitectWiringService(project.directory).apply(config: config);
+    }
+
+    final commands = await _validationCommands(project.directory);
+    final receipts = <Map<String, Object?>>[];
+    for (final command in commands) {
+      final result = await _commandRunner(
+        project.directory,
+        command.executable,
+        command.arguments,
+      );
+      final receipt = <String, Object?>{
+        'command': command.label,
+        'exitCode': result.exitCode,
+        'output': _sanitizeOutput(result.output),
+      };
+      receipts.add(receipt);
+      if (result.exitCode != 0) {
+        throw FormatException(
+          'Fleet validation failed for ${project.label}: ${command.label}.',
+        );
+      }
+    }
+    return receipts;
+  }
+
+  Future<List<String>> _validationCommandLabels(Directory root) async =>
+      (await _validationCommands(root))
+          .map((command) => command.label)
+          .toList();
+
+  static Future<List<_FleetCommand>> _validationCommands(Directory root) async {
+    final pubspec = await File(_join(root.path, 'pubspec.yaml')).readAsString();
+    final flutter = RegExp(
+      r'^\s+flutter:\s*$[\s\S]*?^\s+sdk:\s+flutter\s*$',
+      multiLine: true,
+    ).hasMatch(pubspec);
+    return flutter
+        ? const <_FleetCommand>[
+            _FleetCommand('flutter', <String>['pub', 'get']),
+            _FleetCommand('flutter', <String>['analyze']),
+            _FleetCommand('flutter', <String>['test']),
+          ]
+        : const <_FleetCommand>[
+            _FleetCommand('dart', <String>['pub', 'get']),
+            _FleetCommand('dart', <String>['analyze']),
+            _FleetCommand('dart', <String>['test']),
+          ];
+  }
+
+  static void _requireExactRc5Dependencies(String pubspec) {
+    final dependencies = _declaredDartitectDependencies(pubspec);
+    if (dependencies.isEmpty) {
+      throw const FormatException(
+        'Fleet RC6 migration requires at least one RC5 Dartitect dependency.',
+      );
+    }
+    for (final dependency in dependencies) {
+      final constraint = dependency['declaredConstraint'];
+      if (constraint is! String ||
+          !const <String>{
+            '1.0.0-rc.5',
+            '^1.0.0-rc.5',
+            '>=1.0.0-rc.5 <1.0.0',
+          }.contains(constraint)) {
+        throw FormatException(
+          'Dependency ${dependency['package']} is not on the exact RC5 cohort.',
+        );
+      }
+    }
+  }
+
+  Future<T> _withFleetLocks<T>(
+    List<_FleetProject> projects,
+    Future<T> Function() action,
+  ) async {
+    final locks = <RandomAccessFile>[];
+    try {
+      final fleetDirectory = Directory(_join(fleetRoot.path, '.dartitect'));
+      await fleetDirectory.create(recursive: true);
+      final paths = <String>[
+        _join(fleetDirectory.path, 'fleet-upgrade.lock'),
+        for (final project in projects)
+          _join(project.directory.path, '.dartitect/project-change.lock'),
+      ];
+      for (final path in paths) {
+        final file = File(path);
+        await file.parent.create(recursive: true);
+        final lock = await file.open(mode: FileMode.append);
+        try {
+          await lock.lock(FileLock.exclusive);
+        } on FileSystemException {
+          await lock.close();
+          throw const FormatException(
+            'Fleet or project upgrade lock is already held.',
+          );
+        }
+        locks.add(lock);
+      }
+      return await action();
+    } finally {
+      for (final lock in locks.reversed) {
+        try {
+          await lock.unlock();
+        } finally {
+          await lock.close();
+        }
+      }
+    }
+  }
+
+  File get _fleetJournal =>
+      File(_join(fleetRoot.path, '.dartitect/fleet-upgrade.transaction.json'));
+
+  Future<void> _writeFleetJournal(_FleetSnapshot snapshot) async {
+    final journal = _fleetJournal;
+    await journal.parent.create(recursive: true);
+    final temporary = File('${journal.path}.tmp');
+    await temporary.writeAsString(
+      '${jsonEncode(snapshot.toJson())}\n',
+      flush: true,
+    );
+    if (await journal.exists()) await journal.delete();
+    await temporary.rename(journal.path);
+  }
+
+  Future<void> _recoverFleetJournalIfNeeded() async {
+    final journal = _fleetJournal;
+    if (!await journal.exists()) return;
+    final decoded = jsonDecode(await journal.readAsString());
+    final snapshot = _FleetSnapshot.fromJson(fleetRoot, decoded);
+    await snapshot.restore();
+    await snapshot.validate();
+    await _deleteFleetJournal();
+  }
+
+  Future<void> _deleteFleetJournal() async {
+    final journal = _fleetJournal;
+    if (await journal.exists()) await journal.delete();
+    final temporary = File('${journal.path}.tmp');
+    if (await temporary.exists()) await temporary.delete();
+  }
+
+  static Future<void> _atomicWrite(File file, List<int> bytes) async {
+    await file.parent.create(recursive: true);
+    final temporary = File('${file.path}.dartitect-fleet.tmp');
+    await temporary.writeAsBytes(bytes, flush: true);
+    if (await file.exists()) await file.delete();
+    await temporary.rename(file.path);
+  }
+
+  static Future<void> _writeProjectReceipt(
+    _FleetProject project,
+    Map<String, Object?> receipt,
+  ) async {
+    final file = File(
+      _join(project.directory.path, '.dartitect/fleet-upgrade-receipt.json'),
+    );
+    await _atomicWrite(
+      file,
+      utf8.encode('${const JsonEncoder.withIndent('  ').convert(receipt)}\n'),
+    );
+  }
+
+  static Future<void> _validateProjectDigests(
+    List<_FleetProject> projects,
+  ) async {
+    for (final project in projects) {
+      final digest = await _projectDigest(project.directory);
+      if (!RegExp(r'^[a-f0-9]{64}$').hasMatch(digest)) {
+        throw const FormatException('Fleet project digest validation failed.');
+      }
+    }
+  }
+
+  static Future<String> _projectDigest(Directory root) async {
+    final files = await _fleetFiles(root);
+    final bytes = BytesBuilder(copy: false);
+    for (final file in files) {
+      final relative = _relativeTo(root, file.path);
+      bytes.add(utf8.encode(relative));
+      bytes.addByte(0);
+      bytes.add(await file.readAsBytes());
+      bytes.addByte(0);
+    }
+    return sha256.convert(bytes.takeBytes()).toString();
+  }
+
+  static String _sanitizeOutput(String output) {
+    var value = output.replaceAll(
+      RegExp(
+        r'(authorization|cookie|token|password|secret|dsn)\s*[:=]\s*\S+',
+        caseSensitive: false,
+      ),
+      r'$1=<redacted>',
+    );
+    final home = Platform.environment['HOME'];
+    if (home != null && home.isNotEmpty) value = value.replaceAll(home, '~');
+    value = value.trim();
+    return value.length <= 2000 ? value : '${value.substring(0, 2000)}…';
+  }
+
+  static Future<DartitectFleetCommandResult> _runFleetCommand(
+    Directory root,
+    String executable,
+    List<String> arguments,
+  ) async {
+    const allowed = <String>{
+      'dart pub get',
+      'dart analyze',
+      'dart test',
+      'flutter pub get',
+      'flutter analyze',
+      'flutter test',
+    };
+    final label = '$executable ${arguments.join(' ')}';
+    if (!allowed.contains(label)) {
+      throw const FormatException('Fleet command is outside the allowlist.');
+    }
+    final result = await Process.run(
+      executable,
+      arguments,
+      workingDirectory: root.path,
+    );
+    return DartitectFleetCommandResult(
+      exitCode: result.exitCode,
+      output: '${result.stdout}\n${result.stderr}',
     );
   }
 
@@ -368,15 +781,6 @@ final class DartitectFleetService {
     final packages = _declaredPackageNames(pubspec);
     final providers = packages.where(_providerPackages.contains).toList()
       ..sort();
-    final overlap =
-        packages
-            .where(
-              (package) =>
-                  EcosystemPolicy.bundled.explain(package).decision ==
-                  EcosystemDecision.overlapWarning,
-            )
-            .toList()
-          ..sort();
     final modelingDependency =
         packages.contains('dartitect_modeling') ||
         packages.contains('dartitect_modeling_analyzer');
@@ -394,14 +798,9 @@ final class DartitectFleetService {
       },
       'providerStatus': <String, Object?>{
         'installed': providers,
-        'overlap': overlap,
         'ownership': 'consumer_owned',
         'writerPolicy': 'single_writer_no_dual_write',
-        'status': overlap.isNotEmpty
-            ? 'overlap_warning'
-            : providers.isNotEmpty
-            ? 'bounded'
-            : 'none',
+        'status': providers.isNotEmpty ? 'bounded' : 'none',
       },
     };
   }
@@ -424,8 +823,8 @@ final class DartitectFleetService {
       };
     }
     final config = await DartitectConfig.load(configFile);
-    final declarations = config.features?.declarations;
-    if (declarations == null || declarations.isEmpty) {
+    final declarations = config.features.declarations;
+    if (declarations.isEmpty) {
       return const <String, Object?>{
         'profiles': <String>[],
         'providers': <String, Object?>{
@@ -446,12 +845,12 @@ final class DartitectFleetService {
             .toSet()
             .toList()
           ..sort();
-    final persistence =
-        declarations.values
-            .map((declaration) => declaration.persistence)
-            .toSet()
-            .toList()
-          ..sort();
+    final persistence = <String>{
+      for (final declaration in declarations.values)
+        declaration.persistence.native,
+      for (final declaration in declarations.values)
+        declaration.persistence.web,
+    }.toList()..sort();
     final transport =
         declarations.values
             .map((declaration) => declaration.transport)
@@ -470,7 +869,7 @@ final class DartitectFleetService {
           <String, Object?>{
             'name': entry.key,
             'profile': entry.value.profile.wireName,
-            'persistence': entry.value.persistence,
+            'persistence': entry.value.persistence.toJson(),
             'transport': entry.value.transport,
           },
       ],
@@ -657,3 +1056,182 @@ final class _LoadedPolicyBundle {
   final bool blockUnreviewed;
   final EcosystemPolicy policy;
 }
+
+final class _FleetCommand {
+  const _FleetCommand(this.executable, this.arguments);
+
+  final String executable;
+  final List<String> arguments;
+
+  String get label => '$executable ${arguments.join(' ')}';
+}
+
+final class _FleetSnapshot {
+  const _FleetSnapshot(this.projects);
+
+  factory _FleetSnapshot.fromJson(Directory fleetRoot, Object? value) {
+    if (value is! Map<String, Object?> ||
+        value['schemaVersion'] != 1 ||
+        value['projects'] is! List<Object?>) {
+      throw const FormatException('Invalid fleet recovery journal.');
+    }
+    final projects = <_FleetSnapshotProject>[];
+    for (final raw in value['projects']! as List<Object?>) {
+      if (raw is! Map<String, Object?> ||
+          raw['root'] is! String ||
+          raw['digest'] is! String ||
+          raw['files'] is! Map<String, Object?>) {
+        throw const FormatException('Invalid fleet recovery journal.');
+      }
+      final label = raw['root']! as String;
+      if (!_safeRelative(label)) {
+        throw const FormatException('Invalid fleet journal project root.');
+      }
+      final files = <String, Uint8List>{};
+      for (final entry in (raw['files']! as Map<String, Object?>).entries) {
+        if (!_safeRelative(entry.key) || entry.value is! String) {
+          throw const FormatException('Invalid fleet journal file path.');
+        }
+        try {
+          files[entry.key] = base64Decode(entry.value! as String);
+        } on FormatException {
+          throw const FormatException('Invalid fleet journal bytes.');
+        }
+      }
+      projects.add(
+        _FleetSnapshotProject(
+          label: label,
+          directory: Directory(_fleetJoin(fleetRoot.path, label)),
+          files: files,
+          digest: raw['digest']! as String,
+        ),
+      );
+    }
+    return _FleetSnapshot(List<_FleetSnapshotProject>.unmodifiable(projects));
+  }
+
+  final List<_FleetSnapshotProject> projects;
+
+  static Future<_FleetSnapshot> capture(List<_FleetProject> projects) async {
+    var totalFiles = 0;
+    var totalBytes = 0;
+    final snapshots = <_FleetSnapshotProject>[];
+    for (final project in projects) {
+      final files = <String, Uint8List>{};
+      for (final file in await _fleetFiles(project.directory)) {
+        totalFiles += 1;
+        final bytes = await file.readAsBytes();
+        totalBytes += bytes.length;
+        if (totalFiles > 10000 || totalBytes > 128 * 1024 * 1024) {
+          throw const FormatException(
+            'Fleet journal exceeds its 10000-file or 128 MiB bound.',
+          );
+        }
+        files[_relativeTo(project.directory, file.path)] = bytes;
+      }
+      snapshots.add(
+        _FleetSnapshotProject(
+          label: project.label,
+          directory: project.directory,
+          files: files,
+          digest: await DartitectFleetService._projectDigest(project.directory),
+        ),
+      );
+    }
+    return _FleetSnapshot(List<_FleetSnapshotProject>.unmodifiable(snapshots));
+  }
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'schemaVersion': 1,
+    'phase': 'prepared',
+    'projects': <Object?>[
+      for (final project in projects)
+        <String, Object?>{
+          'root': project.label,
+          'digest': project.digest,
+          'files': <String, Object?>{
+            for (final entry in project.files.entries)
+              entry.key: base64Encode(entry.value),
+          },
+        },
+    ],
+  };
+
+  Future<void> restore() async {
+    for (final project in projects) {
+      final current = await _fleetFiles(project.directory);
+      for (final file in current) {
+        final relative = _relativeTo(project.directory, file.path);
+        if (!project.files.containsKey(relative)) await file.delete();
+      }
+      for (final entry in project.files.entries) {
+        final file = File(_fleetJoin(project.directory.path, entry.key));
+        await file.parent.create(recursive: true);
+        await file.writeAsBytes(entry.value, flush: true);
+      }
+    }
+  }
+
+  Future<void> validate() async {
+    for (final project in projects) {
+      final actual = await DartitectFleetService._projectDigest(
+        project.directory,
+      );
+      if (actual != project.digest) {
+        throw const FormatException('Fleet rollback digest validation failed.');
+      }
+    }
+  }
+}
+
+final class _FleetSnapshotProject {
+  const _FleetSnapshotProject({
+    required this.label,
+    required this.directory,
+    required this.files,
+    required this.digest,
+  });
+
+  final String label;
+  final Directory directory;
+  final Map<String, Uint8List> files;
+  final String digest;
+}
+
+Future<List<File>> _fleetFiles(Directory root) async {
+  final files = <File>[];
+  if (!await root.exists()) return files;
+  await for (final entity in root.list(recursive: true, followLinks: false)) {
+    if (entity is! File) continue;
+    final relative = _relativeTo(root, entity.path);
+    final segments = relative.split('/');
+    if (segments.any(
+          (segment) =>
+              segment == '.git' ||
+              segment == '.dart_tool' ||
+              segment == 'build',
+        ) ||
+        relative == '.dartitect/fleet-upgrade.transaction.json' ||
+        relative == '.dartitect/fleet-upgrade.transaction.json.tmp' ||
+        relative == '.dartitect/fleet-upgrade.lock' ||
+        relative == '.dartitect/project-change.lock') {
+      continue;
+    }
+    files.add(entity);
+  }
+  files.sort((left, right) => left.path.compareTo(right.path));
+  return files;
+}
+
+String _relativeTo(Directory root, String path) => path
+    .substring(root.absolute.path.length + 1)
+    .replaceAll(Platform.pathSeparator, '/');
+
+String _fleetJoin(String left, String right) =>
+    '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
+
+bool _safeRelative(String value) =>
+    value.isNotEmpty &&
+    !value.startsWith('/') &&
+    !RegExp(r'^[A-Za-z]:').hasMatch(value) &&
+    !value.split('/').any((segment) => segment.isEmpty || segment == '..');

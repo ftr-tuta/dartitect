@@ -89,8 +89,8 @@ Future<void> main() async {
 - `ArchitectureObserver` and reactive observer types expose payload-free
   lifecycle facts. `ReactiveJournal` is a bounded memory-only diagnostic ring.
 - `DartitectDiagnosticsEmitter`, reporter registrations, subjects, phases, and
-  `DartitectDiagnosticBuffer` implement the experimental local diagnostic
-  payload-free protocol v2.
+  `DartitectDiagnosticBuffer` implement the stable local payload-free
+  diagnostics protocol v2.
 
 ## Ownership and lifecycle
 
@@ -126,8 +126,8 @@ publication but cannot interrupt arbitrary synchronous work already executing.
 - No domain payloads, identity, entity keys, or error text in reactive events.
 - No automatic background execution.
 
-The diagnostic construction/reporting surface is experimental and has no
-remote exporter or global destination by default.
+The diagnostics construction/reporting surface is stable and has no remote
+exporter or global destination by default.
 
 ## Testing
 
@@ -148,8 +148,8 @@ harnesses. Read the
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.5` source candidate. Supported experimental
+The workspace contains the `1.0.0-rc.6` source candidate. Supported
 Git consumption requires a tag with a corresponding published GitHub Release
 and the coordinates from that Release's notes. If no compatible Release exists,
 there is no supported consumption path; see the
-[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).
+[Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

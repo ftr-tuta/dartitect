@@ -224,7 +224,7 @@ dependencies:
     );
     expect(
       policy.explain('provider', accepted.path).decision,
-      DartitectEcosystemDecision.overlapWarning,
+      DartitectEcosystemDecision.prohibitedNativeStrict,
     );
   });
 

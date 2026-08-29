@@ -19,6 +19,24 @@ enum SessionTransitionCause {
   tenantSwitch,
 }
 
+/// Closed reason why a session transition could not cross its route fence.
+enum SessionTransitionFailureKind {
+  /// The router returned an expected typed failure.
+  routeRemoval,
+
+  /// The route-removal deadline elapsed.
+  deadlineExceeded,
+
+  /// Route removal was cooperatively cancelled.
+  cancelled,
+
+  /// The controller was disposed while waiting.
+  disposed,
+
+  /// A replacement graph could not be prepared.
+  graphPreparation,
+}
+
 /// Replayable application-owned authentication/session state.
 sealed class SessionState<S extends Object> extends ValueEquality {
   const SessionState();
@@ -70,6 +88,28 @@ final class SessionForcedLogout<S extends Object> extends SessionState<S> {
 
   @override
   Iterable<Object?> get equalityFields => <Object?>[expired];
+}
+
+/// Sanitized replayable failure state without an error object or stack trace.
+final class SessionTransitionFailed<S extends Object> extends SessionState<S> {
+  /// Creates a failed transition state.
+  const SessionTransitionFailed({
+    required this.transitionId,
+    required this.cause,
+    required this.kind,
+  });
+
+  /// Monotonic transition identity.
+  final int transitionId;
+
+  /// Static transition cause.
+  final SessionTransitionCause cause;
+
+  /// Closed failure category safe for presentation.
+  final SessionTransitionFailureKind kind;
+
+  @override
+  Iterable<Object?> get equalityFields => <Object?>[transitionId, cause, kind];
 }
 
 /// The previous session graph has fully drained and closed.
