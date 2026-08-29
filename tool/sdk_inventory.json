@@ -22,12 +22,13 @@
         "crypto",
         "dart_style",
         "dartitect",
-        "dartitect_modeling_analyzer"
+        "dartitect_modeling_analyzer",
+        "yaml"
       ],
       "entrypoints": [
         "dartitect_cli.dart"
       ],
-      "publicSymbolCount": 99
+      "publicSymbolCount": 103
     },
     {
       "name": "dartitect_devtools",

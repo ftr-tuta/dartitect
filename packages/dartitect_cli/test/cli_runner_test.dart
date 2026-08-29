@@ -364,4 +364,63 @@ import 'package:flutter/widgets.dart';
       expect(errors.toString(), contains('online profiles require'));
     },
   );
+
+  test('contracts check and sync use stable preview/apply semantics', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-contract-cli-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/api.json').writeAsString(jsonEncode(_cliContract));
+    final output = StringBuffer();
+    final errors = StringBuffer();
+    final runner = DartitectCliRunner(
+      currentDirectory: root,
+      stdoutSink: output,
+      stderrSink: errors,
+    );
+
+    expect(
+      await runner.run(<String>['contracts', 'sync', 'api.json', '--json']),
+      1,
+    );
+    expect(jsonDecode(output.toString()), containsPair('applied', false));
+    output.clear();
+
+    expect(
+      await runner.run(<String>[
+        'contracts',
+        'sync',
+        'api.json',
+        '--apply',
+        '--json',
+      ]),
+      0,
+    );
+    expect(jsonDecode(output.toString()), containsPair('applied', true));
+    output.clear();
+
+    expect(
+      await runner.run(<String>['contracts', 'check', 'api.json', '--json']),
+      0,
+    );
+    expect(jsonDecode(output.toString()), containsPair('fresh', true));
+    expect(errors.toString(), isEmpty);
+  });
 }
+
+const _cliContract = <String, Object?>{
+  'openapi': '3.1.0',
+  'info': <String, Object?>{'title': 'CLI contract', 'version': '1'},
+  'paths': <String, Object?>{},
+  'components': <String, Object?>{
+    'schemas': <String, Object?>{
+      'Message': <String, Object?>{
+        'type': 'object',
+        'required': <Object?>['value'],
+        'properties': <String, Object?>{
+          'value': <String, Object?>{'type': 'string'},
+        },
+      },
+    },
+  },
+};

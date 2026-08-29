@@ -1,0 +1,14 @@
+name: dartitect_openapi_contract_fixture
+description: Compile canary for bounded Dartitect OpenAPI 3.1 generation.
+version: 0.0.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  dio: ^5.9.2
+
+dev_dependencies:
+  test: ^1.31.1

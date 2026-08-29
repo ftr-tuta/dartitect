@@ -1,0 +1,130 @@
+openapi: 3.1.1
+info:
+  title: Task Contract Canary
+  version: 1.0.0
+paths:
+  /tasks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: opaque-task-id
+    get:
+      operationId: getTask
+      parameters:
+        - name: include_history
+          in: query
+          schema:
+            type: boolean
+        - name: X-Trace
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Missing task
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    put:
+      operationId: updateTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+      responses:
+        '204':
+          description: Updated
+        '409':
+          description: Version conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+  schemas:
+    Status:
+      type: string
+      enum: [open, completed]
+    BaseTask:
+      type: object
+      required: [id, version]
+      properties:
+        id:
+          type: string
+        version:
+          type: integer
+    Task:
+      allOf:
+        - $ref: '#/components/schemas/BaseTask'
+        - type: object
+          required: [title, status]
+          properties:
+            title:
+              type: string
+            status:
+              $ref: '#/components/schemas/Status'
+            note:
+              type: [string, 'null']
+    TaskUpdate:
+      type: object
+      required: [title, expectedVersion]
+      properties:
+        title:
+          type: string
+        expectedVersion:
+          type: integer
+    TaskList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Task'
+    Node:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        next:
+          $ref: '#/components/schemas/Node'
+    Cat:
+      type: object
+      required: [kind, lives]
+      properties:
+        kind:
+          type: string
+        lives:
+          type: integer
+    Dog:
+      type: object
+      required: [kind, good]
+      properties:
+        kind:
+          type: string
+        good:
+          type: boolean
+    Pet:
+      oneOf:
+        - $ref: '#/components/schemas/Cat'
+        - $ref: '#/components/schemas/Dog'
+      discriminator:
+        propertyName: kind
+        mapping:
+          cat: '#/components/schemas/Cat'
+          dog: '#/components/schemas/Dog'
+    ApiError:
+      $ref: errors.yaml#/components/schemas/ApiError

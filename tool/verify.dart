@@ -270,6 +270,20 @@ Future<void> main(List<String> arguments) async {
     ]),
     const _Command('dart', <String>[
       'test',
+      'examples/openapi_contract_fixture',
+    ]),
+    const _Command('dart', <String>[
+      'run',
+      'dartitect_cli:dartitect',
+      'contracts',
+      'check',
+      'contracts/tasks.yaml',
+      '--root',
+      'examples/openapi_contract_fixture',
+      '--json',
+    ]),
+    const _Command('dart', <String>[
+      'test',
       'tool/check_boundary_parity_test.dart',
     ]),
     const _Command('dart', <String>['run', 'tool/check_boundary_parity.dart']),

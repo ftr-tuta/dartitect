@@ -47,6 +47,12 @@ final class GenerationNamespace {
     fullyGeneratedSuffix: '.dartitect.g.dart',
   );
 
+  /// Fully-generated clients and DTOs from a bounded local OpenAPI contract.
+  static const contracts = GenerationNamespace(
+    'contracts',
+    fullyGeneratedSuffix: '.dartitect.g.dart',
+  );
+
   /// Stable lowercase identifier used only in `.dartitect/generation` paths.
   final String name;
 
@@ -353,6 +359,8 @@ final class GenerationEngine {
     final reservedMismatch =
         namespace.name == GenerationNamespace.modeling.name &&
             namespace != GenerationNamespace.modeling ||
+        namespace.name == GenerationNamespace.contracts.name &&
+            namespace != GenerationNamespace.contracts ||
         namespace.name == GenerationNamespace.scaffolding.name &&
             namespace != GenerationNamespace.scaffolding;
     if (!RegExp(r'^[a-z][a-z0-9-]*$').hasMatch(namespace.name) ||

@@ -784,6 +784,22 @@
         "declaration": "final class ModelGenerationReport"
       },
       {
+        "name": "OpenApiContractFinding",
+        "declaration": "final class OpenApiContractFinding"
+      },
+      {
+        "name": "OpenApiContractFindingKind",
+        "declaration": "enum OpenApiContractFindingKind"
+      },
+      {
+        "name": "OpenApiContractReport",
+        "declaration": "final class OpenApiContractReport"
+      },
+      {
+        "name": "OpenApiContractService",
+        "declaration": "final class OpenApiContractService"
+      },
+      {
         "name": "PlannedFileOperation",
         "declaration": "final class PlannedFileOperation"
       },

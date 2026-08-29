@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dartitect/dartitect.dart' show FeatureProfile;
 
 import '../config/dartitect_config.dart';
+import '../contracts/openapi_contract_service.dart';
 import '../diagnostics/models.dart';
 import '../diagnostics/sarif.dart';
 import '../fleet/fleet_service.dart';
@@ -84,6 +85,7 @@ final class DartitectCliRunner {
         'create' => await _create(root, parsed),
         'baseline' => await _baseline(root, parsed),
         'codex' => await _codex(root, parsed),
+        'contracts' => await _contracts(root, parsed),
         'model' => await _model(root, parsed),
         'wiring' => await _wiring(root, parsed),
         'dependencies' => await _dependencies(root, parsed),
@@ -733,6 +735,88 @@ final class _ExampleTasksRepository implements TasksRepository {
     }
   }
 
+  Future<int> _contracts(Directory root, _CliArguments arguments) async {
+    if (arguments.positionals.length != 2 ||
+        !const <String>{
+          'check',
+          'sync',
+        }.contains(arguments.positionals.first)) {
+      throw const _UsageException(
+        'Usage: dartitect contracts <check|sync> <spec.json|yaml> '
+        '[--baseline=PATH] [--output=PATH] [--json] [--apply].',
+      );
+    }
+    final command = arguments.positionals.first;
+    arguments.requireOnlyFlags(<String>{
+      'json',
+      'verbose',
+      'baseline',
+      'output',
+      if (command == 'sync') 'dry-run',
+      if (command == 'sync') 'apply',
+    });
+    if (arguments.flags.contains('dry-run') &&
+        arguments.flags.contains('apply')) {
+      throw const _UsageException(
+        '--dry-run and --apply are mutually exclusive.',
+      );
+    }
+    final service = OpenApiContractService(root);
+    final spec = arguments.positionals[1];
+    final baseline = arguments.options['baseline'];
+    final output = arguments.options['output'];
+    final OpenApiContractReport report;
+    if (command == 'check') {
+      report = await service.inspect(
+        specPath: spec,
+        baselinePath: baseline,
+        outputPath: output,
+      );
+    } else if (arguments.flags.contains('apply')) {
+      report = await service.apply(
+        specPath: spec,
+        baselinePath: baseline,
+        outputPath: output,
+      );
+    } else {
+      report = await service.preview(
+        specPath: spec,
+        baselinePath: baseline,
+        outputPath: output,
+      );
+    }
+    if (arguments.flags.contains('json')) {
+      _stdout.writeln(jsonEncode(report.toJson()));
+    } else {
+      for (final finding in report.findings) {
+        _stdout.writeln(
+          '${finding.code} ${finding.kind.name} ${finding.path} '
+          '${finding.message}',
+        );
+      }
+      for (final operation
+          in report.plan?.operations ?? const <PlannedFileOperation>[]) {
+        _stdout.writeln(
+          '${operation.disposition.name.toUpperCase()} '
+          '${operation.operation.relativePath}',
+        );
+      }
+      if (report.applied) {
+        _stdout.writeln('APPLIED ${report.writes} contract write(s).');
+      } else if (command == 'sync') {
+        _stdout.writeln(
+          'PREVIEW no files written. Use --apply to synchronize.',
+        );
+      }
+    }
+    final succeeded =
+        report.isFresh ||
+        report.applied && report.isValid && report.isCompatible;
+    return succeeded
+        ? DartitectExitCode.success.code
+        : DartitectExitCode.findings.code;
+  }
+
   Future<int> _wiring(Directory root, _CliArguments arguments) async {
     if (arguments.positionals.length != 1 ||
         arguments.positionals.single != 'sync') {
@@ -1239,6 +1323,8 @@ Read-only commands:
   inspect [--json]                  Emit consolidated architecture metadata.
   verify [--json|--sarif]           Verify architecture, models, and providers.
   model check [--json]              Validate generated model freshness.
+  contracts check <spec> [--baseline=PATH] [--json]
+                                    Validate local OpenAPI 3.1 and generated freshness.
   model migrate primary [--dry-run|--apply] [--json]
                                     Preview or apply semantic constructor edits.
   dependencies audit [--json]      Audit direct/transitive packages offline.
@@ -1255,6 +1341,8 @@ Convergent synchronizers (preview by default):
                                     Preview or converge generated models.
   wiring sync [--dry-run|--apply] [--json]
                                     Preview or converge direct feature wiring.
+  contracts sync <spec> [--baseline=PATH] [--dry-run|--apply] [--json]
+                                    Preview or generate bounded DTOs and Dio clients.
 
 Mutating commands (all accept --dry-run):
   init                              Create dartitect.json without overwrite.
