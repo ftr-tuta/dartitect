@@ -47,14 +47,14 @@ dartitectSkillCatalog = <DartitectSkillTemplate>[
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-design
-description: Select the smallest Dartitect package and skill stack for a new or incrementally adopting Dart/Flutter application or feature. Use for architecture choices; do not use for conformance auditing or detailed implementation.
+description: Select the smallest Dartitect package and skill stack for a new Dart/Flutter application or feature. Use for architecture choices; do not use for conformance auditing or detailed implementation.
 ---
 
 # Design with Dartitect
 
 ## When to use
 
-Use this skill before implementing a new application, incremental feature, composition root,
+Use this skill before implementing a new application, feature, composition root,
 or provider boundary when the required Dartitect packages are not yet clear.
 
 ## When not to use
@@ -66,12 +66,12 @@ are decided.
 
 ## Invariants
 
-Choose the smallest stack that satisfies the feature. Existing Riverpod, BLoC,
-Provider, GetIt, MobX, Signals, or equivalent dependencies are overlap warnings
-when merely installed; do not require an all-at-once rewrite. Keep domain/application
-contracts provider-neutral, use constructor injection, and make every resource
-owned or borrowed. Do not add a container, global runtime, provider package, or
-remote telemetry without a stated requirement.
+Choose the smallest stack that satisfies the feature. Riverpod, BLoC, Provider,
+GetIt, MobX, Signals, and equivalent architecture runtimes are incompatible with
+the Native Strict application graph. Keep domain/application contracts
+provider-neutral, use constructor injection, and make every resource owned or
+borrowed. Do not add a container, global runtime, provider package, or remote
+telemetry without a stated requirement.
 
 ## Workflow
 
@@ -84,9 +84,8 @@ remote telemetry without a stated requirement.
 3. Identify platforms, authoritative data source, failure model, lifecycle
    owner, isolate boundaries, and telemetry policy.
 4. Select only the packages and focused skills needed for those boundaries.
-5. For an existing project, define one consumer-owned adoption boundary and
-   reject provider leakage, service location, duplicate ownership, or concrete
-   runtime boundaries within it.
+5. Reject provider leakage, service location, duplicate ownership, and
+   competing application runtimes.
 6. Record explicit exclusions so optional packages do not become defaults.
 
 Read [references/selection-matrix.md](references/selection-matrix.md) when
@@ -138,9 +137,8 @@ ObjectBox has no web support. CLI and MCP run on the Dart VM. Material widgets
 belong only in Material presentation code. Provider adapters never belong in
 domain, application, ViewModel, or presentation layers.
 
-For incremental adoption, an installed overlapping runtime is a warning until
-evidence shows provider leakage, service location, duplicate ownership, or a
-concrete boundary crossing. Select one bounded adoption slice at a time.
+Native Strict does not provide an overlap or coexistence mode for competing
+application architecture runtimes.
 ''',
     },
   ),
@@ -152,7 +150,7 @@ concrete boundary crossing. Select one bounded adoption slice at a time.
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-audit
-description: Audit an existing Dart or Flutter codebase for Native Strict conformance and incremental adoption without changing it. Use for read-only evidence and overlap classification.
+description: Audit an existing Dart or Flutter codebase for Native Strict conformance without changing it. Use for read-only evidence and strict architecture classification.
 ---
 
 # Audit Dartitect conformance
@@ -173,9 +171,9 @@ ownership, or concrete runtime boundaries.
 Inspection is read-only. Report evidence without modifying code, dependencies,
 configuration, baselines, or generated files. Treat `dartitect verify` and
 `scan --no-baseline` as canonical read-only evidence. Installed Riverpod, BLoC,
-Provider, GetIt, MobX, Signals, or equivalent runtimes are overlap warnings by
-themselves. Escalate to an error only on evidenced leakage, service location,
-duplicate ownership, dual-write, or a concrete boundary crossing.
+Provider, GetIt, MobX, Signals, or equivalent architecture runtimes are Native
+Strict errors. Provider leakage, service location, duplicate ownership, and
+dual-write are also errors.
 
 ## Workflow
 
@@ -222,15 +220,15 @@ Run `scan --no-baseline` as the canonical gate. A reviewed baseline may describe
 known debt for other workflows, but it never changes conformance evidence.
 
 The local MCP may assist discovery with bounded inspect, scan, doctor, explain,
-conformance, and preview tools. `dartitect_audit_conformance` reports evidence
-and incremental-adoption status; it never performs migration. Preview/apply
+conformance, and preview tools. `dartitect_audit_conformance` reports strict
+evidence; it never performs migration. Preview/apply
 tools are separate capabilities and are outside a conformance audit.
 
 Report constructor boundaries, ownership, provider leakage, runtime conflicts,
 and missing evidence. Riverpod, BLoC, Provider, GetIt, MobX, Signals, and
-equivalents are overlap warnings when merely installed. Provider leakage,
-service location, duplicate ownership, concrete boundary crossings, and
-dual-write remain errors.
+equivalent architecture runtimes are prohibited. Provider leakage, service
+location, duplicate ownership, concrete boundary crossings, and dual-write are
+errors.
 ''',
     },
   ),
@@ -391,10 +389,9 @@ Choose owner and activation policy, model the authoritative source, select the
 required refresh completion type, then add bounded families/collections and the
 smallest builder entrypoint. State backpressure, retry, retention, and disposal
 semantics explicitly.
-For an experimental derived resource, also name every dependency, stale-data
-policy, equality rule, cancellation behavior, generation guard, and discard
-criterion. Reuse the existing family boundary rather than creating a parallel
-key cache.
+For a derived resource, also name every dependency, stale-data policy, equality
+rule, cancellation behavior, and generation guard. Reuse the existing family
+boundary rather than creating a parallel key cache.
 
 Read [references/lifecycle-and-resources.md](references/lifecycle-and-resources.md),
 [references/families-and-collections.md](references/families-and-collections.md),
@@ -427,8 +424,8 @@ last-known data without upstream activity, and cold discards both. Use an
 `AsyncLifecycleBarrier` so disposal closes admission, cancels cooperatively,
 drains admitted work, and rejects stale publication.
 
-`DerivedAsyncResource<T, F>` is experimental and accepts a non-empty,
-identity-unique list of explicit Flutter `Listenable` dependencies. It uses
+`DerivedAsyncResource<T, F>` is stable and accepts a non-empty, identity-unique
+list of explicit Flutter `Listenable` dependencies. It uses
 restart-latest cancellation plus dependency and lifecycle generation guards;
 an old non-cooperative result never publishes. Select preserve, discard, or
 stale-while-revalidate last-data policy and explicit equality. It wraps one
@@ -705,8 +702,8 @@ reported once, disabled, and cannot change runtime state or the caller's error.
 dispose. `SafeDartitectDiagnosticReporter` isolates reentrancy and destination
 failure. Off detail allocates no subject ID; lifecycle detail retains every
 failure/crash terminal; topology detail supports
-`DiagnosticsTopologyHarness`. Construction/reporting APIs remain experimental
-under ADR 0034/0043 and install no remote destination or global Flutter hook.
+`DiagnosticsTopologyHarness`. Construction/reporting APIs are stable under ADR
+0044 and install no remote destination or global Flutter hook.
 The optional DevTools bridge registers exactly `capabilities`, `snapshot`, and
 `events` RPCs per isolate; it has no mutation surface and is absent from product
 builds.

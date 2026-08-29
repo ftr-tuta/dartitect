@@ -1,7 +1,10 @@
 /// Optional explicit ownership and hooks for Dio.
 library;
 
+export 'package:dio/dio.dart' show BaseOptions, CancelToken, Interceptor;
+
 export 'src/cancellation_binding.dart';
+export 'src/credentials_interceptor.dart';
 export 'src/dio_owner.dart';
 export 'src/dio_transfer_transport.dart';
 export 'src/instrumentation.dart';

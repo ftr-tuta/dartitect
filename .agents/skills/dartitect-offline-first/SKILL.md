@@ -46,3 +46,12 @@ Test duplicate remote items, cancellation before local commit, exact-revision
 observation, stale search, same-key serialization, different-key concurrency,
 idempotent retries, rejection/conflict/uncertain outcomes, compensation,
 acknowledgement persistence failure, crash recovery, and zero residual work.
+
+## Dartitect inclusion gate
+
+Before adding a capability, answer:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be “yes”. Otherwise the capability belongs in
+`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.

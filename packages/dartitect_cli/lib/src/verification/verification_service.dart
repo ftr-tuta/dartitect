@@ -6,7 +6,7 @@ import '../model/model_generator.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
 
-/// Read-only RC5 verification shared by the public CLI, fleet, and MCP server.
+/// Read-only RC6 verification shared by the public CLI, fleet, and MCP server.
 final class DartitectVerificationService {
   /// Creates a verifier for one package or workspace root.
   DartitectVerificationService(Directory root) : root = root.absolute;
@@ -77,11 +77,7 @@ final class DartitectVerificationService {
       },
       'providerStatus': providerStatus,
       'featureStatus': featureStatus,
-      'ecosystem': <String, Object?>{
-        'adoption': config?.ecosystem?.adoption ?? 'incremental',
-        'installedOverlap': config?.ecosystem?.installedOverlap ?? 'warning',
-        'diagnosticCount': ecosystem.findings.length,
-      },
+      'architectureProfile': nativeStrictProfile,
     };
     final hasConcerns = <DartitectFinding>[
       ...findings,
@@ -123,15 +119,17 @@ final class DartitectVerificationService {
     List<DartitectFinding> violations,
   ) {
     final installed = <String>[];
-    final overlaps = <String>[];
+    final prohibitedArchitectures = <String>[];
     for (final package in report.packages) {
       final name = package['package'];
       if (name is! String) continue;
       if (_providerPackages.contains(name)) installed.add(name);
-      if (package['decision'] == 'overlap_warning') overlaps.add(name);
+      if (package['decision'] == 'prohibited_native_strict') {
+        prohibitedArchitectures.add(name);
+      }
     }
     installed.sort();
-    overlaps.sort();
+    prohibitedArchitectures.sort();
     final boundaryErrors =
         violations
             .where((finding) => _providerBoundaryRules.contains(finding.code))
@@ -141,14 +139,12 @@ final class DartitectVerificationService {
           ..sort();
     return <String, Object?>{
       'installed': installed,
-      'overlap': overlaps,
+      'prohibitedArchitectures': prohibitedArchitectures,
       'ownership': 'consumer_owned',
       'writerPolicy': 'single_writer_no_dual_write',
       'boundaryErrors': boundaryErrors,
-      'status': boundaryErrors.isNotEmpty
+      'status': boundaryErrors.isNotEmpty || prohibitedArchitectures.isNotEmpty
           ? 'error'
-          : overlaps.isNotEmpty
-          ? 'overlap_warning'
           : installed.isNotEmpty
           ? 'bounded'
           : 'none',
@@ -166,12 +162,12 @@ final class DartitectVerificationService {
             .toSet()
             .toList()
           ..sort();
-    final persistence =
-        declarations.values
-            .map((declaration) => declaration.persistence)
-            .toSet()
-            .toList()
-          ..sort();
+    final persistence = <String>{
+      for (final declaration in declarations.values)
+        declaration.persistence.native,
+      for (final declaration in declarations.values)
+        declaration.persistence.web,
+    }.toList()..sort();
     final transport =
         declarations.values
             .map((declaration) => declaration.transport)
@@ -185,7 +181,9 @@ final class DartitectVerificationService {
       'persistenceProviders': persistence,
       'transportProviders': transport,
       'headlessSyncCount': declarations.values
-          .where((declaration) => declaration.headlessSync)
+          .where(
+            (declaration) => declaration.headless.values.any((value) => value),
+          )
           .length,
       'status': features == null
           ? 'not_configured'

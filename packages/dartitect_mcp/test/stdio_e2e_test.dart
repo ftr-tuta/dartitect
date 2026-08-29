@@ -51,7 +51,7 @@ environment:
     expect(initialized.instructions, contains('single-use'));
     connection.notifyInitialized(InitializedNotification());
     final tools = await connection.listTools();
-    expect(tools.tools, hasLength(12));
+    expect(tools.tools, hasLength(17));
     final inspect = await connection.callTool(
       CallToolRequest(name: 'dartitect_inspect_project'),
     );

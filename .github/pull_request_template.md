@@ -4,6 +4,7 @@ Describe the user-visible result and affected packages.
 
 ## Ownership and compatibility
 
+- Inclusion gate — “É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?” (all three answers must be yes; otherwise the change belongs in `softgran_*`, `agrox_*`, or the application):
 - Owned/borrowed resources and disposal order:
 - Dart/Flutter/platform impact:
 - Public API/config/generated ownership impact:

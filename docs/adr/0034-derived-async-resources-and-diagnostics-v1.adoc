@@ -1,6 +1,6 @@
 = ADR-0034: Derived async resources and diagnostics protocol v1
 
-Status:: ACCEPTED; diagnostics construction deferral superseded by ADR 0043
+Status:: ACCEPTED; stabilization completed by ADR 0044
 
 Context:: Features that derive asynchronous data from multiple Flutter
 listenables otherwise repeat subscription, cancellation, stale-result, and
@@ -62,14 +62,13 @@ payload-free diagnostics. `benchmark_diagnostics.dart` executes five debug and
 profile samples, enforces off/topology budgets, fills the bounded ring, and
 requires zero retained events after disposal.
 
-Experimental and discard contract:: `DerivedAsyncResource` retains its
-experimental marker and discard contract. ADR 0043 accepts the dedicated RC5
-paved-road canary, performance gate, ownership evidence, and package review for
-diagnostics construction, and advances that exact payload-free protocol to
-version 2. Before stable 1.0, remove any surface whose generation/leak gates
-fail, requires domain payload, or requires implicit dependency tracking/global
-hooks. Promotion requires preserving the benchmark budgets and ownership tests
-in a dedicated review.
+Stabilization contract:: ADR 0043 accepted the dedicated RC5 paved-road canary,
+performance gate, ownership evidence, and package review for diagnostics
+construction and advanced the payload-free protocol to version 2. ADR 0044
+completes the RC6 gates and removes the experimental marker from
+`DerivedAsyncResource` and diagnostics v2. Stable promotion still requires the
+benchmark budgets, ownership tests, and absence of domain payload or implicit
+dependency tracking/global hooks.
 
 Consequences:: Derived asynchronous wiring reuses one authoritative resource
 lifecycle and one bounded family implementation. Restart-latest deliberately

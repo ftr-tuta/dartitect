@@ -25,32 +25,24 @@
     "**/test/**",
     "**/integration_test/**",
     "**/composition/**",
-    "**/*_composition_root.dart"
+    "**/*_composition_root.dart",
+    "tool/drift_web_fixture/**"
   ],
   "generatedInfrastructure": [
     "**/infrastructure/**/*.g.dart"
   ],
+  "generatedSuffixes": [
+    ".g.dart",
+    ".freezed.dart",
+    ".gr.dart",
+    ".router.dart",
+    ".dartitect.g.dart"
+  ],
   "suppressions": [],
-  "scaffolds": {
-    "layout": "feature_first",
-    "blueprints": [
-      "simple",
-      "remote-read",
-      "local-first",
-      "offline-mutation",
-      "sync-dataset"
-    ]
+  "features": {
+    "declarations": {}
   },
-  "modeling": {
-    "preset": "recommended_complete",
-    "jsonLimits": {
-      "maxDepth": 64,
-      "maxCollectionItems": 10000,
-      "maxNodes": 100000
-    }
-  },
-  "ecosystem": {
-    "adoption": "incremental",
-    "installedOverlap": "warning"
-  }
+  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
+  "scheduler": "none",
+  "extensions": {}
 }

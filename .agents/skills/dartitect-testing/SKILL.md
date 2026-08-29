@@ -43,3 +43,12 @@ Assert observable state and ownership rather than internal wording. Include
 original-stack rethrow, exact-once reporting/span end, stale-completion
 rejection, handler restoration, sink isolation, timers/subscriptions/isolates
 drained, and zero network or leaked filesystem artifacts.
+
+## Dartitect inclusion gate
+
+Before adding a capability, answer:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be “yes”. Otherwise the capability belongs in
+`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.

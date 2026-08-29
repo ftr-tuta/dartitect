@@ -3,7 +3,7 @@
 Add the plugin as a development dependency:
 
 ```console
-dart pub add --dev dartitect_lints:^1.0.0-rc.5
+dart pub add --dev dartitect_lints:^1.0.0-rc.6
 ```
 
 Enable it at the top level of `analysis_options.yaml`:

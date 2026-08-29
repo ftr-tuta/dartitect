@@ -4,7 +4,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:dart_mcp/server.dart';
 import 'package:dartitect_cli/dartitect_cli.dart';
 
@@ -28,7 +30,7 @@ base class DartitectMcpServer extends MCPServer
        super.fromStreamChannel(
          implementation: Implementation(
            name: 'dartitect_mcp',
-           version: '1.0.0-rc.5',
+           version: '1.0.0-rc.6',
          ),
          instructions: _instructions,
        ) {
@@ -49,7 +51,8 @@ base class DartitectMcpServer extends MCPServer
       'request secrets or arbitrary file content. A change may be applied only after '
       'the user reviews its preview, the client approves the mutating tool, and '
       '`confirmed` is true. Plans expire after ten minutes and are single-use. '
-      'No create/scaffolding, shell, HTTP, OAuth, or remote access is available.';
+      'Create-feature and wiring changes require their dedicated preview tools. '
+      'No shell, HTTP, OAuth, or remote access is available.';
 
   void _registerTools() {
     _registerReadTool(
@@ -130,7 +133,8 @@ base class DartitectMcpServer extends MCPServer
     );
     _registerReadTool(
       name: 'dartitect_audit_conformance',
-      description: 'Audit Native Strict conformance without proposing migration or coexistence.',
+      description:
+          'Audit Native Strict conformance without proposing migration.',
       schema: _projectSchema(),
       handler: (arguments) async {
         final service = DartitectProjectService(
@@ -141,7 +145,7 @@ base class DartitectMcpServer extends MCPServer
     );
     _registerReadTool(
       name: 'dartitect_verify_project',
-      description: 'Verify architecture, generated models, ecosystem overlap, and provider boundaries without writing.',
+      description: 'Verify architecture, generated models, ecosystem policy, and provider boundaries without writing.',
       schema: _projectSchema(
         extra: <String, Schema>{
           'offset': Schema.int(minimum: 0),
@@ -181,6 +185,31 @@ base class DartitectMcpServer extends MCPServer
       name: 'dartitect_preview_model_primary_migration',
       description: 'Preview semantic primary-constructor source edits and recovery state.',
       kind: DartitectChangeKind.modelPrimaryMigration,
+    );
+    _registerCreateFeaturePreview();
+    _registerWiringPreview();
+    _registerReadTool(
+      name: 'dartitect_explain_feature_graph',
+      description: 'Explain one strict feature declaration and its managed graph outputs.',
+      schema: _featureReadSchema(),
+      handler: _explainFeatureGraph,
+    );
+    _registerReadTool(
+      name: 'dartitect_list_consumer_owned_seams',
+      description: 'List paginated consumer-owned seams that wiring sync never overwrites.',
+      schema: _featureReadSchema(paginated: true),
+      handler: _listConsumerOwnedSeams,
+    );
+    _registerReadTool(
+      name: 'dartitect_verify_primary_constructor_policy',
+      description: 'Verify primary constructors and explicit data-carrier markers without writes.',
+      schema: _projectSchema(
+        extra: <String, Schema>{
+          'offset': Schema.int(minimum: 0),
+          'limit': Schema.int(minimum: 1, maximum: policy.maxResultLimit),
+        },
+      ),
+      handler: _verifyPrimaryConstructorPolicy,
     );
     final schema = ObjectSchema(
       properties: <String, Schema>{
@@ -261,6 +290,61 @@ base class DartitectMcpServer extends MCPServer
     );
   }
 
+  void _registerCreateFeaturePreview() {
+    final schema = _projectSchema(
+      extra: <String, Schema>{
+        'name': Schema.string(pattern: r'^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$'),
+        'profile': Schema.string(
+          enumValues: const <String>[
+            'online',
+            'cache',
+            'replica',
+            'offline-full',
+          ],
+        ),
+        'scope': Schema.string(
+          enumValues: const <String>['application', 'session'],
+        ),
+        'persistenceNative': Schema.string(
+          pattern: r'^(?:none|memory|drift|objectbox|custom:[a-z][a-z0-9]*(?:-[a-z0-9]+)*)$',
+        ),
+        'persistenceWeb': Schema.string(
+          pattern:
+              r'^(?:none|memory|drift|custom:[a-z][a-z0-9]*(?:-[a-z0-9]+)*)$',
+        ),
+        'transport': Schema.string(
+          pattern: r'^(?:dio|custom:[a-z][a-z0-9]*(?:-[a-z0-9]+)*)$',
+        ),
+        'pagination': Schema.string(
+          enumValues: const <String>['none', 'cursor'],
+        ),
+        'headlessSync': Schema.bool(),
+        'diagnostics': Schema.string(
+          enumValues: const <String>['off', 'basic', 'full'],
+        ),
+        'capabilities': Schema.string(
+          pattern: r'^(?:credentials|attachments|forms|queries)(?:,(?:credentials|attachments|forms|queries))*$',
+        ),
+      },
+      required: const <String>['name', 'profile'],
+    );
+    _registerReadTool(
+      name: 'dartitect_preview_create_feature',
+      description: 'Preview strict feature registration, consumer seams, and managed wiring.',
+      schema: schema,
+      handler: _previewCreateFeature,
+    );
+  }
+
+  void _registerWiringPreview() {
+    _registerReadTool(
+      name: 'dartitect_preview_wiring_sync',
+      description: 'Preview deterministic managed wiring convergence and orphan removal.',
+      schema: _projectSchema(),
+      handler: _previewWiringSync,
+    );
+  }
+
   void _register(
     Tool tool,
     ObjectSchema schema,
@@ -324,30 +408,171 @@ base class DartitectMcpServer extends MCPServer
         .previewChange(kind, overwriteManaged: overwriteManaged);
     final now = policy.now().toUtc();
     _discardExpired(now);
-    String? planId;
-    for (var attempts = 0; attempts < 100; attempts += 1) {
-      final candidate = policy.createPlanId();
-      if (RegExp(r'^[A-Za-z0-9_-]{16,200}$').hasMatch(candidate) &&
-          !_plans.containsKey(candidate)) {
-        planId = candidate;
-        break;
-      }
-    }
-    if (planId == null) {
-      throw const DartitectMcpException(
-        'plan_id_unavailable',
-        'A unique opaque plan identifier could not be created.',
-        retryable: true,
-      );
-    }
+    final planId = _newPlanId();
     final expiresAt = now.add(policy.planTtl);
-    _plans[planId] = _StoredPlan(root: root, plan: plan, expiresAt: expiresAt);
+    _plans[planId] = _StoredPlan.project(
+      root: root,
+      plan: plan,
+      expiresAt: expiresAt,
+    );
     return _ok(<String, Object?>{
       'planId': planId,
       'expiresAt': expiresAt.toIso8601String(),
       'singleUse': true,
       'writesEnabled': policy.allowWrites,
       'plan': plan.toJson(),
+    });
+  }
+
+  Future<CallToolResult> _previewCreateFeature(
+    Map<String, Object?> arguments,
+  ) async {
+    final root = await _resolveProject(arguments);
+    final name = arguments['name']! as String;
+    final headless = arguments['headlessSync'] as bool? ?? false;
+    final options = FeatureScaffoldOptions(
+      profile: FeatureProfile.parse(arguments['profile']! as String),
+      scope: FeatureScope.parse(
+        arguments['scope'] as String? ?? FeatureScope.application.wireName,
+      ),
+      persistenceNative: arguments['persistenceNative'] as String?,
+      persistenceWeb: arguments['persistenceWeb'] as String?,
+      transport: arguments['transport'] as String? ?? 'dio',
+      pagination: FeaturePagination.parse(
+        arguments['pagination'] as String? ?? FeaturePagination.none.wireName,
+      ),
+      headlessPlatforms: headless
+          ? const <DartitectPlatform>{
+              DartitectPlatform.android,
+              DartitectPlatform.ios,
+              DartitectPlatform.macos,
+              DartitectPlatform.web,
+              DartitectPlatform.linux,
+            }
+          : const <DartitectPlatform>{},
+      diagnostics: FeatureDiagnosticsLevel.parse(
+        arguments['diagnostics'] as String? ??
+            FeatureDiagnosticsLevel.basic.wireName,
+      ),
+      capabilities: _parseCapabilities(arguments['capabilities'] as String?),
+    );
+    final configFile = File(_join(root.path, 'dartitect.json'));
+    final prior = await configFile.exists()
+        ? await DartitectConfig.load(configFile)
+        : DartitectConfig();
+    final declaration = _featureDeclaration(options);
+    final existing = prior.features.declarations[name];
+    if (existing != null &&
+        jsonEncode(existing.toJson()) != jsonEncode(declaration.toJson())) {
+      throw DartitectConfigException(
+        '/features/declarations/$name',
+        'feature already exists with a different declaration',
+      );
+    }
+    final next = _withFeature(prior, name, declaration);
+    final packageName =
+        (await ProjectScanner(root).scan()).packageName ?? 'application';
+    final seamPlan = await GenerationEngine(
+      root,
+      namespace: GenerationNamespace.scaffolding,
+    ).plan(ScaffoldFactory(packageName: packageName).profile(options, name));
+    final wiring = await DartitectWiringService(root).inspect(config: next);
+    if (seamPlan.hasConflicts || wiring.plan.hasConflicts) {
+      throw const DartitectMcpException(
+        'generation_conflict',
+        'Consumer-owned seams or managed wiring conflict with the preview.',
+      );
+    }
+    final cliArguments = _createFeatureArguments(name, options, headless);
+    final token = await _projectStateToken(root);
+    final preview = <String, Object?>{
+      'command': 'create feature',
+      'feature': name,
+      'declaration': declaration.toJson(),
+      'operations': <Object?>[
+        <String, Object?>{
+          'path': 'dartitect.json',
+          'disposition': existing == null ? 'update' : 'noOp',
+        },
+        ..._generationOperations(seamPlan),
+        ..._generationOperations(wiring.plan),
+      ],
+    };
+    return _storeCustomPlan(
+      root: root,
+      expectedStateToken: token,
+      preview: preview,
+      apply: () async {
+        final output = StringBuffer();
+        final errors = StringBuffer();
+        final exitCode = await DartitectCliRunner(
+          stdoutSink: output,
+          stderrSink: errors,
+          currentDirectory: root,
+        ).run(cliArguments);
+        if (exitCode != DartitectExitCode.success.code) {
+          throw DartitectMcpException(
+            'apply_failed',
+            errors.isEmpty
+                ? 'Feature creation failed during revalidation.'
+                : errors.toString(),
+            retryable: true,
+          );
+        }
+        return <String, Object?>{
+          'command': 'create feature',
+          'feature': name,
+          'exitCode': exitCode,
+          'summary': output.toString(),
+        };
+      },
+    );
+  }
+
+  Future<CallToolResult> _previewWiringSync(
+    Map<String, Object?> arguments,
+  ) async {
+    final root = await _resolveProject(arguments);
+    final service = DartitectWiringService(root);
+    final report = await service.inspect();
+    if (report.plan.hasConflicts) {
+      throw const DartitectMcpException(
+        'generation_conflict',
+        'Managed wiring conflicts with consumer-owned bytes.',
+      );
+    }
+    final token = await _projectStateToken(root);
+    return _storeCustomPlan(
+      root: root,
+      expectedStateToken: token,
+      preview: report.toJson(),
+      apply: () async => (await service.apply()).toJson(),
+    );
+  }
+
+  Future<CallToolResult> _storeCustomPlan({
+    required Directory root,
+    required String expectedStateToken,
+    required Map<String, Object?> preview,
+    required Future<Map<String, Object?>> Function() apply,
+  }) async {
+    final now = policy.now().toUtc();
+    _discardExpired(now);
+    final planId = _newPlanId();
+    final expiresAt = now.add(policy.planTtl);
+    _plans[planId] = _StoredPlan.custom(
+      root: root,
+      expectedStateToken: expectedStateToken,
+      currentStateToken: () => _projectStateToken(root),
+      apply: apply,
+      expiresAt: expiresAt,
+    );
+    return _ok(<String, Object?>{
+      'planId': planId,
+      'expiresAt': expiresAt.toIso8601String(),
+      'singleUse': true,
+      'writesEnabled': policy.allowWrites,
+      'plan': preview,
     });
   }
 
@@ -386,7 +611,6 @@ base class DartitectMcpServer extends MCPServer
         'The plan is single-use and has already been consumed.',
       );
     }
-    stored.used = true;
     if (!_activeRoots.add(stored.root.path)) {
       throw const DartitectMcpException(
         'concurrent_change',
@@ -394,14 +618,30 @@ base class DartitectMcpServer extends MCPServer
         retryable: true,
       );
     }
+    stored.used = true;
 
     try {
-      final receipt = await DartitectProjectService(stored.root)
-          .applyChange(stored.plan);
+      final Map<String, Object?> receipt;
+      final projectPlan = stored.projectPlan;
+      if (projectPlan != null) {
+        receipt = (await DartitectProjectService(
+          stored.root,
+        ).applyChange(projectPlan)).toJson();
+      } else {
+        final stateToken = await stored.currentStateToken!();
+        if (stateToken != stored.expectedStateToken) {
+          throw const DartitectMcpException(
+            'stale_plan',
+            'Project state changed after preview; create and review a new plan.',
+            retryable: true,
+          );
+        }
+        receipt = await stored.applyCustom!();
+      }
       return _ok(<String, Object?>{
         'planId': planId,
         'appliedAt': policy.now().toUtc().toIso8601String(),
-        'receipt': receipt.toJson(),
+        'receipt': receipt,
       });
     } finally {
       _activeRoots.remove(stored.root.path);
@@ -440,6 +680,265 @@ base class DartitectMcpServer extends MCPServer
     };
   }
 
+  Future<CallToolResult> _explainFeatureGraph(
+    Map<String, Object?> arguments,
+  ) async {
+    final root = await _resolveProject(arguments);
+    final config = await DartitectConfig.load(
+      File(_join(root.path, 'dartitect.json')),
+    );
+    final name = arguments['feature']! as String;
+    final declaration = config.features.declarations[name];
+    if (declaration == null) {
+      throw const DartitectMcpException(
+        'feature_not_found',
+        'The requested feature is not declared in strict config v1.',
+      );
+    }
+    final wiring = await DartitectWiringService(root).inspect(config: config);
+    final prefix = 'lib/features/$name/';
+    return _ok(<String, Object?>{
+      'feature': name,
+      'declaration': declaration.toJson(),
+      'scheduler': config.scheduler,
+      'managedGraph': <Object?>[
+        for (final operation in wiring.plan.operations)
+          if (operation.operation.relativePath.startsWith(prefix))
+            <String, Object?>{
+              'path': operation.operation.relativePath,
+              'disposition': operation.disposition.name,
+              'ownership': 'dartitect_managed',
+            },
+      ],
+      'composition': 'direct_constructors',
+      'runtimeContainer': false,
+    });
+  }
+
+  Future<CallToolResult> _listConsumerOwnedSeams(
+    Map<String, Object?> arguments,
+  ) async {
+    final root = await _resolveProject(arguments);
+    final config = await DartitectConfig.load(
+      File(_join(root.path, 'dartitect.json')),
+    );
+    final name = arguments['feature']! as String;
+    final declaration = config.features.declarations[name];
+    if (declaration == null) {
+      throw const DartitectMcpException(
+        'feature_not_found',
+        'The requested feature is not declared in strict config v1.',
+      );
+    }
+    final packageName =
+        (await ProjectScanner(root).scan()).packageName ?? 'application';
+    final options = FeatureScaffoldOptions(
+      profile: declaration.profile,
+      scope: declaration.scope,
+      persistenceNative: declaration.persistence.native,
+      persistenceWeb: declaration.persistence.web,
+      transport: declaration.transport,
+      pagination: declaration.pagination,
+      headlessPlatforms: <DartitectPlatform>{
+        for (final entry in declaration.headless.entries)
+          if (entry.value) entry.key,
+      },
+      diagnostics: declaration.diagnostics,
+      capabilities: declaration.capabilities.toSet(),
+    );
+    final seams =
+        ScaffoldFactory(packageName: packageName)
+            .profile(options, name)
+            .where(
+              (operation) =>
+                  operation.ownership == GeneratedOwnership.generatedOnce,
+            )
+            .map(
+              (operation) => <String, Object?>{
+                'path': operation.relativePath,
+                'ownership': 'consumer',
+                'overwritePolicy': 'create_once',
+              },
+            )
+            .toList(growable: false)
+          ..sort(
+            (left, right) =>
+                (left['path']! as String).compareTo(right['path']! as String),
+          );
+    return _ok(<String, Object?>{
+      'feature': name,
+      ..._paginateValues(seams, arguments),
+    });
+  }
+
+  Future<CallToolResult> _verifyPrimaryConstructorPolicy(
+    Map<String, Object?> arguments,
+  ) async {
+    final root = await _resolveProject(arguments);
+    final report = await PrimaryConstructorMigration(root).inspect();
+    final results = <Map<String, Object?>>[
+      for (final diagnostic in report.diagnostics)
+        <String, Object?>{'category': 'diagnostic', ...diagnostic.toJson()},
+      for (final operation in report.operations)
+        <String, Object?>{'category': 'migration', ...operation.toJson()},
+    ];
+    return _ok(<String, Object?>{
+      'command': 'verify primary constructor policy',
+      'pendingRecovery': report.pendingRecovery,
+      'modelCount': report.modelCount,
+      ..._paginateValues(results, arguments),
+    });
+  }
+
+  Map<String, Object?> _paginateValues(
+    List<Map<String, Object?>> values,
+    Map<String, Object?> arguments,
+  ) {
+    final offset = arguments['offset'] as int? ?? 0;
+    final limit = arguments['limit'] as int? ?? policy.defaultResultLimit;
+    final start = offset.clamp(0, values.length);
+    final end = (start + limit).clamp(start, values.length);
+    return <String, Object?>{
+      'results': values.sublist(start, end),
+      'page': <String, Object?>{
+        'offset': start,
+        'limit': limit,
+        'returned': end - start,
+        'total': values.length,
+        if (end < values.length) 'nextOffset': end,
+      },
+    };
+  }
+
+  Future<String> _projectStateToken(Directory root) async {
+    const maxFiles = 20000;
+    const maxBytes = 128 * 1024 * 1024;
+    final entries = <String, File>{};
+    await for (final entity in root.list(recursive: true, followLinks: false)) {
+      final relative = _relative(root.path, entity.path);
+      if (_excludedStatePath(relative) || entity is! File) continue;
+      entries[relative] = entity;
+      if (entries.length > maxFiles) {
+        throw const DartitectMcpException(
+          'project_too_large',
+          'The project exceeds the bounded MCP state-validation file count.',
+        );
+      }
+    }
+    final paths = entries.keys.toList()..sort();
+    var bytesRead = 0;
+    final state = BytesBuilder(copy: false);
+    for (final path in paths) {
+      final bytes = await entries[path]!.readAsBytes();
+      bytesRead += bytes.length;
+      if (bytesRead > maxBytes) {
+        throw const DartitectMcpException(
+          'project_too_large',
+          'The project exceeds the bounded MCP state-validation byte count.',
+        );
+      }
+      state
+        ..add(utf8.encode(path))
+        ..addByte(0)
+        ..add(sha256.convert(bytes).bytes)
+        ..addByte(0);
+    }
+    return sha256.convert(state.takeBytes()).toString();
+  }
+
+  static bool _excludedStatePath(String relative) {
+    final normalized = relative.replaceAll('\\', '/');
+    return normalized == '.git' ||
+        normalized.startsWith('.git/') ||
+        normalized == '.dart_tool' ||
+        normalized.startsWith('.dart_tool/') ||
+        normalized == 'build' ||
+        normalized.startsWith('build/') ||
+        normalized.endsWith('/project.lock') ||
+        normalized.endsWith('/fleet.lock');
+  }
+
+  static Iterable<Map<String, Object?>> _generationOperations(
+    GenerationPlan plan,
+  ) => plan.operations.map(
+    (operation) => <String, Object?>{
+      'path': operation.operation.relativePath,
+      'disposition': operation.disposition.name,
+      'ownership':
+          operation.operation.ownership == GeneratedOwnership.fullyGenerated
+          ? 'dartitect_managed'
+          : 'consumer',
+    },
+  );
+
+  static Set<DartitectCapability> _parseCapabilities(String? value) =>
+      value == null || value.isEmpty
+      ? const <DartitectCapability>{}
+      : value.split(',').map(DartitectCapability.parse).toSet();
+
+  static DartitectFeatureDeclaration _featureDeclaration(
+    FeatureScaffoldOptions options,
+  ) => DartitectFeatureDeclaration(
+    profile: options.profile,
+    scope: options.scope,
+    persistence: FeaturePersistenceMatrix(
+      native: options.persistenceNative,
+      web: options.persistenceWeb,
+    ),
+    transport: options.transport,
+    pagination: options.pagination,
+    diagnostics: options.diagnostics,
+    headless: <DartitectPlatform, bool>{
+      for (final platform in DartitectPlatform.values)
+        platform: options.headlessPlatforms.contains(platform),
+    },
+    capabilities: options.capabilities,
+  );
+
+  static DartitectConfig _withFeature(
+    DartitectConfig prior,
+    String name,
+    DartitectFeatureDeclaration declaration,
+  ) => DartitectConfig(
+    configVersion: prior.configVersion,
+    profile: prior.profile,
+    layers: prior.layers,
+    compositionRoots: prior.compositionRoots,
+    generatedInfrastructure: prior.generatedInfrastructure,
+    generatedSuffixes: prior.generatedSuffixes,
+    suppressions: prior.suppressions,
+    modeling: prior.modeling,
+    features: DartitectFeaturesConfig(
+      declarations: <String, DartitectFeatureDeclaration>{
+        ...prior.features.declarations,
+        name: declaration,
+      },
+    ),
+    platforms: prior.platforms,
+    scheduler: prior.scheduler,
+    extensions: prior.extensions,
+  );
+
+  static List<String> _createFeatureArguments(
+    String name,
+    FeatureScaffoldOptions options,
+    bool headless,
+  ) => <String>[
+    'create',
+    'feature',
+    name,
+    '--profile=${options.profile.wireName}',
+    '--scope=${options.scope.wireName}',
+    '--persistence-native=${options.persistenceNative}',
+    '--persistence-web=${options.persistenceWeb}',
+    '--transport=${options.transport}',
+    '--pagination=${options.pagination.wireName}',
+    '--diagnostics=${options.diagnostics.wireName}',
+    if (headless) '--headless-sync',
+    if (options.capabilities.isNotEmpty)
+      '--capabilities=${(options.capabilities.map((value) => value.wireName).toList()..sort()).join(',')}',
+  ];
+
   Future<Directory> _resolveProject(Map<String, Object?> arguments) =>
       policy.resolveProject(
         rootName: arguments['root'] as String?,
@@ -448,6 +947,21 @@ base class DartitectMcpServer extends MCPServer
 
   void _discardExpired(DateTime now) {
     _plans.removeWhere((_, value) => !now.isBefore(value.expiresAt));
+  }
+
+  String _newPlanId() {
+    for (var attempts = 0; attempts < 100; attempts += 1) {
+      final candidate = policy.createPlanId();
+      if (RegExp(r'^[A-Za-z0-9_-]{16,200}$').hasMatch(candidate) &&
+          !_plans.containsKey(candidate)) {
+        return candidate;
+      }
+    }
+    throw const DartitectMcpException(
+      'plan_id_unavailable',
+      'A unique opaque plan identifier could not be created.',
+      retryable: true,
+    );
   }
 
   CallToolResult _ok(Map<String, Object?> value) {
@@ -619,6 +1133,7 @@ base class DartitectMcpServer extends MCPServer
 
   static ObjectSchema _projectSchema({
     Map<String, Schema>? extra,
+    List<String> required = const <String>[],
   }) => ObjectSchema(
     properties: <String, Schema>{
       'root': Schema.string(
@@ -632,8 +1147,29 @@ base class DartitectMcpServer extends MCPServer
       ),
       ...?extra,
     },
+    required: required,
     additionalProperties: false,
   );
+
+  static ObjectSchema _featureReadSchema({bool paginated = false}) =>
+      _projectSchema(
+        extra: <String, Schema>{
+          'feature': Schema.string(pattern: r'^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$'),
+          if (paginated) ...<String, Schema>{
+            'offset': Schema.int(minimum: 0),
+            'limit': Schema.int(minimum: 1, maximum: 5000),
+          },
+        },
+        required: const <String>['feature'],
+      );
+
+  static String _relative(String root, String path) {
+    if (path == root) return '.';
+    return path.substring(root.length + 1).replaceAll('\\', '/');
+  }
+
+  static String _join(String left, String right) =>
+      '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
 
   static final ObjectSchema _outputSchema = ObjectSchema(
     properties: <String, Schema>{'ok': Schema.bool()},
@@ -643,14 +1179,29 @@ base class DartitectMcpServer extends MCPServer
 }
 
 final class _StoredPlan {
-  _StoredPlan({
+  _StoredPlan.project({
     required this.root,
-    required this.plan,
+    required DartitectChangePlan plan,
     required this.expiresAt,
-  });
+  }) : projectPlan = plan,
+       expectedStateToken = null,
+       currentStateToken = null,
+       applyCustom = null;
+
+  _StoredPlan.custom({
+    required this.root,
+    required this.expectedStateToken,
+    required this.currentStateToken,
+    required Future<Map<String, Object?>> Function() apply,
+    required this.expiresAt,
+  }) : projectPlan = null,
+       applyCustom = apply;
 
   final Directory root;
-  final DartitectChangePlan plan;
+  final DartitectChangePlan? projectPlan;
+  final String? expectedStateToken;
+  final Future<String> Function()? currentStateToken;
+  final Future<Map<String, Object?>> Function()? applyCustom;
   final DateTime expiresAt;
   bool used = false;
 }

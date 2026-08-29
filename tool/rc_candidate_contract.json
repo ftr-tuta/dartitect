@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "cohortVersion": "1.0.0-rc.5",
+  "cohortVersion": "1.0.0-rc.6",
   "candidateState": "SOURCE_CANDIDATE_ASSEMBLED",
   "targetChannel": "UNMATERIALIZED",
-  "packageCount": 23,
-  "publicEntrypointCount": 24,
+  "packageCount": 24,
+  "publicEntrypointCount": 29,
   "nameRegistryObservation": {
     "registry": "https://pub.dev",
     "observedAt": "2026-08-28T00:00:00Z",
@@ -27,6 +27,7 @@
       "dartitect_modeling_analyzer",
       "dartitect_sentry",
       "dartitect_sync",
+      "dartitect_workmanager",
       "dartitect_dio",
       "dartitect_drift",
       "dartitect_objectbox",
@@ -43,7 +44,7 @@
   },
   "gitConsumption": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "tag": "v1.0.0-rc.5",
+    "tag": "v1.0.0-rc.6",
     "materialized": false,
     "annotated": true,
     "signed": false,

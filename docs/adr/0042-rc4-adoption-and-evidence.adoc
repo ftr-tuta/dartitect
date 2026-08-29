@@ -1,28 +1,25 @@
-= ADR 0042: RC4 adoption and evidence boundaries
+= ADR 0042: RC6 adoption and evidence boundaries
 
-Status:: Accepted for 1.0.0-rc.4
+Status:: Superseded for 1.0.0-rc.6 by the native-strict contract
 
 == Decision
 
-Modeling adoption extends +configVersion: 1+ additively. Absence of the
-+modeling+ block preserves existing consumers. The +minimal+,
-+recommended_complete+, and +interop_existing_project+ presets suggest an
-adoption surface but never enable JSON, projections, or mappers without their
-independent annotations. The optional +ecosystem+ block records incremental
-coexistence: installed Riverpod, BLoC, Provider, GetIt, MobX, Signals, or an
-equivalent runtime is a +DT1019+ warning until a concrete type, service
-location, duplicate owner, or boundary leak makes it an error.
+Config v1 has one architecture profile: +native_strict+. Modeling capabilities
+remain independent annotations, with +recommended_complete+ as a tooling
+default. Installed architecture, state-management, provider, or
+service-location runtimes violate the boundary with +DT1017+; config v1 has no
+coexistence or overlap mode.
 
 +dartitect verify+ is the strictly read-only aggregate gate and emits stable
-text, JSON, or SARIF. Fleet +versions+ and +check+ remain read-only; fleet
-upgrade remains preview-only. An actual write requires an independently
-reviewed project plan with lock, journal, stale-plan check, and rollback.
+text, JSON, or SARIF. Fleet preview remains read-only. Fleet apply requires a
+cohort plan, fleet and ordered project locks, a byte journal, stale-plan
+revalidation, allowlisted validation, all-or-nothing commit, and rollback.
 
-The RC4 evidence matrix uses six isolated packaged canaries plus provider and
-workspace fixtures: pure-Dart modeling/JSON/projection/mapper/Chrome,
-incremental interop positive and negative, Flutter MVVM, Drift, ObjectBox
-primary-constructor evidence, separate ObjectBox/Drift bounded contexts,
-workspace and clean-clone installation. ObjectBox 5.3.2 cannot resolve a Dart
+The RC6 evidence matrix uses six isolated packaged canaries plus provider and
+workspace fixtures: pure-Dart modeling/JSON/projection/mapper/Chrome, a thin
+offline-hybrid consumer with all stable opt-in workflows, Flutter MVVM, Drift,
+ObjectBox primary-constructor evidence, separate ObjectBox/Drift bounded
+contexts, workspace and clean-clone installation. ObjectBox 5.3.2 cannot resolve a Dart
 3.13 primary-constructor model in the same generator package because its
 generator pins Analyzer 10.2/language 3.12. Mixed evidence therefore keeps the
 modeling and provider generator contexts separate; it does not hide the

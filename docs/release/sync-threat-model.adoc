@@ -1,7 +1,7 @@
 = Sync and headless threat model
 :toc:
 
-Status:: Reviewed for `1.0.0-rc.5`
+Status:: Reviewed for `1.0.0-rc.6`
 Review date:: 2026-08-24
 
 == Assets and trust boundaries

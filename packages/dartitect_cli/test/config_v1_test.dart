@@ -2,125 +2,180 @@ import 'package:dartitect_cli/dartitect_cli.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('modeling presets preserve explicit capability opt-in', () {
-    expect(DartitectModelingPreset.minimal.suggestedCapabilities, <String>[
-      'value',
-    ]);
-    expect(DartitectModelingPreset.recommended.suggestedCapabilities, <String>[
-      'value',
-      'json',
-      'projection',
-      'mapper',
-    ]);
-    expect(
-      DartitectModelingPreset.interop.allowsExistingModelGenerators,
-      isTrue,
-    );
-    expect(
-      DartitectModelingPreset.recommended.allowsExistingModelGenerators,
-      isFalse,
-    );
-  });
-
-  test('stable v1 round-trips strict boundaries and unknown keys', () {
-    final source = DartitectConfig(
-      unknown: const <String, Object?>{
-        'futureStableField': <String, Object?>{'enabled': true},
-      },
-    ).encode();
-    final config = DartitectConfig.parse(source);
-
-    expect(config.configVersion, 1);
-    expect(config.profile, nativeStrictProfile);
-    expect(
-      config.layers.keys,
-      containsAll(<String>[
-        'presentation',
-        'application',
-        'domain',
-        'data',
-        'infrastructure',
-      ]),
-    );
-    expect(config.generatedInfrastructure, isNotEmpty);
-    expect(config.compositionRoots, contains('test/**'));
-    expect(config.scaffolds['blueprints'], hasLength(5));
-    expect(config.unknown, contains('futureStableField'));
-    expect(DartitectConfig.parse(config.encode()).toJson(), config.toJson());
-  });
-
-  test('modeling and ecosystem extend v1 without changing legacy defaults', () {
-    final legacy = DartitectConfig();
-    expect(legacy.toJson(), isNot(contains('modeling')));
-    expect(legacy.toJson(), isNot(contains('ecosystem')));
-
-    final configured = DartitectConfig(
-      modeling: const DartitectModelingConfig(
-        preset: DartitectModelingPreset.interop,
-      ),
-      ecosystem: const DartitectEcosystemConfig(),
-    );
-    final roundTrip = DartitectConfig.parse(configured.encode());
-
-    expect(roundTrip.modeling?.preset, DartitectModelingPreset.interop);
-    expect(roundTrip.modeling?.maxDepth, 64);
-    expect(roundTrip.modeling?.maxCollectionItems, 10000);
-    expect(roundTrip.modeling?.maxNodes, 100000);
-    expect(roundTrip.ecosystem?.installedOverlap, 'warning');
-  });
-
-  test('feature declarations round-trip profiles and unknown keys', () {
-    final config = DartitectConfig(
-      features: DartitectFeaturesConfig(
-        declarations: <String, DartitectFeatureDeclaration>{
-          'orders': DartitectFeatureDeclaration(
-            profile: FeatureProfile.offlineFull,
-            persistence: 'drift',
-            transport: 'dio',
-            cursorPagination: true,
-            headlessSync: true,
-            diagnostics: FeatureDiagnosticsLevel.full,
-            unknown: const <String, Object?>{'futurePolicy': true},
-          ),
+  test(
+    'stable v1 round-trips only native_strict and namespaced extensions',
+    () {
+      final source = DartitectConfig(
+        modeling: const DartitectModelingConfig(
+          preset: DartitectModelingPreset.recommended,
+        ),
+        extensions: const <String, Object?>{
+          'dev.example': <String, Object?>{'enabled': true},
         },
-        unknown: const <String, Object?>{'futureRegistry': 2},
+      ).encode();
+      final config = DartitectConfig.parse(source);
+
+      expect(config.configVersion, 1);
+      expect(config.profile, nativeStrictProfile);
+      expect(config.platforms, DartitectPlatform.values);
+      expect(config.scheduler, 'none');
+      expect(config.extensions['dev.example'], <String, Object?>{
+        'enabled': true,
+      });
+      expect(DartitectConfig.parse(config.encode()).toJson(), config.toJson());
+    },
+  );
+
+  test('unknown fields fail closed with escaped JSON Pointers', () {
+    final decoded = DartitectConfig().toJson()
+      ..['future/field'] = <String, Object?>{'enabled': true};
+
+    expect(
+      () => DartitectConfig.fromJson(decoded),
+      throwsA(
+        isA<DartitectConfigException>()
+            .having((error) => error.pointer, 'pointer', '/future~1field')
+            .having(
+              (error) => error.message,
+              'message',
+              contains('/extensions'),
+            ),
       ),
     );
-
-    final roundTrip = DartitectConfig.parse(config.encode());
-    final orders = roundTrip.features!.declarations['orders']!;
-    expect(orders.profile, FeatureProfile.offlineFull);
-    expect(orders.persistence, 'drift');
-    expect(orders.transport, 'dio');
-    expect(orders.cursorPagination, isTrue);
-    expect(orders.headlessSync, isTrue);
-    expect(orders.diagnostics, FeatureDiagnosticsLevel.full);
-    expect(orders.unknown, containsPair('futurePolicy', true));
-    expect(roundTrip.features!.unknown, containsPair('futureRegistry', 2));
-    expect(roundTrip.toJson(), config.toJson());
   });
 
-  test('feature declarations reject incompatible profile capabilities', () {
+  test(
+    'all closed platforms, scopes, providers, and capabilities round-trip',
+    () {
+      final headless = <DartitectPlatform, bool>{
+        for (final platform in DartitectPlatform.values)
+          platform: platform != DartitectPlatform.windows,
+      };
+      final config = DartitectConfig(
+        scheduler: 'workmanager',
+        features: DartitectFeaturesConfig(
+          declarations: <String, DartitectFeatureDeclaration>{
+            'orders': DartitectFeatureDeclaration(
+              profile: FeatureProfile.offlineFull,
+              scope: FeatureScope.session,
+              persistence: FeaturePersistenceMatrix(
+                native: 'objectbox',
+                web: 'drift',
+              ),
+              transport: 'dio',
+              pagination: FeaturePagination.cursor,
+              diagnostics: FeatureDiagnosticsLevel.full,
+              headless: headless,
+              capabilities: DartitectCapability.values,
+            ),
+            'catalog': DartitectFeatureDeclaration(
+              profile: FeatureProfile.online,
+              scope: FeatureScope.application,
+              persistence: FeaturePersistenceMatrix(
+                native: 'none',
+                web: 'none',
+              ),
+              transport: 'custom:catalog-api',
+              pagination: FeaturePagination.none,
+              diagnostics: FeatureDiagnosticsLevel.basic,
+              headless: <DartitectPlatform, bool>{
+                for (final platform in DartitectPlatform.values)
+                  platform: false,
+              },
+            ),
+          },
+        ),
+      );
+
+      final roundTrip = DartitectConfig.parse(config.encode());
+      final orders = roundTrip.features.declarations['orders']!;
+      expect(orders.profile, FeatureProfile.offlineFull);
+      expect(orders.scope, FeatureScope.session);
+      expect(orders.persistence.native, 'objectbox');
+      expect(orders.persistence.web, 'drift');
+      expect(orders.transport, 'dio');
+      expect(orders.pagination, FeaturePagination.cursor);
+      expect(orders.capabilities.toSet(), DartitectCapability.values.toSet());
+      expect(roundTrip.toJson(), config.toJson());
+    },
+  );
+
+  test('providers reject invalid identifiers and ObjectBox on web', () {
     expect(
-      () => DartitectFeatureDeclaration(
-        profile: FeatureProfile.online,
-        persistence: 'drift',
-        transport: 'dio',
-      ),
+      () => FeaturePersistenceMatrix(native: 'sqlite', web: 'memory'),
       throwsA(isA<DartitectConfigException>()),
     );
+    expect(
+      () => FeaturePersistenceMatrix(native: 'drift', web: 'objectbox'),
+      throwsA(
+        isA<DartitectConfigException>().having(
+          (error) => error.pointer,
+          'pointer',
+          '/features/declarations/persistence/web',
+        ),
+      ),
+    );
+    expect(
+      () => FeaturePersistenceMatrix(
+        native: 'custom:encrypted-store',
+        web: 'custom:indexed-store',
+      ),
+      returnsNormally,
+    );
+  });
+
+  test('required persistence and unimplemented combinations fail', () {
+    final noHeadless = <DartitectPlatform, bool>{
+      for (final platform in DartitectPlatform.values) platform: false,
+    };
     expect(
       () => DartitectFeatureDeclaration(
         profile: FeatureProfile.cache,
-        persistence: 'drift',
+        scope: FeatureScope.application,
+        persistence: FeaturePersistenceMatrix(native: 'none', web: 'memory'),
         transport: 'dio',
-        headlessSync: true,
+        pagination: FeaturePagination.none,
+        diagnostics: FeatureDiagnosticsLevel.basic,
+        headless: noHeadless,
       ),
       throwsA(isA<DartitectConfigException>()),
     );
+
+    final windowsHeadless = <DartitectPlatform, bool>{
+      for (final platform in DartitectPlatform.values)
+        platform: platform == DartitectPlatform.windows,
+    };
+    expect(
+      () => DartitectConfig(
+        scheduler: 'workmanager',
+        features: DartitectFeaturesConfig(
+          declarations: <String, DartitectFeatureDeclaration>{
+            'orders': DartitectFeatureDeclaration(
+              profile: FeatureProfile.replica,
+              scope: FeatureScope.session,
+              persistence: FeaturePersistenceMatrix(
+                native: 'drift',
+                web: 'drift',
+              ),
+              transport: 'dio',
+              pagination: FeaturePagination.cursor,
+              diagnostics: FeatureDiagnosticsLevel.basic,
+              headless: windowsHeadless,
+            ),
+          },
+        ),
+      ),
+      throwsA(
+        isA<DartitectConfigException>().having(
+          (error) => error.pointer,
+          'pointer',
+          '/features/declarations/orders/headless/windows',
+        ),
+      ),
+    );
   });
 
-  test('missing version and future version fail closed with pointers', () {
+  test('missing and unsupported architectural profiles fail with pointers', () {
     expect(
       () => DartitectConfig.parse('{}'),
       throwsA(
@@ -131,27 +186,9 @@ void main() {
         ),
       ),
     );
+    final decoded = DartitectConfig().toJson()..['profile'] = 'interop';
     expect(
-      () => DartitectConfig.parse('{"configVersion":2}'),
-      throwsA(
-        isA<DartitectConfigException>().having(
-          (error) => error.pointer,
-          'pointer',
-          '/configVersion',
-        ),
-      ),
-    );
-  });
-
-  test('experimental v1 is rejected instead of migrated', () {
-    expect(
-      () => DartitectConfig.parse('''
-{
-  "configVersion": 1,
-  "architectureProfile": "native_mvvm",
-  "featureLayout": "feature_first"
-}
-'''),
+      () => DartitectConfig.fromJson(decoded),
       throwsA(
         isA<DartitectConfigException>().having(
           (error) => error.pointer,
@@ -178,44 +215,5 @@ void main() {
 
     expect(config.compositionRoots.single, 'lib/composition/**');
     expect(config.suppressions.single.path, 'lib/legacy/**');
-    expect(
-      () => DartitectConfig.fromJson(<String, Object?>{
-        ...DartitectConfig().toJson(),
-        'suppressions': <Object?>[
-          <String, Object?>{
-            'code': 'DT1005',
-            'path': 'lib/**',
-            'reason': 'legacy',
-            'owner': 'team',
-          },
-        ],
-      }),
-      throwsA(
-        isA<DartitectConfigException>().having(
-          (error) => error.pointer,
-          'pointer',
-          '/suppressions/0/permanentJustification',
-        ),
-      ),
-    );
-  });
-
-  test('rejects unsafe globs and unknown blueprints', () {
-    final unsafe = DartitectConfig().toJson()
-      ..['compositionRoots'] = <String>['../outside/**'];
-    expect(
-      () => DartitectConfig.fromJson(unsafe),
-      throwsA(isA<DartitectConfigException>()),
-    );
-
-    final unsupported = DartitectConfig().toJson()
-      ..['scaffolds'] = <String, Object?>{
-        'layout': 'feature_first',
-        'blueprints': <String>['magic'],
-      };
-    expect(
-      () => DartitectConfig.fromJson(unsupported),
-      throwsA(isA<DartitectConfigException>()),
-    );
   });
 }

@@ -10,9 +10,9 @@ credentials, and vendor configuration remain consumer-owned; opt-in immutable
 model boilerplate may be generated into consumer-owned committed parts.
 
 For a new application or feature, use `$dartitect-design`. An existing codebase
-may use `$dartitect-audit` for read-only conformance evidence, then adopt one
-explicit feature boundary incrementally. Another DI/application-state runtime
-may remain outside that boundary but cannot become a second owner inside it.
+may use `$dartitect-audit` for read-only conformance evidence. A Dartitect
+application still has one `native_strict` architecture runtime; another DI,
+container, service locator, or application-state runtime is prohibited.
 
 ## Capability matrix
 
@@ -22,7 +22,10 @@ may remain outside that boundary but cannot become a second owner inside it.
 | Immutable values, JSON codecs, projections/lenses, boundary mappers | `dartitect_modeling` | `package:dartitect_modeling/dartitect_modeling.dart` | Dart, Flutter, web | `$dartitect-modeling` | Mutable/provider entities, inferred conversions, or runtime reflection are expected |
 | Shared semantic modeling compiler/IR | `dartitect_modeling_analyzer` | `package:dartitect_modeling_analyzer/dartitect_modeling_analyzer.dart` | Dart VM tooling | `$dartitect-modeling`; `$dartitect-tooling` | Any application runtime would depend on Analyzer, formatter, CLI, or generation |
 | Durable mutation/outbox, dataset DAG sync, checkpoints, journals, leases, progress, headless protocol | `dartitect_sync` | `package:dartitect_sync/dartitect_sync.dart` | Dart, Flutter, web | `$dartitect-offline-first`; `$dartitect-testing` | A scheduler, provider client, schema, or consumer conflict/retry policy is expected |
+| Workmanager scheduling | `dartitect_workmanager` | `package:dartitect_workmanager/dartitect_workmanager.dart` | Android, iOS, macOS; web/Linux preview; Windows unsupported | `$dartitect-offline-first`; `$dartitect-adapters` | Another scheduler or Windows execution is required |
 | Basic Flutter ViewModels and commands | `dartitect_flutter` | `package:dartitect_flutter/dartitect_flutter.dart` | Flutter | `$dartitect-runtime` | Advanced hot/warm/cold resources or local-first pages are required |
+| Credentials and session rebuild | `dartitect` | `package:dartitect/dartitect_credentials.dart` | Dart, Flutter, web | `$dartitect-runtime` | Product auth policy or a concrete credential store is expected |
+| Forms and queries | `dartitect_flutter` | `dartitect_flutter_forms.dart`; `dartitect_flutter_queries.dart` | Flutter | `$dartitect-reactive` | Product fields, filters, validation messages, or query codecs are expected |
 | Reactive graph, resources, families, collections, headless builders | `dartitect_flutter` | `package:dartitect_flutter/dartitect_flutter_reactive.dart` | Flutter | `$dartitect-reactive` | Basic `ChangeNotifier`/command composition is sufficient |
 | Logs, reporting, tracing, redaction | `dartitect_observability` | `package:dartitect_observability/dartitect_observability.dart` | Dart, Flutter, web | `$dartitect-observability` | A remote destination has not been explicitly selected; local developer logging already suffices |
 | Dio integration | `dartitect_dio` | `package:dartitect_dio/dartitect_dio.dart` | Dio platforms | `$dartitect-adapters` | The application did not choose Dio or the import would cross into domain/presentation |
@@ -58,8 +61,8 @@ to `$dartitect-tooling`; it is not an application entrypoint.
 | CLI, scanner, lints, generators, native setup, release gates | `$dartitect-tooling` | Keep MCP work separate |
 | Local agent inspection and reviewed previews | `$dartitect-mcp` | Use the CLI directly for scripts and CI |
 
-Cross-cutting flows intentionally invoke more than one skill. Overlap does not
-transfer ownership: each skill remains responsible only for its named boundary.
+Cross-cutting flows intentionally invoke more than one skill. Each skill
+remains responsible only for its named boundary.
 
 ## Recommended stacks
 

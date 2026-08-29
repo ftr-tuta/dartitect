@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-/// Checks the same-host legacy/RC5 modeling comparison and hard resource budgets.
+/// Checks the same-host legacy/RC6 modeling comparison and hard resource budgets.
 void main() {
   final root = File.fromUri(Platform.script).parent.parent.absolute;
   final artifactFile = File('${root.path}/tool/model_benchmark.json');
@@ -21,13 +21,13 @@ void main() {
   final baseline = _object(artifact['baseline']);
   final candidate = _object(artifact['candidate']);
   if (artifact['schemaVersion'] != 2 ||
-      artifact['targetVersion'] != '1.0.0-rc.5' ||
+      artifact['targetVersion'] != '1.0.0-rc.6' ||
       policy['coldRuns'] != 5 ||
       policy['warmRuns'] != 20 ||
       policy['maxRegressionPercent'] != 10.0 ||
       policy['cacheAuthority'] != false ||
       policy['sameHostRequired'] != true) {
-    errors.add('Model benchmark policy is not the frozen RC5 contract.');
+    errors.add('Model benchmark policy is not the frozen RC6 contract.');
   }
   if (baseline['implementation'] != 'legacy-core-modeling' ||
       candidate['implementation'] != 'modular-modeling' ||
@@ -150,7 +150,7 @@ void main() {
     return;
   }
   stdout.writeln(
-    'Model benchmark passes: same-host legacy/RC5, five cold medians/RSS, '
+    'Model benchmark passes: same-host legacy/RC6, five cold medians/RSS, '
     'twenty warm p95/RSS, hard budgets, and the 10% regression gate.',
   );
 }

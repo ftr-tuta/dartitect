@@ -1,0 +1,22 @@
+name: dartitect_workmanager
+description: Stable Workmanager adapter for Dartitect job and headless-sync graphs.
+version: 1.0.0-rc.6
+repository: https://github.com/ftr-tuta/dartitect
+issue_tracker: https://github.com/ftr-tuta/dartitect/issues
+topics: [workmanager, background, jobs, architecture]
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+  flutter: '>=3.47.1'
+
+dependencies:
+  dartitect: '>=1.0.0-rc.6 <1.0.0'
+  dartitect_jobs: '>=1.0.0-rc.6 <1.0.0'
+  flutter:
+    sdk: flutter
+  workmanager: ^0.10.9
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

@@ -4,30 +4,34 @@ Future<void> main(List<String> arguments) async {
   final workspace = File.fromUri(Platform.script).parent.parent.absolute;
   final builds = arguments.contains('--builds');
   const scenarios = <_Scenario>[
-    _Scenario('core', 'none', <String>[], blueprint: 'simple'),
+    _Scenario('minimal', preset: 'minimal', observability: 'none'),
     _Scenario(
-      'observability',
-      'developer',
-      <String>[],
-      blueprint: 'remote-read',
+      'online',
+      preset: 'minimal',
+      observability: 'developer',
+      feature: _FeatureScenario('search', profile: 'online'),
     ),
-    _Scenario('dio', 'developer', <String>['dio'], blueprint: 'local-first'),
-    _Scenario('drift', 'developer', <String>[
-      'drift',
-    ], blueprint: 'offline-mutation'),
-    _Scenario('objectbox', 'developer', <String>[
-      'objectbox',
-    ], blueprint: 'offline-mutation'),
-    _Scenario('sentry', 'sentry', <String>[
+    _Scenario(
+      'offline',
+      preset: 'offline-hybrid',
+      observability: 'developer',
+      feature: _FeatureScenario(
+        'orders',
+        profile: 'offline-full',
+        scope: 'session',
+        persistenceNative: 'drift',
+        persistenceWeb: 'drift',
+        pagination: true,
+        headless: true,
+        capabilities: 'credentials,attachments,forms,queries',
+      ),
+    ),
+    _Scenario(
       'sentry',
-    ], blueprint: 'sync-dataset'),
-    _Scenario('full', 'sentry', <String>[
-      'dio',
-      'drift',
-      'objectbox',
-      'sentry',
-    ]),
-    _Scenario('background', 'developer', <String>[], background: true),
+      preset: 'offline-hybrid',
+      observability: 'sentry',
+      background: true,
+    ),
   ];
   for (final scenario in scenarios) {
     await _validateScenario(workspace, scenario, builds: builds);
@@ -54,10 +58,41 @@ Future<void> _validateScenario(
       'generated_${scenario.label}',
       '--root',
       parent.path,
+      '--preset=${scenario.preset}',
+      '--transport=dio',
       '--observability=${scenario.observability}',
-      if (scenario.adapters.isNotEmpty)
-        '--adapters=${scenario.adapters.join(',')}',
-      if (scenario.blueprint != null) '--blueprint=${scenario.blueprint}',
+      '--scheduler=workmanager',
+    ]);
+    final feature = scenario.feature;
+    if (feature != null) {
+      await _run(workspace, 'dart', <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'create',
+        'feature',
+        feature.name,
+        '--root',
+        project.path,
+        '--profile=${feature.profile}',
+        '--scope=${feature.scope}',
+        '--persistence-native=${feature.persistenceNative}',
+        '--persistence-web=${feature.persistenceWeb}',
+        '--transport=dio',
+        if (feature.pagination) '--pagination=cursor',
+        if (feature.headless) '--headless-sync',
+        '--diagnostics=full',
+        if (feature.capabilities.isNotEmpty)
+          '--capabilities=${feature.capabilities}',
+      ]);
+    }
+    await _run(workspace, 'dart', <String>[
+      'run',
+      'dartitect_cli:dartitect',
+      'wiring',
+      'sync',
+      '--apply',
+      '--root',
+      project.path,
     ]);
     await _run(workspace, 'dart', <String>[
       'run',
@@ -116,13 +151,6 @@ Future<void> backgroundMain(SendPort output) async {
         await _run(project, 'flutter', const <String>['build', 'linux']);
       }
     }
-    if (scenario.adapters.contains('objectbox') && Platform.isLinux) {
-      await _run(
-        Directory('${workspace.path}/tool/objectbox_native_fixture'),
-        'flutter',
-        const <String>['test'],
-      );
-    }
     succeeded = true;
   } finally {
     if (succeeded) {
@@ -156,19 +184,18 @@ Future<void> _verifyProviderNeutralScaffold(
       throw StateError('Drift leaked into provider-neutral $relative.');
     }
   }
-  if (!scenario.adapters.contains('drift')) return;
+  if (scenario.preset != 'offline-hybrid') return;
   final recipe = File('${project.path}/docs/drift-composition-root.md');
   if (!await recipe.exists()) {
     throw StateError('Drift composition-root recipe was not generated.');
   }
-  final generatedSchema = dartFiles.any((file) {
-    final name = file.uri.pathSegments.last;
-    return name.contains('database') ||
-        name.contains('table') ||
-        name.endsWith('.g.dart');
-  });
-  if (generatedSchema) {
-    throw StateError('Drift scaffold generated consumer-owned schema code.');
+  final managedOperationalSchema = dartFiles.any(
+    (file) =>
+        file.path.endsWith('.dartitect.g.dart') &&
+        (file.path.contains('drift') || file.path.contains('outbox')),
+  );
+  if (!managedOperationalSchema) {
+    throw StateError('Drift operational schema was not generated as managed.');
   }
 }
 
@@ -194,16 +221,38 @@ String _yamlPath(String path) => path.contains(' ') ? "'$path'" : path;
 
 final class _Scenario {
   const _Scenario(
-    this.label,
-    this.observability,
-    this.adapters, {
+    this.label, {
+    required this.preset,
+    required this.observability,
     this.background = false,
-    this.blueprint,
+    this.feature,
   });
 
   final String label;
+  final String preset;
   final String observability;
-  final List<String> adapters;
   final bool background;
-  final String? blueprint;
+  final _FeatureScenario? feature;
+}
+
+final class _FeatureScenario {
+  const _FeatureScenario(
+    this.name, {
+    required this.profile,
+    this.scope = 'application',
+    this.persistenceNative = 'none',
+    this.persistenceWeb = 'none',
+    this.pagination = false,
+    this.headless = false,
+    this.capabilities = '',
+  });
+
+  final String name;
+  final String profile;
+  final String scope;
+  final String persistenceNative;
+  final String persistenceWeb;
+  final bool pagination;
+  final bool headless;
+  final String capabilities;
 }

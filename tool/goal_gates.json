@@ -12,7 +12,7 @@
   },
   "releaseStatus": "ACTIONS_READINESS_PENDING",
   "featurePolicy": "FEATURE_FREEZE",
-  "target": {"packageCount": 23, "entrypointCount": 24},
+  "target": {"packageCount": 24, "entrypointCount": 29},
   "statusPolicy": {
     "allowed": [
       "PLANNED", "IN_PROGRESS", "BLOCKED", "IMPLEMENTED_LOCAL",
@@ -43,7 +43,7 @@
       "id": "V1S-00", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": [],
       "owner": "Dartitect maintainers", "affectedPackages": [],
       "coveredPaths": ["tool/goal_gates.json", "tool/check_goal_gates.dart", "tool/check_goal_gates_test.dart", "docs/release/**", "docs/implementation-status.adoc"],
-      "acceptance": ["Use one active fail-closed roadmap authority, preserve the 23/24 topology, record the assembled Git candidate state, and keep formal readiness external under FEATURE_FREEZE."],
+      "acceptance": ["Use one active fail-closed roadmap authority, preserve the 24-package/29-entrypoint topology, record the assembled Git candidate state, and keep formal readiness external under FEATURE_FREEZE."],
       "gateCommands": ["dart run tool/check_goal_gates.dart", "dart test tool/check_goal_gates_test.dart"],
       "evidence": ["tool/goal_gates.json", "tool/check_goal_gates_test.dart"],
       "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
@@ -127,7 +127,7 @@
       "id": "V1S-10", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": ["V1S-06", "V1S-07", "V1S-08", "V1S-09"],
       "owner": "Dartitect maintainers", "affectedPackages": [],
       "coveredPaths": ["tool/git_dependency_overrides.dart", "tool/git_dependency_overrides_test.dart", "tool/run_git_canaries.dart", "tool/canaries/**", "examples/**", "docs/release/**"],
-      "acceptance": ["Validate modeling, interop, minimal, offline-first, Drift-provider, and native-capability canaries from the exact source candidate with isolated resolution and no local-path or hosted Dartitect dependency."],
+      "acceptance": ["Validate modeling, thin-consumer, minimal, offline-first, Drift-provider, and native-capability canaries from the exact source candidate with isolated resolution and no local-path or hosted Dartitect dependency."],
       "gateCommands": ["dart run tool/check_canaries.dart"],
       "evidence": ["tool/check_canaries.dart", "tool/git_dependency_overrides.dart", "tool/run_git_canaries.dart", "tool/canaries/canary_contract.json", "docs/release/packaged-canaries.adoc", "examples/reference_app/test/native_objectbox_workload_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },

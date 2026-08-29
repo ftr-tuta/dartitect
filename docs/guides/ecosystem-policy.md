@@ -1,84 +1,45 @@
 # Ecosystem dependency policy
 
-## Neutral global ledger
+## One native-strict architecture
 
-`tool/ecosystem_policy.json` schema v3 is the versioned Native Strict authority. It
-contains project-wide decisions only; application paths, exceptions, metrics,
-and consumer-specific choices are forbidden there. Every record separates
-architectural decision, reviewed boundary, maturity, compatibility, and current
-Dartitect adoption status. The architectural dispositions are:
+`tool/ecosystem_policy.json` schema v3 is the versioned `native_strict`
+authority. Decisions are `approved`, `approved_primitive`,
+`advisory_alternative`, `reviewed_exception`,
+`prohibited_native_strict`, or `unreviewed`. There is no overlap-warning or
+coexistence decision.
 
-- `approved`: reviewed for its documented boundary;
-- `approved_primitive`: a reviewed low-level primitive without implied adoption;
-- `advisory_alternative`: Dartitect offers a bounded alternative, but use of
-  the external package is informational by default;
-- `reviewed_exception`: use requires a consumer-owned scoped overlay;
-- `overlap_warning`: an installed state/provider/service-location runtime is
-  visible during incremental adoption, without authorizing concrete leakage;
-- `prohibited_native_strict`: a universal architecture, container, service
-  locator, private-import, or security prohibition;
-- `unreviewed`: absent from the global ledger.
+Riverpod, BLoC, Provider, GetIt, MobX, Signals, and equivalent architecture,
+state, container, or service-location runtimes are `prohibited_native_strict`.
+DT1017 reports the violation whether it is only resolved or visibly imported.
+DT1018 reports invalid, missing, expired, or incomplete dependency review.
 
-Unknown packages remain advisory in a consumer audit. They block Dartitect's
-own release audit until the exact resolved package appears in the reviewed
-workspace inventory.
+Advisory alternatives such as Freezed, Retrofit, UUID, gallery, and splash
+packages remain product choices when they do not introduce a second
+architecture runtime. `sentry_dio` conflicts only with duplicate Dartitect Dio
+instrumentation.
 
-`package:listen` is `approved_primitive` at the pure-Dart primitive boundary,
-but its adoption is `deferred_until_real_consumer`. It is not a dependency,
-reexport, bridge requirement, or reason to create `dartitect_state`.
+## Consumer overlays
 
-## Consumer overlay
+Applications may scope non-architectural package review in
+`.dartitect/ecosystem-policy.json` with owner, reason, expiry, paths, and
+optional direct owners. An overlay cannot disable a universal prohibition,
+authorize publication, leak provider types, or contain secrets.
 
-Applications version their choices in `.dartitect/ecosystem-policy.json`:
+## Commands
 
-```json
-{
-  "schemaVersion": 1,
-  "entries": [
-    {
-      "package": "pdf",
-      "decision": "approved",
-      "owner": "document platform team",
-      "reason": "isolated document-rendering adapter",
-      "expiresOn": "2026-11-22",
-      "paths": ["lib/infrastructure/documents/**"],
-      "directOwners": ["document_adapter"]
-    }
-  ]
-}
+```console
+dartitect dependencies audit --json
+dartitect dependencies explain <package>
+dartitect scan --no-baseline
+dartitect verify --json
 ```
 
-An entry requires a package, owner, reason, expiry, and at least one non-global
-path. `directOwners` is optional, but when present every route to a transitive
-package must start at one of those owners. An overlay may add approvals,
-advisories, and reviewed exceptions. It cannot disable a universal prohibition,
-authorize publication, move provider types across layers, or contain secrets.
+The CLI, scanner, and Analyzer snapshot share the same decisions. Release
+gates reject an unreviewed resolved package or a stale policy snapshot.
 
-## Commands and parity
+Before adding a Dartitect dependency or replacement, ask:
 
-`dartitect dependencies audit` reports every direct owner and one deterministic
-resolved route per owner. `dartitect dependencies explain <package>` prints the
-neutral global decision. Use `--json` for automation.
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
 
-DT1017 identifies a universal or contextual conflict, DT1018 an invalid,
-missing, expired, or incomplete review, and DT1019 an installed overlap.
-Riverpod, BLoC, Provider, GetIt, MobX, Signals, and equivalent runtimes are
-DT1019 warnings when merely resolved. Their imports, provider types, service
-location, duplicate ownership, or concrete boundary leakage remain scanner and
-Analyzer errors. Alternatives such as Freezed, Retrofit,
-UUID packages, gallery plugins, and native splash tooling do not produce an
-error merely because Dartitect has an equivalent bounded capability.
-`sentry_dio` becomes an error only when equivalent Dartitect Dio
-instrumentation is also resolved.
-
-The CLI dependency command, scanner, and Analyzer plugin use the same decisions
-and overlay schema. The Analyzer embeds a checked generated snapshot; the
-ecosystem policy gate rejects stale decisions, alternatives, conflicts,
-architecture prohibitions, or overlap decisions.
-
-## Review workflow
-
-Update the neutral ledger only for project-wide facts. Put application choices
-in its overlay, then run dependency audit, scanner, Analyzer tests, source and
-license review, advisories, SBOM, and the snapshot freshness gate. Never use a
-global ignore or dependency override to conceal solver or policy failures.
+All three answers must be yes; company/product behavior remains in
+`softgran_*`, `agrox_*`, or the application.

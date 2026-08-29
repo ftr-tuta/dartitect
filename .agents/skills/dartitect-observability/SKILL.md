@@ -42,3 +42,12 @@ Test redaction at every destination, unsampled error/fatal delivery, sink
 isolation, queue bounds, exact-once span end, trace-context validation,
 handler chaining/restoration/recursion, borrowed provider lifetime, and absence
 of payload or identity in reactive events.
+
+## Dartitect inclusion gate
+
+Before adding a capability, answer:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be “yes”. Otherwise the capability belongs in
+`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.

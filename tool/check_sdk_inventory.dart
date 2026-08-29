@@ -125,4 +125,5 @@ const Map<String, String> _decisions = <String, String>{
   'dartitect_sync': 'keep-offline-and-sync-owner',
   'dartitect_testing': 'keep-dev-only-contract-sdk',
   'dartitect_transfer': 'add-provider-neutral-transfer-runtime',
+  'dartitect_workmanager': 'add-stable-workmanager-adapter',
 };

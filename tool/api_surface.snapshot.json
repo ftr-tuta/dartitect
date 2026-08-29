@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sdkVersion": "1.0.0-rc.5",
+  "sdkVersion": "1.0.0-rc.6",
   "entrypoints": {
     "packages/dartitect/lib/dartitect.dart": [
       {
@@ -196,8 +196,8 @@
         "declaration": "final class Err<F extends Object> extends Result<Never, F>"
       },
       {
-        "name": "ExperimentalDartitectApi",
-        "declaration": "final class ExperimentalDartitectApi"
+        "name": "FeatureProfile",
+        "declaration": "enum FeatureProfile"
       },
       {
         "name": "IdGenerator",
@@ -376,10 +376,6 @@
         "declaration": "int get dartitectDiagnosticsProtocolVersion"
       },
       {
-        "name": "experimentalDartitectApi",
-        "declaration": "ExperimentalDartitectApi get experimentalDartitectApi"
-      },
-      {
         "name": "formatUuidV4RandomBytes",
         "declaration": "String formatUuidV4RandomBytes(List<int> randomBytes)"
       },
@@ -394,6 +390,56 @@
       {
         "name": "immutableSetCopy",
         "declaration": "Set<T> immutableSetCopy<T>(Iterable<T> values)"
+      }
+    ],
+    "packages/dartitect/lib/dartitect_credentials.dart": [
+      {
+        "name": "AsyncDisposable",
+        "declaration": "abstract interface class AsyncDisposable"
+      },
+      {
+        "name": "CancellationException",
+        "declaration": "final class CancellationException implements Exception"
+      },
+      {
+        "name": "CancellationSignal",
+        "declaration": "final class CancellationSignal"
+      },
+      {
+        "name": "CredentialForcedLogout",
+        "declaration": "typedef CredentialForcedLogout = FutureOr<void> Function(CredentialInvalidationCause, CancellationSignal)"
+      },
+      {
+        "name": "CredentialInvalidationCause",
+        "declaration": "enum CredentialInvalidationCause"
+      },
+      {
+        "name": "CredentialRecord",
+        "declaration": "final class CredentialRecord<C extends Object>"
+      },
+      {
+        "name": "CredentialRefresher",
+        "declaration": "abstract interface class CredentialRefresher<C extends Object, F extends Object>"
+      },
+      {
+        "name": "CredentialStore",
+        "declaration": "abstract interface class CredentialStore<C extends Object, F extends Object>"
+      },
+      {
+        "name": "CredentialsController",
+        "declaration": "final class CredentialsController<C extends Object, F extends Object> implements AsyncDisposable"
+      },
+      {
+        "name": "Err",
+        "declaration": "final class Err<F extends Object> extends Result<Never, F>"
+      },
+      {
+        "name": "Ok",
+        "declaration": "final class Ok<T> extends Result<T, Never>"
+      },
+      {
+        "name": "Result",
+        "declaration": "sealed class Result<T, F extends Object> extends ValueEquality"
       }
     ],
     "packages/dartitect_cli/lib/dartitect_cli.dart": [
@@ -422,6 +468,10 @@
         "declaration": "final class DartitectBoundaryClassifier"
       },
       {
+        "name": "DartitectCapability",
+        "declaration": "enum DartitectCapability"
+      },
+      {
         "name": "DartitectChangeException",
         "declaration": "final class DartitectChangeException implements Exception"
       },
@@ -448,10 +498,6 @@
       {
         "name": "DartitectConfigException",
         "declaration": "final class DartitectConfigException implements FormatException"
-      },
-      {
-        "name": "DartitectEcosystemConfig",
-        "declaration": "final class DartitectEcosystemConfig"
       },
       {
         "name": "DartitectExitCode",
@@ -486,6 +532,14 @@
         "declaration": "final class DartitectFleetCanaryService"
       },
       {
+        "name": "DartitectFleetCommandResult",
+        "declaration": "final class DartitectFleetCommandResult"
+      },
+      {
+        "name": "DartitectFleetCommandRunner",
+        "declaration": "typedef DartitectFleetCommandRunner = Future<DartitectFleetCommandResult> Function(Directory, String, List<String>)"
+      },
+      {
         "name": "DartitectFleetReport",
         "declaration": "final class DartitectFleetReport"
       },
@@ -510,8 +564,16 @@
         "declaration": "enum DartitectModelingPreset"
       },
       {
+        "name": "DartitectPlatform",
+        "declaration": "enum DartitectPlatform"
+      },
+      {
         "name": "DartitectProjectService",
         "declaration": "final class DartitectProjectService"
+      },
+      {
+        "name": "DartitectRc5ConfigMigration",
+        "declaration": "final class DartitectRc5ConfigMigration"
       },
       {
         "name": "DartitectRuleCodes",
@@ -540,6 +602,14 @@
       {
         "name": "DartitectVerificationService",
         "declaration": "final class DartitectVerificationService"
+      },
+      {
+        "name": "DartitectWiringReport",
+        "declaration": "final class DartitectWiringReport"
+      },
+      {
+        "name": "DartitectWiringService",
+        "declaration": "final class DartitectWiringService"
       },
       {
         "name": "EcosystemAuditFinding",
@@ -574,12 +644,24 @@
         "declaration": "enum FeatureDiagnosticsLevel"
       },
       {
+        "name": "FeaturePagination",
+        "declaration": "enum FeaturePagination"
+      },
+      {
+        "name": "FeaturePersistenceMatrix",
+        "declaration": "final class FeaturePersistenceMatrix"
+      },
+      {
         "name": "FeatureProfile",
         "declaration": "enum FeatureProfile"
       },
       {
         "name": "FeatureScaffoldOptions",
         "declaration": "final class FeatureScaffoldOptions"
+      },
+      {
+        "name": "FeatureScope",
+        "declaration": "enum FeatureScope"
       },
       {
         "name": "FileGenerationOperation",
@@ -694,10 +776,6 @@
         "declaration": "extension RemoveWhereFrom<T> on List<T>"
       },
       {
-        "name": "ScaffoldBlueprint",
-        "declaration": "enum ScaffoldBlueprint"
-      },
-      {
         "name": "ScaffoldFactory",
         "declaration": "final class ScaffoldFactory"
       },
@@ -720,6 +798,10 @@
       {
         "name": "fingerprintFinding",
         "declaration": "String fingerprintFinding(DartitectFinding finding)"
+      },
+      {
+        "name": "migrateExactRc5Config",
+        "declaration": "DartitectRc5ConfigMigration migrateExactRc5Config(String source)"
       },
       {
         "name": "nativeStrictProfile",
@@ -758,6 +840,14 @@
     ],
     "packages/dartitect_dio/lib/dartitect_dio.dart": [
       {
+        "name": "BaseOptions",
+        "declaration": "class BaseOptions extends _RequestConfig with OptionsMixin"
+      },
+      {
+        "name": "CancelToken",
+        "declaration": "class CancelToken"
+      },
+      {
         "name": "CancellationToken",
         "declaration": "typedef CancellationToken = CancellationSignal"
       },
@@ -780,6 +870,14 @@
       {
         "name": "DioConfigurationFailure",
         "declaration": "final class DioConfigurationFailure extends DioFailure"
+      },
+      {
+        "name": "DioCredentialsInterceptor",
+        "declaration": "final class DioCredentialsInterceptor<C extends Object, F extends Object> extends Interceptor"
+      },
+      {
+        "name": "DioCredentialsUnavailable",
+        "declaration": "final class DioCredentialsUnavailable<F extends Object> implements Exception"
       },
       {
         "name": "DioDecodingFailure",
@@ -850,6 +948,10 @@
         "declaration": "final class DioTransportFailure extends DioFailure"
       },
       {
+        "name": "Interceptor",
+        "declaration": "class Interceptor"
+      },
+      {
         "name": "InvalidRouteTemplateException",
         "declaration": "final class InvalidRouteTemplateException implements Exception"
       },
@@ -875,6 +977,34 @@
       }
     ],
     "packages/dartitect_drift/lib/dartitect_drift.dart": [
+      {
+        "name": "BlobColumn",
+        "declaration": "typedef BlobColumn = Column<Uint8List>"
+      },
+      {
+        "name": "BuildColumn",
+        "declaration": "extension BuildColumn<T extends Object> on ColumnBuilder<T>"
+      },
+      {
+        "name": "BuildGeneralColumn",
+        "declaration": "extension BuildGeneralColumn<T extends Object> on _BaseColumnBuilder<T>"
+      },
+      {
+        "name": "BuildIntColumn",
+        "declaration": "extension BuildIntColumn<T extends int> on ColumnBuilder<T>"
+      },
+      {
+        "name": "Column",
+        "declaration": "abstract class Column<T extends Object> extends Expression<T>"
+      },
+      {
+        "name": "ColumnBuilder",
+        "declaration": "class ColumnBuilder<T extends Object> extends _BaseColumnBuilder<T>"
+      },
+      {
+        "name": "Constant",
+        "declaration": "final class Constant<T extends Object> extends Expression<T>"
+      },
       {
         "name": "DriftCheckpointReader",
         "declaration": "typedef DriftCheckpointReader<in K, out C, in D extends GeneratedDatabase> = FutureOr<C?> Function(D, K)"
@@ -920,8 +1050,20 @@
         "declaration": "final class DriftSyncRunJournal<K, D extends GeneratedDatabase> implements SyncRunJournal<K>"
       },
       {
+        "name": "IntColumn",
+        "declaration": "typedef IntColumn = Column<int>"
+      },
+      {
         "name": "OpenDriftDatabase",
         "declaration": "typedef OpenDriftDatabase<out D extends GeneratedDatabase> = FutureOr<D> Function()"
+      },
+      {
+        "name": "Table",
+        "declaration": "abstract class Table extends HasResultSet"
+      },
+      {
+        "name": "TextColumn",
+        "declaration": "typedef TextColumn = Column<String>"
       }
     ],
     "packages/dartitect_flutter/lib/dartitect_flutter.dart": [
@@ -1150,8 +1292,24 @@
         "declaration": "final class SessionHost<R, D extends Object> extends StatefulWidget"
       },
       {
+        "name": "SessionRouteRemovalFailed",
+        "declaration": "final class SessionRouteRemovalFailed extends SessionRouteRemovalResult"
+      },
+      {
+        "name": "SessionRouteRemovalRequest",
+        "declaration": "final class SessionRouteRemovalRequest"
+      },
+      {
+        "name": "SessionRouteRemovalResult",
+        "declaration": "sealed class SessionRouteRemovalResult"
+      },
+      {
+        "name": "SessionRouteRemovalSucceeded",
+        "declaration": "final class SessionRouteRemovalSucceeded extends SessionRouteRemovalResult"
+      },
+      {
         "name": "SessionRouteRemover",
-        "declaration": "typedef SessionRouteRemover = Future<void> Function(int)"
+        "declaration": "typedef SessionRouteRemover = Future<SessionRouteRemovalResult> Function(SessionRouteRemovalRequest)"
       },
       {
         "name": "SessionRuntimeController",
@@ -1172,6 +1330,22 @@
       {
         "name": "SessionTransitionCause",
         "declaration": "enum SessionTransitionCause"
+      },
+      {
+        "name": "SessionTransitionException",
+        "declaration": "final class SessionTransitionException implements Exception"
+      },
+      {
+        "name": "SessionTransitionFailed",
+        "declaration": "final class SessionTransitionFailed<S extends Object> extends SessionState<S>"
+      },
+      {
+        "name": "SessionTransitionFailure",
+        "declaration": "final class SessionTransitionFailure"
+      },
+      {
+        "name": "SessionTransitionFailureKind",
+        "declaration": "enum SessionTransitionFailureKind"
       },
       {
         "name": "SessionTransitioning",
@@ -1212,6 +1386,130 @@
       {
         "name": "ViewModelWidgetBuilder",
         "declaration": "typedef ViewModelWidgetBuilder<in T extends Object> = Widget Function(BuildContext, T)"
+      },
+      {
+        "name": "runDartitectApplication",
+        "declaration": "void runDartitectApplication<R>({required BootstrapCoordinator<R> Function() create, required Widget Function(R) application, Widget? loading, Widget Function(BootstrapFailed<R>, void Function())? failure, DartitectDiagnosticSubject? diagnostics})"
+      }
+    ],
+    "packages/dartitect_flutter/lib/dartitect_flutter_forms.dart": [
+      {
+        "name": "CancellationException",
+        "declaration": "final class CancellationException implements Exception"
+      },
+      {
+        "name": "CancellationSignal",
+        "declaration": "final class CancellationSignal"
+      },
+      {
+        "name": "DartitectAsyncFormValidator",
+        "declaration": "typedef DartitectAsyncFormValidator<in T, out F extends Object> = Future<Result<void, F>> Function(T, CancellationSignal)"
+      },
+      {
+        "name": "DartitectFormController",
+        "declaration": "final class DartitectFormController<T, F extends Object> extends ChangeNotifier implements AsyncDisposable"
+      },
+      {
+        "name": "DartitectFormDraft",
+        "declaration": "final class DartitectFormDraft<T>"
+      },
+      {
+        "name": "DartitectFormDraftStore",
+        "declaration": "abstract interface class DartitectFormDraftStore<T, F extends Object>"
+      },
+      {
+        "name": "DartitectFormPhase",
+        "declaration": "enum DartitectFormPhase"
+      },
+      {
+        "name": "DartitectFormSnapshot",
+        "declaration": "final class DartitectFormSnapshot<T, F extends Object>"
+      },
+      {
+        "name": "DartitectFormSubmitter",
+        "declaration": "typedef DartitectFormSubmitter<in T, out F extends Object> = Future<Result<void, F>> Function(T, CancellationSignal)"
+      },
+      {
+        "name": "DartitectSyncFormValidator",
+        "declaration": "typedef DartitectSyncFormValidator<in T, out F extends Object> = Result<void, F> Function(T)"
+      },
+      {
+        "name": "Err",
+        "declaration": "final class Err<F extends Object> extends Result<Never, F>"
+      },
+      {
+        "name": "Ok",
+        "declaration": "final class Ok<T> extends Result<T, Never>"
+      },
+      {
+        "name": "Result",
+        "declaration": "sealed class Result<T, F extends Object> extends ValueEquality"
+      }
+    ],
+    "packages/dartitect_flutter/lib/dartitect_flutter_queries.dart": [
+      {
+        "name": "CancellationException",
+        "declaration": "final class CancellationException implements Exception"
+      },
+      {
+        "name": "CancellationSignal",
+        "declaration": "final class CancellationSignal"
+      },
+      {
+        "name": "DartitectQueryBulkAction",
+        "declaration": "typedef DartitectQueryBulkAction<in T, out F extends Object> = Future<Result<void, F>> Function(List<T>, CancellationSignal)"
+      },
+      {
+        "name": "DartitectQueryContent",
+        "declaration": "final class DartitectQueryContent<T, F extends Object> extends DartitectQueryState<T, F>"
+      },
+      {
+        "name": "DartitectQueryController",
+        "declaration": "final class DartitectQueryController<Q, T, F extends Object> extends ChangeNotifier implements AsyncDisposable"
+      },
+      {
+        "name": "DartitectQueryEmpty",
+        "declaration": "final class DartitectQueryEmpty<T, F extends Object> extends DartitectQueryState<T, F>"
+      },
+      {
+        "name": "DartitectQueryFailure",
+        "declaration": "final class DartitectQueryFailure<T, F extends Object> extends DartitectQueryState<T, F>"
+      },
+      {
+        "name": "DartitectQueryInitial",
+        "declaration": "final class DartitectQueryInitial<T, F extends Object> extends DartitectQueryState<T, F>"
+      },
+      {
+        "name": "DartitectQueryLoading",
+        "declaration": "final class DartitectQueryLoading<T, F extends Object> extends DartitectQueryState<T, F>"
+      },
+      {
+        "name": "DartitectQueryPage",
+        "declaration": "final class DartitectQueryPage<T>"
+      },
+      {
+        "name": "DartitectQueryPort",
+        "declaration": "abstract interface class DartitectQueryPort<Q, T, F extends Object>"
+      },
+      {
+        "name": "DartitectQueryRestorationStore",
+        "declaration": "abstract interface class DartitectQueryRestorationStore<Q>"
+      },
+      {
+        "name": "DartitectQueryState",
+        "declaration": "sealed class DartitectQueryState<T, F extends Object>"
+      },
+      {
+        "name": "Err",
+        "declaration": "final class Err<F extends Object> extends Result<Never, F>"
+      },
+      {
+        "name": "Ok",
+        "declaration": "final class Ok<T> extends Result<T, Never>"
+      },
+      {
+        "name": "Result",
+        "declaration": "sealed class Result<T, F extends Object> extends ValueEquality"
       }
     ],
     "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart": [
@@ -1872,6 +2170,10 @@
         "declaration": "abstract interface class DartitectBoundaryMapper<Source, Target>"
       },
       {
+        "name": "DartitectDataCarrier",
+        "declaration": "final class DartitectDataCarrier"
+      },
+      {
         "name": "DartitectDoubleJsonCodec",
         "declaration": "final class DartitectDoubleJsonCodec extends DartitectJsonCodec<double>"
       },
@@ -2130,6 +2432,10 @@
         "declaration": "final class ModelingWorkspaceIr"
       },
       {
+        "name": "hasLexicalGeneratedModelAnnotation",
+        "declaration": "bool hasLexicalGeneratedModelAnnotation(ClassDeclaration declaration)"
+      },
+      {
         "name": "hasLexicalModelingAnnotation",
         "declaration": "bool hasLexicalModelingAnnotation(ClassDeclaration declaration)"
       },
@@ -2139,6 +2445,14 @@
       }
     ],
     "packages/dartitect_objectbox/lib/dartitect_objectbox.dart": [
+      {
+        "name": "Entity",
+        "declaration": "class Entity"
+      },
+      {
+        "name": "Id",
+        "declaration": "class Id"
+      },
       {
         "name": "ObjectBoxCheckpointReader",
         "declaration": "typedef ObjectBoxCheckpointReader<in K, out C> = C? Function(Store, K)"
@@ -2206,6 +2520,10 @@
       {
         "name": "OpenObjectBoxStore",
         "declaration": "typedef OpenObjectBoxStore = FutureOr<Store> Function(String?)"
+      },
+      {
+        "name": "Property",
+        "declaration": "class Property"
       },
       {
         "name": "objectBoxStoreReference",
@@ -2732,6 +3050,10 @@
         "declaration": "final class BootstrapHarnessResult<R>"
       },
       {
+        "name": "CacheFeatureContractFixture",
+        "declaration": "abstract interface class CacheFeatureContractFixture implements OnlineFeatureContractFixture"
+      },
+      {
         "name": "CensusLease",
         "declaration": "final class CensusLease implements Disposable"
       },
@@ -2788,20 +3110,32 @@
         "declaration": "enum FeatureContract"
       },
       {
+        "name": "FeatureContractFact",
+        "declaration": "enum FeatureContractFact"
+      },
+      {
         "name": "FeatureContractFixtures",
-        "declaration": "final class FeatureContractFixtures<T extends Object>"
+        "declaration": "final class FeatureContractFixtures<T extends OnlineFeatureContractFixture>"
       },
       {
         "name": "FeatureContractMatrix",
-        "declaration": "final class FeatureContractMatrix<T extends Object>"
+        "declaration": "final class FeatureContractMatrix<T extends OnlineFeatureContractFixture>"
       },
       {
-        "name": "FeatureContractProfile",
-        "declaration": "enum FeatureContractProfile"
+        "name": "FeatureContractObservation",
+        "declaration": "final class FeatureContractObservation"
       },
       {
         "name": "FeatureContractResult",
         "declaration": "final class FeatureContractResult"
+      },
+      {
+        "name": "FeatureProfile",
+        "declaration": "enum FeatureProfile"
+      },
+      {
+        "name": "FeatureResidualCensus",
+        "declaration": "final class FeatureResidualCensus"
       },
       {
         "name": "InMemorySyncCheckpointStore",
@@ -2868,6 +3202,14 @@
         "declaration": "final class MapperContractRun<Source, Target>"
       },
       {
+        "name": "OfflineFullFeatureContractFixture",
+        "declaration": "abstract interface class OfflineFullFeatureContractFixture implements ReplicaFeatureContractFixture"
+      },
+      {
+        "name": "OnlineFeatureContractFixture",
+        "declaration": "abstract interface class OnlineFeatureContractFixture implements AsyncDisposable"
+      },
+      {
         "name": "OwnedGraphHarness",
         "declaration": "final class OwnedGraphHarness"
       },
@@ -2914,6 +3256,10 @@
       {
         "name": "RecordingTracer",
         "declaration": "final class RecordingTracer extends Tracer"
+      },
+      {
+        "name": "ReplicaFeatureContractFixture",
+        "declaration": "abstract interface class ReplicaFeatureContractFixture implements CacheFeatureContractFixture"
       },
       {
         "name": "RepositoryContractCase",
@@ -2988,6 +3334,84 @@
         "declaration": "Future<T> waitForStreamEvent<T>(Stream<T> stream, {required bool Function(T) where, required Duration timeout})"
       }
     ],
+    "packages/dartitect_transfer/lib/dartitect_attachments.dart": [
+      {
+        "name": "AttachmentBackgroundRequest",
+        "declaration": "final class AttachmentBackgroundRequest"
+      },
+      {
+        "name": "AttachmentBackgroundScheduler",
+        "declaration": "abstract interface class AttachmentBackgroundScheduler<F extends Object>"
+      },
+      {
+        "name": "AttachmentCoordinator",
+        "declaration": "final class AttachmentCoordinator<F extends Object> implements AsyncDisposable"
+      },
+      {
+        "name": "AttachmentFilePort",
+        "declaration": "abstract interface class AttachmentFilePort<F extends Object>"
+      },
+      {
+        "name": "AttachmentGalleryPort",
+        "declaration": "abstract interface class AttachmentGalleryPort"
+      },
+      {
+        "name": "AttachmentMetadataOutboxStore",
+        "declaration": "abstract interface class AttachmentMetadataOutboxStore<F extends Object>"
+      },
+      {
+        "name": "AttachmentPickerPort",
+        "declaration": "abstract interface class AttachmentPickerPort"
+      },
+      {
+        "name": "AttachmentRecord",
+        "declaration": "final class AttachmentRecord"
+      },
+      {
+        "name": "AttachmentSelection",
+        "declaration": "final class AttachmentSelection"
+      },
+      {
+        "name": "AttachmentSharePort",
+        "declaration": "abstract interface class AttachmentSharePort"
+      },
+      {
+        "name": "AttachmentStatus",
+        "declaration": "enum AttachmentStatus"
+      },
+      {
+        "name": "AttachmentTemporaryFile",
+        "declaration": "final class AttachmentTemporaryFile"
+      },
+      {
+        "name": "AttachmentTransferGraphFactory",
+        "declaration": "typedef AttachmentTransferGraphFactory<out F extends Object> = Future<OwnedGraph<TransferEngine<F>>> Function(AttachmentRecord)"
+      },
+      {
+        "name": "AttachmentUploadRun",
+        "declaration": "final class AttachmentUploadRun<F extends Object>"
+      },
+      {
+        "name": "CancellationException",
+        "declaration": "final class CancellationException implements Exception"
+      },
+      {
+        "name": "CancellationSignal",
+        "declaration": "final class CancellationSignal"
+      },
+      {
+        "name": "Err",
+        "declaration": "final class Err<F extends Object> extends Result<Never, F>"
+      },
+      {
+        "name": "Ok",
+        "declaration": "final class Ok<T> extends Result<T, Never>"
+      },
+      {
+        "name": "Result",
+        "declaration": "sealed class Result<T, F extends Object> extends ValueEquality"
+      }
+    ],
     "packages/dartitect_transfer/lib/dartitect_transfer.dart": [
       {
         "name": "SinkTransferTransport",
@@ -3056,6 +3480,84 @@
       {
         "name": "TransferTransport",
         "declaration": "abstract interface class TransferTransport<F extends Object>"
+      }
+    ],
+    "packages/dartitect_workmanager/lib/dartitect_workmanager.dart": [
+      {
+        "name": "DartitectWorkmanagerCallback",
+        "declaration": "final class DartitectWorkmanagerCallback<P, R, F extends Object, Q>"
+      },
+      {
+        "name": "DartitectWorkmanagerCapability",
+        "declaration": "final class DartitectWorkmanagerCapability"
+      },
+      {
+        "name": "DartitectWorkmanagerEnvelope",
+        "declaration": "final class DartitectWorkmanagerEnvelope"
+      },
+      {
+        "name": "DartitectWorkmanagerGraphFactory",
+        "declaration": "typedef DartitectWorkmanagerGraphFactory<out P, out R, out F extends Object, out Q> = Future<OwnedGraph<JobDispatcher<P, R, F, Q>>> Function()"
+      },
+      {
+        "name": "DartitectWorkmanagerMaturity",
+        "declaration": "enum DartitectWorkmanagerMaturity"
+      },
+      {
+        "name": "DartitectWorkmanagerOperationFailed",
+        "declaration": "final class DartitectWorkmanagerOperationFailed extends DartitectWorkmanagerOperationResult"
+      },
+      {
+        "name": "DartitectWorkmanagerOperationResult",
+        "declaration": "sealed class DartitectWorkmanagerOperationResult"
+      },
+      {
+        "name": "DartitectWorkmanagerOperationSucceeded",
+        "declaration": "final class DartitectWorkmanagerOperationSucceeded extends DartitectWorkmanagerOperationResult"
+      },
+      {
+        "name": "DartitectWorkmanagerPayloadDecoder",
+        "declaration": "typedef DartitectWorkmanagerPayloadDecoder<out P> = P Function(Map<String, Object?>)"
+      },
+      {
+        "name": "DartitectWorkmanagerPlatform",
+        "declaration": "enum DartitectWorkmanagerPlatform"
+      },
+      {
+        "name": "DartitectWorkmanagerPort",
+        "declaration": "abstract interface class DartitectWorkmanagerPort"
+      },
+      {
+        "name": "DartitectWorkmanagerReceipt",
+        "declaration": "final class DartitectWorkmanagerReceipt"
+      },
+      {
+        "name": "DartitectWorkmanagerReceiptStatus",
+        "declaration": "enum DartitectWorkmanagerReceiptStatus"
+      },
+      {
+        "name": "DartitectWorkmanagerReceiptStore",
+        "declaration": "abstract interface class DartitectWorkmanagerReceiptStore"
+      },
+      {
+        "name": "DartitectWorkmanagerScheduler",
+        "declaration": "final class DartitectWorkmanagerScheduler"
+      },
+      {
+        "name": "DartitectWorkmanagerUnsupported",
+        "declaration": "final class DartitectWorkmanagerUnsupported extends DartitectWorkmanagerOperationResult"
+      },
+      {
+        "name": "PluginWorkmanagerPort",
+        "declaration": "final class PluginWorkmanagerPort implements DartitectWorkmanagerPort"
+      },
+      {
+        "name": "currentDartitectWorkmanagerEnvelopeVersion",
+        "declaration": "int get currentDartitectWorkmanagerEnvelopeVersion"
+      },
+      {
+        "name": "runDartitectWorkmanagerDispatcher",
+        "declaration": "void runDartitectWorkmanagerDispatcher<P, R, F extends Object, Q>(DartitectWorkmanagerCallback<P, R, F, Q> callback)"
       }
     ]
   }

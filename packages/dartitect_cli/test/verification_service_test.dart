@@ -6,29 +6,38 @@ import 'package:dartitect_cli/dartitect_cli.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('verify is strictly read-only and reports installed overlap', () async {
-    final root = await Directory.systemTemp.createTemp('dartitect-verify-');
-    addTearDown(() => root.delete(recursive: true));
-    await File('${root.path}/pubspec.yaml').writeAsString('''name: fixture
+  test(
+    'verify rejects competing architecture runtimes in strict mode',
+    () async {
+      final root = await Directory.systemTemp.createTemp('dartitect-verify-');
+      addTearDown(() => root.delete(recursive: true));
+      await File('${root.path}/pubspec.yaml').writeAsString('''name: fixture
 dependencies:
   provider: any
 ''');
-    final source = File('${root.path}/lib/main.dart');
-    await source.parent.create(recursive: true);
-    await source.writeAsString('void main() {}\n');
-    final before = await _snapshot(root);
+      final source = File('${root.path}/lib/main.dart');
+      await source.parent.create(recursive: true);
+      await source.writeAsString('void main() {}\n');
+      final before = await _snapshot(root);
 
-    final report = await DartitectVerificationService(root).verify();
+      final report = await DartitectVerificationService(root).verify();
 
-    expect(report.command, 'verify');
-    expect(report.exitCode, 1);
-    expect(report.findings.map((finding) => finding.code), contains('DT1019'));
-    expect(
-      report.project['providerStatus'],
-      containsPair('status', 'overlap_warning'),
-    );
-    expect(await _snapshot(root), before);
-  });
+      expect(report.command, 'verify');
+      expect(report.exitCode, 1);
+      expect(
+        report.violations.map((finding) => finding.code),
+        contains('DT1017'),
+      );
+      expect(
+        report.project['providerStatus'],
+        allOf(
+          containsPair('status', 'error'),
+          containsPair('prohibitedArchitectures', <String>['provider']),
+        ),
+      );
+      expect(await _snapshot(root), before);
+    },
+  );
 
   test('verify CLI emits command-specific SARIF without writes', () async {
     final root = await Directory.systemTemp.createTemp('dartitect-verify-');
@@ -79,13 +88,23 @@ dependencies:
     await File('${root.path}/pubspec.yaml').writeAsString('name: fixture\n');
     await File('${root.path}/dartitect.json').writeAsString(
       DartitectConfig(
+        scheduler: 'workmanager',
         features: DartitectFeaturesConfig(
           declarations: <String, DartitectFeatureDeclaration>{
             'orders': DartitectFeatureDeclaration(
               profile: FeatureProfile.replica,
-              persistence: 'drift',
+              scope: FeatureScope.session,
+              persistence: FeaturePersistenceMatrix(
+                native: 'drift',
+                web: 'drift',
+              ),
               transport: 'dio',
-              headlessSync: true,
+              pagination: FeaturePagination.cursor,
+              diagnostics: FeatureDiagnosticsLevel.full,
+              headless: <DartitectPlatform, bool>{
+                for (final platform in DartitectPlatform.values)
+                  platform: platform == DartitectPlatform.android,
+              },
             ),
           },
         ),

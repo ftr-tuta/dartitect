@@ -107,7 +107,7 @@ Reactive entrypoint:
   without global read tracking.
 - `LiveResource`, `ReactiveSource`, `ReactiveSourceSession`, activation policies,
   source adapters, backpressure, observations, and leases define causal reads.
-- `DerivedAsyncResource` is an experimental generation-guarded derivation from
+- `DerivedAsyncResource` is a stable generation-guarded derivation from
   explicit Flutter listenables.
 - `ResourceFamily` bounds shared resources by TTL, count, weight, and leases.
 - `LiveCollection` separates structure from item nodes and supports replace,
@@ -157,9 +157,8 @@ aggregates independent cleanup failures.
   backlog.
 - No persistence or atomicity claim without a consumer-owned local transaction.
 
-Derived resources and diagnostic construction remain experimental. Background
-projection requires transferable inputs/outputs and cannot interrupt native
-work already running.
+Derived resources and diagnostics are stable. Background projection requires
+transferable inputs/outputs and cannot interrupt native work already running.
 
 ## Testing
 
@@ -180,8 +179,8 @@ and `dartitect_testing` for deterministic harnesses. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.5` source candidate. Supported experimental
+The workspace contains the `1.0.0-rc.6` source candidate. Supported
 Git consumption requires a matching tag and published GitHub Release plus the
 complete cohort coordinates in its notes. Without that Release, there is no
 supported consumption path. See the
-[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).
+[Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

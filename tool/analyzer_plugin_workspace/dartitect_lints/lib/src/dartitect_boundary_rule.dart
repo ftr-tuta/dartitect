@@ -551,7 +551,6 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
       final record = _ecosystemPolicy.explain(package, _path);
       switch (record.decision) {
         case DartitectEcosystemDecision.prohibitedNativeStrict:
-        case DartitectEcosystemDecision.overlapWarning:
           _reportAtNode(literal, DartitectBoundaryRule.ecosystemProhibited);
         case DartitectEcosystemDecision.advisoryAlternative:
           if (_ecosystemPolicy.hasActiveConflict(package, _path)) {

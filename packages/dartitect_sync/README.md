@@ -241,8 +241,8 @@ worker; and `dartitect_flutter` for local-authority presentation. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.5` source candidate. Supported experimental
+The workspace contains the `1.0.0-rc.6` source candidate. Supported
 Git consumption requires one compatible cohort from a tag with a corresponding
 published GitHub Release, using its Release-note coordinates. If no compatible
 Release exists, there is no supported consumption path. See the
-[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).
+[Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

@@ -1,0 +1,50 @@
+= ADR 0044: RC6 complete vertical platform
+:status: accepted
+:date: 2026-08-28
+
+== Context
+
+Earlier candidates exposed sound primitives but left consumers to repeat
+composition, session failure handling, provider operational schemas,
+credentials, attachments, forms, queries, scheduling, and fleet migration.
+Pre-1.0 aliases and coexistence modes also created multiple authorities.
+
+== Decision
+
+Every proposed Dartitect capability must answer yes to this question:
+
+_É business-neutral, difícil de implementar corretamente e gera
+infraestrutura repetitiva no consumidor?_
+
+If any answer is no, the capability remains in +softgran_*+, +agrox_*+, or the
+application. Config v1 accepts only +native_strict+, closed provider/platform
+identifiers, and namespaced +extensions+. Feature behavior uses the four
++FeatureProfile+ values; pre-1.0 blueprint names and overlap controls are
+removed.
+
+Tooling owns only namespaced +*.dartitect.g.dart+ files. It materializes direct
+constructors for application, session, and feature graphs, operational
+provider kits, headless jobs, diagnostics, and typed contract fixtures. Domain
+schema, repositories, mappings, conflict policy, queries, UI, and native ports
+remain consumer-owned.
+
+Credentials, attachments, forms, queries, diagnostics v2,
++DerivedAsyncResource+, MCP, and the Workmanager adapter are stable in RC6.
+Workmanager is enabled on applicable presets for Android, iOS, macOS, web, and
+Linux; web/Linux maturity is +preview+, and Windows returns a typed
++unsupported+ result.
+
+Fleet upgrades are cohort transactions: deterministic preview, fleet lock,
+ordered project locks, complete byte journals, exact RC5-to-RC6 migration,
+allowlisted validation, atomic commit, digest-verified rollback, sanitized
+receipts, and interruption recovery. This PR creates neither a release nor a
+tag; +main+ CI produces the formal RC6 artifact after merge.
+
+== Consequences
+
+There is one architecture profile, one feature-profile authority, and one
+generated ownership boundary. Consumers can adopt opt-in workflows without a
+container or service locator. Thin and paved-road canaries reject manual
+bootstrap, provider owners, sync engines, mutation commands, job dispatchers,
+and diagnostics wiring in consumer-owned Dart files. Stable promotion after
+RC6 is release-only and cannot add functionality.

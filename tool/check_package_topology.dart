@@ -108,7 +108,7 @@ bool _sameSet(Set<String> left, Set<String> right) =>
 
 const Map<String, Set<String>> _allowed = <String, Set<String>>{
   'dartitect': <String>{},
-  'dartitect_cli': <String>{'dartitect_modeling_analyzer'},
+  'dartitect_cli': <String>{'dartitect', 'dartitect_modeling_analyzer'},
   'dartitect_devtools': <String>{'dartitect'},
   'dartitect_dio': <String>{
     'dartitect',
@@ -156,4 +156,5 @@ const Map<String, Set<String>> _allowed = <String, Set<String>>{
     'dartitect_transfer',
   },
   'dartitect_transfer': <String>{'dartitect'},
+  'dartitect_workmanager': <String>{'dartitect', 'dartitect_jobs'},
 };

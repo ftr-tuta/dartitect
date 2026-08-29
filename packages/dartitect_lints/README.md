@@ -101,7 +101,7 @@ Use `dartitect_cli` for CI scan/doctor and
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.5` source candidate. Add it only from
+The workspace contains the `1.0.0-rc.6` source candidate. Add it only from
 coordinates in a matching tagged GitHub Release and compatible cohort. If no
 such Release exists, there is no supported consumption path. See the
-[experimental consumption guide](../../docs/guides/git-candidate-consumption.md).
+[Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

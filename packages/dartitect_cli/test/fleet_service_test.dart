@@ -35,7 +35,7 @@ void main() {
     );
   });
 
-  test('fleet reports modeling and overlap provider adoption status', () async {
+  test('fleet reports modeling and bounded provider adoption status', () async {
     final fleet = await _fleet();
     final app = await _project(fleet, 'app', '^1.0.0-rc.4');
     await File('${app.path}/pubspec.yaml').writeAsString('''name: app
@@ -47,10 +47,7 @@ dependencies:
     final report = await DartitectFleetService(fleet).versions(<String>['app']);
     final project = report.projects.single;
     expect(project['modelStatus'], containsPair('status', 'dependency_only'));
-    expect(
-      project['providerStatus'],
-      containsPair('status', 'overlap_warning'),
-    );
+    expect(project['providerStatus'], containsPair('status', 'none'));
   });
 
   test(
@@ -58,37 +55,30 @@ dependencies:
     () async {
       final fleet = await _fleet();
       final app = await _project(fleet, 'app', '^1.0.0-rc.4');
-      await File('${app.path}/dartitect.json').writeAsString('''{
-  "configVersion": 1,
-  "profile": "native_strict",
-  "layers": {
-    "domain": ["**/domain/**"],
-    "application": ["**/application/**"],
-    "data": ["**/data/**"],
-    "infrastructure": ["**/infrastructure/**"],
-    "presentation": ["**/presentation/**"]
-  },
-  "compositionRoots": ["lib/main.dart", "test/**"],
-  "generatedInfrastructure": ["**/infrastructure/**/*.g.dart"],
-  "suppressions": [],
-  "scaffolds": {
-    "layout": "feature_first",
-    "blueprints": ["simple", "remote-read", "local-first", "offline-mutation", "sync-dataset"]
-  },
-  "features": {
-    "declarations": {
-      "orders": {
-        "profile": "offline-full",
-        "persistence": "drift",
-        "transport": "dio",
-        "cursorPagination": true,
-        "headlessSync": true,
-        "diagnostics": "full"
-      }
-    }
-  }
-}
-''');
+      await File('${app.path}/dartitect.json').writeAsString(
+        DartitectConfig(
+          scheduler: 'workmanager',
+          features: DartitectFeaturesConfig(
+            declarations: <String, DartitectFeatureDeclaration>{
+              'orders': DartitectFeatureDeclaration(
+                profile: FeatureProfile.offlineFull,
+                scope: FeatureScope.application,
+                persistence: FeaturePersistenceMatrix(
+                  native: 'drift',
+                  web: 'drift',
+                ),
+                transport: 'dio',
+                pagination: FeaturePagination.cursor,
+                diagnostics: FeatureDiagnosticsLevel.full,
+                headless: <DartitectPlatform, bool>{
+                  for (final platform in DartitectPlatform.values)
+                    platform: platform != DartitectPlatform.windows,
+                },
+              ),
+            },
+          ),
+        ).encode(),
+      );
       final tests = Directory('${app.path}/test')..createSync();
       await File('${tests.path}/contracts_test.dart').writeAsString('''
 void registerMatrix() {
@@ -176,43 +166,112 @@ void registerMatrix() {
     );
   });
 
-  test('fleet CLI permits upgrade preview only and writes nothing', () async {
+  test(
+    'fleet CLI previews RC6 upgrade and writes nothing by default',
+    () async {
+      final fleet = await _fleet();
+      final app = await _project(fleet, 'app', '^1.0.0-rc.5');
+      final before = await File('${app.path}/pubspec.yaml').readAsString();
+      final output = StringBuffer();
+      final errors = StringBuffer();
+      final runner = DartitectCliRunner(
+        currentDirectory: fleet,
+        stdoutSink: output,
+        stderrSink: errors,
+      );
+
+      expect(
+        await runner.run(<String>[
+          'fleet',
+          'upgrade',
+          'app',
+          '--dry-run',
+          '--to=1.0.0-rc.6',
+          '--json',
+        ]),
+        0,
+      );
+      final decoded = jsonDecode(output.toString()) as Map<String, Object?>;
+      final projects = decoded['projects']! as List<Object?>;
+      final plan =
+          (projects.single! as Map<String, Object?>)['plan']!
+              as Map<String, Object?>;
+      expect(plan['stateToken'], matches(RegExp(r'^[0-9a-f]{64}$')));
+      expect(await File('${app.path}/pubspec.yaml').readAsString(), before);
+      expect(errors.toString(), isEmpty);
+
+      output.clear();
+      expect(
+        await runner.run(<String>[
+          'fleet',
+          'upgrade',
+          'app',
+          '--to=1.0.0-rc.6',
+        ]),
+        0,
+      );
+      expect(await File('${app.path}/pubspec.yaml').readAsString(), before);
+    },
+  );
+
+  test('fleet apply commits only after allowlisted gates pass', () async {
     final fleet = await _fleet();
-    final app = await _project(fleet, 'app', '^1.0.0-rc.2');
-    final before = await File('${app.path}/pubspec.yaml').readAsString();
-    final output = StringBuffer();
-    final errors = StringBuffer();
-    final runner = DartitectCliRunner(
-      currentDirectory: fleet,
-      stdoutSink: output,
-      stderrSink: errors,
+    final app = await _project(fleet, 'app', '^1.0.0-rc.5');
+    final commands = <String>[];
+    final service = DartitectFleetService(
+      fleet,
+      commandRunner: (root, executable, arguments) async {
+        commands.add('$executable ${arguments.join(' ')}');
+        return const DartitectFleetCommandResult(exitCode: 0);
+      },
     );
 
-    expect(
-      await runner.run(<String>[
-        'fleet',
-        'upgrade',
-        'app',
-        '--dry-run',
-        '--to=1.0.0-rc.4',
-        '--json',
-      ]),
-      0,
-    );
-    final decoded = jsonDecode(output.toString()) as Map<String, Object?>;
-    final projects = decoded['projects']! as List<Object?>;
-    final plan =
-        (projects.single! as Map<String, Object?>)['plan']!
-            as Map<String, Object?>;
-    expect(plan['stateToken'], matches(RegExp(r'^[0-9a-f]{64}$')));
-    expect(await File('${app.path}/pubspec.yaml').readAsString(), before);
-    expect(errors.toString(), isEmpty);
+    final report = await service.applyUpgrade(<String>[
+      'app',
+    ], targetCohort: '1.0.0-rc.6');
 
+    expect(report.exitCode, 0);
     expect(
-      await runner.run(<String>['fleet', 'upgrade', 'app', '--to=1.0.0-rc.4']),
-      2,
+      await File('${app.path}/pubspec.yaml').readAsString(),
+      contains('^1.0.0-rc.6'),
     );
-    expect(await File('${app.path}/pubspec.yaml').readAsString(), before);
+    expect(commands, <String>['dart pub get', 'dart analyze', 'dart test']);
+    expect(
+      File('${app.path}/.dartitect/fleet-upgrade-receipt.json').existsSync(),
+      isTrue,
+    );
+  });
+
+  test('fleet failure restores every project and validates digests', () async {
+    final fleet = await _fleet();
+    final alpha = await _project(fleet, 'alpha', '^1.0.0-rc.5');
+    final beta = await _project(fleet, 'beta', '^1.0.0-rc.5');
+    final beforeAlpha = await File('${alpha.path}/pubspec.yaml').readAsBytes();
+    final beforeBeta = await File('${beta.path}/pubspec.yaml').readAsBytes();
+    final service = DartitectFleetService(
+      fleet,
+      commandRunner: (root, executable, arguments) async =>
+          DartitectFleetCommandResult(
+            exitCode: root.path.endsWith('beta') && arguments.first == 'analyze'
+                ? 1
+                : 0,
+          ),
+    );
+
+    await expectLater(
+      service.applyUpgrade(<String>[
+        'beta',
+        'alpha',
+      ], targetCohort: '1.0.0-rc.6'),
+      throwsFormatException,
+    );
+    expect(await File('${alpha.path}/pubspec.yaml').readAsBytes(), beforeAlpha);
+    expect(await File('${beta.path}/pubspec.yaml').readAsBytes(), beforeBeta);
+    expect(
+      File('${fleet.path}/.dartitect/fleet-upgrade.transaction.json')
+          .existsSync(),
+      isFalse,
+    );
   });
 }
 

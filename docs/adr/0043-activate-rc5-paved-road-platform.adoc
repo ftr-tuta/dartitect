@@ -1,7 +1,7 @@
 = ADR 0043: Activate the RC5 paved-road platform
 
-Status:: Accepted for +1.0.0-rc.5+ development; supersedes the optional-slice
-deferral in ADR 0035 and the diagnostics construction deferral in ADR 0034
+Status:: Accepted for +1.0.0-rc.5+ development; superseded by ADR 0044 for RC6
+stabilization
 
 == Context
 
@@ -65,11 +65,12 @@ the built/validated web extension, and the paved-road canary. Benchmarks cover
 lazy compute and diagnostics/DevTools overhead. Boundary review verifies the
 23-package/24-entrypoint topology and all consumer-owned exclusions.
 
-No slice is stable merely because this ADR activates it for RC5. Promotion to
-1.0 requires the complete release gates. A slice is removed before stable if it
-requires implicit tracking, arbitrary diagnostics metadata, hidden retries,
-unbounded retention, product-mode DevTools registration, provider leakage, or
-ownership that the canary cannot drain.
+This ADR did not make a slice stable merely by activating it for RC5. ADR 0044
+records completion of the RC6 release gates and stabilization. A slice remains
+subject to removal before stable if it introduces implicit tracking, arbitrary
+diagnostics metadata, hidden retries, unbounded retention, product-mode
+DevTools registration, provider leakage, or ownership that the canary cannot
+drain.
 
 == Consequences
 

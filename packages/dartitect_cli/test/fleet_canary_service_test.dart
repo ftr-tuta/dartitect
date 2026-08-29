@@ -21,7 +21,7 @@ void main() {
       await File('${candidate.path}/packages/dartitect/pubspec.yaml')
           .writeAsString('''
 name: dartitect
-version: 1.0.0-rc.5
+version: 1.0.0-rc.6
 environment:
   sdk: ^3.13.0
 ''');

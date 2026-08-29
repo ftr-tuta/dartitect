@@ -179,7 +179,7 @@ final class _ModelingVisitor extends SimpleAstVisitor<void> {
     if (!identical(node, context.definingUnit.unit)) return;
     final hasModels = context.allUnits.any(
       (unit) => unit.unit.declarations.whereType<ClassDeclaration>().any(
-        hasLexicalModelingAnnotation,
+        hasLexicalGeneratedModelAnnotation,
       ),
     );
     final diagnostic = ModelingCompiler.inspectLibraryPart(

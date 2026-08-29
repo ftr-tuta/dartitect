@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "namespace": "wiring",
+  "protocolVersion": 1,
+  "outputs": [
+    {
+      "path": "lib/features/paved_road/composition/paved_road.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererVersion": 2,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "8ea8368c1555cd0c57e3cd55c7c253852e45136567d669a27d591018a39c8c2c",
+      "outputDigest": "18ab8b5d8f7eaeffbba4bd16ce9359936ee0b0ad5ed4d9fa5f653d7c64aef781"
+    }
+  ]
+}

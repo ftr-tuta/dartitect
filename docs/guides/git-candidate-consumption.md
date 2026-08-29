@@ -1,6 +1,6 @@
-# Experimental Git consumption
+# Git candidate consumption
 
-Git consumption is experimental and supported only from a repository tag that
+Git candidate consumption is supported only from a repository tag that
 has a corresponding published GitHub Release.
 
 ## Rules

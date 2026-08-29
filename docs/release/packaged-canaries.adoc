@@ -1,12 +1,12 @@
 = Packaged and Git candidate canary contract
 
-Status:: Implemented for the RC5 candidate; final tag/publication are outside this delivery
+Status:: Implemented for the RC6 candidate; final tag/publication are outside this delivery
 Machine authority:: `tool/canaries/canary_contract.json`
 Development gate:: `dart run tool/check_canaries.dart --allow-dirty`
 
 == Candidate source and isolation
 
-The packaged gate creates archives for all twenty-three packages from one exact
+The packaged gate creates archives for all twenty-four packages from one exact
 candidate tree, serves them through an ephemeral hosted repository, and copies
 each consumer outside the checkout. It rejects local path resolution,
 dependency overrides, missing/transitive cohort members, mixed versions,
@@ -15,10 +15,10 @@ cache is only transport; each requested archive digest remains authoritative.
 
 The Git variant requires one annotated tag and resolves the complete transitive
 Dartitect closure from one URL/ref. It remains release infrastructure, but this
-RC5 delivery creates no tag, GitHub Release, or publication. Both runners use
+RC6 delivery creates no tag, GitHub Release, or publication. Both runners use
 the same six-canary machine contract and command order.
 
-== Modeling and interop
+== Modeling and thin consumer
 
 The pure-Dart modeling canary is
 +examples/model_generator_fixture+. It installs only core/modeling/compiler/CLI,
@@ -26,11 +26,11 @@ applies committed generation in the isolated copy, checks freshness, executes
 +dartitect verify+, analyzes, and tests equality, JSON, projection, and mapper
 on VM and Chrome. This is also the clean-clone and Web modeling evidence.
 
-The interop canary installs Provider without importing it and requires a
-+DT1019+ warning with no violation. A second temporary source imports a
-concrete provider type across a presentation boundary and requires +DT1006+
-and a failing provider status. This proves incremental overlap does not weaken
-the concrete boundary.
+The +thin_consumer_canary+ is generated from the +offline-hybrid+ preset with
+all opt-in capabilities. It runs strict config and wiring freshness checks,
+analyzes, tests, and builds Web. Its consumer-owned Dart files must contain no
+manual bootstrap coordinator, provider owner, sync engine, mutation command,
+job dispatcher, or diagnostics wiring.
 
 == Flutter, providers, and workspace
 

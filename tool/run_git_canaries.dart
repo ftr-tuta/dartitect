@@ -156,9 +156,19 @@ Future<Map<String, Object?>> _runCanary({
       await run('dart', const <String>['analyze']);
       await run('dart', const <String>['test']);
       await run('dart', const <String>['test', '--platform', 'chrome']);
-    case 'interop':
-      await run('dart', const <String>['analyze']);
-      await run('dart', const <String>['test']);
+    case 'thin_consumer':
+      _assertConsumerOwnedSeams(consumer);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'wiring',
+        'sync',
+        '--dry-run',
+        '--json',
+      ]);
+      await run('flutter', const <String>['analyze']);
+      await run('flutter', const <String>['test']);
+      await run('flutter', const <String>['build', 'web', '--release']);
     case 'minimal':
       await run('dart', const <String>[
         'run',
@@ -246,6 +256,50 @@ Future<Map<String, Object?>> _runCanary({
     'residualResourceCensus': contract['residualResourceCensus'],
     'result': 'PASS',
   };
+}
+
+void _assertConsumerOwnedSeams(Directory project) {
+  const forbidden = <String>[
+    'BootstrapCoordinator',
+    'transaction.own',
+    'DioOwner',
+    'DriftDatabaseOwner',
+    'ObjectBoxStoreOwner',
+    'ObjectBoxObservationOwner',
+    'SyncEngine',
+    'MutationCommand',
+    'JobDispatcher',
+    'DartitectDiagnosticsEmitter',
+  ];
+  final lib = Directory('${project.path}/lib');
+  for (final file
+      in lib
+          .listSync(recursive: true, followLinks: false)
+          .whereType<File>()
+          .where(
+            (file) =>
+                file.path.endsWith('.dart') &&
+                !file.path.endsWith('.dartitect.g.dart'),
+          )) {
+    final source = file.readAsStringSync();
+    for (final symbol in forbidden) {
+      if (source.contains(symbol)) {
+        throw StateError(
+          'Consumer-owned ${file.path} contains generated wiring symbol '
+          '$symbol.',
+        );
+      }
+    }
+  }
+  final main = File('${project.path}/lib/main.dart');
+  final nonEmpty = main
+      .readAsLinesSync()
+      .where((line) => line.trim().isNotEmpty)
+      .length;
+  if (nonEmpty > 15 ||
+      !main.readAsStringSync().contains('runDartitectApplication')) {
+    throw StateError('Thin consumer main violates the paved-road budget.');
+  }
 }
 
 String _hostDesktopTarget() {
@@ -489,7 +543,7 @@ final class _Options {
 
   factory _Options.parse(List<String> arguments) {
     String? repository;
-    var ref = 'v1.0.0-rc.5';
+    var ref = 'v1.0.0-rc.6';
     var keepArtifacts = false;
     for (final argument in arguments) {
       if (argument.startsWith('--repository=')) {

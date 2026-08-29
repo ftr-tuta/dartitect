@@ -24,21 +24,23 @@ void main() {
     'Future<DartitectFleetReport> check',
     'Future<DartitectFleetReport> policy',
     'Future<DartitectFleetReport> previewUpgrade',
+    'Future<DartitectFleetReport> applyUpgrade',
     'resolveSymbolicLinks',
     '_requireContained',
+    '_withFleetLocks',
+    '_FleetSnapshot.capture',
+    '_writeFleetJournal',
+    '_recoverFleetJournalIfNeeded',
+    '_validateProjectDigests',
+    '_validationCommands',
+    '_sanitizeOutput',
   ]) {
     if (!fleet.contains(marker))
       errors.add('Fleet marker is missing: $marker.');
   }
-  for (final forbidden in const <String>[
-    'Process.run',
-    'HttpClient',
-    'writeAsString',
-    'writeAsBytes',
-    'create(recursive:',
-  ]) {
+  for (final forbidden in const <String>['HttpClient']) {
     if (fleet.contains(forbidden)) {
-      errors.add('Read-only fleet service contains $forbidden.');
+      errors.add('Offline fleet service contains $forbidden.');
     }
   }
   final fleetRunnerStart = runner.indexOf('Future<int> _fleet(');
@@ -50,13 +52,15 @@ void main() {
     errors.add('Fleet CLI dispatcher is missing.');
   } else {
     final dispatcher = runner.substring(fleetRunnerStart, fleetRunnerEnd);
-    if (!dispatcher.contains("case 'versions':") ||
+    if (!dispatcher.contains("case 'report':") ||
+        !dispatcher.contains("case 'versions':") ||
         !dispatcher.contains("case 'check':") ||
         !dispatcher.contains("case 'policy':") ||
         !dispatcher.contains("case 'upgrade':") ||
         !dispatcher.contains("'dry-run'") ||
-        dispatcher.contains("'apply'")) {
-      errors.add('Fleet CLI is not read-only plus preview-only upgrade.');
+        !dispatcher.contains("'apply'") ||
+        !dispatcher.contains("'to'")) {
+      errors.add('Fleet CLI lacks transactional preview/apply upgrade gates.');
     }
   }
 
@@ -116,10 +120,13 @@ void main() {
     'mapper',
     'chrome',
     'clean_clone',
-    'interop_positive',
-    'interop_negative',
-    'overlap_warning',
-    'boundary_error',
+    'offline_hybrid_generated_wiring',
+    'all_opt_in_capabilities',
+    'six_platform_scaffold',
+    'consumer_owned_wiring_absence',
+    'workmanager_preview_and_unsupported',
+    'wiring_noop_zero_writes',
+    'main_paved_road_15_lines',
     'flutter_simple',
     'flutter_mvvm',
     'objectbox_local_first',
@@ -150,11 +157,12 @@ void main() {
       'JSON codec round-trips',
       'descriptor projection lens and mapper',
     ],
-    'tool/canaries/interop/test/interop_canary_test.dart': <String>[
-      'DT1019',
-      'DT1006',
-      'providerStatus',
-    ],
+    'examples/thin_consumer_canary/test/thin_consumer_canary_test.dart':
+        <String>[
+          'TasksFeatureWiring.capabilities',
+          'DartitectWorkmanagerPlatform.windows',
+          'runDartitectApplication',
+        ],
     'tool/canaries/minimal/lib/main.dart': <String>['CompositionRoot'],
     'tool/canaries/minimal/test/hardening_canary_test.dart': <String>[
       '8 * 1024 * 1024',
@@ -277,7 +285,7 @@ void main() {
   }
   for (final marker in const <String>[
     'recommended_complete',
-    'interop_existing_project',
+    'native_strict',
     'strictly read-only aggregate gate',
     'twenty warm incremental runs',
     'above 10%',
@@ -293,8 +301,8 @@ void main() {
     return;
   }
   stdout.writeln(
-    'Goal 09 evidence passes: confined fleet, pinned policy, recoverable '
-    'previews, six isolated canaries plus provider/workspace fixtures, '
+    'Goal 09 evidence passes: confined transactional fleet, pinned policy, '
+    'journaled rollback, six isolated canaries plus provider/workspace fixtures, '
     'same-host 5/20 benchmarks, and release ADRs.',
   );
 }

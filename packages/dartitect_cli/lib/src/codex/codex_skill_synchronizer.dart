@@ -168,10 +168,23 @@ final class CodexSkillSynchronizer {
       <String, Map<String, String>>{
         for (final template in dartitectSkillCatalog)
           template.name: <String, String>{
-            ...template.files,
+            for (final entry in template.files.entries)
+              entry.key: entry.key == 'SKILL.md'
+                  ? '${entry.value.trimRight()}\n\n$_inclusionGate'
+                  : entry.value,
             'agents/openai.yaml': template.openAiYaml,
           },
       };
+
+  static const String _inclusionGate = '''## Dartitect inclusion gate
+
+Before adding a capability, answer:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be “yes”. Otherwise the capability belongs in
+`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.
+''';
 
   Future<String> _hashDirectory(Directory directory) async {
     final files = <String, String>{};

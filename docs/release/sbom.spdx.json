@@ -3,7 +3,7 @@
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
   "name": "Dartitect-workspace",
-  "documentNamespace": "https://github.com/ftr-tuta/dartitect/sbom/workspace-1.0.0-rc.5",
+  "documentNamespace": "https://github.com/ftr-tuta/dartitect/sbom/workspace-1.0.0-rc.6",
   "creationInfo": {
     "created": "2026-08-25T00:00:00Z",
     "creators": [
@@ -274,7 +274,7 @@
     {
       "name": "dartitect",
       "SPDXID": "SPDXRef-Package-dartitect",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -294,7 +294,7 @@
     {
       "name": "dartitect_cli",
       "SPDXID": "SPDXRef-Package-dartitect-cli",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -304,7 +304,7 @@
     {
       "name": "dartitect_devtools",
       "SPDXID": "SPDXRef-Package-dartitect-devtools",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "MIT",
@@ -314,7 +314,7 @@
     {
       "name": "dartitect_dio",
       "SPDXID": "SPDXRef-Package-dartitect-dio",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -324,7 +324,7 @@
     {
       "name": "dartitect_drift",
       "SPDXID": "SPDXRef-Package-dartitect-drift",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -334,7 +334,7 @@
     {
       "name": "dartitect_flutter",
       "SPDXID": "SPDXRef-Package-dartitect-flutter",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -344,7 +344,7 @@
     {
       "name": "dartitect_geometry",
       "SPDXID": "SPDXRef-Package-dartitect-geometry",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -354,7 +354,7 @@
     {
       "name": "dartitect_isolates",
       "SPDXID": "SPDXRef-Package-dartitect-isolates",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -364,7 +364,7 @@
     {
       "name": "dartitect_jobs",
       "SPDXID": "SPDXRef-Package-dartitect-jobs",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "MIT",
@@ -374,7 +374,7 @@
     {
       "name": "dartitect_lints",
       "SPDXID": "SPDXRef-Package-dartitect-lints",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -384,7 +384,7 @@
     {
       "name": "dartitect_locale_br",
       "SPDXID": "SPDXRef-Package-dartitect-locale-br",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -394,7 +394,7 @@
     {
       "name": "dartitect_mcp",
       "SPDXID": "SPDXRef-Package-dartitect-mcp",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -404,7 +404,7 @@
     {
       "name": "dartitect_media",
       "SPDXID": "SPDXRef-Package-dartitect-media",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -424,7 +424,7 @@
     {
       "name": "dartitect_modeling",
       "SPDXID": "SPDXRef-Package-dartitect-modeling",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -434,7 +434,7 @@
     {
       "name": "dartitect_modeling_analyzer",
       "SPDXID": "SPDXRef-Package-dartitect-modeling-analyzer",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -444,7 +444,7 @@
     {
       "name": "dartitect_objectbox",
       "SPDXID": "SPDXRef-Package-dartitect-objectbox",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -454,7 +454,7 @@
     {
       "name": "dartitect_observability",
       "SPDXID": "SPDXRef-Package-dartitect-observability",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -464,7 +464,7 @@
     {
       "name": "dartitect_privacy",
       "SPDXID": "SPDXRef-Package-dartitect-privacy",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -484,7 +484,7 @@
     {
       "name": "dartitect_resilience",
       "SPDXID": "SPDXRef-Package-dartitect-resilience",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "MIT",
@@ -494,7 +494,7 @@
     {
       "name": "dartitect_sentry",
       "SPDXID": "SPDXRef-Package-dartitect-sentry",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -504,7 +504,7 @@
     {
       "name": "dartitect_sync",
       "SPDXID": "SPDXRef-Package-dartitect-sync",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -514,7 +514,7 @@
     {
       "name": "dartitect_testing",
       "SPDXID": "SPDXRef-Package-dartitect-testing",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -524,7 +524,7 @@
     {
       "name": "dartitect_transfer",
       "SPDXID": "SPDXRef-Package-dartitect-transfer",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "MIT",
@@ -532,9 +532,19 @@
       "copyrightText": "NOASSERTION"
     },
     {
+      "name": "dartitect_workmanager",
+      "SPDXID": "SPDXRef-Package-dartitect-workmanager",
+      "versionInfo": "1.0.0-rc.6",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
       "name": "dartitect_workspace",
       "SPDXID": "SPDXRef-Package-dartitect-workspace",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -654,6 +664,16 @@
     {
       "name": "flutter_test",
       "SPDXID": "SPDXRef-Package-flutter-test",
+      "versionInfo": "0.0.0",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "flutter_web_plugins",
+      "SPDXID": "SPDXRef-Package-flutter-web-plugins",
       "versionInfo": "0.0.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
@@ -1014,7 +1034,7 @@
     {
       "name": "paved_road_canary",
       "SPDXID": "SPDXRef-Package-paved-road-canary",
-      "versionInfo": "1.0.0-rc.5",
+      "versionInfo": "1.0.0-rc.6",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
@@ -1302,6 +1322,16 @@
       "copyrightText": "NOASSERTION"
     },
     {
+      "name": "thin_consumer_canary",
+      "SPDXID": "SPDXRef-Package-thin-consumer-canary",
+      "versionInfo": "1.0.0-rc.6",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
       "name": "typed_data",
       "SPDXID": "SPDXRef-Package-typed-data",
       "versionInfo": "1.4.0",
@@ -1389,6 +1419,66 @@
       "filesAnalyzed": false,
       "licenseConcluded": "BSD-3-Clause",
       "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "workmanager",
+      "SPDXID": "SPDXRef-Package-workmanager",
+      "versionInfo": "0.10.9",
+      "downloadLocation": "https://pub.dev/packages/workmanager/versions/0.10.9",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "workmanager_android",
+      "SPDXID": "SPDXRef-Package-workmanager-android",
+      "versionInfo": "0.10.8",
+      "downloadLocation": "https://pub.dev/packages/workmanager_android/versions/0.10.8",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "workmanager_apple",
+      "SPDXID": "SPDXRef-Package-workmanager-apple",
+      "versionInfo": "0.9.10",
+      "downloadLocation": "https://pub.dev/packages/workmanager_apple/versions/0.9.10",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "workmanager_linux",
+      "SPDXID": "SPDXRef-Package-workmanager-linux",
+      "versionInfo": "0.1.1+1",
+      "downloadLocation": "https://pub.dev/packages/workmanager_linux/versions/0.1.1+1",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "workmanager_platform_interface",
+      "SPDXID": "SPDXRef-Package-workmanager-platform-interface",
+      "versionInfo": "0.10.4",
+      "downloadLocation": "https://pub.dev/packages/workmanager_platform_interface/versions/0.10.4",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "workmanager_web",
+      "SPDXID": "SPDXRef-Package-workmanager-web",
+      "versionInfo": "0.2.0",
+      "downloadLocation": "https://pub.dev/packages/workmanager_web/versions/0.2.0",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
       "copyrightText": "NOASSERTION"
     },
     {
@@ -2136,6 +2226,11 @@
     {
       "spdxElementId": "SPDXRef-Package-dartitect-cli",
       "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-cli",
+      "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-dartitect-modeling-analyzer"
     },
     {
@@ -2282,6 +2377,11 @@
       "spdxElementId": "SPDXRef-Package-dartitect-locale-br",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-mcp",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-crypto"
     },
     {
       "spdxElementId": "SPDXRef-Package-dartitect-mcp",
@@ -2592,6 +2692,31 @@
       "spdxElementId": "SPDXRef-Package-dartitect-transfer",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-workmanager",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-workmanager",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-jobs"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-workmanager",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-workmanager",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter-test"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-workmanager",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-workmanager"
     },
     {
       "spdxElementId": "SPDXRef-Package-dartitect-workspace",
@@ -2967,6 +3092,11 @@
       "spdxElementId": "SPDXRef-Package-flutter-test",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-vector-math"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-flutter-web-plugins",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
     },
     {
       "spdxElementId": "SPDXRef-Package-frontend-server-client",
@@ -4179,6 +4309,66 @@
       "relatedSpdxElement": "SPDXRef-Package-yaml"
     },
     {
+      "spdxElementId": "SPDXRef-Package-thin-consumer-canary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-thin-consumer-canary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-cli"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-thin-consumer-canary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-dio"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-thin-consumer-canary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-drift"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-thin-consumer-canary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-thin-consumer-canary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-observability"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-thin-consumer-canary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-sync"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-thin-consumer-canary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-transfer"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-thin-consumer-canary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-workmanager"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-thin-consumer-canary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-thin-consumer-canary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter-lints"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-thin-consumer-canary",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter-test"
+    },
+    {
       "spdxElementId": "SPDXRef-Package-typed-data",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-collection"
@@ -4237,6 +4427,96 @@
       "spdxElementId": "SPDXRef-Package-webkit-inspection-protocol",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-logging"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-workmanager-android"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-workmanager-apple"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-workmanager-linux"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-workmanager-platform-interface"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-workmanager-web"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager-android",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager-android",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-workmanager-platform-interface"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager-apple",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager-apple",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-workmanager-platform-interface"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager-linux",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager-linux",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-workmanager-platform-interface"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager-platform-interface",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager-platform-interface",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-meta"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager-platform-interface",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-plugin-platform-interface"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager-web",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager-web",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-flutter-web-plugins"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-workmanager-web",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-workmanager-platform-interface"
     },
     {
       "spdxElementId": "SPDXRef-Package-xdg-directories",

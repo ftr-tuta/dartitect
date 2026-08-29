@@ -40,17 +40,15 @@ Future<void> main() async {
       .toSet();
   final sourceBlocking = policy.records.values
       .where(
-        (record) =>
-            record.decision == EcosystemDecision.prohibitedNativeStrict ||
-            record.decision == EcosystemDecision.overlapWarning,
+        (record) => record.decision == EcosystemDecision.prohibitedNativeStrict,
       )
       .map((record) => record.package)
       .toSet();
   if (sourceBlocking.length != universal.length ||
       !sourceBlocking.containsAll(universal)) {
     errors.add(
-      'Installed overlap plus global prohibitions must equal the source-level '
-      'architecture package set.',
+      'Native Strict prohibitions must equal the source-level architecture '
+      'package set.',
     );
   }
   for (final package in const <String>{
@@ -82,8 +80,7 @@ Future<void> main() async {
   }
   for (final record in policy.records.values) {
     if ((record.decision == EcosystemDecision.advisoryAlternative ||
-            record.decision == EcosystemDecision.prohibitedNativeStrict ||
-            record.decision == EcosystemDecision.overlapWarning) &&
+            record.decision == EcosystemDecision.prohibitedNativeStrict) &&
         (record.replacement == null || record.replacement!.trim().isEmpty)) {
       errors.add('${record.package} requires a documented alternative.');
     }

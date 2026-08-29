@@ -12,6 +12,7 @@ export 'src/flutter_error_binding.dart';
 export 'src/listenable_selector.dart';
 export 'src/local_history_listenable.dart';
 export 'src/restoration/versioned_restoration.dart';
+export 'src/run_dartitect_application.dart';
 export 'src/session_host.dart';
 export 'src/session_state.dart';
 export 'src/view_model_host.dart';

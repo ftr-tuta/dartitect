@@ -1,7 +1,7 @@
 = Offline, sync, isolate, and telemetry threat model
 :toc:
 
-Status:: Locally reviewed for `1.0.0-rc.5`; `CI / Required` evidence pending
+Status:: Locally reviewed for `1.0.0-rc.6`; `CI / Required` evidence pending
 Review date:: 2026-08-27
 
 == Offline mutation and outbox
@@ -136,13 +136,13 @@ share the reviewed decisions.
 | Review publisher, repository, license, advisory, compatibility, reason,
 owner, paths, and expiry; do not use package-wide ignores.
 
-| Incremental provider overlap becomes duplicate architecture ownership
-| Merely installed Riverpod/BLoC/Provider/GetIt/MobX/Signals is a +DT1019+
-warning. Imports, provider types, service location, duplicate owners, and
-concrete boundary leakage remain errors in verify/scanner/lints.
-| Keep the overlapping runtime behind its existing consumer boundary while
-migrating one owned slice at a time; never dual-write or globally suppress the
-boundary error.
+| A second architecture runtime creates duplicate ownership
+| Riverpod/BLoC/Provider/GetIt/MobX/Signals dependencies or imports in a
+Dartitect architecture root fail +native_strict+ verification. Provider types,
+service location, duplicate owners, and concrete boundary leakage remain
+errors in scanner and lints.
+| Move the complete ownership boundary to +native_strict+; never dual-write,
+run overlapping state authorities, or suppress the boundary error.
 
 | Provider generator parses a newer language feature incorrectly
 | Constructor exceptions require exact versioned source/failure/generated/

@@ -1,6 +1,8 @@
 /// Framework-neutral testing helpers for Dartitect consumers.
 library;
 
+export 'package:dartitect/dartitect.dart' show FeatureProfile;
+
 export 'src/command_harness.dart';
 export 'src/deterministic_id_generator.dart';
 export 'src/diagnostics_topology_harness.dart';

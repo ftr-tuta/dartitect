@@ -40,6 +40,13 @@ branch focused, and fix a failed `CI / Required` result on that same branch.
 
 ## Change requirements
 
+Before accepting any new capability, answer this question:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be yes. Otherwise keep the capability in `softgran_*`,
+`agrox_*`, or the application and do not add it to Dartitect.
+
 - Preserve native-first constructor injection and explicit owned/borrowed state.
 - Add tests through public entrypoints and real provider boundaries where needed.
 - Document every supported public member and update the API snapshot.

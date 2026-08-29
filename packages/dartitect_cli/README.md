@@ -77,8 +77,8 @@ document their own `--dry-run`/apply form in `example/README.md`.
 - `DartitectVerificationService` and `DartitectCliRunner` map services to stable
   JSON and exit codes.
 - `FeatureProfile` and scaffold/generation types expose the `online`, `cache`,
-  `replica`, and `offline-full` paths, compatible legacy blueprint aliases, and
-  reviewed file-ownership contracts for tooling authors.
+  `replica`, and `offline-full` paths plus reviewed file-ownership contracts
+  for tooling authors. Pre-1.0 blueprint aliases are not accepted.
 
 ## Ownership and lifecycle
 
@@ -99,10 +99,10 @@ Exit codes are `0` success, `1` findings/conflicts, `2` usage/configuration, and
 path escape, symlink/traversal, manifest mismatch, lock conflict, or partial I/O.
 Recoverable journals preserve integral rollback.
 
-Mutations serialize through the project lock and revalidate immediately before
-commit. Read-only operations do not grant write authority. Deep doctor may run
-`dart analyze` only when explicitly requested. Fleet operations are read-only;
-upgrade has preview only.
+Mutations serialize through locks and revalidate immediately before commit.
+Read-only operations do not grant write authority. Deep doctor may run
+`dart analyze` only when explicitly requested. Fleet upgrade applies only as
+an all-project transaction with byte journals and digest-verified rollback.
 
 ## Prohibited uses and limitations
 
@@ -137,7 +137,7 @@ bounded local agent interface. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.5` source candidate. Global activation or
+The workspace contains the `1.0.0-rc.6` source candidate. Global activation or
 Git use is supported only from coordinates in a matching tagged GitHub Release.
 If no compatible Release exists, there is no supported consumption path. See
-the [experimental consumption guide](../../docs/guides/git-candidate-consumption.md).
+the [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

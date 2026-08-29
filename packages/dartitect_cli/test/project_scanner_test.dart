@@ -213,15 +213,15 @@ sdks:
       contains('lib/generated.freezed.dart'),
     );
     expect(
-      scan.findings,
+      scan.violations,
       contains(
         isA<DartitectFinding>()
-            .having((finding) => finding.code, 'code', 'DT1019')
+            .having((finding) => finding.code, 'code', 'DT1017')
             .having((finding) => finding.path, 'path', 'pubspec.lock')
             .having(
               (finding) => finding.severity,
               'severity',
-              FindingSeverity.warning,
+              FindingSeverity.error,
             ),
       ),
     );
@@ -248,8 +248,12 @@ sdks:
   },
   "compositionRoots": ["lib/main.dart"],
   "generatedInfrastructure": ["lib/objectbox.g.dart"],
+  "generatedSuffixes": [".g.dart", ".dartitect.g.dart"],
   "suppressions": [],
-  "scaffolds": {"layout": "feature_first", "blueprints": ["simple"]}
+  "features": {"declarations": {}},
+  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
+  "scheduler": "none",
+  "extensions": {}
 }
 ''');
       await _write(
@@ -263,10 +267,13 @@ sdks:
       final scan = await ProjectScanner(root).scan();
 
       expect(scan.dartFileCount, 1);
-      expect(scan.violations.map((finding) => finding.code), <String>[
+      expect(scan.violations.map((finding) => finding.code).toSet(), <String>{
         DartitectRuleCodes.forbiddenArchitecture,
-      ]);
-      expect(scan.violations.single.path, 'lib/objectbox.g.dart');
+      });
+      expect(
+        scan.violations.map((finding) => finding.path),
+        everyElement('lib/objectbox.g.dart'),
+      );
     },
   );
 
@@ -287,8 +294,12 @@ sdks:
   },
   "compositionRoots": ["lib/composition/**"],
   "generatedInfrastructure": ["lib/infrastructure/**/*.g.dart"],
+  "generatedSuffixes": [".g.dart", ".dartitect.g.dart"],
   "suppressions": [],
-  "scaffolds": {"layout": "feature_first", "blueprints": ["simple"]}
+  "features": {"declarations": {}},
+  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
+  "scheduler": "none",
+  "extensions": {}
 }
 ''');
     await _write(
@@ -374,6 +385,7 @@ final Size Function() readSize = () => const Size();
   },
   "compositionRoots": ["lib/ui/composition.dart"],
   "generatedInfrastructure": ["lib/infrastructure/**/*.g.dart"],
+  "generatedSuffixes": [".g.dart", ".dartitect.g.dart"],
   "suppressions": [
     {
       "code": "DT1001",
@@ -383,10 +395,10 @@ final Size Function() readSize = () => const Size();
       "permanentJustification": "Public compatibility contract"
     }
   ],
-  "scaffolds": {
-    "layout": "feature_first",
-    "blueprints": ["simple"]
-  }
+  "features": {"declarations": {}},
+  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
+  "scheduler": "none",
+  "extensions": {}
 }
 ''');
     await _write(
@@ -560,11 +572,12 @@ workspace:
   },
   "compositionRoots": ["lib/runtime/**"],
   "generatedInfrastructure": ["lib/infrastructure/**/*.g.dart"],
+  "generatedSuffixes": [".g.dart", ".dartitect.g.dart"],
   "suppressions": [],
-  "scaffolds": {
-    "layout": "feature_first",
-    "blueprints": ["simple"]
-  }
+  "features": {"declarations": {}},
+  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
+  "scheduler": "none",
+  "extensions": {}
 }
 ''');
     await _write(

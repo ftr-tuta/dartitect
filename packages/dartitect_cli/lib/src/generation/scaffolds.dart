@@ -1,88 +1,78 @@
+import 'package:dartitect/dartitect.dart' show FeatureProfile;
+
 import '../config/dartitect_config.dart';
 import 'generation_engine.dart';
-
-/// Stable generated-once feature blueprints.
-enum ScaffoldBlueprint {
-  /// Small immutable MVVM slice.
-  simple('simple'),
-
-  /// Typed remote read with DTO mapping.
-  remoteRead('remote-read'),
-
-  /// Authoritative local store with remote refresh and pull reactivity.
-  localFirst('local-first'),
-
-  /// Atomic local mutation and durable outbox lane.
-  offlineMutation('offline-mutation'),
-
-  /// Foreground/headless dataset with checkpoint, journal, and lease ports.
-  syncDataset('sync-dataset');
-
-  const ScaffoldBlueprint(this.cliName);
-
-  /// Stable CLI/config spelling.
-  final String cliName;
-
-  /// Parses one stable CLI/config spelling.
-  static ScaffoldBlueprint parse(String value) {
-    for (final blueprint in values) {
-      if (blueprint.cliName == value) return blueprint;
-    }
-    throw FormatException('Unknown scaffold blueprint "$value".');
-  }
-
-  /// Canonical paved-road profile represented by this compatibility alias.
-  FeatureProfile? get profileAlias => switch (this) {
-    simple => null,
-    remoteRead => FeatureProfile.online,
-    localFirst => FeatureProfile.cache,
-    offlineMutation => FeatureProfile.offlineFull,
-    syncDataset => FeatureProfile.replica,
-  };
-}
 
 /// Validated options for paved-road feature generation.
 final class FeatureScaffoldOptions {
   /// Creates profile/provider options and validates their compatibility.
   FeatureScaffoldOptions({
     required this.profile,
-    String? persistence,
-    String? transport,
-    this.cursorPagination = false,
-    this.headlessSync = false,
+    required this.scope,
+    String? persistenceNative,
+    String? persistenceWeb,
+    this.transport = 'dio',
+    this.pagination = FeaturePagination.none,
+    Set<DartitectPlatform> headlessPlatforms = const <DartitectPlatform>{},
     this.diagnostics = FeatureDiagnosticsLevel.basic,
-  }) : persistence = persistence ?? _defaultPersistence(profile),
-       transport = transport ?? 'consumer' {
+    Set<DartitectCapability> capabilities = const <DartitectCapability>{},
+  }) : persistenceNative =
+           persistenceNative ?? _defaultPersistence(profile, web: false),
+       persistenceWeb =
+           persistenceWeb ?? _defaultPersistence(profile, web: true),
+       headlessPlatforms = Set<DartitectPlatform>.unmodifiable(
+         headlessPlatforms,
+       ),
+       capabilities = Set<DartitectCapability>.unmodifiable(capabilities) {
     DartitectFeatureDeclaration(
       profile: profile,
-      persistence: this.persistence,
-      transport: this.transport,
-      cursorPagination: cursorPagination,
-      headlessSync: headlessSync,
+      scope: scope,
+      persistence: FeaturePersistenceMatrix(
+        native: this.persistenceNative,
+        web: this.persistenceWeb,
+      ),
+      transport: transport,
+      pagination: pagination,
       diagnostics: diagnostics,
+      headless: <DartitectPlatform, bool>{
+        for (final platform in DartitectPlatform.values)
+          platform: this.headlessPlatforms.contains(platform),
+      },
+      capabilities: capabilities,
     );
   }
 
   /// Public behavior profile.
   final FeatureProfile profile;
 
-  /// Consumer-selected persistence provider.
-  final String persistence;
+  /// Application or session graph lifetime.
+  final FeatureScope scope;
+
+  /// Consumer-selected native persistence provider.
+  final String persistenceNative;
+
+  /// Consumer-selected web persistence provider.
+  final String persistenceWeb;
 
   /// Consumer-selected transport provider.
   final String transport;
 
-  /// Whether cursor pagination contracts are generated.
-  final bool cursorPagination;
+  /// Generated pagination policy.
+  final FeaturePagination pagination;
 
-  /// Whether headless sync wiring is declared.
-  final bool headlessSync;
+  /// Platforms that opt in to headless execution.
+  final Set<DartitectPlatform> headlessPlatforms;
 
   /// Generated payload-free diagnostics level.
   final FeatureDiagnosticsLevel diagnostics;
 
-  static String _defaultPersistence(FeatureProfile profile) =>
-      profile == FeatureProfile.online ? 'none' : 'consumer';
+  /// Stable opt-in workflows.
+  final Set<DartitectCapability> capabilities;
+
+  static String _defaultPersistence(
+    FeatureProfile profile, {
+    required bool web,
+  }) => profile == FeatureProfile.online ? 'none' : 'memory';
 }
 
 /// Validated Dart identifier naming pair.
@@ -118,9 +108,9 @@ final class ScaffoldFactory {
   /// Consumer package used in generated test imports.
   final String packageName;
 
-  /// Renders one of the five stable professional blueprints.
-  List<FileGenerationOperation> blueprint(
-    ScaffoldBlueprint blueprint,
+  /// Renders one public paved-road profile plus generated-once wiring.
+  List<FileGenerationOperation> profile(
+    FeatureScaffoldOptions options,
     String input,
   ) {
     final name = ScaffoldName(input);
@@ -137,58 +127,39 @@ final class ScaffoldFactory {
         content: _architectureTest(name),
       ),
     ];
-    return switch (blueprint) {
-      ScaffoldBlueprint.simple => base,
-      ScaffoldBlueprint.remoteRead => <FileGenerationOperation>[
+    final operations = switch (options.profile) {
+      FeatureProfile.online => <FileGenerationOperation>[
         ...base,
         ..._remoteReadBlueprint(name),
       ],
-      ScaffoldBlueprint.localFirst => <FileGenerationOperation>[
+      FeatureProfile.cache => <FileGenerationOperation>[
         ...base,
+        ..._remoteReadBlueprint(name),
         ..._localFirstBlueprint(name),
       ],
-      ScaffoldBlueprint.offlineMutation => <FileGenerationOperation>[
+      FeatureProfile.replica => <FileGenerationOperation>[
         ...base,
-        ..._offlineMutationBlueprint(name),
-      ],
-      ScaffoldBlueprint.syncDataset => <FileGenerationOperation>[
-        ...base,
+        ..._remoteReadBlueprint(name),
+        ..._localFirstBlueprint(name),
         ..._syncDatasetBlueprint(name),
       ],
-    };
-  }
-
-  /// Renders one public paved-road profile plus generated-once wiring.
-  List<FileGenerationOperation> profile(
-    FeatureScaffoldOptions options,
-    String input,
-  ) {
-    final name = ScaffoldName(input);
-    final operations = switch (options.profile) {
-      FeatureProfile.online => blueprint(ScaffoldBlueprint.remoteRead, input),
-      FeatureProfile.cache => blueprint(ScaffoldBlueprint.localFirst, input),
-      FeatureProfile.replica => blueprint(ScaffoldBlueprint.syncDataset, input),
       FeatureProfile.offlineFull => <FileGenerationOperation>[
-        ...blueprint(ScaffoldBlueprint.offlineMutation, input),
+        ...base,
         ..._remoteReadBlueprint(name),
         ..._localFirstBlueprint(name),
+        ..._offlineMutationBlueprint(name),
         ..._syncDatasetBlueprint(name),
       ],
     };
     return <FileGenerationOperation>[
       ...operations,
-      FileGenerationOperation(
-        relativePath:
-            'lib/features/${name.snake}/composition/${name.snake}_feature_profile.dart',
-        content: _featureProfile(name, options),
-      ),
-      if (options.cursorPagination)
+      if (options.pagination == FeaturePagination.cursor)
         FileGenerationOperation(
           relativePath:
               'lib/features/${name.snake}/application/${name.snake}_cursor_page.dart',
           content: _cursorPage(name),
         ),
-      if (options.headlessSync)
+      if (options.headlessPlatforms.isNotEmpty)
         FileGenerationOperation(
           relativePath:
               'lib/features/${name.snake}/composition/${name.snake}_headless_sync.dart',
@@ -221,6 +192,8 @@ final class ScaffoldFactory {
 - Do not use service locators, architecture/state frameworks, or private `src/` imports.
 - `ViewModelHost.create` owns its value; `ViewModelHost.value` borrows it.
 - Keep routing and UI effects in Widgets.
+- Before adding infrastructure, ask: É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+- It belongs in Dartitect only when all three answers are yes; otherwise keep it in `softgran_*`, `agrox_*`, or the application.
 ''',
     ),
   ];
@@ -416,34 +389,14 @@ final class ${name.pascal}Service {
     ];
   }
 
-  String _featureProfile(ScaffoldName name, FeatureScaffoldOptions options) =>
-      '''/// Generated-once declarative wiring for the ${name.pascal} feature.
-///
-/// Provider construction remains in this composition directory. This record
-/// contains no credentials, URLs, schemas, entities, or migration behavior.
-abstract final class ${name.pascal}FeatureProfile {
-  static const String profile = '${options.profile.wireName}';
-  static const String persistence = '${options.persistence}';
-  static const String transport = '${options.transport}';
-  static const bool cursorPagination = ${options.cursorPagination};
-  static const bool headlessSync = ${options.headlessSync};
-  static const String diagnostics = '${options.diagnostics.wireName}';
-}
-''';
-
   String _cursorPage(ScaffoldName name) =>
       '''import 'package:dartitect/dartitect.dart';
 
 /// Consumer-decoded cursor page; cursors remain opaque to Dartitect.
-final class ${name.pascal}CursorPage<T> {
-  const ${name.pascal}CursorPage({
-    required this.items,
-    required this.nextCursor,
-  });
-
-  final List<T> items;
-  final String? nextCursor;
-}
+final class ${name.pascal}CursorPage<T>({
+  required final List<T> items,
+  required final String? nextCursor,
+});
 
 /// Consumer-owned cursor transport boundary.
 abstract interface class ${name.pascal}CursorReader<T, F extends Object> {
@@ -492,13 +445,17 @@ final class ${name.pascal}Model({
 ''';
 
   String _architectureTest(ScaffoldName name) =>
-      '''import 'dart:io';
+      '''import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('generated slice keeps providers out of presentation and domain', () {
-    final files = Directory('lib/features/${name.snake}')
+    final feature = Directory(
+      '\${_packageRoot('$packageName').path}/lib/features/${name.snake}',
+    );
+    final files = feature
         .listSync(recursive: true)
         .whereType<File>()
         .where((file) => file.path.endsWith('.dart'));
@@ -512,6 +469,25 @@ void main() {
       expect(source, isNot(contains('GetIt')));
     }
   });
+}
+
+Directory _packageRoot(String packageName) {
+  var directory = Directory.current.absolute;
+  while (true) {
+    final config = File('\${directory.path}/.dart_tool/package_config.json');
+    if (config.existsSync()) {
+      final json = jsonDecode(config.readAsStringSync()) as Map<String, Object?>;
+      final packages = json['packages']! as List<Object?>;
+      final entry = packages.cast<Map<String, Object?>>().singleWhere(
+        (candidate) => candidate['name'] == packageName,
+      );
+      return Directory.fromUri(config.uri.resolve(entry['rootUri']! as String));
+    }
+    if (directory.parent.path == directory.path) {
+      throw StateError('Dart package configuration was not found.');
+    }
+    directory = directory.parent;
+  }
 }
 ''';
 
@@ -530,12 +506,10 @@ abstract interface class ${name.pascal}RemotePort {
 
   String _remoteDto(ScaffoldName name) =>
       '''/// Infrastructure-only wire value; replace decoding at the provider edge.
-final class ${name.pascal}RemoteDto {
-  const ${name.pascal}RemoteDto({required this.id, required this.label});
-
-  final String id;
-  final String label;
-}
+final class const ${name.pascal}RemoteDto({
+  required final String id,
+  required final String label,
+});
 ''';
 
   String _remoteMapper(ScaffoldName name) =>

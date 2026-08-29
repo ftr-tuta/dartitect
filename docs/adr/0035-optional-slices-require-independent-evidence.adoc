@@ -1,6 +1,6 @@
 = ADR-0035: Optional slices require independent evidence
 
-Status:: SUPERSEDED by ADR 0043 for RC5 activation
+Status:: SUPERSEDED by ADR 0043 for RC5 activation and ADR 0044 for RC6 stabilization
 
 Context:: Goal 08 lists five possible capabilities but explicitly defines the
 list as a gated backlog, not sequential implementation authority. Each slice
@@ -33,5 +33,5 @@ does not authorize any sibling slice.
 Consequences:: These deferrals did not block stable 1.0
 (+blocksStable1: false+). ADR 0043 records the dedicated synthetic canary,
 benchmark, and package-boundary evidence that activates all five slices for
-RC5. This ADR remains the historical authority for why none could be exposed
-before that evidence existed.
+RC5. ADR 0044 records their RC6 stabilization; this ADR remains the historical
+authority for why none could be exposed before that evidence existed.

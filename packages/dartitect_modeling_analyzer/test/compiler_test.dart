@@ -110,6 +110,40 @@ final class Legacy extends ValueEquality with _$LegacyDartitect {
     expect(missing.line, isNotNull);
   });
 
+  test(
+    'data-carrier marker enforces DT1030 without generation or part',
+    () async {
+      final root = await _modelPackage();
+      addTearDown(() => root.delete(recursive: true));
+      await File('${root.path}/lib/carriers.dart').writeAsString(r'''
+import 'package:dartitect_modeling/dartitect_modeling.dart';
+
+@DartitectDataCarrier()
+final class const ReadyPayload({required final String id});
+
+@DartitectDataCarrier()
+final class LegacyEnvelope {
+  const LegacyEnvelope(this.id);
+  final String id;
+}
+''');
+
+      final result = await ModelingCompiler(root).compile();
+
+      expect(result.workspace.libraries, isEmpty);
+      expect(
+        result.diagnostics
+            .where((diagnostic) => diagnostic.rule == 'DT1030')
+            .map((diagnostic) => diagnostic.path),
+        <String>['lib/carriers.dart'],
+      );
+      expect(
+        result.diagnostics.where((diagnostic) => diagnostic.rule == 'DT1034'),
+        isEmpty,
+      );
+    },
+  );
+
   test('JSON types require automatic support or exact static hooks', () async {
     final root = await _modelPackage();
     addTearDown(() => root.delete(recursive: true));
