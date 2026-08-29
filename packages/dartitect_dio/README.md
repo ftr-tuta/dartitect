@@ -42,8 +42,9 @@ import 'package:dartitect_dio/dartitect_dio.dart';
 void main() {
   final owner = DioOwner.create();
   try {
-    assert(owner.ownsClient);
-    assert(!owner.isDisposed);
+    if (!owner.ownsClient || owner.isDisposed) {
+      throw StateError('Dio ownership invariant failed.');
+    }
   } finally {
     owner.dispose();
   }
@@ -69,6 +70,10 @@ client.
 - `DartitectHeadersInterceptor` propagates configured W3C context.
   `DioTelemetryInterceptor`, `DioInstrumentation`, events, and observer types
   emit fixed minimal facts and reject duplicate instrumentation.
+- `DioCredentialsInterceptor` attaches a generation-fenced credential lease,
+  binds waiting to `CancelToken`, and invalidates only the generation rejected
+  by the provider. Replay requires an explicit `DioCredentialReplayPolicy` and
+  borrowed retry client, is limited to one, and excludes stream/multipart data.
 
 ## Ownership and lifecycle
 
@@ -88,16 +93,17 @@ exceptions keep their stack. Cancellation has its own failure type and must not
 be presented as a transport or domain rejection.
 
 Core cancellation triggers the bound Dio token. Cancelling one request must not
-dispose a shared client. Dio governs concurrent requests; Dartitect adds no
-unbounded queue or retry loop. Duplicate Dartitect instrumentation or overlap
+dispose a shared client or cancel another credential waiter. Dio governs
+concurrent requests; Dartitect adds no unbounded queue or hidden retry loop.
+Duplicate Dartitect instrumentation or overlap
 with `sentry_dio` is rejected to avoid double capture.
 
 ## Prohibited uses and limitations
 
 - No global Dio instance or service-location wrapper.
 - No provider types in inward-facing APIs.
-- No automatic retry, authentication, caching, schema validation, or offline
-  transaction.
+- No default authenticated replay, caching, schema validation, or offline
+  transaction. One replay exists only behind consumer idempotency policy.
 - No duplicate tracing/capture interceptors.
 - No telemetry containing bodies, headers, query values, credentials, tokens,
   identity, or identifying paths.
@@ -117,7 +123,8 @@ propagation, duplicate instrumentation, redaction, and observer isolation.
 Combine with `dartitect_observability` for neutral policy, `dartitect_sync` only
 behind a consumer repository/outbox boundary, and `dartitect_testing` for
 deterministic tests. Read [adapters](../../docs/guides/adapters.md) and
-[custom integrations](../../docs/guides/custom-integrations.md).
+[custom integrations](../../docs/guides/custom-integrations.md), and
+[credential generations](../../docs/guides/credential-generations.md).
 
 ## Availability
 

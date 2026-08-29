@@ -5,6 +5,7 @@ export 'dartitect.dart'
     show
         AsyncDisposable,
         CancellationException,
+        CancellationSource,
         CancellationSignal,
         Result,
         Ok,

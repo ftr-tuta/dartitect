@@ -414,12 +414,24 @@
         "declaration": "final class CancellationSignal"
       },
       {
+        "name": "CancellationSource",
+        "declaration": "final class CancellationSource implements Disposable"
+      },
+      {
         "name": "CredentialForcedLogout",
         "declaration": "typedef CredentialForcedLogout = FutureOr<void> Function(CredentialInvalidationCause, CancellationSignal)"
       },
       {
+        "name": "CredentialGeneration",
+        "declaration": "final class CredentialGeneration"
+      },
+      {
         "name": "CredentialInvalidationCause",
         "declaration": "enum CredentialInvalidationCause"
+      },
+      {
+        "name": "CredentialLease",
+        "declaration": "final class CredentialLease<C extends Object>"
       },
       {
         "name": "CredentialRecord",
@@ -896,6 +908,10 @@
         "declaration": "final class DefaultDioJsonClient implements DioJsonClient"
       },
       {
+        "name": "Dio",
+        "declaration": "abstract class Dio"
+      },
+      {
         "name": "DioCancellationBinding",
         "declaration": "final class DioCancellationBinding implements Disposable"
       },
@@ -906,6 +922,10 @@
       {
         "name": "DioConfigurationFailure",
         "declaration": "final class DioConfigurationFailure extends DioFailure"
+      },
+      {
+        "name": "DioCredentialReplayPolicy",
+        "declaration": "abstract interface class DioCredentialReplayPolicy"
       },
       {
         "name": "DioCredentialsInterceptor",
@@ -990,6 +1010,14 @@
       {
         "name": "InvalidRouteTemplateException",
         "declaration": "final class InvalidRouteTemplateException implements Exception"
+      },
+      {
+        "name": "RequestOptions",
+        "declaration": "class RequestOptions extends _RequestConfig with OptionsMixin"
+      },
+      {
+        "name": "Response",
+        "declaration": "class Response<T>"
       },
       {
         "name": "RouteTemplate",

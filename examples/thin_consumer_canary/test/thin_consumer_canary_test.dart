@@ -34,7 +34,7 @@ void main() {
       'queries',
     ]);
 
-    const credential = CredentialRecord<String>(value: 'redacted');
+    final credential = CredentialRecord<String>(value: 'redacted');
     expect(credential.expiresAt, isNull);
     final attachment = AttachmentBackgroundRequest(
       protocolVersion: 1,

@@ -43,8 +43,9 @@ ViewModel and contract-fixture wiring.
 ## Stable opt-in workflows
 
 - `package:dartitect/dartitect_credentials.dart`: expiry, refresh
-  single-flight, invalidation, forced logout, session rebuild, Dio/headless
-  integration, and a consumer-owned store.
+  single-flight with independent waiters, generation-fenced invalidation,
+  forced logout, session rebuild, Dio/headless integration, and a
+  consumer-owned store.
 - `package:dartitect_transfer/dartitect_attachments.dart`: atomic temporary
   file plus metadata/outbox staging, resumable upload, background scheduling,
   retry, and consumer picker/share/gallery ports.
