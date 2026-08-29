@@ -447,7 +447,7 @@ base class DartitectMcpServer extends MCPServer
     final prior = await configFile.exists()
         ? await DartitectConfig.load(configFile)
         : DartitectConfig();
-    final declaration = _featureDeclaration(options);
+    final declaration = _featureDeclaration(name, options);
     final existing = prior.features.declarations[name];
     if (existing != null &&
         jsonEncode(existing.toJson()) != jsonEncode(declaration.toJson())) {
@@ -723,6 +723,7 @@ base class DartitectMcpServer extends MCPServer
       profile: declaration.profile,
       scope: declaration.scope,
       storageContext: declaration.storageContext,
+      dataset: declaration.dataset,
       transport: declaration.transport,
       targets: declaration.targets.toSet(),
       pagination: declaration.pagination,
@@ -866,11 +867,15 @@ base class DartitectMcpServer extends MCPServer
       : value.split(',').map(DartitectPlatform.parse).toSet();
 
   static DartitectFeatureDeclaration _featureDeclaration(
+    String name,
     FeatureScaffoldOptions options,
   ) => DartitectFeatureDeclaration(
     profile: options.profile,
     scope: options.scope,
     storageContext: options.storageContext,
+    dataset: options.storageContext == null
+        ? null
+        : options.dataset ?? DartitectStorageDatasetConfig.forFeature(name),
     transport: options.transport,
     targets: options.targets,
     pagination: options.pagination,

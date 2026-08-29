@@ -294,6 +294,76 @@ final class DartitectStorageContextConfig {
   };
 }
 
+/// Operational dataset registration within one named storage context.
+///
+/// The values are structural storage facts only. Domain schemas, semantic
+/// mapping, conflict policy, and retention execution remain consumer-owned.
+final class DartitectStorageDatasetConfig {
+  /// Creates an explicit operational dataset registration.
+  DartitectStorageDatasetConfig({
+    required this.dataset,
+    required this.partition,
+    required this.codec,
+    required this.retention,
+    required this.transactionBoundary,
+  }) {
+    for (final entry in <String, String>{
+      'dataset': dataset,
+      'partition': partition,
+      'codec': codec,
+      'transactionBoundary': transactionBoundary,
+    }.entries) {
+      if (!_configName.hasMatch(entry.value)) {
+        throw DartitectConfigException(
+          '/features/declarations/dataset/${entry.key}',
+          'expected an ASCII snake_case identifier',
+        );
+      }
+    }
+    if (retention != 'indefinite' &&
+        !RegExp(r'^P[1-9][0-9]*D$').hasMatch(retention)) {
+      throw const DartitectConfigException(
+        '/features/declarations/dataset/retention',
+        'expected indefinite or an ISO day duration such as P30D',
+      );
+    }
+  }
+
+  /// Creates the explicit defaults emitted by `create feature`.
+  factory DartitectStorageDatasetConfig.forFeature(String name) =>
+      DartitectStorageDatasetConfig(
+        dataset: name,
+        partition: 'default_partition',
+        codec: '${name}_v1',
+        retention: 'indefinite',
+        transactionBoundary: '${name}_transaction',
+      );
+
+  /// Unique dataset name within its storage context.
+  final String dataset;
+
+  /// Consumer-defined partition strategy identifier.
+  final String partition;
+
+  /// Consumer-owned codec identifier and version.
+  final String codec;
+
+  /// Operational retention declaration, not an automatic deletion policy.
+  final String retention;
+
+  /// Consumer-owned atomic transaction boundary identifier.
+  final String transactionBoundary;
+
+  /// Stable JSON representation.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'dataset': dataset,
+    'partition': partition,
+    'codec': codec,
+    'retention': retention,
+    'transactionBoundary': transactionBoundary,
+  };
+}
+
 /// One explicit transport binding shared by features.
 final class DartitectTransportConfig {
   /// Creates a transport binding for an exact target set.
@@ -393,6 +463,7 @@ final class DartitectFeatureDeclaration {
     required this.pagination,
     required this.diagnostics,
     this.storageContext,
+    this.dataset,
     this.transport,
     Iterable<DartitectPlatform> targets = const <DartitectPlatform>[],
     Iterable<DartitectPlatform> headlessTargets = const <DartitectPlatform>[],
@@ -407,6 +478,12 @@ final class DartitectFeatureDeclaration {
       throw const DartitectConfigException(
         '/features/declarations/storageContext',
         'expected an ASCII snake_case storage context name',
+      );
+    }
+    if ((storageContext == null) != (dataset == null)) {
+      throw const DartitectConfigException(
+        '/features/declarations/dataset',
+        'storage contexts and dataset registrations must be declared together',
       );
     }
     if (transport != null && !_configName.hasMatch(transport!)) {
@@ -459,6 +536,9 @@ final class DartitectFeatureDeclaration {
   /// Named storage context, when this profile uses persistence.
   final String? storageContext;
 
+  /// Operational registration inside [storageContext], when persisted.
+  final DartitectStorageDatasetConfig? dataset;
+
   /// Named transport, when this profile uses remote access.
   final String? transport;
 
@@ -482,6 +562,7 @@ final class DartitectFeatureDeclaration {
     'profile': profile.wireName,
     'scope': scope.wireName,
     if (storageContext != null) 'storageContext': storageContext,
+    if (dataset != null) 'dataset': dataset!.toJson(),
     if (transport != null) 'transport': transport,
     if (targets.isNotEmpty)
       'targets': targets.map((target) => target.wireName).toList(),
@@ -784,6 +865,7 @@ final class DartitectConfig {
 
   void _validateImplementations() {
     final applicationTargets = targets.platforms.toSet();
+    final registeredDatasets = <String, String>{};
     void validateRestrictedTargets(
       Iterable<DartitectPlatform> restricted,
       String pointer,
@@ -851,6 +933,23 @@ final class DartitectConfig {
             '$storageName does not support ${unsupported.first.wireName}',
           );
         }
+        if (declaration.profile != FeatureProfile.local &&
+            storage.mode != DartitectStorageMode.durable) {
+          throw DartitectConfigException(
+            '$pointer/storageContext',
+            '${declaration.profile.wireName} requires durable operational storage',
+          );
+        }
+        final dataset = declaration.dataset!;
+        final registrationKey = '$storageName/${dataset.dataset}';
+        final priorFeature = registeredDatasets[registrationKey];
+        if (priorFeature != null) {
+          throw DartitectConfigException(
+            '$pointer/dataset/dataset',
+            'dataset ${dataset.dataset} is already registered by $priorFeature in $storageName',
+          );
+        }
+        registeredDatasets[registrationKey] = entry.key;
       }
       final transportName = declaration.transport;
       if (transportName != null) {
@@ -1070,6 +1169,7 @@ final class DartitectConfig {
         'profile',
         'scope',
         'storageContext',
+        'dataset',
         'transport',
         'targets',
         'pagination',
@@ -1111,6 +1211,7 @@ final class DartitectConfig {
           ),
           scope: FeatureScope.parse(_requiredString(raw, 'scope', pointer)),
           storageContext: _optionalString(raw, 'storageContext', pointer),
+          dataset: _parseStorageDataset(raw['dataset'], '$pointer/dataset'),
           transport: _optionalString(raw, 'transport', pointer),
           targets: raw.containsKey('targets')
               ? _parsePlatformList(raw['targets'], '$pointer/targets')
@@ -1138,6 +1239,39 @@ final class DartitectConfig {
       }
     }
     return DartitectFeaturesConfig(declarations: declarations);
+  }
+
+  static DartitectStorageDatasetConfig? _parseStorageDataset(
+    Object? value,
+    String pointer,
+  ) {
+    if (value == null) return null;
+    final object = _requiredObject(value, pointer);
+    _rejectUnknown(object, const <String>{
+      'dataset',
+      'partition',
+      'codec',
+      'retention',
+      'transactionBoundary',
+    }, pointer);
+    try {
+      return DartitectStorageDatasetConfig(
+        dataset: _requiredString(object, 'dataset', pointer),
+        partition: _requiredString(object, 'partition', pointer),
+        codec: _requiredString(object, 'codec', pointer),
+        retention: _requiredString(object, 'retention', pointer),
+        transactionBoundary: _requiredString(
+          object,
+          'transactionBoundary',
+          pointer,
+        ),
+      );
+    } on DartitectConfigException catch (error) {
+      throw DartitectConfigException(
+        error.pointer.replaceFirst('/features/declarations/dataset', pointer),
+        error.message,
+      );
+    }
   }
 
   static DartitectTargetsConfig _parseTargets(Object? value) {

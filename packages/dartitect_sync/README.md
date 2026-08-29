@@ -20,6 +20,12 @@ requirements. It is not a repository, transport, database schema, scheduler,
 background-service plugin, conflict resolver, retry oracle, or exactly-once
 delivery system.
 
+Config-v2 tooling materializes an `OperationalStorageContextManifest` once per
+named provider context. It contains only validated dataset/partition/codec/
+retention/transaction-boundary facts and contiguous operational migrations.
+It never defines domain tables, semantic mappers, conflict policy, or an
+automatic retention executor.
+
 ## Platforms and entrypoints
 
 Import `package:dartitect_sync/dartitect_sync.dart`. The package is pure Dart and

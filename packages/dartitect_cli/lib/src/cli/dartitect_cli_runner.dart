@@ -139,6 +139,7 @@ final class DartitectCliRunner {
       'json',
       if (command == 'scan' || command == 'verify') 'sarif',
       'deep',
+      if (command == 'doctor') 'release',
       'verbose',
       if (command == 'scan') 'no-baseline',
     });
@@ -152,6 +153,7 @@ final class DartitectCliRunner {
       ),
       'doctor' => await service.doctorProject(
         deep: arguments.flags.contains('deep'),
+        release: arguments.flags.contains('release'),
       ),
       'verify' => await DartitectVerificationService(root).verify(),
       _ => await service.inspectProject(),
@@ -312,6 +314,10 @@ final class DartitectCliRunner {
       profile: options.profile,
       scope: options.scope,
       storageContext: options.storageContext,
+      dataset: options.storageContext == null
+          ? null
+          : options.dataset ??
+                DartitectStorageDatasetConfig.forFeature(name.snake),
       transport: options.transport,
       targets: options.targets,
       pagination: options.pagination,
@@ -1228,7 +1234,8 @@ Read-only commands:
   baseline create [--dry-run]      Record existing violations by fingerprint.
   codex sync [--dry-run] [--overwrite-managed]
                                     Install managed, focused Codex skills.
-  doctor [--json] [--deep]         Validate toolchain, config, and project.
+  doctor [--json] [--deep] [--release]
+                                    Validate toolchain, config, and project.
   inspect [--json]                  Emit consolidated architecture metadata.
   verify [--json|--sarif]           Verify architecture, models, and providers.
   model check [--json]              Validate generated model freshness.

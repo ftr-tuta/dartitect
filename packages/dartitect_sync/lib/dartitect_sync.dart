@@ -8,4 +8,5 @@ export 'src/journal.dart';
 export 'src/models.dart';
 export 'src/mutation_lane.dart';
 export 'src/offline/mutation_command.dart';
+export 'src/operational_storage.dart';
 export 'src/ports.dart';

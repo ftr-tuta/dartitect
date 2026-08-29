@@ -134,6 +134,52 @@ import 'package:flutter/widgets.dart';
     );
   });
 
+  test('release doctor rejects an explicit memory storage context', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-release-memory-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
+    await File('${root.path}/dartitect.json').writeAsString(
+      DartitectConfig(
+        targets: DartitectTargetsConfig(const <DartitectPlatform>[
+          DartitectPlatform.android,
+        ]),
+        storageContexts: <String, DartitectStorageContextConfig>{
+          'preview': DartitectStorageContextConfig(
+            provider: 'memory',
+            mode: DartitectStorageMode.memory,
+            targets: const <DartitectPlatform>[DartitectPlatform.android],
+          ),
+        },
+        features: DartitectFeaturesConfig(
+          declarations: <String, DartitectFeatureDeclaration>{
+            'notes': DartitectFeatureDeclaration(
+              profile: FeatureProfile.local,
+              scope: FeatureScope.application,
+              storageContext: 'preview',
+              dataset: DartitectStorageDatasetConfig.forFeature('notes'),
+              pagination: FeaturePagination.none,
+              diagnostics: FeatureDiagnosticsLevel.off,
+            ),
+          },
+        ),
+      ).encode(),
+    );
+    final output = StringBuffer();
+
+    expect(
+      await DartitectCliRunner(
+        currentDirectory: root,
+        stdoutSink: output,
+        stderrSink: StringBuffer(),
+      ).run(<String>['doctor', '--release', '--json']),
+      1,
+    );
+    expect(output.toString(), contains('DT2103'));
+    expect(output.toString(), contains('/storageContexts/preview/mode'));
+  });
+
   test(
     'baseline hides existing violations but no-baseline reveals them',
     () async {

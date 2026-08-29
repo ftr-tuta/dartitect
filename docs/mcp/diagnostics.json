@@ -42,6 +42,7 @@
     "DT2100": {"summary": "The Dart SDK is below the supported floor.", "remediation": "Upgrade Dart or Flutter."},
     "DT2101": {"summary": "An enabled adapter dependency is missing.", "remediation": "Add the adapter or remove it from enabledAdapters."},
     "DT2102": {"summary": "ObjectBox is enabled in a project containing web.", "remediation": "Exclude ObjectBox code from web builds."},
+    "DT2103": {"summary": "A memory storage context is selected for a release build.", "remediation": "Select an explicit durable provider for every release target."},
     "DT2200": {"summary": "The opt-in deep analyzer check failed.", "remediation": "Run `dart analyze` and resolve diagnostics."},
     "DT2201": {"summary": "The opt-in deep analyzer check timed out.", "remediation": "Run the analyzer directly and inspect its performance."},
     "DT2300": {"summary": "The architecture baseline is invalid.", "remediation": "Review violations and recreate the baseline."},

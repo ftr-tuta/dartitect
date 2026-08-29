@@ -26,6 +26,14 @@ No productive provider is implicit. `memory` must be named with `mode: memory`,
 is for development/tests only, and fails release doctor. Built-in providers are
 ordinary typed config blocks, never extensions.
 
+Every persisted feature declares a `dataset` registration with explicit
+partition, codec version, retention declaration, and consumer transaction
+boundary. Wiring groups those registrations by storage context and emits one
+operational fragment per context—not per feature—for outbox, checkpoint,
+journal, lease, receipt, and transfer-checkpoint state. Drift exposes a table
+inclusion list; ObjectBox exposes an entity list and a frozen UID map. Only the
+SDK-owned operational schema is versioned by these fragments.
+
 `dartitect wiring sync` compiles each declaration into a capability-closed
 `<Feature>FeatureAssembly`. Its generic bindings are non-null and present only
 when selected: storage, transport, local authority, pagination, outbox, sync,
@@ -80,6 +88,13 @@ explicitly requested `--example` may include example-only data in its app.
         "profile": "cache",
         "scope": "application",
         "storageContext": "primary",
+        "dataset": {
+          "dataset": "tasks",
+          "partition": "account_partition",
+          "codec": "tasks_v1",
+          "retention": "P30D",
+          "transactionBoundary": "tasks_transaction"
+        },
         "transport": "api",
         "pagination": "cursor",
         "diagnostics": "basic",

@@ -110,6 +110,7 @@ final class DartitectWiringService {
       ..sort((left, right) => left.key.compareTo(right.key));
     return <FileGenerationOperation>[
       ..._applicationOperations(config, extensions),
+      ..._storageContextOperations(config),
       for (final entry in entries) ...<FileGenerationOperation>[
         FileGenerationOperation(
           relativePath:
@@ -129,22 +130,6 @@ final class DartitectWiringService {
             'declaration': entry.value.toJson(),
           }),
         ),
-        if (entry.value.storageContext case final String storageName
-            when config.storageContexts[storageName]?.provider == 'drift')
-          _managedOperation(
-            entry.key,
-            entry.value,
-            'infrastructure/${entry.key}_drift.wiring.dartitect.g.dart',
-            _renderDrift(entry.key),
-          ),
-        if (entry.value.storageContext case final String storageName
-            when config.storageContexts[storageName]?.provider == 'objectbox')
-          _managedOperation(
-            entry.key,
-            entry.value,
-            'infrastructure/${entry.key}_objectbox.wiring.dartitect.g.dart',
-            _renderObjectBox(entry.key),
-          ),
         if (entry.value.transport case final String transportName
             when config.transports[transportName]?.provider == 'dio')
           _managedOperation(
@@ -163,6 +148,67 @@ final class DartitectWiringService {
           ),
       ],
     ];
+  }
+
+  static List<FileGenerationOperation> _storageContextOperations(
+    DartitectConfig config,
+  ) {
+    final contexts = config.storageContexts.entries.toList()
+      ..sort((left, right) => left.key.compareTo(right.key));
+    return <FileGenerationOperation>[
+      for (final context in contexts)
+        if (context.value.provider == 'drift' ||
+            context.value.provider == 'objectbox')
+          _managedStorageOperation(
+            context.key,
+            context.value,
+            _datasetsForContext(config, context.key),
+          ),
+    ];
+  }
+
+  static List<MapEntry<String, DartitectStorageDatasetConfig>>
+  _datasetsForContext(DartitectConfig config, String context) {
+    final registrations = <MapEntry<String, DartitectStorageDatasetConfig>>[
+      for (final feature in config.features.declarations.entries)
+        if (feature.value.storageContext == context)
+          MapEntry(feature.key, feature.value.dataset!),
+    ];
+    registrations.sort((left, right) => left.key.compareTo(right.key));
+    return registrations;
+  }
+
+  static FileGenerationOperation _managedStorageOperation(
+    String name,
+    DartitectStorageContextConfig context,
+    List<MapEntry<String, DartitectStorageDatasetConfig>> datasets,
+  ) {
+    final provider = context.provider;
+    final suffix = '${name}_$provider.wiring.dartitect.g.dart';
+    return FileGenerationOperation(
+      relativePath: 'lib/infrastructure/storage/$suffix',
+      content: _formatDart(
+        provider == 'drift'
+            ? _renderDrift(name, datasets)
+            : _renderObjectBox(name, datasets),
+        suffix,
+      ),
+      ownership: GeneratedOwnership.fullyGenerated,
+      sourcePath: 'dartitect.json',
+      rendererVersion: 3,
+      semanticSchemaVersion: 2,
+      inputSignature: jsonEncode(<String, Object?>{
+        'context': name,
+        'storage': context.toJson(),
+        'datasets': <Object?>[
+          for (final dataset in datasets)
+            <String, Object?>{
+              'feature': dataset.key,
+              ...dataset.value.toJson(),
+            },
+        ],
+      }),
+    );
   }
 
   static List<FileGenerationOperation> _applicationOperations(
@@ -590,14 +636,19 @@ abstract final class SessionModule {
 }
 ''';
 
-  static String _renderDrift(String name) {
+  static String _renderDrift(
+    String name,
+    List<MapEntry<String, DartitectStorageDatasetConfig>> datasets,
+  ) {
     final type = _pascal(name);
+    final registrations = _renderOperationalDatasets(datasets);
     return '''// GENERATED CODE - DO NOT EDIT BY HAND.
 // Operational schema only; domain tables and queries remain consumer-owned.
 
 import 'package:dartitect_drift/dartitect_drift.dart';
+import 'package:dartitect_sync/dartitect_sync.dart';
 
-const int ${name}DartitectDriftSchemaVersion = 1;
+const int ${name}DartitectDriftSchemaVersion = 2;
 
 class ${type}DartitectOutboxRows extends Table {
   TextColumn get id => text()();
@@ -651,19 +702,95 @@ class ${type}DartitectTransferCheckpointRows extends Table {
   @override
   Set<Column<Object>> get primaryKey => <Column<Object>>{transferId};
 }
+
+/// Include these tables in the consumer-owned Drift database declaration.
+abstract final class ${type}DartitectDriftFragment {
+  static const List<Type> tables = <Type>[
+    ${type}DartitectOutboxRows,
+    ${type}DartitectCheckpointRows,
+    ${type}DartitectJournalRows,
+    ${type}DartitectLeaseRows,
+    ${type}DartitectReceiptRows,
+    ${type}DartitectTransferCheckpointRows,
+  ];
+
+  static final OperationalStorageContextManifest manifest =
+      OperationalStorageContextManifest(
+        context: '$name',
+        provider: 'drift',
+        schemaVersion: ${name}DartitectDriftSchemaVersion,
+        datasets: <OperationalDatasetRegistration>[
+$registrations
+        ],
+        migrations: <OperationalStorageMigration>[
+          OperationalStorageMigration(
+            fromVersion: 1,
+            toVersion: 2,
+            id: 'context_scoped_operational_tables',
+          ),
+        ],
+      );
+}
 ''';
   }
 
-  static String _renderObjectBox(String name) {
+  static String _renderObjectBox(
+    String name,
+    List<MapEntry<String, DartitectStorageDatasetConfig>> datasets,
+  ) {
     final type = _pascal(name);
     int uid(String value) => _stableUid('$name/$value');
+    final registrations = _renderOperationalDatasets(datasets);
+    final uids = <String, int>{
+      for (final value in <String>[
+        'outbox',
+        'outbox/operationId',
+        'outbox/dataset',
+        'outbox/idempotencyKey',
+        'outbox/payload',
+        'outbox/state',
+        'outbox/attempt',
+        'checkpoint',
+        'checkpoint/dataset',
+        'checkpoint/value',
+        'checkpoint/fencing',
+        'journal',
+        'journal/attemptId',
+        'journal/sequence',
+        'journal/fact',
+        'journal/recordedAt',
+        'lease',
+        'lease/dataset',
+        'lease/owner',
+        'lease/fencing',
+        'lease/expiry',
+        'receipt',
+        'receipt/operationId',
+        'receipt/status',
+        'receipt/recordedAt',
+        'transfer',
+        'transfer/id',
+        'transfer/offset',
+        'transfer/revision',
+      ])
+        value: uid(value),
+    };
+    final uidManifest = uids.entries
+        .map((entry) => "    '${entry.key}': ${entry.value},")
+        .join('\n');
     return '''// GENERATED CODE - DO NOT EDIT BY HAND.
 // Provider exception: mutable ObjectBox 5.3.2 entities require classic fields.
 // UIDs are deterministic and must remain preserved by wiring sync.
 
 import 'package:dartitect_objectbox/dartitect_objectbox.dart';
+import 'package:dartitect_sync/dartitect_sync.dart';
 
-const int ${name}DartitectObjectBoxSchemaVersion = 1;
+const int ${name}DartitectObjectBoxSchemaVersion = 2;
+
+/// Frozen provider UIDs; adding datasets must never change existing values.
+const Map<String, int> ${name}DartitectObjectBoxUids = <String, int>{
+$uidManifest
+};
 
 @Entity(uid: ${uid('outbox')})
 final class ${type}DartitectOutboxEntity {
@@ -733,8 +860,53 @@ final class ${type}DartitectTransferCheckpointEntity {
   @Property(uid: ${uid('transfer/offset')}) int committedOffset;
   @Property(uid: ${uid('transfer/revision')}) int revision;
 }
+
+/// Operational-only manifest for inclusion in the consumer ObjectBox model.
+abstract final class ${type}DartitectObjectBoxFragment {
+  static const List<Type> entities = <Type>[
+    ${type}DartitectOutboxEntity,
+    ${type}DartitectCheckpointEntity,
+    ${type}DartitectJournalEntity,
+    ${type}DartitectLeaseEntity,
+    ${type}DartitectReceiptEntity,
+    ${type}DartitectTransferCheckpointEntity,
+  ];
+
+  static final OperationalStorageContextManifest manifest =
+      OperationalStorageContextManifest(
+        context: '$name',
+        provider: 'objectbox',
+        schemaVersion: ${name}DartitectObjectBoxSchemaVersion,
+        datasets: <OperationalDatasetRegistration>[
+$registrations
+        ],
+        migrations: <OperationalStorageMigration>[
+          OperationalStorageMigration(
+            fromVersion: 1,
+            toVersion: 2,
+            id: 'context_scoped_operational_entities',
+          ),
+        ],
+      );
+}
 ''';
   }
+
+  static String _renderOperationalDatasets(
+    List<MapEntry<String, DartitectStorageDatasetConfig>> datasets,
+  ) => datasets
+      .map(
+        (entry) =>
+            '''          OperationalDatasetRegistration(
+            feature: '${entry.key}',
+            dataset: '${entry.value.dataset}',
+            partition: '${entry.value.partition}',
+            codec: '${entry.value.codec}',
+            retention: '${entry.value.retention}',
+            transactionBoundary: '${entry.value.transactionBoundary}',
+          ),''',
+      )
+      .join('\n');
 
   static String _renderDio(String name) {
     final type = _pascal(name);

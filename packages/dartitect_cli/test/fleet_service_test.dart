@@ -77,6 +77,7 @@ dependencies:
                 profile: FeatureProfile.offlineFull,
                 scope: FeatureScope.application,
                 storageContext: 'primary',
+                dataset: DartitectStorageDatasetConfig.forFeature('orders'),
                 transport: 'api',
                 pagination: FeaturePagination.cursor,
                 diagnostics: FeatureDiagnosticsLevel.full,

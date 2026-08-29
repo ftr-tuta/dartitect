@@ -38,6 +38,9 @@ void main() {
     final orders = result.config.features.declarations['orders']!;
     expect(orders.scope, FeatureScope.application);
     expect(orders.storageContext, 'orders_storage');
+    expect(orders.dataset!.dataset, 'orders');
+    expect(orders.dataset!.codec, 'orders_v1');
+    expect(orders.dataset!.transactionBoundary, 'orders_transaction');
     expect(
       result.config.storageContexts['orders_storage']!.provider,
       'objectbox',

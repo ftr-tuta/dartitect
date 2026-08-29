@@ -85,6 +85,7 @@ void main() {
             profile: FeatureProfile.local,
             scope: FeatureScope.application,
             storageContext: 'primary',
+            dataset: DartitectStorageDatasetConfig.forFeature('settings'),
             targets: const <DartitectPlatform>[DartitectPlatform.android],
             pagination: FeaturePagination.none,
             diagnostics: FeatureDiagnosticsLevel.basic,
@@ -100,6 +101,7 @@ void main() {
             profile: FeatureProfile.offlineFull,
             scope: FeatureScope.session,
             storageContext: 'primary',
+            dataset: DartitectStorageDatasetConfig.forFeature('orders'),
             transport: 'api',
             pagination: FeaturePagination.cursor,
             diagnostics: FeatureDiagnosticsLevel.full,
@@ -180,6 +182,56 @@ void main() {
         provider: 'memory',
         mode: DartitectStorageMode.durable,
         targets: const <DartitectPlatform>[DartitectPlatform.android],
+      ),
+      throwsA(isA<DartitectConfigException>()),
+    );
+  });
+
+  test('durable profiles and dataset registrations fail closed', () {
+    const target = <DartitectPlatform>[DartitectPlatform.android];
+    expect(
+      () => DartitectConfig(
+        targets: DartitectTargetsConfig(target),
+        storageContexts: <String, DartitectStorageContextConfig>{
+          'preview': DartitectStorageContextConfig(
+            provider: 'memory',
+            mode: DartitectStorageMode.memory,
+            targets: target,
+          ),
+        },
+        transports: <String, DartitectTransportConfig>{
+          'api': DartitectTransportConfig(provider: 'dio', targets: target),
+        },
+        features: DartitectFeaturesConfig(
+          declarations: <String, DartitectFeatureDeclaration>{
+            'tasks': DartitectFeatureDeclaration(
+              profile: FeatureProfile.cache,
+              scope: FeatureScope.application,
+              storageContext: 'preview',
+              dataset: DartitectStorageDatasetConfig.forFeature('tasks'),
+              transport: 'api',
+              pagination: FeaturePagination.none,
+              diagnostics: FeatureDiagnosticsLevel.basic,
+            ),
+          },
+        ),
+      ),
+      throwsA(
+        isA<DartitectConfigException>().having(
+          (error) => error.pointer,
+          'pointer',
+          '/features/declarations/tasks/storageContext',
+        ),
+      ),
+    );
+
+    expect(
+      () => DartitectFeatureDeclaration(
+        profile: FeatureProfile.local,
+        scope: FeatureScope.application,
+        storageContext: 'preview',
+        pagination: FeaturePagination.none,
+        diagnostics: FeatureDiagnosticsLevel.off,
       ),
       throwsA(isA<DartitectConfigException>()),
     );

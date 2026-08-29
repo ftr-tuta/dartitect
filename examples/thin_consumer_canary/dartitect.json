@@ -64,6 +64,13 @@
         "profile": "offline-full",
         "scope": "application",
         "storageContext": "primary",
+        "dataset": {
+          "dataset": "tasks",
+          "partition": "default_partition",
+          "codec": "tasks_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "tasks_transaction"
+        },
         "transport": "api",
         "pagination": "cursor",
         "diagnostics": "basic",

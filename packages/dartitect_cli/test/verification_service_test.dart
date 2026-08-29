@@ -108,6 +108,7 @@ dependencies:
               profile: FeatureProfile.replica,
               scope: FeatureScope.session,
               storageContext: 'primary',
+              dataset: DartitectStorageDatasetConfig.forFeature('orders'),
               transport: 'api',
               pagination: FeaturePagination.cursor,
               diagnostics: FeatureDiagnosticsLevel.full,

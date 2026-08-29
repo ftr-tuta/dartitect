@@ -254,6 +254,7 @@ _MigratedFeatures _migrateFeatures(Object? value) {
       'profile': profile,
       'scope': 'application',
       'storageContext': storageName,
+      'dataset': DartitectStorageDatasetConfig.forFeature(entry.key).toJson(),
       'transport': transportName,
       if (persistence == 'objectbox') 'targets': storageTargets,
       'pagination': pagination ? 'cursor' : 'none',

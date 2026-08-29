@@ -7,6 +7,11 @@ sanitized instrumentation adapters around a consumer-generated Drift database.
 The package does not define a database, table, migration, executor, or query
 abstraction.
 
+Config-v2 generation exposes one `<Context>DartitectDriftFragment` whose
+operational `tables` are explicitly included by the consumer-owned database.
+The fragment versions only SDK-owned operational tables; domain migrations
+remain consumer-owned.
+
 ## When to use
 
 Use it after an application has selected Drift and owns a generated

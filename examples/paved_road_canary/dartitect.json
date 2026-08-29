@@ -15,8 +15,8 @@
   "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
   "storageContexts": {
     "local_store": {
-      "provider": "memory",
-      "mode": "memory",
+      "provider": "custom:canary-store",
+      "mode": "durable",
       "targets": ["android", "ios", "macos", "windows", "linux", "web"]
     }
   },
@@ -34,6 +34,13 @@
         "profile": "cache",
         "scope": "application",
         "storageContext": "local_store",
+        "dataset": {
+          "dataset": "paved_road",
+          "partition": "default_partition",
+          "codec": "paved_road_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "paved_road_transaction"
+        },
         "transport": "synthetic",
         "pagination": "cursor",
         "diagnostics": "full",

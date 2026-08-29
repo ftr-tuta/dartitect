@@ -27,7 +27,7 @@
       "entrypoints": [
         "dartitect_cli.dart"
       ],
-      "publicSymbolCount": 98
+      "publicSymbolCount": 99
     },
     {
       "name": "dartitect_devtools",
@@ -277,7 +277,7 @@
       "entrypoints": [
         "dartitect_sync.dart"
       ],
-      "publicSymbolCount": 55
+      "publicSymbolCount": 58
     },
     {
       "name": "dartitect_testing",

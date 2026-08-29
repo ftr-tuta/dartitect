@@ -201,8 +201,10 @@ final class DartitectProjectService {
       _readOnly('scan', useBaseline: useBaseline);
 
   /// Validates configuration, toolchain, skills, and optional analyzer state.
-  Future<CommandEnvelope> doctorProject({bool deep = false}) =>
-      _readOnly('doctor', deep: deep);
+  Future<CommandEnvelope> doctorProject({
+    bool deep = false,
+    bool release = false,
+  }) => _readOnly('doctor', deep: deep, release: release);
 
   /// Audits Native Strict conformance without proposing a migration workflow.
   Future<Map<String, Object?>> auditConformance() async {
@@ -377,6 +379,7 @@ final class DartitectProjectService {
     String command, {
     bool useBaseline = true,
     bool deep = false,
+    bool release = false,
   }) async {
     final scan = await ProjectScanner(root).scan();
     final findings = <DartitectFinding>[...scan.findings];
@@ -453,7 +456,7 @@ final class DartitectProjectService {
     }
 
     if (command == 'doctor') {
-      findings.addAll(_doctorFindings(scan, config));
+      findings.addAll(_doctorFindings(scan, config, release: release));
       findings.addAll(await _splashFindings(scan));
       findings.addAll(await _skillFindings());
       findings.addAll(await _toolingFindings(scan, config));
@@ -483,8 +486,9 @@ final class DartitectProjectService {
 
   List<DartitectFinding> _doctorFindings(
     ProjectScan scan,
-    DartitectConfig? config,
-  ) {
+    DartitectConfig? config, {
+    required bool release,
+  }) {
     final findings = <DartitectFinding>[];
     final version = RegExp(r'^(\d+)\.(\d+)').firstMatch(Platform.version);
     final major = int.tryParse(version?.group(1) ?? '0') ?? 0;
@@ -498,6 +502,23 @@ final class DartitectProjectService {
           remediation: 'Upgrade the Dart/Flutter SDK.',
         ),
       );
+    }
+    if (release && config != null) {
+      for (final entry in config.storageContexts.entries) {
+        if (entry.value.mode != DartitectStorageMode.memory) continue;
+        findings.add(
+          DartitectFinding(
+            code: 'DT2103',
+            severity: FindingSeverity.error,
+            message:
+                'Memory storage context ${entry.key} is not release-eligible.',
+            path: 'dartitect.json',
+            evidence: '/storageContexts/${entry.key}/mode',
+            remediation:
+                'Select an explicit durable provider for every release target.',
+          ),
+        );
+      }
     }
     return findings;
   }

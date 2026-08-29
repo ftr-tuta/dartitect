@@ -10,6 +10,7 @@ final class FeatureScaffoldOptions {
     required this.profile,
     required this.scope,
     this.storageContext,
+    this.dataset,
     this.transport,
     Set<DartitectPlatform> targets = const <DartitectPlatform>{},
     this.pagination = FeaturePagination.none,
@@ -23,6 +24,9 @@ final class FeatureScaffoldOptions {
       profile: profile,
       scope: scope,
       storageContext: storageContext,
+      dataset: storageContext == null
+          ? null
+          : dataset ?? DartitectStorageDatasetConfig.forFeature('feature'),
       transport: transport,
       targets: targets,
       pagination: pagination,
@@ -40,6 +44,9 @@ final class FeatureScaffoldOptions {
 
   /// Consumer-selected named storage context.
   final String? storageContext;
+
+  /// Explicit operational dataset facts, or create-feature defaults.
+  final DartitectStorageDatasetConfig? dataset;
 
   /// Consumer-selected named transport.
   final String? transport;

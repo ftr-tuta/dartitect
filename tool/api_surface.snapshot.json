@@ -640,6 +640,10 @@
         "declaration": "final class DartitectStorageContextConfig"
       },
       {
+        "name": "DartitectStorageDatasetConfig",
+        "declaration": "final class DartitectStorageDatasetConfig"
+      },
+      {
         "name": "DartitectStorageMode",
         "declaration": "enum DartitectStorageMode"
       },
@@ -2950,6 +2954,18 @@
       {
         "name": "NoOpSyncObserver",
         "declaration": "final class NoOpSyncObserver<K> implements SyncObserver<K>"
+      },
+      {
+        "name": "OperationalDatasetRegistration",
+        "declaration": "final class OperationalDatasetRegistration"
+      },
+      {
+        "name": "OperationalStorageContextManifest",
+        "declaration": "final class OperationalStorageContextManifest"
+      },
+      {
+        "name": "OperationalStorageMigration",
+        "declaration": "final class OperationalStorageMigration"
       },
       {
         "name": "OutboxOperation",

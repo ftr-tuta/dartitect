@@ -24,7 +24,7 @@
       "source": "dartitect.json",
       "rendererVersion": 2,
       "semanticSchemaVersion": 1,
-      "inputDigest": "abd10d1bc08446a8d88fedc69d6093b4adb9f67dd487978c1475459948eb9568",
+      "inputDigest": "ee256fc8606d4ecb4258cfdc8d3f93e467c7d048dc087284b5641cda7f885e3f",
       "outputDigest": "5dc8098153be10b0e94573ddd3d3035b5777c6c8c41e3d27743fe9837f9ea496"
     },
     {
@@ -32,7 +32,7 @@
       "source": "dartitect.json",
       "rendererVersion": 2,
       "semanticSchemaVersion": 1,
-      "inputDigest": "5e0a6674a801c1445b414ebd39758e4ea20b30a1f3efab1c8c799207f683dbc6",
+      "inputDigest": "5aaebd13db04be8d893453b504654163ed4f0199ee353d8c1be43f50893e8fc9",
       "outputDigest": "b8793ee241d667b55c5763bbc6b160830965f545f2ca74971de70c0f88141dfe"
     },
     {
@@ -40,16 +40,16 @@
       "source": "dartitect.json",
       "rendererVersion": 2,
       "semanticSchemaVersion": 1,
-      "inputDigest": "74ffd8187b09b92e2e4e0749efaf1db5fdcbac5e93b87723fc782fc6b369ac2b",
+      "inputDigest": "e9e1706f98c3f60bdbdc7180ebc726acece814ceee18ee7a314078c6f602f9e7",
       "outputDigest": "4f56bfed5db2b41399cb2fa96a0eb3afd862cc4f4595559f6b08f6939c369e1a"
     },
     {
-      "path": "lib/features/tasks/infrastructure/tasks_drift.wiring.dartitect.g.dart",
+      "path": "lib/infrastructure/storage/primary_drift.wiring.dartitect.g.dart",
       "source": "dartitect.json",
-      "rendererVersion": 2,
-      "semanticSchemaVersion": 1,
-      "inputDigest": "3b0d771f9c87d88a33d4759699c338a47826c5b17a390a7997930f809983fc61",
-      "outputDigest": "fa12e2d2bc56d423785679515decefe4ef3c0eec8ee3172226a06c85ec44ca84"
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 2,
+      "inputDigest": "eeaa4a5d188ce37260d9b07804499e97a3df7baec99c2a7fcd89b63fc2a44f28",
+      "outputDigest": "2680961f40597badd4465fcabfd42a8242c2d52ca4575378320d1cd480db0832"
     }
   ]
 }
