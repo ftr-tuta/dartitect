@@ -529,7 +529,7 @@ final class DartitectCliRunner {
       ..sort();
     final localOverridePackages = _localSdkPackageClosure(sdkPackages);
     final dependencyBlock = localSdk == null || workspaceMember
-        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.6\n').join()
+        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.8\n').join()
         : sdkPackages
               .map(
                 (package) =>
@@ -994,7 +994,7 @@ final class _ExampleTasksRepository implements TasksRepository {
         }
         if (arguments.options['to'] == null) {
           throw const _UsageException(
-            'fleet upgrade requires --to=1.0.0-rc.6.',
+            'fleet upgrade requires --to=1.0.0-rc.8.',
           );
         }
         report = arguments.flags.contains('apply')
@@ -1253,7 +1253,7 @@ Read-only commands:
   fleet check <root...>            Scan explicit fleet roots without writes.
   fleet policy <root...> --bundle=PATH --sha256=DIGEST
                                     Audit with a pinned local policy bundle.
-  fleet upgrade <root...> --to=1.0.0-rc.6 --apply [--json]
+  fleet upgrade <root...> --to=1.0.0-rc.8 --apply [--json]
                                     Upgrade a cohort transactionally.
 
 Convergent synchronizers (preview by default):

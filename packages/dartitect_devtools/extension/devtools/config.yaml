@@ -1,5 +1,5 @@
 name: dartitect_devtools
-version: 1.0.0-rc.6
+version: 1.0.0-rc.8
 issueTracker: https://github.com/ftr-tuta/dartitect/issues
 materialIconCodePoint: '0xe1b1'
 requiresConnection: true

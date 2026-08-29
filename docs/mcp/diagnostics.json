@@ -44,6 +44,7 @@
     "DT2102": {"summary": "ObjectBox is enabled in a project containing web.", "remediation": "Exclude ObjectBox code from web builds."},
     "DT2103": {"summary": "A memory storage context is selected for a release build.", "remediation": "Select an explicit durable provider for every release target."},
     "DT2104": {"summary": "Architecture suppressions are selected for a release build.", "remediation": "Resolve every suppressed finding before release."},
+    "DT2105": {"summary": "A resolved Dartitect package is outside its generated compatibility range.", "remediation": "Resolve a version accepted by the RC8 package compatibility manifest."},
     "DT2200": {"summary": "The opt-in deep analyzer check failed.", "remediation": "Run `dart analyze` and resolve diagnostics."},
     "DT2201": {"summary": "The opt-in deep analyzer check timed out.", "remediation": "Run the analyzer directly and inspect its performance."},
     "DT2400": {"summary": "Managed Codex skills are not installed.", "remediation": "Preview and run `dartitect codex sync`."},

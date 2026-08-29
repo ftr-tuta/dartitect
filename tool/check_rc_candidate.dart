@@ -16,13 +16,28 @@ void main() {
           .readAsStringSync(),
     ),
   );
-  const cohort = '1.0.0-rc.6';
+  final baselineValue = release['baselineVersion'];
+  final packageCountValue = release['packageCount'];
+  final entrypointCountValue = release['publicEntrypointCount'];
+  final candidateTagValue = release['candidateTag'];
+  if (baselineValue is! String ||
+      packageCountValue is! int ||
+      entrypointCountValue is! int ||
+      candidateTagValue is! String) {
+    errors.add('The package release authority is incomplete.');
+  }
+  final cohort = baselineValue is String ? baselineValue : '';
+  final packageCount = packageCountValue is int ? packageCountValue : -1;
+  final publicEntrypointCount = entrypointCountValue is int
+      ? entrypointCountValue
+      : -1;
+  final candidateTag = candidateTagValue is String ? candidateTagValue : '';
   if (candidate['schemaVersion'] != 1 ||
       candidate['cohortVersion'] != cohort ||
       candidate['candidateState'] != 'SOURCE_CANDIDATE_ASSEMBLED' ||
       candidate['targetChannel'] != 'UNMATERIALIZED' ||
-      candidate['packageCount'] != 24 ||
-      candidate['publicEntrypointCount'] != 29) {
+      candidate['packageCount'] != packageCount ||
+      candidate['publicEntrypointCount'] != publicEntrypointCount) {
     errors.add('RC candidate metadata is incomplete or overstates readiness.');
   }
   if (release['cohortVersion'] != cohort) {
@@ -51,7 +66,7 @@ void main() {
   }
   final git = _object(candidate['gitConsumption']);
   if (git['repository'] != 'https://github.com/ftr-tuta/dartitect.git' ||
-      git['tag'] != 'v1.0.0-rc.6' ||
+      git['tag'] != candidateTag ||
       git['materialized'] != false ||
       git['annotated'] != true ||
       git['signed'] != false ||
@@ -94,8 +109,10 @@ void main() {
       errors.add('$name changelog does not begin with $cohort.');
     }
   }
-  if (packages.length != 24 || !packages.containsAll(order)) {
-    errors.add('The candidate does not contain the exact 24-package cohort.');
+  if (packages.length != packageCount || !packages.containsAll(order)) {
+    errors.add(
+      'The candidate does not contain the exact $packageCount-package cohort.',
+    );
   }
 
   final snapshot = _object(
@@ -104,9 +121,10 @@ void main() {
     ),
   );
   if (snapshot['sdkVersion'] != cohort ||
-      _object(snapshot['entrypoints']).length != 29) {
+      _object(snapshot['entrypoints']).length != publicEntrypointCount) {
     errors.add(
-      'The public API snapshot is not an RC snapshot of 29 entrypoints.',
+      'The public API snapshot is not an RC snapshot of '
+      '$publicEntrypointCount entrypoints.',
     );
   }
   final inventory = _object(
@@ -114,7 +132,7 @@ void main() {
   );
   final inventoryPackages = inventory['packages'];
   if (inventoryPackages is! List<Object?> ||
-      inventoryPackages.length != 24 ||
+      inventoryPackages.length != packageCount ||
       inventoryPackages.whereType<Map<String, Object?>>().any(
         (package) => package['version'] != cohort,
       )) {
@@ -148,9 +166,9 @@ void main() {
     return;
   }
   stdout.writeln(
-    'RC source candidate passed for 24 packages at $cohort; no tag, release, '
-    'or publication is materialized and every external channel remains '
-    'fail-closed.',
+    'RC source candidate passed for $packageCount packages at $cohort; no tag, '
+    'release, or publication is materialized and every external channel '
+    'remains fail-closed.',
   );
 }
 

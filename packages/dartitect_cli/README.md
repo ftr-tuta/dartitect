@@ -143,7 +143,7 @@ bounded local agent interface. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.6` source candidate. Global activation or
+The workspace contains the `1.0.0-rc.8` source candidate. Global activation or
 Git use is supported only from coordinates in a matching tagged GitHub Release.
 If no compatible Release exists, there is no supported consumption path. See
 the [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

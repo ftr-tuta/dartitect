@@ -12,7 +12,7 @@
   },
   "releaseStatus": "ACTIONS_READINESS_PENDING",
   "featurePolicy": "FEATURE_FREEZE",
-  "target": {"packageCount": 24, "entrypointCount": 29},
+  "target": {"packageCount": 24, "entrypointCount": 30},
   "statusPolicy": {
     "allowed": [
       "PLANNED", "IN_PROGRESS", "BLOCKED", "IMPLEMENTED_LOCAL",

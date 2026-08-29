@@ -12,7 +12,7 @@ import '../model/primary_constructor_migration.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
 import '../verification/verification_service.dart';
-import 'rc5_config_migration.dart';
+import 'v1_config_migration.dart';
 
 /// Result from one closed, allowlisted fleet validation command.
 final class DartitectFleetCommandResult {
@@ -232,14 +232,14 @@ final class DartitectFleetService {
     );
   }
 
-  /// Applies an exact RC5-to-RC6 cohort transaction and validates every root.
+  /// Applies an exact RC6-to-RC8 cohort transaction and validates every root.
   Future<DartitectFleetReport> applyUpgrade(
     Iterable<String> roots, {
     required String targetCohort,
   }) async {
-    if (targetCohort != '1.0.0-rc.6') {
+    if (targetCohort != '1.0.0-rc.8') {
       throw const FormatException(
-        'Fleet apply supports only the exact RC5 to RC6 migration.',
+        'Fleet apply supports only the exact RC6 to RC8 migration.',
       );
     }
     final projects = await _projects(roots);
@@ -291,21 +291,23 @@ final class DartitectFleetService {
     _FleetProject project,
     String targetCohort,
   ) async {
-    if (targetCohort != '1.0.0-rc.6') {
+    if (targetCohort != '1.0.0-rc.8') {
       throw const FormatException(
-        'Fleet upgrade accepts only --to=1.0.0-rc.6.',
+        'Fleet upgrade accepts only --to=1.0.0-rc.8.',
       );
     }
     final pubspec = await File(_join(project.directory.path, 'pubspec.yaml'))
         .readAsString();
-    _requireExactRc5Dependencies(pubspec);
+    _requireExactV1Dependencies(pubspec);
     final dependency = await DartitectProjectService(project.directory)
         .previewDependencyUpgrade(targetCohort);
     final operations = <String>[...dependency.operations];
     DartitectConfig? migratedConfig;
     final configFile = File(_join(project.directory.path, 'dartitect.json'));
     if (await configFile.exists()) {
-      final migration = migrateExactRc5Config(await configFile.readAsString());
+      final migration = migrateDartitectV1Config(
+        await configFile.readAsString(),
+      );
       migratedConfig = migration.config;
       operations.add(
         migration.changed ? 'UPDATE dartitect.json' : 'NO-OP dartitect.json',
@@ -370,7 +372,7 @@ final class DartitectFleetService {
     final configFile = File(_join(project.directory.path, 'dartitect.json'));
     DartitectConfig? config;
     if (await configFile.exists()) {
-      config = migrateExactRc5Config(await configFile.readAsString()).config;
+      config = migrateDartitectV1Config(await configFile.readAsString()).config;
       await _atomicWrite(configFile, utf8.encode(config.encode()));
     }
 
@@ -440,23 +442,23 @@ final class DartitectFleetService {
           ];
   }
 
-  static void _requireExactRc5Dependencies(String pubspec) {
+  static void _requireExactV1Dependencies(String pubspec) {
     final dependencies = _declaredDartitectDependencies(pubspec);
     if (dependencies.isEmpty) {
       throw const FormatException(
-        'Fleet RC6 migration requires at least one RC5 Dartitect dependency.',
+        'Fleet RC8 migration requires at least one RC6 Dartitect dependency.',
       );
     }
     for (final dependency in dependencies) {
       final constraint = dependency['declaredConstraint'];
       if (constraint is! String ||
           !const <String>{
-            '1.0.0-rc.5',
-            '^1.0.0-rc.5',
-            '>=1.0.0-rc.5 <1.0.0',
+            '1.0.0-rc.6',
+            '^1.0.0-rc.6',
+            '>=1.0.0-rc.6 <1.0.0',
           }.contains(constraint)) {
         throw FormatException(
-          'Dependency ${dependency['package']} is not on the exact RC5 cohort.',
+          'Dependency ${dependency['package']} is not on the exact RC6 cohort.',
         );
       }
     }

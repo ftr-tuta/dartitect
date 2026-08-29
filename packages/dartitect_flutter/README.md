@@ -183,7 +183,7 @@ and `dartitect_testing` for deterministic harnesses. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.6` source candidate. Supported
+The workspace contains the `1.0.0-rc.8` source candidate. Supported
 Git consumption requires a matching tag and published GitHub Release plus the
 complete cohort coordinates in its notes. Without that Release, there is no
 supported consumption path. See the

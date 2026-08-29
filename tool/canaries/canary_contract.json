@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "cohortVersion": "1.0.0-rc.6",
+  "cohortVersion": "1.0.0-rc.8",
   "artifactSource": "git-archive-exact-head",
   "digestAlgorithm": "sha256",
   "installation": {
@@ -12,7 +12,7 @@
   },
   "gitInstallation": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "ref": "v1.0.0-rc.6",
+    "ref": "v1.0.0-rc.8",
     "annotatedTagRequired": true,
     "dependencyOverrides": true,
     "transitiveClosureRequired": true,

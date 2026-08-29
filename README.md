@@ -246,7 +246,7 @@ The workspace requires Dart `^3.13.0`; Flutter packages require Flutter
 READMEs. Drift accepts consumer-owned native and web executors. ObjectBox has no
 web support. The CLI, modeling analyzer, and MCP server run on the Dart VM.
 
-All packages currently share the `1.0.0-rc.6` source cohort. Do not copy Git
+All packages currently share the `1.0.0-rc.8` source cohort. Do not copy Git
 coordinates from this README. Experimental Git consumption is supported only
 for a tag that has a corresponding published GitHub Release, using the complete
 compatible cohort and dependency coordinates from that Release's notes. If no

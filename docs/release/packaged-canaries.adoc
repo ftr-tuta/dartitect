@@ -1,6 +1,6 @@
 = Packaged and Git candidate canary contract
 
-Status:: Implemented for the RC6 candidate; final tag/publication are outside this delivery
+Status:: Implemented for the RC8 candidate; final tag/publication are outside this delivery
 Machine authority:: `tool/canaries/canary_contract.json`
 Development gate:: `dart run tool/check_canaries.dart --allow-dirty`
 
@@ -15,7 +15,7 @@ cache is only transport; each requested archive digest remains authoritative.
 
 The Git variant requires one annotated tag and resolves the complete transitive
 Dartitect closure from one URL/ref. It remains release infrastructure, but this
-RC6 delivery creates no tag, GitHub Release, or publication. Both runners use
+RC8 delivery creates no tag, GitHub Release, or publication. Both runners use
 the same six-canary machine contract and command order.
 
 == Modeling and thin consumer

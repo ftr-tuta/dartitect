@@ -5,7 +5,7 @@ Snapshot:: 2026-08-28
 Release status:: *ACTIONS READINESS PENDING*
 Feature policy:: *FEATURE FREEZE*
 Toolchain floor:: Dart 3.13 / Flutter 3.47.1 stable
-Target topology:: 24 packages / 29 public entrypoints
+Target topology:: 24 packages / 30 public entrypoints
 
 `tool/goal_gates.json` is the machine-readable roadmap authority. GitHub
 Actions is the only technical evidence authority. Local commands are optional

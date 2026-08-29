@@ -1,9 +1,10 @@
 import 'package:dartitect_cli/dartitect_cli.dart';
+import 'package:dartitect_cli/src/fleet/v1_config_migration.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('exact RC5 aliases become closed target-aware config v2', () {
-    final result = migrateExactRc5Config('''{
+  test('exact RC6 aliases become closed target-aware config v2', () {
+    final result = migrateDartitectV1Config('''{
   "configVersion": 1,
   "profile": "native_strict",
   "layers": {
@@ -52,9 +53,9 @@ void main() {
     expect(result.config.encode(), isNot(contains('ecosystem')));
   });
 
-  test('non-RC5 aliases and feature extensions are rejected with pointers', () {
+  test('non-RC6 aliases and feature extensions are rejected with pointers', () {
     expect(
-      () => migrateExactRc5Config('''{
+      () => migrateDartitectV1Config('''{
         "configVersion": 1,
         "profile": "native_strict",
         "scaffolds": {"layout": "feature_first", "blueprints": ["other"]}

@@ -8,9 +8,9 @@ environment:
   sdk: ^3.13.0
 
 dependencies:
-  dartitect: '>=1.0.0-rc.6 <1.0.0'
-  dartitect_cli: '>=1.0.0-rc.6 <1.0.0'
-  dartitect_dio: '>=1.0.0-rc.6 <1.0.0'
+  dartitect: '>=1.0.0-rc.8 <1.0.0'
+  dartitect_cli: '>=1.0.0-rc.8 <1.0.0'
+  dartitect_dio: '>=1.0.0-rc.8 <1.0.0'
 
 dev_dependencies:
   test: ^1.31.1

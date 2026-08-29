@@ -31,7 +31,7 @@ void main() {
   test('version validation follows semantic compatibility impact', () {
     expect(
       validatesApiVersion(
-        '1.0.0-rc.6',
+        '1.0.0-rc.8',
         '1.0.0-rc.8',
         ApiCompatibilityKind.breaking,
       ),

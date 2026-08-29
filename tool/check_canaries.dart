@@ -520,7 +520,7 @@ void _validateContract(
   Map<String, Object?> contract,
   Map<String, Object?> release,
 ) {
-  if (contract['schemaVersion'] != 1 || release['schemaVersion'] != 1) {
+  if (contract['schemaVersion'] != 1 || release['schemaVersion'] != 2) {
     throw StateError('Unsupported canary or release contract schema.');
   }
   if (contract['cohortVersion'] != release['cohortVersion']) {
@@ -545,7 +545,7 @@ void _validateContract(
         'drift_provider',
         'native_capabilities',
       })) {
-    throw StateError('All six RC6 formal canaries are required.');
+    throw StateError('All six RC8 formal canaries are required.');
   }
   const requiredCoverage = <String>{
     'pure_dart_modeling',

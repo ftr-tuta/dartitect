@@ -11,7 +11,6 @@ export 'src/diagnostics/sarif.dart';
 export 'src/extensions/local_extension_compiler.dart';
 export 'src/fleet/fleet_canary_service.dart';
 export 'src/fleet/fleet_service.dart';
-export 'src/fleet/rc5_config_migration.dart';
 export 'src/generation/generation_engine.dart';
 export 'src/generation/scaffolds.dart';
 export 'src/generation/wiring_service.dart';

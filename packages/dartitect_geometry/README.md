@@ -95,7 +95,7 @@ polylabel-derived approach retains its ISC notice in
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.6` source candidate. Use only coordinates
+The workspace contains the `1.0.0-rc.8` source candidate. Use only coordinates
 from a matching tag with a published GitHub Release and compatible cohort. If no
 such Release exists, there is no supported consumption path. See the
 [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

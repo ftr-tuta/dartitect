@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "bundleVersion": "1.0.0-rc.6+policy.1",
+  "bundleVersion": "1.0.0-rc.8+policy.1",
   "policyPath": "ecosystem_policy.json",
   "policySha256": "81c9750257403ea8ec81c9fb57d744d497bea5b21e9c85cbdc20915ae3193093",
   "blockUnreviewed": false

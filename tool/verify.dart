@@ -55,6 +55,11 @@ Future<void> main(List<String> arguments) async {
       'run',
       'tool/check_package_release_contract.dart',
     ]),
+    const _Command('dart', <String>[
+      'run',
+      'tool/generate_release_artifacts.dart',
+      '--check',
+    ]),
     if (!stableCohort)
       const _Command('dart', <String>['run', 'tool/check_rc_candidate.dart']),
     const _Command('dart', <String>['run', 'tool/check_pub_dev_identity.dart']),

@@ -4,9 +4,9 @@ import '../config/dartitect_config.dart';
 import '../rules/generated_boundary_policy.dart';
 
 /// Exact, one-way Dartitect config migration to v2.
-final class DartitectRc5ConfigMigration {
+final class DartitectV1ConfigMigration {
   /// Creates a migration result.
-  const DartitectRc5ConfigMigration({
+  const DartitectV1ConfigMigration({
     required this.config,
     required this.changed,
   });
@@ -14,30 +14,30 @@ final class DartitectRc5ConfigMigration {
   /// Strict RC8 configuration.
   final DartitectConfig config;
 
-  /// Whether the input used the exact RC5 representation.
+  /// Whether the input used the exact RC6 representation.
   final bool changed;
 }
 
-/// Migrates only the released RC5 config-v1 representation.
+/// Migrates only the released RC6 config-v1 representation.
 ///
 /// Already-strict v2 input is validated and returned unchanged. No other
 /// legacy or experimental representation is accepted.
-DartitectRc5ConfigMigration migrateExactRc5Config(String source) {
+DartitectV1ConfigMigration migrateDartitectV1Config(String source) {
   final decoded = jsonDecode(source);
   if (decoded is! Map<String, Object?>) {
     throw const DartitectConfigException('/', 'expected a JSON object');
   }
   if (decoded['configVersion'] == currentConfigVersion) {
-    return DartitectRc5ConfigMigration(
+    return DartitectV1ConfigMigration(
       config: DartitectConfig.fromJson(decoded),
       changed: false,
     );
   }
-  final appearsRc5 =
+  final appearsV1 =
       decoded.containsKey('scaffolds') ||
       decoded.containsKey('ecosystem') ||
-      _containsRc5Feature(decoded['features']);
-  if (!appearsRc5) {
+      _containsV1Feature(decoded['features']);
+  if (!appearsV1) {
     throw const DartitectConfigException(
       '/configVersion',
       'only exact Dartitect config v1 or current config v2 can be upgraded',
@@ -47,10 +47,10 @@ DartitectRc5ConfigMigration migrateExactRc5Config(String source) {
       decoded['profile'] != nativeStrictProfile) {
     throw const DartitectConfigException(
       '/profile',
-      'only exact RC5 native_strict config-v1 can be migrated',
+      'only exact RC6 native_strict config-v1 can be migrated',
     );
   }
-  const rc5Keys = <String>{
+  const v1Keys = <String>{
     'configVersion',
     'profile',
     'layers',
@@ -65,10 +65,10 @@ DartitectRc5ConfigMigration migrateExactRc5Config(String source) {
   };
   final unknownRoot = <String, Object?>{
     for (final entry in decoded.entries)
-      if (!rc5Keys.contains(entry.key)) entry.key: entry.value,
+      if (!v1Keys.contains(entry.key)) entry.key: entry.value,
   };
-  _validateRc5Scaffolds(decoded['scaffolds']);
-  _validateRc5Ecosystem(decoded['ecosystem']);
+  _validateV1Scaffolds(decoded['scaffolds']);
+  _validateV1Ecosystem(decoded['ecosystem']);
   final migrated = _migrateFeatures(decoded['features']);
   final hasHeadless = migrated.declarations.values.any((feature) {
     final declaration = feature! as Map<String, Object?>;
@@ -77,7 +77,7 @@ DartitectRc5ConfigMigration migrateExactRc5Config(String source) {
   if (unknownRoot.isNotEmpty) {
     throw DartitectConfigException(
       '/${_pointer(unknownRoot.keys.first)}',
-      'unknown RC5 data cannot be represented in closed config v2',
+      'unknown RC6 data cannot be represented in closed config v2',
     );
   }
   final strict = <String, Object?>{
@@ -110,13 +110,13 @@ DartitectRc5ConfigMigration migrateExactRc5Config(String source) {
     'features': <String, Object?>{'declarations': migrated.declarations},
     'extensionSources': const <Object?>[],
   };
-  return DartitectRc5ConfigMigration(
+  return DartitectV1ConfigMigration(
     config: DartitectConfig.fromJson(strict),
     changed: true,
   );
 }
 
-bool _containsRc5Feature(Object? features) {
+bool _containsV1Feature(Object? features) {
   if (features is! Map<String, Object?>) return false;
   final declarations = features['declarations'];
   if (declarations is! Map<String, Object?>) return false;
@@ -129,7 +129,7 @@ bool _containsRc5Feature(Object? features) {
   );
 }
 
-void _validateRc5Scaffolds(Object? value) {
+void _validateV1Scaffolds(Object? value) {
   if (value == null) return;
   if (value is! Map<String, Object?> ||
       value.keys.toSet().difference(const <String>{
@@ -140,7 +140,7 @@ void _validateRc5Scaffolds(Object? value) {
       value['blueprints'] is! List<Object?>) {
     throw const DartitectConfigException(
       '/scaffolds',
-      'expected the exact released RC5 scaffold declaration',
+      'expected the exact released RC6 scaffold declaration',
     );
   }
   const aliases = <String>{
@@ -154,12 +154,12 @@ void _validateRc5Scaffolds(Object? value) {
   if (values.any((item) => item is! String || !aliases.contains(item))) {
     throw const DartitectConfigException(
       '/scaffolds/blueprints',
-      'expected only released RC5 blueprint aliases',
+      'expected only released RC6 blueprint aliases',
     );
   }
 }
 
-void _validateRc5Ecosystem(Object? value) {
+void _validateV1Ecosystem(Object? value) {
   if (value == null) return;
   if (value is! Map<String, Object?> ||
       value.keys.toSet().difference(const <String>{
@@ -170,7 +170,7 @@ void _validateRc5Ecosystem(Object? value) {
       value['installedOverlap'] != 'warning') {
     throw const DartitectConfigException(
       '/ecosystem',
-      'expected the exact released RC5 ecosystem declaration',
+      'expected the exact released RC6 ecosystem declaration',
     );
   }
 }
@@ -181,7 +181,7 @@ _MigratedFeatures _migrateFeatures(Object? value) {
       value['declarations'] is! Map<String, Object?>) {
     throw const DartitectConfigException(
       '/features/declarations',
-      'expected the exact released RC5 feature registry',
+      'expected the exact released RC6 feature registry',
     );
   }
   final unknownFeatureRegistry = value.keys.toSet().difference(const <String>{
@@ -190,7 +190,7 @@ _MigratedFeatures _migrateFeatures(Object? value) {
   if (unknownFeatureRegistry.isNotEmpty) {
     throw DartitectConfigException(
       '/features/${_pointer(unknownFeatureRegistry.first)}',
-      'RC5 feature-registry extensions cannot be migrated safely',
+      'RC6 feature-registry extensions cannot be migrated safely',
     );
   }
   final output = <String, Object?>{};
@@ -215,7 +215,7 @@ _MigratedFeatures _migrateFeatures(Object? value) {
     if (unknown.isNotEmpty) {
       throw DartitectConfigException(
         '$pointer/${_pointer(unknown.first)}',
-        'RC5 feature extensions cannot be migrated safely',
+        'RC6 feature extensions cannot be migrated safely',
       );
     }
     final profile = raw['profile'];
@@ -230,7 +230,7 @@ _MigratedFeatures _migrateFeatures(Object? value) {
         pagination is! bool ||
         headless is! bool ||
         diagnostics is! String) {
-      throw DartitectConfigException(pointer, 'invalid exact RC5 declaration');
+      throw DartitectConfigException(pointer, 'invalid exact RC6 declaration');
     }
     final storageName = '${entry.key}_storage';
     final transportName = '${entry.key}_transport';

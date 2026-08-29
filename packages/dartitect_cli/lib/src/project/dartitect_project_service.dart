@@ -12,6 +12,7 @@ import '../generation/generation_engine.dart';
 import '../generation/scaffolds.dart';
 import '../model/model_generator.dart';
 import '../policy/ecosystem_policy.dart';
+import '../release/package_compatibility.dart';
 import '../scan/baseline.dart';
 import '../scan/project_scanner.dart';
 
@@ -401,7 +402,7 @@ final class DartitectProjectService {
     }
 
     if (command == 'doctor') {
-      findings.addAll(_doctorFindings(scan, config, release: release));
+      findings.addAll(await _doctorFindings(scan, config, release: release));
       findings.addAll(await _splashFindings(scan));
       findings.addAll(await _skillFindings());
       findings.addAll(await _toolingFindings(scan, config));
@@ -429,11 +430,11 @@ final class DartitectProjectService {
     );
   }
 
-  List<DartitectFinding> _doctorFindings(
+  Future<List<DartitectFinding>> _doctorFindings(
     ProjectScan scan,
     DartitectConfig? config, {
     required bool release,
-  }) {
+  }) async {
     final findings = <DartitectFinding>[];
     final version = RegExp(r'^(\d+)\.(\d+)').firstMatch(Platform.version);
     final major = int.tryParse(version?.group(1) ?? '0') ?? 0;
@@ -445,6 +446,24 @@ final class DartitectProjectService {
           severity: FindingSeverity.error,
           message: 'Dart 3.13 or newer is required; found ${Platform.version}.',
           remediation: 'Upgrade the Dart/Flutter SDK.',
+        ),
+      );
+    }
+    for (final incompatibility in await DartitectLockCompatibility.inspect(
+      File(_join(root.path, 'pubspec.lock')),
+    )) {
+      findings.add(
+        DartitectFinding(
+          code: 'DT2105',
+          severity: FindingSeverity.error,
+          message:
+              '${incompatibility.package} ${incompatibility.version} is not '
+              'compatible with this Dartitect SDK.',
+          path: 'pubspec.lock',
+          evidence: incompatibility.expectedRange,
+          remediation:
+              'Resolve a version accepted by the generated package '
+              'compatibility manifest.',
         ),
       );
     }

@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "generatedAtUtc": "2026-08-28T23:59:51.074873Z",
   "sourceRevision": {
-    "candidateCohort": "1.0.0-rc.6",
+    "candidateCohort": "1.0.0-rc.8",
     "evidenceStatus": "REFERENCE_ONLY_REPRODUCTION_REQUIRED"
   },
   "publicClaimEligible": false,

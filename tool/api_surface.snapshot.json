@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "sdkVersion": "1.0.0-rc.6",
+  "sdkVersion": "1.0.0-rc.8",
   "entrypoints": {
     "packages/dartitect/lib/dartitect.dart": {
       "defaultAudience": "application-facing",
@@ -15978,78 +15978,6 @@
           ]
         },
         {
-          "name": "DartitectRc5ConfigMigration",
-          "kind": "class",
-          "audience": "tooling-test",
-          "declaration": "final class DartitectRc5ConfigMigration",
-          "deprecated": false,
-          "annotations": [],
-          "modifiers": [
-            "final"
-          ],
-          "typeParameters": [],
-          "supertype": "Object",
-          "mixins": [],
-          "interfaces": [],
-          "members": [
-            {
-              "name": "new",
-              "kind": "constructor",
-              "audience": "tooling-test",
-              "declaration": "DartitectRc5ConfigMigration({required DartitectConfig config, required bool changed})",
-              "deprecated": false,
-              "annotations": [],
-              "modifiers": [
-                "const"
-              ],
-              "typeParameters": [],
-              "returnType": "DartitectRc5ConfigMigration",
-              "parameters": [
-                {
-                  "name": "config",
-                  "declaration": "{required DartitectConfig config}",
-                  "type": "DartitectConfig",
-                  "kind": "requiredNamed",
-                  "default": null,
-                  "annotations": []
-                },
-                {
-                  "name": "changed",
-                  "declaration": "{required bool changed}",
-                  "type": "bool",
-                  "kind": "requiredNamed",
-                  "default": null,
-                  "annotations": []
-                }
-              ]
-            },
-            {
-              "name": "changed",
-              "kind": "field",
-              "audience": "tooling-test",
-              "declaration": "bool changed",
-              "deprecated": false,
-              "annotations": [],
-              "modifiers": [
-                "final"
-              ],
-              "type": "bool"
-            },
-            {
-              "name": "config",
-              "kind": "field",
-              "audience": "tooling-test",
-              "declaration": "DartitectConfig config",
-              "deprecated": false,
-              "annotations": [],
-              "modifiers": [
-                "final"
-              ],
-              "type": "DartitectConfig"
-            }
-          ]
-        },
-        {
           "name": "DartitectRuleCodes",
           "kind": "class",
           "audience": "tooling-test",
@@ -23119,29 +23047,6 @@
           ],
           "typeParameters": [],
           "returnType": "bool",
-          "parameters": [
-            {
-              "name": "source",
-              "declaration": "String source",
-              "type": "String",
-              "kind": "requiredPositional",
-              "default": null,
-              "annotations": []
-            }
-          ]
-        },
-        {
-          "name": "migrateExactRc5Config",
-          "kind": "function",
-          "audience": "tooling-test",
-          "declaration": "DartitectRc5ConfigMigration migrateExactRc5Config(String source)",
-          "deprecated": false,
-          "annotations": [],
-          "modifiers": [
-            "static"
-          ],
-          "typeParameters": [],
-          "returnType": "DartitectRc5ConfigMigration",
           "parameters": [
             {
               "name": "source",

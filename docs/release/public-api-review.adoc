@@ -1,12 +1,12 @@
 = Public API review for the 1.0 release candidate
 
 Review date:: 2026-08-28
-Reviewed version:: lockstep `1.0.0-rc.6` candidate cohort
+Reviewed version:: lockstep `1.0.0-rc.8` candidate cohort
 Snapshot gate:: `dart run tool/check_api_snapshot.dart`
 
 == Result
 
-The checked API snapshot covers all 29 public entrypoints and matches their
+The checked API snapshot covers all 30 public entrypoints and matches their
 source declarations. New ecosystem entrypoints are deliberately narrow;
 pre-1.0 aliases and architecture overlap controls are intentionally absent.
 
@@ -151,12 +151,12 @@ entrypoint remains thin; advanced reactive APIs require a deliberate import and
 Material remains consumer-owned. No public Dartitect API retains an
 experimental marker.
 
-The RC6 diff completes the vertical platform before 1.0: direct generated
+The RC8 diff completes the vertical platform before 1.0: direct generated
 composition, strict config v1, session transition recovery, typed contract
 fixtures, credentials, attachments, forms, queries, Workmanager, provider kits,
 MCP previews, and transactional fleet upgrades. Pre-1.0 blueprint aliases and
 overlap configuration are deliberately removed; only the exact transactional
-RC5-to-RC6 fleet codemod migrates them. These changes require complete same-SHA
+RC5-to-RC8 fleet codemod migrates them. These changes require complete same-SHA
 canaries rather than a patch claim.
 
 == Decision

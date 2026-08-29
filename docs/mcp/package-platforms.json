@@ -1,29 +1,190 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "source": "tool/package_release_contract.json",
   "packages": {
-    "dartitect": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
-    "dartitect_resilience": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
-    "dartitect_jobs": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
-    "dartitect_transfer": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
-    "dartitect_devtools": {"platforms": ["Dart VM", "Flutter development", "DevTools web"], "stability": "development"},
-    "dartitect_sync": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
-    "dartitect_isolates": {"platforms": ["Dart VM", "Flutter native"], "stability": "development"},
-    "dartitect_flutter": {"platforms": ["Flutter"], "stability": "development"},
-    "dartitect_observability": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
-    "dartitect_dio": {"platforms": ["Dio platforms"], "stability": "development"},
-    "dartitect_drift": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
-    "dartitect_objectbox": {"platforms": ["Android", "iOS", "Linux", "macOS", "Windows"], "stability": "development"},
-    "dartitect_sentry": {"platforms": ["Dart", "Flutter"], "stability": "development"},
-    "dartitect_testing": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
-    "dartitect_cli": {"platforms": ["Dart VM"], "stability": "development"},
-    "dartitect_lints": {"platforms": ["Dart analyzer"], "stability": "development"},
-    "dartitect_locale_br": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
-    "dartitect_geometry": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
-    "dartitect_privacy": {"platforms": ["iOS", "Flutter non-iOS notSupported"], "stability": "development"},
-    "dartitect_media": {"platforms": ["Android", "iOS", "Flutter other notSupported"], "stability": "development"},
-    "dartitect_modeling": {"platforms": ["Dart", "Flutter", "web"], "stability": "development"},
-    "dartitect_modeling_analyzer": {"platforms": ["Dart VM", "Dart analyzer"], "stability": "development"},
-    "dartitect_mcp": {"platforms": ["Dart VM", "STDIO"], "stability": "development"},
-    "dartitect_workmanager": {"platforms": ["Android", "iOS", "macOS", "web preview", "Linux preview", "Windows unsupported"], "stability": "stable API in RC6"}
+    "dartitect": {
+      "platforms": [
+        "Dart",
+        "Flutter",
+        "web"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_cli": {
+      "platforms": [
+        "Dart VM"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_devtools": {
+      "platforms": [
+        "Dart VM",
+        "Flutter development",
+        "DevTools web"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_dio": {
+      "platforms": [
+        "Dio platforms"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_drift": {
+      "platforms": [
+        "Dart",
+        "Flutter",
+        "web"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_flutter": {
+      "platforms": [
+        "Flutter"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_geometry": {
+      "platforms": [
+        "Dart",
+        "Flutter",
+        "web"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_isolates": {
+      "platforms": [
+        "Dart VM",
+        "Flutter native"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_jobs": {
+      "platforms": [
+        "Dart",
+        "Flutter",
+        "web"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_lints": {
+      "platforms": [
+        "Dart analyzer"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_locale_br": {
+      "platforms": [
+        "Dart",
+        "Flutter",
+        "web"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_mcp": {
+      "platforms": [
+        "Dart VM",
+        "STDIO"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_media": {
+      "platforms": [
+        "Android",
+        "iOS",
+        "Flutter other notSupported"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_modeling": {
+      "platforms": [
+        "Dart",
+        "Flutter",
+        "web"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_modeling_analyzer": {
+      "platforms": [
+        "Dart VM",
+        "Dart analyzer"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_objectbox": {
+      "platforms": [
+        "Android",
+        "iOS",
+        "Linux",
+        "macOS",
+        "Windows"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_observability": {
+      "platforms": [
+        "Dart",
+        "Flutter",
+        "web"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_privacy": {
+      "platforms": [
+        "iOS",
+        "Flutter non-iOS notSupported"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_resilience": {
+      "platforms": [
+        "Dart",
+        "Flutter",
+        "web"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_sentry": {
+      "platforms": [
+        "Dart",
+        "Flutter"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_sync": {
+      "platforms": [
+        "Dart",
+        "Flutter",
+        "web"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_testing": {
+      "platforms": [
+        "Dart",
+        "Flutter",
+        "web"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_transfer": {
+      "platforms": [
+        "Dart",
+        "Flutter",
+        "web"
+      ],
+      "stability": "release candidate"
+    },
+    "dartitect_workmanager": {
+      "platforms": [
+        "Android",
+        "iOS",
+        "macOS",
+        "web preview",
+        "Linux preview",
+        "Windows unsupported"
+      ],
+      "stability": "release candidate"
+    }
   }
 }

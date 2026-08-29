@@ -1,6 +1,6 @@
 name: dartitect
 description: Native-first lifecycle, ownership, architecture events, and typed Result primitives.
-version: 1.0.0-rc.6
+version: 1.0.0-rc.8
 repository: https://github.com/ftr-tuta/dartitect
 issue_tracker: https://github.com/ftr-tuta/dartitect/issues
 topics: [architecture, lifecycle, result, dart]

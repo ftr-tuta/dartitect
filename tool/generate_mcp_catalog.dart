@@ -5,10 +5,11 @@ import '../packages/dartitect_cli/lib/src/config/dartitect_config.dart';
 
 Future<void> main(List<String> arguments) async {
   final root = File.fromUri(Platform.script).parent.parent.absolute;
-  final platformsDocument = _jsonObject(
-    await File('${root.path}/docs/mcp/package-platforms.json').readAsString(),
+  final releaseContract = _jsonObject(
+    await File('${root.path}/tool/package_release_contract.json')
+        .readAsString(),
   );
-  final platformPackages = _jsonObject(platformsDocument['packages']);
+  final releasePackages = _jsonObject(releaseContract['packages']);
   final packages = <String, Object?>{};
   final packageDirectories = await Directory('${root.path}/packages')
       .list(followLinks: false)
@@ -21,7 +22,7 @@ Future<void> main(List<String> arguments) async {
     if (!await pubspec.exists()) continue;
     final source = await pubspec.readAsString();
     final name = _yamlField(source, 'name');
-    final docs = _jsonObject(platformPackages[name]);
+    final docs = _jsonObject(releasePackages[name]);
     final readme = await File('${directory.path}/README.md').readAsString();
     packages[name] = <String, Object?>{
       'version': _yamlField(source, 'version'),
@@ -31,7 +32,7 @@ Future<void> main(List<String> arguments) async {
       'stability': docs['stability'],
     };
   }
-  if (packages.length != platformPackages.length) {
+  if (packages.length != releasePackages.length) {
     throw StateError(
       'Package platform documentation and workspace package count differ.',
     );
