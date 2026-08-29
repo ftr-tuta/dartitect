@@ -26,9 +26,10 @@
         "yaml"
       ],
       "entrypoints": [
-        "dartitect_cli.dart"
+        "dartitect_cli.dart",
+        "dartitect_contracts.dart"
       ],
-      "publicSymbolCount": 103
+      "publicSymbolCount": 95
     },
     {
       "name": "dartitect_devtools",

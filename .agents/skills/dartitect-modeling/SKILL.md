@@ -42,9 +42,8 @@ outputs. Run `dartitect model check` in CI. Commit every
 `*.dartitect.g.dart` output and namespaced manifest so a clean
 checkout compiles without installing the CLI.
 
-Use `dartitect model migrate primary` to preview traditional-to-primary
-constructor edits. Only `--apply` may take the project lock, journal source
-bytes, revalidate, and commit or roll back the complete semantic edit.
+New model generators and analyzer quick fixes emit the required primary
+constructor syntax directly. The public CLI does not convert existing models.
 
 Never hand-edit or force-adopt a generated model. A digest conflict means the
 consumer bytes must be reviewed and ownership restored explicitly. A pending

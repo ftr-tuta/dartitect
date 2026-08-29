@@ -11922,6 +11922,413 @@
           ]
         },
         {
+          "name": "ConsumerTaxFinding",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ConsumerTaxFinding",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ConsumerTaxFinding({required String code, required String message, String? path, String? evidence})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ConsumerTaxFinding",
+              "parameters": [
+                {
+                  "name": "code",
+                  "declaration": "{required String code}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "message",
+                  "declaration": "{required String message}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "path",
+                  "declaration": "{String? path}",
+                  "type": "String?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "evidence",
+                  "declaration": "{String? evidence}",
+                  "type": "String?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "code",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String code",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "evidence",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String? evidence",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String?"
+            },
+            {
+              "name": "message",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String message",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "path",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String? path",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String?"
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "ConsumerTaxInspector",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ConsumerTaxInspector",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ConsumerTaxInspector(Directory root)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "ConsumerTaxInspector",
+              "parameters": [
+                {
+                  "name": "root",
+                  "declaration": "Directory root",
+                  "type": "Directory",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "root",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Directory root",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Directory"
+            },
+            {
+              "name": "inspect",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Future<ConsumerTaxReport> inspect()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<ConsumerTaxReport>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "ConsumerTaxReport",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ConsumerTaxReport",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ConsumerTaxReport({required String profile, required Map<String, Object?> metrics, required Map<String, int> budgets, required Map<String, bool> capabilityOptIns, required List<String> requiredSymbols, required List<String> unusedDependencies, required List<ConsumerTaxFinding> findings})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ConsumerTaxReport",
+              "parameters": [
+                {
+                  "name": "profile",
+                  "declaration": "{required String profile}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "metrics",
+                  "declaration": "{required Map<String, Object?> metrics}",
+                  "type": "Map<String, Object?>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "budgets",
+                  "declaration": "{required Map<String, int> budgets}",
+                  "type": "Map<String, int>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "capabilityOptIns",
+                  "declaration": "{required Map<String, bool> capabilityOptIns}",
+                  "type": "Map<String, bool>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "requiredSymbols",
+                  "declaration": "{required List<String> requiredSymbols}",
+                  "type": "List<String>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "unusedDependencies",
+                  "declaration": "{required List<String> unusedDependencies}",
+                  "type": "List<String>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "findings",
+                  "declaration": "{required List<ConsumerTaxFinding> findings}",
+                  "type": "List<ConsumerTaxFinding>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "budgets",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Map<String, int> budgets",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Map<String, int>"
+            },
+            {
+              "name": "capabilityOptIns",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Map<String, bool> capabilityOptIns",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Map<String, bool>"
+            },
+            {
+              "name": "findings",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<ConsumerTaxFinding> findings",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<ConsumerTaxFinding>"
+            },
+            {
+              "name": "metrics",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> metrics",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Map<String, Object?>"
+            },
+            {
+              "name": "profile",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String profile",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "requiredSymbols",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<String> requiredSymbols",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<String>"
+            },
+            {
+              "name": "schemaVersion",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "int schemaVersion",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "unusedDependencies",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<String> unusedDependencies",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<String>"
+            },
+            {
+              "name": "exitCode",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "int get exitCode",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "isCompliant",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "bool get isCompliant",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
           "name": "DartitectArchitectureRules",
           "kind": "class",
           "audience": "tooling-test",

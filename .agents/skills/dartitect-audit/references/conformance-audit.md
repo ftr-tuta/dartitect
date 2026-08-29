@@ -1,8 +1,8 @@
 # Conformance audit
 
 Start with read-only CLI operations. `inspect`, `scan`, and `doctor` do not write.
-Run `scan --no-baseline` as the canonical gate. A reviewed baseline may describe
-known debt for other workflows, but it never changes conformance evidence.
+Run `dartitect scan` as the canonical gate. Greenfield projects cannot hide
+architecture findings behind debt baselines.
 
 The local MCP may assist discovery with bounded inspect, scan, doctor, explain,
 conformance, and preview tools. `dartitect_audit_conformance` reports strict

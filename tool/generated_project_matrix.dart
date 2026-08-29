@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import '../packages/dartitect_cli/lib/src/config/dartitect_config.dart';
@@ -138,11 +139,34 @@ Future<void> backgroundMain(SendPort output) async {
       '--root',
       project.path,
     ]);
-    await _run(project, 'flutter', const <String>['analyze']);
+    final analysisMillis = await _runTimed(project, 'flutter', const <String>[
+      'analyze',
+    ]);
+    final int buildMillis;
     if (scenario.feature == null && !scenario.extensions) {
-      await _run(project, 'flutter', const <String>['build', 'bundle']);
+      buildMillis = await _runTimed(project, 'flutter', const <String>[
+        'build',
+        'bundle',
+      ]);
     } else {
-      await _run(project, 'flutter', const <String>['test']);
+      buildMillis = await _runTimed(project, 'flutter', const <String>['test']);
+    }
+    await _writeConsumerTaxMetrics(
+      project,
+      analysisMillis: analysisMillis,
+      buildMillis: buildMillis,
+    );
+    await _run(workspace, 'dart', <String>[
+      'run',
+      'dartitect_cli:dartitect',
+      'inspect',
+      '--consumer-tax',
+      '--json',
+      '--root',
+      project.path,
+    ]);
+    if (scenario.label == 'minimal') {
+      await _verifyMinimalDependencyClosure(project);
     }
     await _verifyProviderNeutralScaffold(project, scenario);
     if (builds) {
@@ -360,6 +384,15 @@ Future<void> _run(
   String executable,
   List<String> arguments,
 ) async {
+  await _runTimed(workingDirectory, executable, arguments);
+}
+
+Future<int> _runTimed(
+  Directory workingDirectory,
+  String executable,
+  List<String> arguments,
+) async {
+  final timer = Stopwatch()..start();
   final result = await Process.run(
     executable,
     arguments,
@@ -369,6 +402,44 @@ Future<void> _run(
     throw StateError(
       '$executable ${arguments.join(' ')} failed:\n'
       '${result.stdout}\n${result.stderr}',
+    );
+  }
+  timer.stop();
+  return timer.elapsedMilliseconds;
+}
+
+Future<void> _writeConsumerTaxMetrics(
+  Directory project, {
+  required int analysisMillis,
+  required int buildMillis,
+}) async {
+  final target = File('${project.path}/.dartitect/consumer-tax-metrics.json');
+  await target.parent.create(recursive: true);
+  await target.writeAsString(
+    '${const JsonEncoder.withIndent('  ').convert(<String, Object?>{'schemaVersion': 1, 'analysisMillis': analysisMillis, 'buildMillis': buildMillis})}\n',
+    flush: true,
+  );
+}
+
+Future<void> _verifyMinimalDependencyClosure(Directory project) async {
+  final lock = await File('${project.path}/pubspec.lock').readAsString();
+  const forbidden = <String>{
+    'dio',
+    'dartitect_dio',
+    'drift',
+    'dartitect_drift',
+    'dartitect_sync',
+    'workmanager',
+    'dartitect_workmanager',
+  };
+  final resolved = RegExp(
+    r'^  ([a-zA-Z][a-zA-Z0-9_]*):$',
+    multiLine: true,
+  ).allMatches(lock).map((match) => match.group(1)!).toSet();
+  final leaked = forbidden.intersection(resolved).toList()..sort();
+  if (leaked.isNotEmpty) {
+    throw StateError(
+      'Minimal generated project resolved unselected capabilities: $leaked.',
     );
   }
 }

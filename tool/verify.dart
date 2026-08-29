@@ -238,6 +238,15 @@ Future<void> main(List<String> arguments) async {
       'examples/thin_consumer_canary',
     ]),
     const _Command('dart', <String>[
+      'run',
+      'dartitect_cli:dartitect',
+      'inspect',
+      '--consumer-tax',
+      '--json',
+      '--root',
+      'examples/thin_consumer_canary',
+    ]),
+    const _Command('dart', <String>[
       'packages/dartitect_cli/bin/dartitect.dart',
       'wiring',
       'sync',

@@ -11,6 +11,7 @@ import '../fleet/fleet_service.dart';
 import '../generation/generation_engine.dart';
 import '../generation/scaffolds.dart';
 import '../generation/wiring_service.dart';
+import '../inspect/consumer_tax.dart';
 import '../model/model_generator.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
@@ -137,10 +138,28 @@ final class DartitectCliRunner {
       if (command == 'scan' || command == 'verify') 'sarif',
       'deep',
       if (command == 'doctor') 'release',
+      if (command == 'inspect') 'consumer-tax',
       'verbose',
     });
     if (arguments.flags.contains('json') && arguments.flags.contains('sarif')) {
       throw const _UsageException('--json and --sarif are mutually exclusive.');
+    }
+    if (command == 'inspect' && arguments.flags.contains('consumer-tax')) {
+      final report = await ConsumerTaxInspector(root).inspect();
+      if (arguments.flags.contains('json')) {
+        _stdout.writeln(jsonEncode(report.toJson()));
+      } else {
+        _stdout.writeln(
+          'CONSUMER-TAX ${report.profile} '
+          '${report.isCompliant ? 'PASS' : 'FAIL'}',
+        );
+        for (final finding in report.findings) {
+          _stdout.writeln(
+            '${finding.code} ${finding.path ?? '.'} ${finding.message}',
+          );
+        }
+      }
+      return report.exitCode;
     }
     final service = DartitectProjectService(root);
     final envelope = switch (command) {
@@ -1223,6 +1242,7 @@ Read-only commands:
   doctor [--json] [--deep] [--release]
                                     Validate toolchain, config, and project.
   inspect [--json]                  Emit consolidated architecture metadata.
+  inspect --consumer-tax [--json]   Measure consumer plumbing and capability closure.
   verify [--json|--sarif]           Verify architecture, models, and providers.
   model check [--json]              Validate generated model freshness.
   contracts check <spec> [--baseline=PATH] [--json]

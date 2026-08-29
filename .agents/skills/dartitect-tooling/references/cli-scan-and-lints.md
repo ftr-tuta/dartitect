@@ -8,9 +8,9 @@ The target-aware `features` section declares `local`, `online`, `cache`,
 compatibility; behavioral guarantees remain contract-matrix evidence.
 
 Scan only declared roots using real path segments; ignore nested caches and
-generated code. A baseline fingerprints code, path, and evidence without line
-number. New findings fail, obsolete entries warn, and local suppressions require
-a reason. Keep CLI and official analyzer-plugin diagnostics semantically aligned
+generated code. Every finding fails strict scan. Local suppressions require an
+owner, reason, and expiry, and release doctor rejects all suppressions. Keep CLI
+and official analyzer-plugin diagnostics semantically aligned
 through the versioned true/false-positive corpus while respecting their
 different hosts and entrypoints. Prefer element/library identity when resolved.
 Sensitive metadata needs a recognized telemetry sink. Generated fallback needs

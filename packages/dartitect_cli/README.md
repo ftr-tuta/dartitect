@@ -42,6 +42,7 @@ rule and preserves consumer-owned skills and an existing `AGENTS.md`.
 
 ```console
 dartitect inspect --json
+dartitect inspect --consumer-tax --json
 dartitect scan
 dartitect doctor
 dartitect model check --json
@@ -55,6 +56,8 @@ document their own `--dry-run`/apply form in `example/README.md`.
 ## Public API tour
 
 - `DartitectProjectService` is the shared typed inspect/scan/doctor/change layer.
+- `ConsumerTaxInspector` measures manual plumbing, capability closure, generated
+  size, and profile ratchets without writing the project.
 - `ProjectScanner`, `DartitectFinding`, `DartitectRuleCodes`, source
   classification, and SARIF/report types expose architecture results.
 - `DartitectConfig`, `ConfigMigrator`, and `nativeStrictProfile` define stable

@@ -19,15 +19,16 @@ ownership, or concrete runtime boundaries.
 ## Invariants
 
 Inspection is read-only. Report evidence without modifying code, dependencies,
-configuration, baselines, or generated files. Treat `dartitect verify` and
-`scan --no-baseline` as canonical read-only evidence. Installed Riverpod, BLoC,
+configuration or generated files. Treat `dartitect verify` and `dartitect scan`
+as canonical read-only evidence. Installed Riverpod, BLoC,
 Provider, GetIt, MobX, Signals, or equivalent architecture runtimes are Native
 Strict errors. Provider leakage, service location, duplicate ownership, and
 dual-write are also errors.
 
 ## Workflow
 
-1. Record tests, analyzer, `dartitect doctor`, and `dartitect scan --no-baseline`.
+1. Record tests, analyzer, `dartitect doctor`, `dartitect scan`, and
+   `dartitect inspect --consumer-tax --json`.
 2. Inventory composition roots, owners, disposal order, repositories,
    background entrypoints, provider SDKs, and telemetry paths.
 3. Classify each boundary as conforming, non-conforming, or not evidenced.
@@ -43,7 +44,7 @@ CLI/MCP boundary.
 ## Validate
 
 Confirm the report is reproducible, contains no write or migration action, uses
-the unbaselined scan, and distinguishes unsupported architecture runtimes from
+the strict scan, and distinguishes unsupported architecture runtimes from
 consumer-owned infrastructure packages.
 
 ## Dartitect inclusion gate

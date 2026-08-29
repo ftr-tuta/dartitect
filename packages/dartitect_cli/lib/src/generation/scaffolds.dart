@@ -178,7 +178,7 @@ final class ScaffoldFactory {
       relativePath: 'AGENTS.md',
       content: '''# Dartitect architecture contract
 
-- Validate with `flutter analyze`, `flutter test`, and `dart run dartitect_cli:dartitect inspect --json`.
+- Validate with `flutter analyze`, `flutter test`, `dart run dartitect_cli:dartitect inspect --json`, and `dart run dartitect_cli:dartitect inspect --consumer-tax --json`.
 - Use constructor injection and explicit composition roots.
 - Domain must not import Flutter, data implementations, or adapters.
 - Presentation and ViewModels must not import Dio or ObjectBox.

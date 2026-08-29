@@ -49,6 +49,15 @@
     "DT2400": {"summary": "Managed Codex skills are not installed.", "remediation": "Preview and run `dartitect codex sync`."},
     "DT2401": {"summary": "A Dartitect skill lacks its management manifest.", "remediation": "Review ownership before synchronizing it."},
     "DT2501": {"summary": "The Dartitect analyzer plugin is not enabled.", "remediation": "Enable dartitect_lints in analysis_options.yaml."},
-    "DT2502": {"summary": "A stale transaction artifact requires recovery.", "remediation": "Re-run the originating command."}
+    "DT2502": {"summary": "A stale transaction artifact requires recovery.", "remediation": "Re-run the originating command."},
+    "DT4000": {"summary": "Consumer composition declares an untyped capability slot.", "remediation": "Use the concrete generated binding type."},
+    "DT4001": {"summary": "Consumer composition retains a null capability slot.", "remediation": "Omit absent capabilities from generated assemblies."},
+    "DT4002": {"summary": "Consumer code constructs a provider owner manually.", "remediation": "Move provider ownership into managed generated composition."},
+    "DT4003": {"summary": "Consumer code constructs an SDK engine manually.", "remediation": "Use the capability-specific generated assembly."},
+    "DT4004": {"summary": "A consumer-owned file contains pure assembly plumbing.", "remediation": "Generate and manage the structural output."},
+    "DT4005": {"summary": "A direct Dartitect runtime dependency is unused.", "remediation": "Remove it or use its public entrypoint from runtime code."},
+    "DT4006": {"summary": "A capability dependency resolves without config v2 opt-in.", "remediation": "Remove it or select the typed capability block."},
+    "DT4007": {"summary": "A profile consumer-tax count exceeded its ratchet.", "remediation": "Reduce consumer plumbing or intentionally select the correct profile."},
+    "DT4008": {"summary": "Recorded analysis or build time exceeded its ratchet.", "remediation": "Investigate the regression before raising a reviewed budget."}
   }
 }

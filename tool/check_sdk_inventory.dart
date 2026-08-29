@@ -15,6 +15,9 @@ Future<void> main(List<String> arguments) async {
     File('${root.path}/tool/api_surface.snapshot.json').readAsStringSync(),
   ) as Map<String, Object?>;
   final surfaces = api['entrypoints']! as Map<String, Object?>;
+  if (api['schemaVersion'] != 2) {
+    throw const FormatException('Unsupported semantic API snapshot schema.');
+  }
   final packages = <Map<String, Object?>>[];
   for (final entity in Directory(
     '${root.path}/packages',
@@ -33,10 +36,14 @@ Future<void> main(List<String> arguments) async {
             .where((entry) => entry.key.startsWith('packages/$name/lib/'))
             .toList()
           ..sort((left, right) => left.key.compareTo(right.key));
-    final symbolCount = entrypoints.fold<int>(
-      0,
-      (total, entry) => total + (entry.value! as List<Object?>).length,
-    );
+    final symbolCount = entrypoints.fold<int>(0, (total, entry) {
+      final surface = entry.value;
+      if (surface is! Map<String, Object?> ||
+          surface['symbols'] is! List<Object?>) {
+        throw FormatException('Invalid API entrypoint ${entry.key}.');
+      }
+      return total + (surface['symbols']! as List<Object?>).length;
+    });
     packages.add(<String, Object?>{
       'name': name,
       'version': field('version'),

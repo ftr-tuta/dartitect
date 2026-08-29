@@ -15,6 +15,7 @@ export 'src/fleet/rc5_config_migration.dart';
 export 'src/generation/generation_engine.dart';
 export 'src/generation/scaffolds.dart';
 export 'src/generation/wiring_service.dart';
+export 'src/inspect/consumer_tax.dart';
 export 'src/model/model_generator.dart';
 export 'src/policy/ecosystem_policy.dart';
 export 'src/project/dartitect_project_service.dart';
