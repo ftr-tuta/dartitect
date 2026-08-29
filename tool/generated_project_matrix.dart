@@ -10,6 +10,7 @@ Future<void> main(List<String> arguments) async {
       .toSet();
   const scenarios = <_Scenario>[
     _Scenario('minimal', observability: 'none'),
+    _Scenario('extensions', observability: 'none', extensions: true),
     _Scenario(
       'online',
       observability: 'developer',
@@ -59,6 +60,7 @@ Future<void> _validateScenario(
       '--targets=linux,web',
     ]);
     await _configureScenario(workspace, project, scenario);
+    await _run(project, 'flutter', const <String>['pub', 'get']);
     final feature = scenario.feature;
     if (feature != null) {
       await _run(workspace, 'dart', <String>[
@@ -138,7 +140,7 @@ Future<void> backgroundMain(SendPort output) async {
       project.path,
     ]);
     await _run(project, 'flutter', const <String>['analyze']);
-    if (scenario.feature == null) {
+    if (scenario.feature == null && !scenario.extensions) {
       await _run(project, 'flutter', const <String>['build', 'bundle']);
     } else {
       await _run(project, 'flutter', const <String>['test']);
@@ -181,6 +183,9 @@ Future<void> _configureScenario(
     generatedSuffixes: prior.generatedSuffixes,
     suppressions: prior.suppressions,
     modeling: prior.modeling,
+    extensionSources: scenario.extensions
+        ? const <String>['lib/project_extensions.dart']
+        : const <String>[],
     targets: DartitectTargetsConfig(targets),
     storageContexts: feature?.storage ?? false
         ? <String, DartitectStorageContextConfig>{
@@ -201,6 +206,63 @@ Future<void> _configureScenario(
     ),
   );
   await file.writeAsString(next.encode(), flush: true);
+  if (scenario.extensions) {
+    await File('${project.path}/lib/project_extensions.dart').writeAsString('''
+import 'package:dartitect/dartitect.dart';
+
+final class LocalClock {
+  var disposed = false;
+}
+
+@DartitectProjectExtension()
+final class LocalClockExtension
+    implements DartitectLocalExtension<LocalClock> {
+  @override
+  LocalClock build() => LocalClock();
+
+  @override
+  void dispose(LocalClock binding) => binding.disposed = true;
+}
+
+final class LocalAudit {
+  var disposed = false;
+}
+
+@DartitectProjectExtension()
+final class LocalAuditExtension
+    implements DartitectLocalExtension<LocalAudit> {
+  @override
+  LocalAudit build() => LocalAudit();
+
+  @override
+  void dispose(LocalAudit binding) => binding.disposed = true;
+}
+''', flush: true);
+    await File('${project.path}/test/extension_ownership_test.dart')
+        .writeAsString('''
+import 'package:dartitect/dartitect.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:generated_extensions/composition/application_module.wiring.dartitect.g.dart';
+
+void main() {
+  test('generated local extensions are owned and disposed', () async {
+    final coordinator = ApplicationModule.create();
+    final attempt = await coordinator.run();
+    final success = attempt as BootstrapSucceeded<ApplicationGraph>;
+    final graph = success.graph;
+    expect(graph.root.localClock.disposed, isFalse);
+    expect(graph.root.localAudit.disposed, isFalse);
+
+    await graph.disposeAsync();
+
+    expect(graph.root.localClock.disposed, isTrue);
+    expect(graph.root.localAudit.disposed, isTrue);
+    await graph.disposeAsync();
+    await coordinator.disposeAsync();
+  });
+}
+''', flush: true);
+  }
   if (feature?.profile == 'offline-full') {
     final pubspec = File('${project.path}/pubspec.yaml');
     final source = await pubspec.readAsString();
@@ -301,12 +363,14 @@ final class _Scenario {
     this.label, {
     required this.observability,
     this.background = false,
+    this.extensions = false,
     this.feature,
   });
 
   final String label;
   final String observability;
   final bool background;
+  final bool extensions;
   final _FeatureScenario? feature;
 }
 

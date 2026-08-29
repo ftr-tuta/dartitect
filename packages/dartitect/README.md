@@ -91,6 +91,8 @@ Future<void> main() async {
 - `DartitectDiagnosticsEmitter`, reporter registrations, subjects, phases, and
   `DartitectDiagnosticBuffer` implement the stable local payload-free
   diagnostics protocol v2.
+- `DartitectProjectExtension` and `DartitectLocalExtension<B>` declare typed
+  consumer-local construction and disposal without a runtime registry.
 
 ## Ownership and lifecycle
 
@@ -145,6 +147,8 @@ harnesses. Read the
 [getting-started guide](../../docs/guides/getting-started.md),
 [commands/results/effects](../../docs/guides/commands-results-effects.md), and
 [composition/lifecycle/isolates](../../docs/guides/composition-lifecycle-isolates.md).
+Project-only infrastructure can use the confined
+[typed local extension contract](../../docs/guides/project-local-extensions.md).
 
 ## Availability
 

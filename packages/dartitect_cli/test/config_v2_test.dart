@@ -20,7 +20,7 @@ void main() {
       modeling: const DartitectModelingConfig(
         preset: DartitectModelingPreset.recommended,
       ),
-      extensionSources: const <String>['tool/extensions.dart'],
+      extensionSources: const <String>['lib/extensions.dart'],
     );
     final parsed = DartitectConfig.parse(config.encode());
 
@@ -32,7 +32,7 @@ void main() {
     ]);
     expect(parsed.scheduler.provider, 'none');
     expect(parsed.observability.provider, 'none');
-    expect(parsed.extensionSources, <String>['tool/extensions.dart']);
+    expect(parsed.extensionSources, <String>['lib/extensions.dart']);
     expect(DartitectConfig.parse(parsed.encode()).toJson(), parsed.toJson());
   });
 
@@ -188,10 +188,10 @@ void main() {
   test('normalizes globs and confined extension sources', () {
     final decoded = DartitectConfig().toJson();
     decoded['compositionRoots'] = <String>['lib\\composition\\**'];
-    decoded['extensionSources'] = <String>['tool\\extensions.dart'];
+    decoded['extensionSources'] = <String>['lib\\extensions.dart'];
     final config = DartitectConfig.fromJson(decoded);
     expect(config.compositionRoots.single, 'lib/composition/**');
-    expect(config.extensionSources.single, 'tool/extensions.dart');
+    expect(config.extensionSources.single, 'lib/extensions.dart');
 
     expect(
       () => DartitectConfig(extensionSources: const <String>['../escape.dart']),

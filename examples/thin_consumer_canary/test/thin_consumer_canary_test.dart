@@ -17,11 +17,10 @@ void main() {
   test('strict wiring enables the complete opt-in workflow set', () async {
     expect(TasksFeatureWiring.profile, 'offline-full');
     expect(TasksFeatureWiring.scope, 'application');
-    expect(TasksFeatureWiring.persistenceNative, 'drift');
-    expect(TasksFeatureWiring.persistenceWeb, 'drift');
-    expect(TasksFeatureWiring.transport, 'dio');
+    expect(TasksFeatureWiring.storageContext, 'primary');
+    expect(TasksFeatureWiring.transport, 'api');
     expect(TasksFeatureWiring.scheduler, 'workmanager');
-    expect(TasksFeatureWiring.headlessPlatforms, <String>[
+    expect(TasksFeatureWiring.headlessTargets, <String>[
       'android',
       'ios',
       'macos',

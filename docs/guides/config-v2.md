@@ -68,7 +68,7 @@ ordinary typed config blocks, never extensions.
       }
     }
   },
-  "extensionSources": []
+  "extensionSources": ["lib/infrastructure/project_extensions.dart"]
 }
 ```
 
@@ -76,3 +76,5 @@ ordinary typed config blocks, never extensions.
 only the requested Flutter platforms. `--example=tasks` is explicit opt-in.
 Config v1 is accepted only by the versioned Dartitect-project upgrade; it is
 not accepted by normal config loading and is not an application conversion.
+Extension declarations and their confinement rules are covered in
+[typed project-local extensions](project-local-extensions.md).

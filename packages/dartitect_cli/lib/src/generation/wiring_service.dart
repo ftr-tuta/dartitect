@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../config/dartitect_config.dart';
+import '../extensions/local_extension_compiler.dart';
 import 'generation_engine.dart';
 
 /// Deterministic preview or apply receipt for managed feature wiring.
@@ -59,20 +60,24 @@ final class DartitectWiringService {
   /// Produces a read-only deterministic preview.
   Future<DartitectWiringReport> inspect({DartitectConfig? config}) async {
     final resolved = config ?? await _loadConfig();
+    final extensions = await DartitectLocalExtensionCompiler(root)
+        .compile(resolved.extensionSources);
     final plan = await GenerationEngine(
       root,
       namespace: _namespace,
-    ).plan(_operations(resolved), manageFullyGenerated: true);
+    ).plan(_operations(resolved, extensions), manageFullyGenerated: true);
     return DartitectWiringReport(plan: plan, applied: false, writes: 0);
   }
 
   /// Recovers and atomically converges the complete managed namespace.
   Future<DartitectWiringReport> apply({DartitectConfig? config}) async {
     final resolved = config ?? await _loadConfig();
+    final extensions = await DartitectLocalExtensionCompiler(root)
+        .compile(resolved.extensionSources);
     final result = await GenerationEngine(
       root,
       namespace: _namespace,
-    ).apply(_operations(resolved), manageFullyGenerated: true);
+    ).apply(_operations(resolved, extensions), manageFullyGenerated: true);
     return DartitectWiringReport(
       plan: result.plan,
       applied: true,
@@ -94,11 +99,14 @@ final class DartitectWiringService {
     return DartitectConfig.load(file);
   }
 
-  static List<FileGenerationOperation> _operations(DartitectConfig config) {
+  static List<FileGenerationOperation> _operations(
+    DartitectConfig config,
+    List<DartitectLocalExtensionIr> extensions,
+  ) {
     final entries = config.features.declarations.entries.toList()
       ..sort((left, right) => left.key.compareTo(right.key));
     return <FileGenerationOperation>[
-      ..._applicationOperations(config),
+      ..._applicationOperations(config, extensions),
       for (final entry in entries) ...<FileGenerationOperation>[
         FileGenerationOperation(
           relativePath:
@@ -153,11 +161,13 @@ final class DartitectWiringService {
 
   static List<FileGenerationOperation> _applicationOperations(
     DartitectConfig config,
+    List<DartitectLocalExtensionIr> extensions,
   ) {
     final observabilityProvider = config.observability.provider;
     final signature = jsonEncode(<String, Object?>{
       'scheduler': config.scheduler.toJson(),
       'observability': observabilityProvider,
+      'extensions': extensions.map((extension) => extension.toJson()).toList(),
     });
     return <FileGenerationOperation>[
       FileGenerationOperation(
@@ -166,6 +176,7 @@ final class DartitectWiringService {
         content: _renderApplicationModule(
           scheduler: config.scheduler.provider,
           observability: observabilityProvider,
+          extensions: extensions,
         ),
         ownership: GeneratedOwnership.fullyGenerated,
         sourcePath: 'dartitect.json',
@@ -221,7 +232,7 @@ final class DartitectWiringService {
     );
     return '''// GENERATED CODE - DO NOT EDIT BY HAND.
 // Managed by `dartitect wiring sync` from strict config v2.
-// ignore_for_file: prefer_initializing_formals
+// ignore_for_file: prefer_initializing_formals, unnecessary_nullable_for_final_variable_declarations
 
 import 'dart:async';
 
@@ -311,12 +322,52 @@ abstract final class ${type}FeatureWiring {
   static String _renderApplicationModule({
     required String scheduler,
     required String observability,
-  }) =>
-      '''// GENERATED CODE - DO NOT EDIT BY HAND.
+    required List<DartitectLocalExtensionIr> extensions,
+  }) {
+    final imports =
+        <String>{
+            for (final extension in extensions) extension.libraryUri,
+            for (final extension in extensions) ...extension.bindingLibraryUris,
+          }
+          ..remove('package:dartitect/dartitect.dart')
+          ..remove('package:dartitect_flutter/dartitect_flutter.dart');
+    final orderedImports = imports.toList()..sort();
+    final extensionImports = orderedImports
+        .map((uri) => "import '$uri';")
+        .join('\n');
+    final constructorParameters = extensions
+        .map((extension) => '    required this.${extension.fieldName},')
+        .join('\n');
+    final fields = extensions
+        .map(
+          (extension) =>
+              '  final ${extension.bindingType} ${extension.fieldName};',
+        )
+        .join('\n');
+    final construction = extensions
+        .map((extension) {
+          final declaration = '${extension.fieldName}Declaration';
+          return '''          final $declaration = ${extension.declarationType}();
+          final ${extension.bindingType} ${extension.fieldName} =
+              transaction.own<${extension.bindingType}>(
+                await $declaration.build(),
+                $declaration.dispose,
+                label: 'project-extension.${extension.fieldName}',
+              );''';
+        })
+        .join('\n');
+    final arguments = extensions
+        .map(
+          (extension) =>
+              '            ${extension.fieldName}: ${extension.fieldName},',
+        )
+        .join('\n');
+    return '''// GENERATED CODE - DO NOT EDIT BY HAND.
 // Managed by `dartitect wiring sync` from strict config v2.
 
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_flutter/dartitect_flutter.dart';
+${extensionImports.isEmpty ? '' : '\n$extensionImports'}
 
 /// Directly constructed application graph; it is not a service locator.
 final class ApplicationGraph {
@@ -324,11 +375,13 @@ final class ApplicationGraph {
     required this.sessions,
     required this.scheduler,
     required this.observability,
+${constructorParameters.isEmpty ? '' : '$constructorParameters\n'}
   });
 
   final SessionRuntimeController<Object, Object> sessions;
   final String scheduler;
   final String observability;
+${fields.isEmpty ? '' : '$fields\n'}
 }
 
 /// Tooling-materialized application composition module.
@@ -336,20 +389,23 @@ abstract final class ApplicationModule {
   static BootstrapCoordinator<ApplicationGraph> create() =>
       BootstrapCoordinator<ApplicationGraph>(
         stages: const <BootstrapStage>[],
-        buildRoot: (transaction, _) {
+        buildRoot: (transaction, _) async {
           final sessions = transaction.own(
             SessionRuntimeController<Object, Object>(),
             (controller) => controller.disposeAsync(),
           );
+${construction.isEmpty ? '' : '$construction\n'}
           return ApplicationGraph(
             sessions: sessions,
             scheduler: ${jsonEncode(scheduler)},
             observability: ${jsonEncode(observability)},
+${arguments.isEmpty ? '' : '$arguments\n'}
           );
         },
       );
 }
 ''';
+  }
 
   static String _renderSessionModule() =>
       '''// GENERATED CODE - DO NOT EDIT BY HAND.

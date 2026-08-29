@@ -188,6 +188,14 @@
         "declaration": "final class DartitectDiagnosticsEmitter implements AsyncDisposable"
       },
       {
+        "name": "DartitectLocalExtension",
+        "declaration": "abstract interface class DartitectLocalExtension<B extends Object>"
+      },
+      {
+        "name": "DartitectProjectExtension",
+        "declaration": "final class DartitectProjectExtension"
+      },
+      {
         "name": "Disposable",
         "declaration": "abstract interface class Disposable"
       },
@@ -552,6 +560,14 @@
         "declaration": "abstract final class DartitectGenerationVersions"
       },
       {
+        "name": "DartitectLocalExtensionCompiler",
+        "declaration": "final class DartitectLocalExtensionCompiler"
+      },
+      {
+        "name": "DartitectLocalExtensionIr",
+        "declaration": "final class DartitectLocalExtensionIr"
+      },
+      {
         "name": "DartitectModelGenerator",
         "declaration": "final class DartitectModelGenerator"
       },
@@ -562,6 +578,10 @@
       {
         "name": "DartitectModelingPreset",
         "declaration": "enum DartitectModelingPreset"
+      },
+      {
+        "name": "DartitectObservabilityConfig",
+        "declaration": "final class DartitectObservabilityConfig"
       },
       {
         "name": "DartitectPlatform",
@@ -584,6 +604,10 @@
         "declaration": "final class DartitectSarifReport"
       },
       {
+        "name": "DartitectSchedulerConfig",
+        "declaration": "final class DartitectSchedulerConfig"
+      },
+      {
         "name": "DartitectSemanticInput",
         "declaration": "final class DartitectSemanticInput"
       },
@@ -596,8 +620,24 @@
         "declaration": "final class DartitectSourceClassification"
       },
       {
+        "name": "DartitectStorageContextConfig",
+        "declaration": "final class DartitectStorageContextConfig"
+      },
+      {
+        "name": "DartitectStorageMode",
+        "declaration": "enum DartitectStorageMode"
+      },
+      {
         "name": "DartitectSuppression",
         "declaration": "final class DartitectSuppression"
+      },
+      {
+        "name": "DartitectTargetsConfig",
+        "declaration": "final class DartitectTargetsConfig"
+      },
+      {
+        "name": "DartitectTransportConfig",
+        "declaration": "final class DartitectTransportConfig"
       },
       {
         "name": "DartitectVerificationService",
@@ -646,10 +686,6 @@
       {
         "name": "FeaturePagination",
         "declaration": "enum FeaturePagination"
-      },
-      {
-        "name": "FeaturePersistenceMatrix",
-        "declaration": "final class FeaturePersistenceMatrix"
       },
       {
         "name": "FeatureProfile",

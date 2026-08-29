@@ -8,6 +8,7 @@ export 'src/codex/codex_skill_synchronizer.dart';
 export 'src/config/dartitect_config.dart';
 export 'src/diagnostics/models.dart';
 export 'src/diagnostics/sarif.dart';
+export 'src/extensions/local_extension_compiler.dart';
 export 'src/fleet/fleet_canary_service.dart';
 export 'src/fleet/fleet_service.dart';
 export 'src/fleet/rc5_config_migration.dart';

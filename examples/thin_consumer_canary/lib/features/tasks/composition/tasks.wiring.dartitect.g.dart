@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT EDIT BY HAND.
 // Managed by `dartitect wiring sync` from strict config v2.
-// ignore_for_file: prefer_initializing_formals
+// ignore_for_file: prefer_initializing_formals, unnecessary_nullable_for_final_variable_declarations
 
 import 'dart:async';
 

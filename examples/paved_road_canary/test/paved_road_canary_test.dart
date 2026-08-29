@@ -54,12 +54,10 @@ void main() {
     final declarations = features['declarations']! as Map<String, Object?>;
     final pavedRoad = declarations['paved_road']! as Map<String, Object?>;
     expect(pavedRoad['profile'], 'offline-full');
-    expect(
-      (pavedRoad['headless']! as Map<String, Object?>).values,
-      everyElement(isFalse),
-    );
+    expect(pavedRoad['headlessTargets'], isEmpty);
     expect(PavedRoadFeatureWiring.profile, 'offline-full');
     expect(PavedRoadFeatureWiring.pagination, 'cursor');
+    expect(PavedRoadFeatureWiring.headlessTargets, isEmpty);
 
     final source = CancellationSource();
     final progress = BoundedProgressReporter<String>(capacity: 2);
