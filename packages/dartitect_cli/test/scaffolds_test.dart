@@ -34,12 +34,11 @@ void main() {
     expect(viewModel, contains('Command0<List<String>, OrdersFailure>'));
     expect(
       viewModel,
-      contains(
-        '// The async path calls ChangeNotifier.dispose after draining the command.\n'
-        '  // ignore: must_call_super\n'
-        '  void dispose() => unawaited(disposeAsync());',
-      ),
+      contains('final class OrdersViewModel(OrdersRepository repository)'),
     );
+    expect(viewModel, contains('loadCommand = ownCommand('));
+    expect(viewModel, isNot(contains('addListener')));
+    expect(viewModel, isNot(contains('void dispose()')));
     expect(viewModel, isNot(contains('BuildContext')));
     final view = withoutDomain
         .singleWhere(
@@ -88,8 +87,10 @@ void main() {
                 operation.relativePath.endsWith('catalog_view_model.dart'),
           )
           .content;
-      expect(viewModel, contains('// ignore: must_call_super'));
-      expect(viewModel, contains('super.dispose();'));
+      expect(viewModel, contains('extends DartitectViewModel'));
+      expect(viewModel, contains('loadCommand = ownCommand('));
+      expect(viewModel, isNot(contains('addListener')));
+      expect(viewModel, isNot(contains('void dispose()')));
       final model = operations
           .singleWhere(
             (operation) =>

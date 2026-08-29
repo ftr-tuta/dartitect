@@ -11,7 +11,7 @@
         "dartitect.dart",
         "dartitect_credentials.dart"
       ],
-      "publicSymbolCount": 109
+      "publicSymbolCount": 114
     },
     {
       "name": "dartitect_cli",
@@ -27,7 +27,7 @@
       "entrypoints": [
         "dartitect_cli.dart"
       ],
-      "publicSymbolCount": 91
+      "publicSymbolCount": 98
     },
     {
       "name": "dartitect_devtools",
@@ -54,7 +54,7 @@
       "entrypoints": [
         "dartitect_dio.dart"
       ],
-      "publicSymbolCount": 34
+      "publicSymbolCount": 38
     },
     {
       "name": "dartitect_drift",
@@ -85,7 +85,7 @@
         "dartitect_flutter_queries.dart",
         "dartitect_flutter_reactive.dart"
       ],
-      "publicSymbolCount": 215
+      "publicSymbolCount": 219
     },
     {
       "name": "dartitect_geometry",

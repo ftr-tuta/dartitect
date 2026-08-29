@@ -771,42 +771,26 @@ void main() {
 ''';
 
   String _standaloneViewModel(ScaffoldName name) =>
-      '''import 'dart:async';
-
-import 'package:dartitect/dartitect.dart';
+      '''import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_flutter/dartitect_flutter.dart';
-import 'package:flutter/foundation.dart';
 
 /// Constructor-injected native state for the ${name.pascal} feature.
-final class ${name.pascal}ViewModel extends ChangeNotifier
-    implements AsyncDisposable {
-  ${name.pascal}ViewModel(
-    Future<Result<void, String>> Function() start,
-  ) : startCommand = Command0<void, String>(start) {
-    startCommand.addListener(notifyListeners);
+final class ${name.pascal}ViewModel(
+  Future<Result<void, String>> Function() start,
+) extends DartitectViewModel {
+  /// Owns the command for this ViewModel lifetime.
+  this {
+    startCommand = ownCommand(
+      Command0<void, String>(start),
+      label: 'startCommand',
+    );
   }
 
-  final Command0<void, String> startCommand;
+  late final Command0<void, String> startCommand;
 
   Future<void> start() async {
     await startCommand.execute();
   }
-
-  Future<void>? _disposeFuture;
-
-  @override
-  Future<void> disposeAsync() => _disposeFuture ??= _dispose();
-
-  Future<void> _dispose() async {
-    startCommand.removeListener(notifyListeners);
-    await startCommand.disposeAsync();
-    super.dispose();
-  }
-
-  @override
-  // The async path calls ChangeNotifier.dispose after draining the command.
-  // ignore: must_call_super
-  void dispose() => unawaited(disposeAsync());
 }
 ''';
 
@@ -814,25 +798,22 @@ final class ${name.pascal}ViewModel extends ChangeNotifier
     ScaffoldName name, {
     required String contractLayer,
   }) =>
-      '''import 'dart:async';
-
-import 'package:dartitect/dartitect.dart';
-import 'package:dartitect_flutter/dartitect_flutter.dart';
-import 'package:flutter/foundation.dart';
+      '''import 'package:dartitect_flutter/dartitect_flutter.dart';
 
 import '../$contractLayer/${name.snake}_repository.dart';
 
 /// Native MVVM state that depends only on the repository contract.
-final class ${name.pascal}ViewModel extends ChangeNotifier
-    implements AsyncDisposable {
-  ${name.pascal}ViewModel(${name.pascal}Repository repository)
-      : loadCommand = Command0<List<String>, ${name.pascal}Failure>(
-          repository.load,
-        ) {
-    loadCommand.addListener(notifyListeners);
+final class ${name.pascal}ViewModel(${name.pascal}Repository repository)
+    extends DartitectViewModel {
+  /// Owns the repository command for this ViewModel lifetime.
+  this {
+    loadCommand = ownCommand(
+      Command0<List<String>, ${name.pascal}Failure>(repository.load),
+      label: 'loadCommand',
+    );
   }
 
-  final Command0<List<String>, ${name.pascal}Failure> loadCommand;
+  late final Command0<List<String>, ${name.pascal}Failure> loadCommand;
 
   List<String> get items => switch (loadCommand.state) {
     CommandSuccessState<List<String>, ${name.pascal}Failure>(:final value) =>
@@ -845,22 +826,6 @@ final class ${name.pascal}ViewModel extends ChangeNotifier
   Future<void> start() async {
     await loadCommand.execute();
   }
-
-  Future<void>? _disposeFuture;
-
-  @override
-  Future<void> disposeAsync() => _disposeFuture ??= _dispose();
-
-  Future<void> _dispose() async {
-    loadCommand.removeListener(notifyListeners);
-    await loadCommand.disposeAsync();
-    super.dispose();
-  }
-
-  @override
-  // The async path calls ChangeNotifier.dispose after draining the command.
-  // ignore: must_call_super
-  void dispose() => unawaited(disposeAsync());
 }
 ''';
 

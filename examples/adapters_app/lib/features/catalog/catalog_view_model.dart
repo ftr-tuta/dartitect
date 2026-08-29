@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:dartitect_flutter/dartitect_flutter_reactive.dart';
-import 'package:flutter/foundation.dart';
 
 import 'catalog_model.dart';
 import 'catalog_remote.dart';
@@ -15,56 +14,67 @@ enum CatalogEffect {
 }
 
 /// Large remote-read workload ViewModel with local-authority presentation.
-final class CatalogViewModel extends ChangeNotifier implements AsyncDisposable {
+final class CatalogViewModel(
+  final CatalogRemote _remote, {
+  PagedResourceCrashReporter reporter = const NoOpPagedResourceCrashReporter(),
+}) extends DartitectViewModel {
   /// Creates a ViewModel around a borrowed provider-neutral remote port.
-  CatalogViewModel(
-    this._remote, {
-    PagedResourceCrashReporter reporter =
-        const NoOpPagedResourceCrashReporter(),
-  }) {
-    local = LiveResource<PagedLocalSnapshot<int, CatalogItem>, CatalogFailure>(
-      source: _CatalogSource(_store),
-      policy: const ActivationPolicy.whileObserved(),
-    );
-    paged = PagedLiveResource<CatalogCursor, int, CatalogItem, CatalogFailure>(
-      local: local,
-      initialCursor: const CatalogCursor(),
-      requestPage: _remote.page,
-      writePage: _store.write,
-      keyOf: (item) => item.id,
-      versionOf: (item) => item.version,
-      collectionPolicy: CollectionUpdatePolicy.versionedByKey,
-      observationTimeout: const Duration(seconds: 2),
-      mapObservationTimeout: (_) => const CatalogFailure('observation-timeout'),
-      reporter: reporter,
-    );
-    effects = EffectChannel<CatalogEffect>(
-      capacity: 8,
-      owner: EffectOwnerIdentity(
-        kind: EffectOwnerKind.route,
-        generation: Object(),
+  this {
+    own(_store, (store) => store.disposeAsync(), label: 'catalogStore');
+    local = own(
+      LiveResource<PagedLocalSnapshot<int, CatalogItem>, CatalogFailure>(
+        source: _CatalogSource(_store),
+        policy: const ActivationPolicy.whileObserved(),
       ),
+      (resource) => resource.dispose(),
+      label: 'localCatalog',
     );
-    refreshCommand = Command0(
-      _refresh,
-      concurrency: const CommandConcurrency.join(),
+    final pagedResource =
+        PagedLiveResource<CatalogCursor, int, CatalogItem, CatalogFailure>(
+          local: local,
+          initialCursor: const CatalogCursor(),
+          requestPage: _remote.page,
+          writePage: _store.write,
+          keyOf: (item) => item.id,
+          versionOf: (item) => item.version,
+          collectionPolicy: CollectionUpdatePolicy.versionedByKey,
+          observationTimeout: const Duration(seconds: 2),
+          mapObservationTimeout: (_) =>
+              const CatalogFailure('observation-timeout'),
+          reporter: reporter,
+        );
+    paged = own(
+      pagedResource,
+      (resource) => resource.dispose(),
+      listenable: pagedResource,
+      label: 'pagedCatalog',
     );
-    loadMoreCommand = Command0(
-      _loadMore,
-      concurrency: const CommandConcurrency.drop(),
+    refreshCommand = ownCommand(
+      Command0(_refresh, concurrency: const CommandConcurrency.join()),
+      label: 'refreshCommand',
     );
-    searchCommand = Command1(
-      _search,
-      concurrency: const CommandConcurrency.restartLatest(),
+    loadMoreCommand = ownCommand(
+      Command0(_loadMore, concurrency: const CommandConcurrency.drop()),
+      label: 'loadMoreCommand',
     );
-    paged.addListener(notifyListeners);
-    refreshCommand.addListener(notifyListeners);
-    loadMoreCommand.addListener(notifyListeners);
-    searchCommand.addListener(notifyListeners);
+    searchCommand = ownCommand(
+      Command1(_search, concurrency: const CommandConcurrency.restartLatest()),
+      label: 'searchCommand',
+    );
+    effects = own(
+      EffectChannel<CatalogEffect>(
+        capacity: 8,
+        owner: EffectOwnerIdentity(
+          kind: EffectOwnerKind.route,
+          generation: Object(),
+        ),
+      ),
+      (channel) => channel.disposeAsync(),
+      label: 'catalogEffects',
+    );
   }
 
   final _CatalogStore _store = _CatalogStore();
-  final CatalogRemote _remote;
 
   /// Authoritative local reactive source.
   late final LiveResource<PagedLocalSnapshot<int, CatalogItem>, CatalogFailure>
@@ -90,8 +100,6 @@ final class CatalogViewModel extends ChangeNotifier implements AsyncDisposable {
   searchCommand;
 
   bool _started = false;
-  bool _disposed = false;
-  Future<void>? _disposeFuture;
 
   /// Starts the workload once without acting as a readiness barrier.
   Future<void> start() async {
@@ -150,28 +158,6 @@ final class CatalogViewModel extends ChangeNotifier implements AsyncDisposable {
       StackTrace.current,
     ),
   };
-
-  @override
-  Future<void> disposeAsync() => _disposeFuture ??= _dispose();
-
-  Future<void> _dispose() async {
-    if (_disposed) return;
-    _disposed = true;
-    paged.removeListener(notifyListeners);
-    refreshCommand..removeListener(notifyListeners);
-    loadMoreCommand..removeListener(notifyListeners);
-    searchCommand..removeListener(notifyListeners);
-    await effects.disposeAsync();
-    await Future.wait<void>(<Future<void>>[
-      refreshCommand.disposeAsync(),
-      loadMoreCommand.disposeAsync(),
-      searchCommand.disposeAsync(),
-    ]);
-    await paged.dispose();
-    await local.dispose();
-    await _store.disposeAsync();
-    super.dispose();
-  }
 }
 
 final class _CatalogStore implements AsyncDisposable {

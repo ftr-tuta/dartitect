@@ -1144,6 +1144,10 @@
         "declaration": "typedef ApplicationReadyBuilder<in R> = Widget Function(BuildContext, R)"
       },
       {
+        "name": "CallbackDartitectViewModelCrashReporter",
+        "declaration": "final class CallbackDartitectViewModelCrashReporter implements DartitectViewModelCrashReporter"
+      },
+      {
         "name": "CallbackFlutterCrashReporter",
         "declaration": "final class CallbackFlutterCrashReporter implements FlutterCrashReporter"
       },
@@ -1222,6 +1226,14 @@
       {
         "name": "DartitectScopeValue",
         "declaration": "abstract interface class DartitectScopeValue"
+      },
+      {
+        "name": "DartitectViewModel",
+        "declaration": "abstract class DartitectViewModel extends ChangeNotifier implements AsyncDisposable"
+      },
+      {
+        "name": "DartitectViewModelCrashReporter",
+        "declaration": "abstract interface class DartitectViewModelCrashReporter"
       },
       {
         "name": "EffectChannel",
@@ -1314,6 +1326,10 @@
       {
         "name": "LocalHistoryListenable",
         "declaration": "final class LocalHistoryListenable<T> extends ChangeNotifier implements ValueListenable<T>"
+      },
+      {
+        "name": "NoOpDartitectViewModelCrashReporter",
+        "declaration": "final class NoOpDartitectViewModelCrashReporter implements DartitectViewModelCrashReporter"
       },
       {
         "name": "NoOpEffectErrorReporter",
