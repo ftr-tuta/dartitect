@@ -158,6 +158,7 @@ Future<(String, String?)> _licenseFor(Uri? rootUri) async {
   );
   if (candidates.isEmpty) return ('NOASSERTION', null);
   final text = await candidates.first.readAsString();
+  final licenseFileName = _canonicalLicenseFileName(candidates.first);
   final license = text.contains('Apache License')
       ? 'Apache-2.0'
       : text.contains('MIT License') ||
@@ -166,13 +167,18 @@ Future<(String, String?)> _licenseFor(Uri? rootUri) async {
       : text.contains('Redistribution and use in source and binary forms')
       ? 'BSD-3-Clause'
       : 'NOASSERTION';
-  return (license, _fileName(candidates.first));
+  return (license, licenseFileName);
 }
 
 String _safeId(String value) =>
     value.replaceAll(RegExp(r'[^A-Za-z0-9.-]'), '-');
 
 String _fileName(File file) => file.uri.pathSegments.last;
+
+String _canonicalLicenseFileName(File file) {
+  final name = _fileName(file);
+  return 'LICENSE${name.substring('LICENSE'.length)}';
+}
 
 Future<String?> _artifactMismatch(File file, String expected) async {
   if (!await file.exists()) return '${file.path}: missing';
