@@ -147,9 +147,11 @@ Future<(String, String?)> _licenseFor(Uri? rootUri) async {
   final entities = await directory.list(followLinks: false).toList();
   final candidates = entities
       .whereType<File>()
-      .where((file) => _basename(file.path).toUpperCase().startsWith('LICENSE'))
+      .where((file) => _fileName(file).toUpperCase().startsWith('LICENSE'))
       .toList();
-  candidates.sort((left, right) => left.path.compareTo(right.path));
+  candidates.sort(
+    (left, right) => left.uri.toString().compareTo(right.uri.toString()),
+  );
   if (candidates.isEmpty) return ('NOASSERTION', null);
   final text = await candidates.first.readAsString();
   final license = text.contains('Apache License')
@@ -160,11 +162,10 @@ Future<(String, String?)> _licenseFor(Uri? rootUri) async {
       : text.contains('Redistribution and use in source and binary forms')
       ? 'BSD-3-Clause'
       : 'NOASSERTION';
-  return (license, _basename(candidates.first.path));
+  return (license, _fileName(candidates.first));
 }
 
 String _safeId(String value) =>
     value.replaceAll(RegExp(r'[^A-Za-z0-9.-]'), '-');
 
-String _basename(String path) =>
-    path.split(Platform.pathSeparator).where((part) => part.isNotEmpty).last;
+String _fileName(File file) => file.uri.pathSegments.last;
