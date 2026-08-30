@@ -369,7 +369,7 @@ final class _OpenApiLoader {
     final document = _OpenApiDocument(
       root: parsed,
       file: File(real),
-      relativePath: _relative(root.path, real),
+      relativePath: _relative(root.resolveSymbolicLinksSync(), real),
       loader: this,
     );
     _documents[real] = document;
@@ -516,7 +516,7 @@ final class _OpenApiLoader {
     final document = _OpenApiDocument(
       root: parsed,
       file: File(real),
-      relativePath: _relative(root.path, real),
+      relativePath: _relative(root.resolveSymbolicLinksSync(), real),
       loader: this,
     );
     _documents[real] = document;
@@ -1948,21 +1948,25 @@ String _join(String left, String right) =>
     '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
 
 bool _within(String candidate, String boundary) {
-  final normalizedCandidate = File(candidate).absolute.path;
-  final normalizedBoundary = Directory(boundary).absolute.path;
-  return normalizedCandidate == normalizedBoundary ||
-      normalizedCandidate.startsWith(
-        '$normalizedBoundary${Platform.pathSeparator}',
-      );
+  final normalizedCandidate = _portable(File(candidate).absolute.path);
+  final normalizedBoundary = _portable(Directory(boundary).absolute.path);
+  final comparedCandidate = _pathForComparison(normalizedCandidate);
+  final comparedBoundary = _pathForComparison(normalizedBoundary);
+  return comparedCandidate == comparedBoundary ||
+      comparedCandidate.startsWith('$comparedBoundary/');
 }
 
 String _relative(String root, String target) {
-  final prefix = '${Directory(root).absolute.path}${Platform.pathSeparator}';
-  final absolute = File(target).absolute.path;
-  return _portable(
-    absolute.startsWith(prefix) ? absolute.substring(prefix.length) : absolute,
-  );
+  final boundary = _portable(Directory(root).absolute.path);
+  final absolute = _portable(File(target).absolute.path);
+  final prefix = '$boundary/';
+  return _pathForComparison(absolute).startsWith(_pathForComparison(prefix))
+      ? absolute.substring(prefix.length)
+      : absolute;
 }
+
+String _pathForComparison(String path) =>
+    Platform.isWindows ? path.toLowerCase() : path;
 
 const _dartKeywords = <String>{
   'abstract',
