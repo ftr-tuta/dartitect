@@ -10,7 +10,7 @@ body:
     id: package
     attributes:
       label: Package and version
-      placeholder: dartitect_flutter 1.0.0-rc.8
+      placeholder: dartitect_flutter 1.0.0-rc.9
     validations:
       required: true
   - type: textarea

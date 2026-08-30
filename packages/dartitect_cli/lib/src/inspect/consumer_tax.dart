@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dartitect/dartitect.dart' show FeatureProfile;
 
 import '../config/dartitect_config.dart';
+import 'consumer_tax_analyzer.dart';
 
 /// One consumer-tax ratchet violation.
 final class ConsumerTaxFinding {
@@ -47,10 +48,15 @@ final class ConsumerTaxReport {
     required this.requiredSymbols,
     required this.unusedDependencies,
     required this.findings,
+    required this.architectureTax,
+    required this.generatedTax,
+    required this.testTax,
+    required this.productCode,
+    required this.diagnostics,
   });
 
   /// Report schema version.
-  static const int schemaVersion = 1;
+  static const int schemaVersion = 2;
 
   /// Most capable declared feature profile, or `local` for an empty shell.
   final String profile;
@@ -73,6 +79,21 @@ final class ConsumerTaxReport {
   /// Blocking structural and ratchet findings.
   final List<ConsumerTaxFinding> findings;
 
+  /// Consumer-authored structural plumbing; its mandatory budget is zero.
+  final Map<String, Object?> architectureTax;
+
+  /// Manifest-owned output size and its additive capability budget.
+  final Map<String, Object?> generatedTax;
+
+  /// Architecture-test and structural-fake observations.
+  final Map<String, Object?> testTax;
+
+  /// Domain and UI size, reported but never ratcheted.
+  final Map<String, Object?> productCode;
+
+  /// Analyzer-mode and timing-comparability diagnostics.
+  final List<String> diagnostics;
+
   /// Whether every active ratchet passed.
   bool get isCompliant => findings.isEmpty;
 
@@ -90,6 +111,11 @@ final class ConsumerTaxReport {
     'capabilityOptIns': capabilityOptIns,
     'requiredSymbols': requiredSymbols,
     'unusedDependencies': unusedDependencies,
+    'architectureTax': architectureTax,
+    'generatedTax': generatedTax,
+    'testTax': testTax,
+    'productCode': productCode,
+    'diagnostics': diagnostics,
     'findings': findings.map((finding) => finding.toJson()).toList(),
     'exitCode': exitCode,
   };
@@ -111,16 +137,20 @@ final class ConsumerTaxInspector {
         ? await DartitectConfig.load(configFile)
         : DartitectConfig(features: DartitectFeaturesConfig());
     final profile = _effectiveProfile(config);
-    final budget = Map<String, int>.from(_budgets[profile]!);
-    if (config.observability.provider == 'sentry') {
-      budget['directDependencyCount'] = budget['directDependencyCount']! + 2;
-    }
     final files = await _dartFiles();
+    final semanticFacts = await ConsumerTaxSemanticAnalyzer(root)
+        .analyze(files);
+    final factsByPath = <String, ConsumerTaxFileFacts>{
+      for (final facts in semanticFacts) facts.path: facts,
+    };
     final importedPackages = <String>{};
     final requiredSymbols = <String>{};
     final findings = <ConsumerTaxFinding>[];
+    final diagnostics = <String>[];
     var sourceFiles = 0;
     var sourceLines = 0;
+    var testFiles = 0;
+    var testLines = 0;
     var generatedFiles = 0;
     var generatedBytes = 0;
     var manualListeners = 0;
@@ -129,62 +159,64 @@ final class ConsumerTaxInspector {
     var providerWiring = 0;
     var manualPlumbing = 0;
     var generatedOnceStructuralFiles = 0;
+    var testTaxCount = 0;
+    var resolvedFiles = 0;
+    var syntacticFiles = 0;
 
     for (final file in files) {
       final relative = _relative(file.path);
       final source = await file.readAsString();
       final generated = _isGenerated(relative, source, config);
-      for (final match in _packageImport.allMatches(source)) {
-        importedPackages.add(match.group(1)!);
-      }
+      final facts = factsByPath[relative]!;
+      importedPackages.addAll(facts.importedPackages);
       if (generated) {
         generatedFiles += 1;
         generatedBytes += await file.length();
         continue;
       }
-      sourceFiles += 1;
-      sourceLines += '\n'.allMatches(source).length + 1;
-      manualListeners += _listener.allMatches(source).length;
-      manualLifecycle += _lifecycle.allMatches(source).length;
-      cancellationSources += _cancellation.allMatches(source).length;
-      providerWiring += _providerImport.allMatches(source).length;
-      if (_dartitectImport.hasMatch(source)) {
-        requiredSymbols.addAll(
-          _publicSymbol
-              .allMatches(source)
-              .map((match) => match.group(0)!)
-              .where((name) => !_languageSymbols.contains(name)),
-        );
+      if (facts.resolved) {
+        resolvedFiles += 1;
+      } else {
+        syntacticFiles += 1;
       }
-      for (final rule in _structuralRules) {
-        final matches = rule.pattern.allMatches(source).length;
-        if (matches == 0) continue;
-        manualPlumbing += matches;
+      requiredSymbols.addAll(facts.dartitectSymbols);
+      manualListeners += facts.listeners;
+      manualLifecycle += facts.lifecycleCalls;
+      cancellationSources += facts.cancellationSources;
+      providerWiring += facts.providerImports;
+      if (!facts.test) manualPlumbing += facts.architecturePlumbing;
+      testTaxCount += facts.testTax;
+      for (final semantic in facts.findings) {
         findings.add(
           ConsumerTaxFinding(
-            code: rule.code,
-            message: rule.message,
+            code: semantic.code,
+            message: semantic.message,
             path: relative,
-            evidence: '${rule.label}: $matches',
+            evidence: semantic.evidence,
           ),
         );
       }
-      final structuralMarkers = _structuralMarkers
-          .where((pattern) => pattern.hasMatch(source))
+      generatedOnceStructuralFiles += facts.findings
+          .where((finding) => finding.code == 'DT4004')
           .length;
-      if (structuralMarkers >= 2) {
-        generatedOnceStructuralFiles += 1;
-        manualPlumbing += 1;
-        findings.add(
-          ConsumerTaxFinding(
-            code: 'DT4004',
-            message:
-                'Pure assembly plumbing must be a managed generated output.',
-            path: relative,
-            evidence: '$structuralMarkers structural markers',
-          ),
-        );
+      final lines = '\n'.allMatches(source).length + 1;
+      if (facts.test) {
+        testFiles += 1;
+        testLines += lines;
+      } else {
+        sourceFiles += 1;
+        sourceLines += lines;
       }
+    }
+    diagnostics.add(
+      resolvedFiles > 0
+          ? 'analyzer: resolved identities used for $resolvedFiles files'
+          : 'analyzer: syntactic AST fallback; package resolution unavailable',
+    );
+    if (syntacticFiles > 0 && resolvedFiles > 0) {
+      diagnostics.add(
+        'analyzer: syntactic AST fallback used for $syntacticFiles files',
+      );
     }
 
     final directDependencies = await _directDependencies();
@@ -228,7 +260,25 @@ final class ConsumerTaxInspector {
     }
 
     final recorded = await _recordedPerformance();
+    diagnostics.add(recorded.diagnostic);
+    if (recorded.comparable) {
+      for (final regression in recorded.regressions) {
+        findings.add(
+          ConsumerTaxFinding(
+            code: 'DT4008',
+            message: 'Same-runner CI timing regressed by more than 20%.',
+            evidence: regression,
+          ),
+        );
+      }
+    }
     timer.stop();
+    final generatedBudget = _generatedBudget(config);
+    final budget = <String, int>{
+      'manualPlumbing': 0,
+      'generatedBytes': generatedBudget.totalBytes,
+      'testTax': 0,
+    };
     final metrics = <String, Object?>{
       'manualPlumbing': manualPlumbing,
       'manualListeners': manualListeners,
@@ -241,13 +291,24 @@ final class ConsumerTaxInspector {
       'directDependencyCount': directDependencies.length,
       'sourceFiles': sourceFiles,
       'sourceLines': sourceLines,
+      'testFiles': testFiles,
+      'testLines': testLines,
       'generatedFiles': generatedFiles,
       'generatedBytes': generatedBytes,
       'inspectionMillis': timer.elapsedMilliseconds,
-      'analysisMillis': recorded.analysisMillis,
-      'buildMillis': recorded.buildMillis,
+      'analysisMillis': recorded.currentAnalysisMillis,
+      'buildMillis': recorded.currentBuildMillis,
+      'testTax': testTaxCount,
     };
-    _enforceBudget(metrics, budget, findings);
+    if (generatedBytes > generatedBudget.totalBytes) {
+      findings.add(
+        ConsumerTaxFinding(
+          code: 'DT4007',
+          message: 'Generated output exceeded its additive graph budget.',
+          evidence: '$generatedBytes > ${generatedBudget.totalBytes}',
+        ),
+      );
+    }
     findings.sort((left, right) {
       final code = left.code.compareTo(right.code);
       return code != 0 ? code : '${left.path}'.compareTo('${right.path}');
@@ -261,12 +322,39 @@ final class ConsumerTaxInspector {
       requiredSymbols: List<String>.unmodifiable(symbols),
       unusedDependencies: List<String>.unmodifiable(unusedDependencies),
       findings: List<ConsumerTaxFinding>.unmodifiable(findings),
+      architectureTax: Map<String, Object?>.unmodifiable(<String, Object?>{
+        'observed': manualPlumbing,
+        'limit': 0,
+        'analyzerResolvedFiles': resolvedFiles,
+        'syntacticFallbackFiles': syntacticFiles,
+      }),
+      generatedTax: Map<String, Object?>.unmodifiable(<String, Object?>{
+        'observedFiles': generatedFiles,
+        'observedBytes': generatedBytes,
+        'budgetBytes': generatedBudget.totalBytes,
+        'axes': generatedBudget.axes,
+      }),
+      testTax: Map<String, Object?>.unmodifiable(<String, Object?>{
+        'observed': testTaxCount,
+        'limit': 0,
+        'files': testFiles,
+        'lines': testLines,
+      }),
+      productCode: Map<String, Object?>.unmodifiable(<String, Object?>{
+        'files': sourceFiles,
+        'lines': sourceLines,
+        'blocking': false,
+      }),
+      diagnostics: List<String>.unmodifiable(diagnostics),
     );
   }
 
   Future<List<File>> _dartFiles() async {
     final output = <File>[];
-    for (final directory in <Directory>[Directory(_join(root.path, 'lib'))]) {
+    for (final directory in <Directory>[
+      Directory(_join(root.path, 'lib')),
+      Directory(_join(root.path, 'test')),
+    ]) {
       if (!await directory.exists()) continue;
       await for (final entity in directory.list(
         recursive: true,
@@ -280,12 +368,16 @@ final class ConsumerTaxInspector {
       await for (final entity in packages.list(followLinks: false)) {
         if (entity is! Directory) continue;
         final lib = Directory(_join(entity.path, 'lib'));
-        if (!await lib.exists()) continue;
-        await for (final child in lib.list(
-          recursive: true,
-          followLinks: false,
-        )) {
-          if (child is File && child.path.endsWith('.dart')) output.add(child);
+        final test = Directory(_join(entity.path, 'test'));
+        for (final source in <Directory>[lib, test]) {
+          if (!await source.exists()) continue;
+          await for (final child in source.list(
+            recursive: true,
+            followLinks: false,
+          )) {
+            if (child is File && child.path.endsWith('.dart'))
+              output.add(child);
+          }
         }
       }
     }
@@ -333,17 +425,70 @@ final class ConsumerTaxInspector {
 
   Future<_RecordedPerformance> _recordedPerformance() async {
     final file = File(_join(root.path, '.dartitect/consumer-tax-metrics.json'));
-    if (!await file.exists()) return const _RecordedPerformance();
+    if (!await file.exists()) {
+      return const _RecordedPerformance(
+        diagnostic:
+            'timings: no CI evidence recorded; no timing ratchet applied',
+      );
+    }
     final decoded = jsonDecode(await file.readAsString());
-    if (decoded is! Map<String, Object?> || decoded['schemaVersion'] != 1) {
+    if (decoded is! Map<String, Object?>) {
       throw const FormatException('Invalid consumer-tax performance metrics.');
     }
-    final analysis = decoded['analysisMillis'];
-    final build = decoded['buildMillis'];
-    if (analysis is! int || analysis < 0 || build is! int || build < 0) {
+    if (decoded['schemaVersion'] == 1) {
+      return _RecordedPerformance(
+        currentAnalysisMillis: decoded['analysisMillis'] as int?,
+        currentBuildMillis: decoded['buildMillis'] as int?,
+        diagnostic:
+            'timings: legacy schema 1 evidence observed but not ratcheted',
+      );
+    }
+    if (decoded['schemaVersion'] != 2 ||
+        decoded['runner'] is! String ||
+        decoded['baseline'] is! Map<String, Object?> ||
+        decoded['current'] is! Map<String, Object?>) {
+      throw const FormatException('Invalid consumer-tax performance metrics.');
+    }
+    final baseline = decoded['baseline']! as Map<String, Object?>;
+    final current = decoded['current']! as Map<String, Object?>;
+    final baselineAnalysis = baseline['analysisMillis'];
+    final baselineBuild = baseline['buildMillis'];
+    final currentAnalysis = current['analysisMillis'];
+    final currentBuild = current['buildMillis'];
+    if (baselineAnalysis is! int ||
+        baselineAnalysis < 0 ||
+        baselineBuild is! int ||
+        baselineBuild < 0 ||
+        currentAnalysis is! int ||
+        currentAnalysis < 0 ||
+        currentBuild is! int ||
+        currentBuild < 0) {
       throw const FormatException('Invalid analysis/build timing metrics.');
     }
-    return _RecordedPerformance(analysisMillis: analysis, buildMillis: build);
+    final runner = decoded['runner']! as String;
+    final environmentRunner = Platform.environment['DARTITECT_CI_RUNNER_ID'];
+    final comparable =
+        Platform.environment['CI'] == 'true' && environmentRunner == runner;
+    final regressions = <String>[];
+    if (comparable) {
+      if (currentAnalysis > baselineAnalysis * 1.2) {
+        regressions.add(
+          'analysisMillis $currentAnalysis > 120% of $baselineAnalysis',
+        );
+      }
+      if (currentBuild > baselineBuild * 1.2) {
+        regressions.add('buildMillis $currentBuild > 120% of $baselineBuild');
+      }
+    }
+    return _RecordedPerformance(
+      currentAnalysisMillis: currentAnalysis,
+      currentBuildMillis: currentBuild,
+      comparable: comparable,
+      regressions: regressions,
+      diagnostic: comparable
+          ? 'timings: compared on CI runner $runner with a 20% ratchet'
+          : 'timings: runner mismatch or non-CI execution; no ratchet applied',
+    );
   }
 
   String _relative(String path) => path
@@ -351,24 +496,50 @@ final class ConsumerTaxInspector {
       .replaceAll(Platform.pathSeparator, '/');
 }
 
-void _enforceBudget(
-  Map<String, Object?> metrics,
-  Map<String, int> budgets,
-  List<ConsumerTaxFinding> findings,
-) {
-  for (final budget in budgets.entries) {
-    final observed = metrics[budget.key];
-    if (observed is! int || observed <= budget.value) continue;
-    findings.add(
-      ConsumerTaxFinding(
-        code: budget.key == 'analysisMillis' || budget.key == 'buildMillis'
-            ? 'DT4008'
-            : 'DT4007',
-        message: 'Consumer-tax ratchet exceeded for ${budget.key}.',
-        evidence: '$observed > ${budget.value}',
-      ),
-    );
-  }
+final class _GeneratedBudget {
+  const _GeneratedBudget({required this.totalBytes, required this.axes});
+
+  final int totalBytes;
+  final Map<String, int> axes;
+}
+
+_GeneratedBudget _generatedBudget(DartitectConfig config) {
+  final profileUnits = config.features.declarations.values.fold<int>(
+    0,
+    (total, feature) =>
+        total +
+        switch (feature.profile) {
+          FeatureProfile.local => 1,
+          FeatureProfile.online => 2,
+          FeatureProfile.cache => 3,
+          FeatureProfile.replica => 5,
+          FeatureProfile.offlineFull => 7,
+        },
+  );
+  final capabilityCount = config.features.declarations.values.fold<int>(
+    0,
+    (total, feature) => total + feature.capabilities.length,
+  );
+  final endpointCount = config.features.declarations.values.fold<int>(
+    0,
+    (total, feature) => total + feature.operations.length,
+  );
+  final axes = <String, int>{
+    'base': 65536,
+    'targets': config.targets.platforms.length * 32768,
+    'storageContexts': config.storageContexts.length * 65536,
+    'transports': config.transports.length * 49152,
+    'scheduler': config.scheduler.provider == 'none' ? 0 : 32768,
+    'observability': config.observability.provider == 'none' ? 0 : 32768,
+    'profiles': profileUnits * 24576,
+    'capabilities': capabilityCount * 24576,
+    'endpoints': endpointCount * 16384,
+    'extensions': config.extensionSources.length * 32768,
+  };
+  return _GeneratedBudget(
+    totalBytes: axes.values.fold<int>(0, (total, value) => total + value),
+    axes: Map<String, int>.unmodifiable(axes),
+  );
 }
 
 String _effectiveProfile(DartitectConfig config) {
@@ -408,82 +579,20 @@ bool _isGenerated(String path, String source, DartitectConfig config) =>
     source.startsWith('// GENERATED CODE - DO NOT EDIT');
 
 final class _RecordedPerformance {
-  const _RecordedPerformance({this.analysisMillis, this.buildMillis});
+  const _RecordedPerformance({
+    required this.diagnostic,
+    this.currentAnalysisMillis,
+    this.currentBuildMillis,
+    this.comparable = false,
+    this.regressions = const <String>[],
+  });
 
-  final int? analysisMillis;
-  final int? buildMillis;
+  final int? currentAnalysisMillis;
+  final int? currentBuildMillis;
+  final bool comparable;
+  final List<String> regressions;
+  final String diagnostic;
 }
-
-final class _StructuralRule {
-  const _StructuralRule(this.code, this.label, this.message, this.pattern);
-
-  final String code;
-  final String label;
-  final String message;
-  final RegExp pattern;
-}
-
-final _packageImport = RegExp(r'''import\s+['"]package:([^/]+)/''');
-final _dartitectImport = RegExp(r'''import\s+['"]package:dartitect''');
-final _providerImport = RegExp(
-  r'''import\s+['"]package:(?:dio|drift|objectbox|workmanager)/''',
-);
-final _publicSymbol = RegExp(r'\b[A-Z][A-Za-z0-9_]*\b');
-final _listener = RegExp(r'\.(?:addListener|removeListener|listen)\s*\(');
-final _lifecycle = RegExp(r'\.(?:dispose|disposeAsync|close|cancel)\s*\(');
-final _cancellation = RegExp(r'\b(?:CancellationSource|CancelToken)\s*\(');
-
-final _structuralRules = <_StructuralRule>[
-  _StructuralRule(
-    'DT4000',
-    'untyped capability slot',
-    'Capability slots in consumer composition must be concretely typed.',
-    RegExp(
-      r'\bObject\?\s+(?:repository|storage|transport|scheduler|observability|sync|outbox|engine|owner)\b',
-    ),
-  ),
-  _StructuralRule(
-    'DT4001',
-    'null capability slot',
-    'Absent capabilities must not leave nullable composition slots.',
-    RegExp(
-      r'\b(?:repository|storage|transport|scheduler|observability|sync|outbox|engine|owner)\s*:\s*null\b',
-    ),
-  ),
-  _StructuralRule(
-    'DT4002',
-    'provider owner',
-    'Provider owner plumbing belongs in managed generated composition.',
-    RegExp(r'\b(?:DioOwner|DriftDatabaseOwner|ObjectBoxStoreOwner)\s*[.(]'),
-  ),
-  _StructuralRule(
-    'DT4003',
-    'manual engine',
-    'SDK engine construction belongs in managed generated composition.',
-    RegExp(
-      r'\b(?:SyncEngine|MutationCommand|BootstrapCoordinator|HeadlessSyncEndpoint)\s*\(',
-    ),
-  ),
-];
-
-final _structuralMarkers = <RegExp>[
-  RegExp(r'\bDartitectAssemblyBinding\b'),
-  RegExp(r'\bOwnedGraph\b'),
-  RegExp(r'\bFeatureAssembly\b'),
-  RegExp(r'\bApplicationModule\b'),
-  RegExp(r'\bSessionModule\b'),
-];
-
-const _languageSymbols = <String>{
-  'Dart',
-  'Future',
-  'FutureOr',
-  'List',
-  'Map',
-  'Object',
-  'Set',
-  'String',
-};
 
 const _capabilityPackages = <String, Set<String>>{
   'observability': <String>{
@@ -495,84 +604,6 @@ const _capabilityPackages = <String, Set<String>>{
   'storage': <String>{'drift', 'dartitect_drift'},
   'sync': <String>{'dartitect_sync'},
   'scheduler': <String>{'workmanager', 'dartitect_workmanager'},
-};
-
-const _budgets = <String, Map<String, int>>{
-  'local': <String, int>{
-    'manualPlumbing': 0,
-    'manualListeners': 4,
-    'manualLifecycle': 8,
-    'cancellationSources': 2,
-    'providerSpecificWiring': 2,
-    'requiredSymbolCount': 120,
-    'generatedOnceStructuralFiles': 0,
-    'unusedDependencyCount': 0,
-    'directDependencyCount': 5,
-    'sourceFiles': 50,
-    'generatedBytes': 131072,
-    'analysisMillis': 60000,
-    'buildMillis': 300000,
-  },
-  'online': <String, int>{
-    'manualPlumbing': 0,
-    'manualListeners': 6,
-    'manualLifecycle': 12,
-    'cancellationSources': 4,
-    'providerSpecificWiring': 4,
-    'requiredSymbolCount': 180,
-    'generatedOnceStructuralFiles': 0,
-    'unusedDependencyCount': 0,
-    'directDependencyCount': 8,
-    'sourceFiles': 80,
-    'generatedBytes': 196608,
-    'analysisMillis': 90000,
-    'buildMillis': 360000,
-  },
-  'cache': <String, int>{
-    'manualPlumbing': 0,
-    'manualListeners': 8,
-    'manualLifecycle': 16,
-    'cancellationSources': 5,
-    'providerSpecificWiring': 6,
-    'requiredSymbolCount': 240,
-    'generatedOnceStructuralFiles': 0,
-    'unusedDependencyCount': 0,
-    'directDependencyCount': 10,
-    'sourceFiles': 110,
-    'generatedBytes': 262144,
-    'analysisMillis': 120000,
-    'buildMillis': 420000,
-  },
-  'replica': <String, int>{
-    'manualPlumbing': 0,
-    'manualListeners': 10,
-    'manualLifecycle': 20,
-    'cancellationSources': 6,
-    'providerSpecificWiring': 8,
-    'requiredSymbolCount': 320,
-    'generatedOnceStructuralFiles': 0,
-    'unusedDependencyCount': 0,
-    'directDependencyCount': 12,
-    'sourceFiles': 140,
-    'generatedBytes': 393216,
-    'analysisMillis': 150000,
-    'buildMillis': 480000,
-  },
-  'offline-full': <String, int>{
-    'manualPlumbing': 0,
-    'manualListeners': 12,
-    'manualLifecycle': 24,
-    'cancellationSources': 8,
-    'providerSpecificWiring': 10,
-    'requiredSymbolCount': 400,
-    'generatedOnceStructuralFiles': 0,
-    'unusedDependencyCount': 0,
-    'directDependencyCount': 16,
-    'sourceFiles': 180,
-    'generatedBytes': 524288,
-    'analysisMillis': 180000,
-    'buildMillis': 540000,
-  },
 };
 
 String _join(String left, String right) =>

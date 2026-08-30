@@ -72,6 +72,9 @@ the Native Strict application graph. Keep domain/application contracts
 provider-neutral, use constructor injection, and make every resource owned or
 borrowed. Do not add a container, global runtime, provider package, or remote
 telemetry without a stated requirement.
+For config v3 consumers, prefer generated concrete `ApplicationGraph`,
+`SessionGraph`, feature runtime/factory, and `FeatureHost` surfaces. Keep manual
+assemblies and ownership primitives as advanced low-level escape hatches.
 
 ## Workflow
 
@@ -104,7 +107,8 @@ break a stated requirement.
   `dartitect_modeling` and `$dartitect-modeling`; capabilities remain separately
   opt-in and Analyzer tooling stays out of runtime.
 - Basic Flutter ViewModels and commands: add `dartitect_flutter` and keep the
-  established `dartitect_flutter.dart` entrypoint.
+  established `dartitect_flutter.dart` entrypoint. Generated `FeatureHost` and
+  `CommandStateBuilder` remain Material-neutral; product UI stays consumer-owned.
 - Hot/warm/cold resources, causal refresh, families, collections, selectors, or
   advanced builders: use the opt-in reactive entrypoint and
   `$dartitect-reactive`.
@@ -179,6 +183,8 @@ dual-write are also errors.
 
 1. Record tests, analyzer, `dartitect doctor`, `dartitect scan`, and
    `dartitect inspect --consumer-tax --json`.
+   Treat schema-2 `architectureTax` as a zero budget, while `generatedTax` is
+   additive infrastructure evidence and `productCode` never blocks.
 2. Inventory composition roots, owners, disposal order, repositories,
    background entrypoints, provider SDKs, and telemetry paths.
 3. Classify each boundary as conforming, non-conforming, or not evidenced.
@@ -251,7 +257,7 @@ description: Implement Dartitect Result, ownership, composition, commands, ViewM
 
 Use this skill for `Result<T, F>`, resource ownership, composition roots, typed
 progress, bounded local history, `Command0`, ViewModels, application and session
-hosts, versioned UI restoration, isolate graphs, and the basic
+hosts, generated `FeatureHost`, versioned UI restoration, isolate graphs, and the basic
 `dartitect_flutter.dart` entrypoint.
 
 ## When not to use
@@ -273,6 +279,9 @@ ViewModels, domain, repositories, and services.
 Application bootstrap extends `ResourceTransaction`; do not create parallel
 ownership primitives. Replace session graphs only after explicit route-removal
 confirmation, and let application resources outlive them.
+Generated application/session graphs open each declared context once at its
+configured scope. A feature host closes its ViewModel before its feature graph
+and rejects publication after cancellation or disposal.
 
 ## Workflow
 
@@ -305,6 +314,12 @@ unexpected exception transitions to crashed, can be reported once through an
 injected reporter, and is rethrown. A disposed command is terminal and does not
 notify. One-shot navigation/snackbar effects use a bounded, route-owned,
 single-consumer channel rather than being replayed as command data.
+
+All Flutter commands implement `DartitectCommand<T, F>` and
+`DartitectObservableResource`, so ownership is compile-time safe. Consume
+`CommandState` through exhaustive `match` callbacks for idle, running,
+succeeded, failed, crashed, and cancelled states; each callback receives the
+complete state.
 
 Use `OperationProgress<P>` and `CommandExecutionContext<P>` for typed bounded
 progress. Execution IDs fence old work and sequences increase within one
@@ -340,12 +355,20 @@ for forced logout and remove routes before closing the old session graph. For
 hot/warm/cold resources or advanced list/page builders, switch to
 `$dartitect-reactive` instead of growing the basic runtime ad hoc.
 
+Use `CommandStateBuilder<T, F>` when a widget needs exhaustive command-state
+rendering. It has no Material, text, layout, navigation, or visual defaults and
+pauses its listener while `TickerMode` is disabled.
+
 Use `ApplicationHost` for named cancellable bootstrap, retry, atomic graph
 publication, and teardown. Use `SessionRuntimeController`/`SessionHost` for
 login, logout, tenant switch, and route-confirmed generation replacement.
 Versioned restoration accepts only consumer codecs/migrations and ephemeral UI
 payloads; invalid data falls back safely. `BoundedLocalHistory` is value-only
 and cannot claim to undo persistence, HTTP, upload, sync, or another effect.
+
+For generated config-v3 features, prefer `<Feature>FeatureHost`: provide the
+correct application/session graph and typed factory, let it create/start the
+ViewModel, and keep loading/failure/ready presentation consumer-owned.
 ''',
     },
   ),
@@ -503,6 +526,10 @@ local transaction is authoritative. A mutation changes domain data and enqueues
 its outbox operation atomically. Reuse one non-empty consumer-scoped idempotency
 key for every at-least-once attempt. Persist acknowledgement before reporting
 synced. Never auto-rollback queued or uncertain changes.
+In config-v3 generated graphs, the feature factory supplies repositories,
+ports, mapping/idempotency/conflict policy, datasets, and ViewModels; Dartitect
+owns outbox/sync/scheduler/diagnostics/cancellation/disposal plumbing. Use the
+generated pull authority only when `LocalStore.watch/read` is authoritative.
 
 ## Workflow
 
@@ -771,6 +798,12 @@ Create `DioOwner` or borrow an injected Dio instance in infrastructure. Map
 cancellation, transport, HTTP, and configuration failures distinctly. Preserve
 the caller's cancellation and concurrency semantics.
 
+Generated OpenAPI operation wrappers receive `DioJsonClient`, never raw `Dio`,
+and inherit cancellation, deadline, credentials, and observability from the
+selected transport context. Only operations declared by the feature enter its
+graph. Keep status semantics, DTO/domain mapping, retry, authentication, and
+idempotency policy consumer-owned.
+
 Credential requests carry `CredentialGeneration` in Dio request extras. Bind
 waiting to `CancelToken`, invalidate only that generation, and deduplicate
 concurrent 401 logout. Authenticated replay stays disabled unless the consumer
@@ -903,13 +936,15 @@ and disposes what it creates and proves no residual resources.
 Build a matrix across success, expected failure, unexpected crash,
 cancellation/concurrency, lifecycle temperature, disposal, and provider failure.
 Choose deterministic fakes for policy and real fixtures for integration.
-For a public feature profile, run the matching `FeatureContractMatrix.online`,
-`.cache`, `.replica`, or `.offlineFull`; each required row gets a fresh typed
+For a public feature profile, run the matching `FeatureContractMatrix.local`,
+`.online`, `.cache`, `.replica`, or `.offlineFull`; each required row gets a fresh typed
 runtime driver. The matrix owns faults, event journal, observed store,
 acknowledgements, graph registrations, and `ResourceCensus`; fixtures never
 return facts or a residual map. Derive success, expected failure, crash,
 cancellation, concurrency, restart, and teardown evidence from those observed
 instruments.
+Prefer the generated `<Feature>FeatureHarness` in `test/support`; consumers add
+only domain fixtures, selected policies, and domain assertions.
 
 Read [references/runtime-and-reactive.md](references/runtime-and-reactive.md),
 [references/sync.md](references/sync.md),
@@ -989,9 +1024,11 @@ commands, dry-run/apply separation, unknown config rejection, strict findings,
 expiring suppressions, stale plans, conflicts, recovery journals, symlink/path escape,
 permissions, Unicode and spaces, and idempotent managed-skill sync.
 
-Run consumer-tax fixtures for local through offline-full. Require zero manual
-assembly plumbing, no untyped/null capability slots, explicit dependency
-closure, bounded generated bytes, and recorded analyzer/build timing ratchets.
+Run consumer-tax schema-2 fixtures for local through offline-full. Require zero
+semantic `architectureTax`; scale `generatedTax` by declared axes; reject
+string-based architecture tests and structural-only fakes; never charge
+consumer domain/UI `productCode`. Analyzer/build timings ratchet only on the
+same CI runner.
 
 Native setup tests remain offline by injecting download, archive, host, temp
 root, and atomic replacement. Cover supported mappings, pinned hashes, corrupt
@@ -1092,9 +1129,10 @@ description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, 
 
 ## When to use
 
-Use this skill for CLI commands/services, stable config v2, verify/scanner/doctor policy,
-bounded local OpenAPI contracts, analyzer diagnostics, generators, Codex sync, native fixture setup,
-or repository release gates.
+Use this skill for CLI commands/services, config v3 and migrations,
+verify/scanner/doctor policy, bounded local OpenAPI contracts, analyzer
+diagnostics, generators, Codex sync, native fixture setup, or repository
+release gates.
 
 ## When not to use
 
@@ -1113,6 +1151,9 @@ SHA-256 manifest. Partition generated ownership, reports, and journals by
 `GenerationNamespace`. Acquire the cross-process project lock before
 revalidation and hold it through commit, rollback, or recovery. Migrate RC3
 ownership only when manifest metadata, recorded digest, and current bytes match.
+Every generated file operation has a stable `rendererId`; the formal canary
+catalog must cover every package, public entrypoint, renderer, profile,
+capability, provider, scope, and target.
 
 ## Workflow
 
@@ -1135,10 +1176,13 @@ generated-consumer behavior, and unchanged tracked files after verification.
       'references/cli-scan-and-lints.md': r'''# CLI, scan, and lints
 
 Keep `inspect`, `scan`, and ordinary `doctor` read-only. Deep doctor is explicit
-and bounded. Accept exactly stable config v2 with `native_strict`; reject
+and bounded. Accept exactly config v3 with `native_strict`; migrate v2 through
+the versioned transactional migration chain and reject
 experimental versions, unknown keys, credentials, and opaque plugin data.
 The target-aware `features` section declares `local`, `online`, `cache`,
-`replica`, or `offline-full` and refers to named provider blocks. `verify` checks declarative
+`replica`, or `offline-full`, typed factory sources, ownership scopes, and exact
+contract operations. Semantic compilation resolves annotations and concrete
+method types without loading consumer classes. `verify` checks declarative
 compatibility; behavioral guarantees remain contract-matrix evidence.
 
 `dartitect contracts check|sync` accepts only confined local OpenAPI 3.1 JSON
@@ -1157,8 +1201,10 @@ both a reviewed header and configured suffix. Invalid analyzer config is an
 explicit diagnostic, never a silent strict-default outcome. Enforce scanner and
 analyzer performance budgets with stable machine-readable schemas.
 
-`fleet report` stays read-only and aggregates versions, profiles, providers,
-and bounded matrix-source detection. Keep process execution in the separate
+`fleet report`, `fleet inventory`, and `fleet impact` stay read-only. Upgrade
+uses a versioned migration chain whose preview records apply/no-op, recovery,
+and rollback. Local blueprints use a closed non-executable manifest, digest
+lock, project confinement, and preview/apply. Keep process execution in the separate
 `DartitectFleetCanaryService`: require an exact commit, use only an archive and
 temporary consumer copy, run a closed command allowlist, sanitize receipts,
 compare original SHA/worktree/tree state, and remove the copy after failure.
@@ -1255,7 +1301,7 @@ by configured names. Do not put credentials in command arguments or environment.
 The closed read surface provides inspect, verify, bounded scan, doctor, finding
 explanation, conformance auditing, and modeling migration previews. Generated resources expose
 package metadata, diagnostics, canonical English guides, and credential-free
-config v2. There is no free-form file resource. Results include structured
+config v3. There is no free-form file resource. Results include structured
 content plus compatible JSON text. Read tools/previews are annotated read-only;
 only apply is mutable/destructive.
 ''',

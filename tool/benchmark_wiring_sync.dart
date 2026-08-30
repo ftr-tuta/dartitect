@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:crypto/crypto.dart';
 import 'package:dartitect_cli/dartitect_cli.dart';
@@ -13,6 +14,8 @@ Future<void> main() async {
     'dartitect-wiring-benchmark-',
   );
   try {
+    await _preparePackage(root);
+    await _writeFactories(root);
     final declarations = <String, DartitectFeatureDeclaration>{
       for (var index = 0; index < _featureCount; index += 1)
         'feature_${index.toString().padLeft(3, '0')}':
@@ -21,6 +24,11 @@ Future<void> main() async {
               scope: index.isEven
                   ? FeatureScope.application
                   : FeatureScope.session,
+              factorySource: DartitectFactorySourceConfig(
+                source: 'lib/benchmark_factories.dart',
+                declaration:
+                    'Feature${index.toString().padLeft(3, '0')}Factory',
+              ),
               transport: 'primary',
               pagination: FeaturePagination.none,
               diagnostics: FeatureDiagnosticsLevel.basic,
@@ -30,9 +38,19 @@ Future<void> main() async {
       transports: <String, DartitectTransportConfig>{
         'primary': DartitectTransportConfig(
           provider: 'dio',
+          factorySource: DartitectFactorySourceConfig(
+            source: 'lib/benchmark_factories.dart',
+            declaration: 'PrimaryTransportFactory',
+          ),
           targets: const <DartitectPlatform>[DartitectPlatform.android],
         ),
       },
+      session: DartitectSessionConfig(
+        factorySource: DartitectFactorySourceConfig(
+          source: 'lib/benchmark_factories.dart',
+          declaration: 'BenchmarkSessionFactory',
+        ),
+      ),
       features: DartitectFeaturesConfig(declarations: declarations),
     );
     await File('${root.path}/dartitect.json')
@@ -86,6 +104,87 @@ Future<void> main() async {
   } finally {
     if (await root.exists()) await root.delete(recursive: true);
   }
+}
+
+Future<void> _preparePackage(Directory root) async {
+  await Directory('${root.path}/lib').create(recursive: true);
+  await Directory('${root.path}/.dart_tool').create(recursive: true);
+  await File('${root.path}/pubspec.yaml').writeAsString('''
+name: wiring_benchmark
+environment:
+  sdk: ^3.13.0
+dependencies:
+  dartitect: any
+''');
+  final dartitect = await Isolate.resolvePackageUri(
+    Uri.parse('package:dartitect/dartitect.dart'),
+  );
+  if (dartitect == null) throw StateError('dartitect package is unresolved');
+  await File('${root.path}/.dart_tool/package_config.json').writeAsString(
+    jsonEncode(<String, Object?>{
+      'configVersion': 2,
+      'packages': <Object?>[
+        <String, Object?>{
+          'name': 'wiring_benchmark',
+          'rootUri': '../',
+          'packageUri': 'lib/',
+          'languageVersion': '3.13',
+        },
+        <String, Object?>{
+          'name': 'dartitect',
+          'rootUri': dartitect.resolve('../').toString(),
+          'packageUri': 'lib/',
+          'languageVersion': '3.13',
+        },
+      ],
+    }),
+  );
+}
+
+Future<void> _writeFactories(Directory root) async {
+  final source = StringBuffer()
+    ..writeln("import 'package:dartitect/dartitect.dart';")
+    ..writeln()
+    ..writeln('final class BenchmarkTransport {}')
+    ..writeln('final class BenchmarkSession {}')
+    ..writeln('final class BenchmarkRepository {}')
+    ..writeln('final class BenchmarkRemotePort {}')
+    ..writeln('final class BenchmarkMapper {}')
+    ..writeln('final class BenchmarkViewModel {}')
+    ..writeln()
+    ..writeln("@DartitectTransportContextFactory('primary')")
+    ..writeln('final class PrimaryTransportFactory {')
+    ..writeln(
+      '  Future<BenchmarkTransport> open() async => BenchmarkTransport();',
+    )
+    ..writeln('  Future<void> dispose(BenchmarkTransport transport) async {}')
+    ..writeln('}')
+    ..writeln()
+    ..writeln('@DartitectSessionFactory()')
+    ..writeln('final class BenchmarkSessionFactory {')
+    ..writeln('  BenchmarkSession create() => BenchmarkSession();')
+    ..writeln('}');
+  for (var index = 0; index < _featureCount; index += 1) {
+    final suffix = index.toString().padLeft(3, '0');
+    source
+      ..writeln()
+      ..writeln("@DartitectFeatureFactory('feature_$suffix')")
+      ..writeln('final class Feature${suffix}Factory {')
+      ..writeln(
+        '  BenchmarkRepository createRepository() => BenchmarkRepository();',
+      )
+      ..writeln(
+        '  BenchmarkRemotePort createRemotePort() => BenchmarkRemotePort();',
+      )
+      ..writeln('  BenchmarkMapper createMapper() => BenchmarkMapper();')
+      ..writeln(
+        '  BenchmarkViewModel createViewModel(BenchmarkRepository repository) '
+        '=> BenchmarkViewModel();',
+      )
+      ..writeln('}');
+  }
+  await File('${root.path}/lib/benchmark_factories.dart')
+      .writeAsString(source.toString());
 }
 
 Future<Map<String, String>> _treeDigests(Directory root) async {

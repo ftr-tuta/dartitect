@@ -62,8 +62,10 @@ document their own `--dry-run`/apply form in `example/README.md`.
   size, and profile ratchets without writing the project.
 - `ProjectScanner`, `DartitectFinding`, `DartitectRuleCodes`, source
   classification, and SARIF/report types expose architecture results.
-- `DartitectConfig`, `ConfigMigrator`, and `nativeStrictProfile` define stable
-  config v2 and architecture defaults.
+- `DartitectConfig`, the v1→v2→v3 migration chain, and
+  `nativeStrictProfile` define strict config v3 and architecture defaults.
+- `DartitectSemanticFactoryCompiler` resolves concrete factory annotations,
+  types, methods, ownership, and lifetimes without loading consumer classes.
 - `LocalExtensionCompiler` analyzes typed extension declarations confined to
   the project without executing their code or loading a plugin.
 - `OpenApiContractService` validates local OpenAPI 3.1 JSON/YAML, classifies
@@ -76,8 +78,11 @@ document their own `--dry-run`/apply form in `example/README.md`.
 - `EcosystemDependencyAuditor` and policy types provide pinned offline
   dependency decisions.
 - `DartitectFleetService` confines explicit application roots and returns
-  versions, profile/provider/matrix reports, checks, policy, and upgrade
-  previews without process execution or project writes.
+  versions, inventory/impact snapshots, profile/provider/matrix reports,
+  checks, policy, and versioned upgrade previews without process execution or
+  project writes.
+- `DartitectBlueprintService` validates closed, local, digest-locked templates
+  with no executable code and confines preview/apply to the target project.
 - `DartitectFleetCanaryService` is a separate opt-in boundary that archives an
   exact candidate commit, runs a closed command allowlist only in a temporary
   consumer copy, sanitizes receipts, and verifies both originals are unchanged.
@@ -85,13 +90,11 @@ document their own `--dry-run`/apply form in `example/README.md`.
   preserving consumer-owned skill directories.
 - `DartitectVerificationService` and `DartitectCliRunner` map services to stable
   JSON and exit codes.
-- `FeatureProfile` and scaffold/generation types expose the `local`, `online`, `cache`,
-  `replica`, and `offline-full` paths plus capability-closed typed assemblies
-  and reviewed file-ownership contracts for tooling authors. Absent
-  capabilities generate no field, and test doubles remain under
-  `test/support`. Generated assemblies consume typed owned-or-borrowed bindings
-  transactionally and own their complete teardown; consumers do not implement
-  a module-wide disposal callback. Pre-1.0 blueprint aliases are not accepted.
+- `FeatureProfile` and scaffold/generation types expose the `local`, `online`,
+  `cache`, `replica`, and `offline-full` paths plus concrete application,
+  session, feature runtime/host, and typed harness outputs. Absent capabilities
+  generate no field. Generated graphs own construction, rollback, and reverse
+  teardown; consumers do not implement a module-wide disposal callback.
 
 ## Ownership and lifecycle
 
@@ -153,7 +156,7 @@ bounded local agent interface. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.8` source candidate. Global activation or
+The workspace contains the `1.0.0-rc.9` source candidate. Global activation or
 Git use is supported only from coordinates in a matching tagged GitHub Release.
 If no compatible Release exists, there is no supported consumption path. See
 the [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

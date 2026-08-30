@@ -3,6 +3,29 @@ import 'dart:async';
 import 'package:dartitect/dartitect.dart';
 import 'package:flutter/foundation.dart';
 
+/// A listenable resource whose asynchronous teardown is part of its contract.
+///
+/// Unlike an incidental `Listenable` plus a runtime type check, this interface
+/// lets composition owners prove at compile time that notifications can be
+/// detached before the resource is drained.
+abstract interface class DartitectObservableResource
+    implements Listenable, AsyncDisposable {
+  /// Whether terminal disposal has started.
+  bool get isDisposed;
+}
+
+/// Common observable contract implemented by every Dartitect Flutter command.
+abstract interface class DartitectCommand<T, F extends Object>
+    implements
+        DartitectObservableResource,
+        ValueListenable<CommandState<T, F>> {
+  /// Current exhaustive command state.
+  CommandState<T, F> get state;
+
+  /// Whether one or more accepted executions are active.
+  bool get isRunning;
+}
+
 /// Current ability of a command to admit a new distinct execution.
 enum CommandAdmissionStatus {
   /// At least one new execution can be accepted.
@@ -54,6 +77,26 @@ sealed class CommandState<T, F extends Object> extends ValueEquality {
 
   /// Whether any accepted execution is still running.
   bool get isRunning => runningCount > 0;
+
+  /// Exhaustively maps this state while preserving access to its full value.
+  ///
+  /// Adding a command state is therefore a source-breaking change here instead
+  /// of silently falling through a visual default in consumer code.
+  R match<R>({
+    required R Function(CommandIdleState<T, F> state) idle,
+    required R Function(CommandRunningState<T, F> state) running,
+    required R Function(CommandSuccessState<T, F> state) success,
+    required R Function(CommandFailureState<T, F> state) failure,
+    required R Function(CommandCancelledState<T, F> state) cancelled,
+    required R Function(CommandCrashState<T, F> state) crashed,
+  }) => switch (this) {
+    final CommandIdleState<T, F> state => idle(state),
+    final CommandRunningState<T, F> state => running(state),
+    final CommandSuccessState<T, F> state => success(state),
+    final CommandFailureState<T, F> state => failure(state),
+    final CommandCancelledState<T, F> state => cancelled(state),
+    final CommandCrashState<T, F> state => crashed(state),
+  };
 
   /// Common equality fields retained by every exhaustive state variant.
   Iterable<Object?> get stateEqualityFields => <Object?>[
@@ -297,7 +340,7 @@ final class CommandExecutionCancelled<T, F extends Object>
 }
 
 mixin _CommandBinding<T, F extends Object> on ChangeNotifier
-    implements Disposable, AsyncDisposable {
+    implements Disposable, DartitectCommand<T, F> {
   CommandState<T, F> _state = CommandIdleState<T, F>();
   final Map<Future<CommandOutcome<T, F>>, Future<CommandExecution<T, F>>>
   _mapped = Map.identity();
@@ -330,12 +373,18 @@ mixin _CommandBinding<T, F extends Object> on ChangeNotifier
   }
 
   /// Current exhaustive operation state.
+  @override
   CommandState<T, F> get state => _state;
 
+  @override
+  CommandState<T, F> get value => state;
+
   /// Whether one or more accepted executions are still running.
+  @override
   bool get isRunning => laneRunningCount > 0;
 
   /// Whether terminal disposal has begun.
+  @override
   bool get isDisposed => _disposed;
 
   void syncState() {

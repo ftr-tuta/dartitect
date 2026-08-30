@@ -26,7 +26,7 @@ final class DartitectLocalExtensionIr {
     required this.fieldName,
   });
 
-  /// Project-relative source named by config v2.
+  /// Project-relative source named by config v3.
   final String sourcePath;
 
   /// Importable package URI containing the declaration.

@@ -2,18 +2,25 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:analyzer/dart/analysis/utilities.dart';
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:crypto/crypto.dart';
 
 Future<void> main(List<String> arguments) async {
   final workspace = File.fromUri(Platform.script).parent.parent.absolute;
   final allowDirty = arguments.contains('--allow-dirty');
   final keepArtifacts = arguments.contains('--keep-artifacts');
+  final validateOnly = arguments.contains('--validate-only');
   if (arguments.any(
-    (argument) => argument != '--allow-dirty' && argument != '--keep-artifacts',
+    (argument) =>
+        argument != '--allow-dirty' &&
+        argument != '--keep-artifacts' &&
+        argument != '--validate-only',
   )) {
     throw ArgumentError(
       'Usage: dart run tool/check_canaries.dart [--allow-dirty] '
-      '[--keep-artifacts]',
+      '[--keep-artifacts] [--validate-only]',
     );
   }
   final status = await _run(workspace, 'git', const <String>[
@@ -37,7 +44,10 @@ Future<void> main(List<String> arguments) async {
     await File('${workspace.path}/tool/package_release_contract.json')
         .readAsString(),
   );
-  _validateContract(contract, release);
+  final sdkInventory = _jsonObject(
+    await File('${workspace.path}/tool/sdk_inventory.json').readAsString(),
+  );
+  _validateContract(contract, release, sdkInventory, workspace);
   _assertConsumerOwnedSeams(
     Directory('${workspace.path}/examples/paved_road_canary'),
   );
@@ -45,6 +55,12 @@ Future<void> main(List<String> arguments) async {
     Directory('${workspace.path}/examples/thin_consumer_canary'),
     enforceMainBudget: true,
   );
+  if (validateOnly) {
+    stdout.writeln(
+      'Canary contract, coverage catalog, and consumer seams pass.',
+    );
+    return;
+  }
 
   final sourceSha = (await _run(workspace, 'git', const <String>[
     'rev-parse',
@@ -214,6 +230,65 @@ Future<Map<String, Object?>> _runCanary({
       await run('flutter', const <String>['test']);
       await run('flutter', const <String>['build', 'web', '--release']);
       break;
+    case 'large_consumer':
+      await run('dart', const <String>[
+        'run',
+        'tool/materialize_large_consumer.dart',
+        '--fresh',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'contracts',
+        'sync',
+        'contracts/app_api.json',
+        '--apply',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'tool/verify_large_preview.dart',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'wiring',
+        'sync',
+        '--apply',
+        '--json',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'wiring',
+        'sync',
+        '--dry-run',
+        '--json',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'fleet',
+        'inventory',
+        '.',
+        '--json',
+      ]);
+      await run('flutter', const <String>['analyze']);
+      await run('flutter', const <String>['analyze']);
+      await run('flutter', const <String>['test']);
+      await run('flutter', const <String>['build', 'web', '--release']);
+      await run('flutter', const <String>['build', 'web', '--release']);
+      await run('flutter', const <String>['build', 'linux', '--release']);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'fleet',
+        'upgrade',
+        '.',
+        '--to=1.0.0-rc.9',
+        '--apply',
+        '--json',
+      ]);
+      break;
     case 'minimal':
       await run('dart', const <String>[
         'run',
@@ -276,6 +351,29 @@ Future<Map<String, Object?>> _runCanary({
       await run('flutter', const <String>['analyze']);
       await run('flutter', const <String>['test']);
       break;
+    case 'adapters':
+      await run('flutter', const <String>['analyze']);
+      await run('flutter', const <String>['test']);
+      break;
+    case 'tooling':
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'contracts',
+        'sync',
+        'contracts/openapi.json',
+        '--apply',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'contracts',
+        'check',
+        'contracts/openapi.json',
+      ]);
+      await run('dart', const <String>['analyze']);
+      await run('dart', const <String>['test']);
+      break;
     default:
       throw StateError('Unknown canary: $id');
   }
@@ -306,6 +404,7 @@ Future<Map<String, Object?>> _runCanary({
     'resolvedGraph': graph,
     'platforms': <String>[
       Platform.operatingSystem,
+      if (id == 'large_consumer') ...<String>['linux', 'web'],
       if (id == 'native_capabilities') 'flutter-method-channel-contract',
       if (id == 'offline_first') 'objectbox-native-vm',
     ],
@@ -519,8 +618,10 @@ Future<void> _copyPackageSource(Directory source, Directory destination) async {
 void _validateContract(
   Map<String, Object?> contract,
   Map<String, Object?> release,
+  Map<String, Object?> sdkInventory,
+  Directory workspace,
 ) {
-  if (contract['schemaVersion'] != 1 || release['schemaVersion'] != 2) {
+  if (contract['schemaVersion'] != 2 || release['schemaVersion'] != 2) {
     throw StateError('Unsupported canary or release contract schema.');
   }
   if (contract['cohortVersion'] != release['cohortVersion']) {
@@ -536,16 +637,19 @@ void _validateContract(
   final ids = <String>{
     for (final canary in _objects(contract['canaries'])) canary['id'] as String,
   };
-  if (ids.length != 6 ||
+  if (ids.length != 9 ||
       !ids.containsAll(const <String>{
         'modeling',
         'thin_consumer',
+        'large_consumer',
         'minimal',
         'offline_first',
         'drift_provider',
         'native_capabilities',
+        'adapters',
+        'tooling',
       })) {
-    throw StateError('All six RC8 formal canaries are required.');
+    throw StateError('All nine RC9 formal canaries are required.');
   }
   const requiredCoverage = <String>{
     'pure_dart_modeling',
@@ -561,6 +665,14 @@ void _validateContract(
     'workmanager_preview_and_unsupported',
     'wiring_noop_zero_writes',
     'main_paved_road_15_lines',
+    'large_30_feature_matrix',
+    'application_session_context_ownership',
+    'web_linux_incremental_builds',
+    'fleet_upgrade_zero_residual',
+    'openapi_feature_selection',
+    'typed_openapi_operation_runtime',
+    'renderer_migration_chain',
+    'induced_error_bound',
     'flutter_simple',
     'flutter_mvvm',
     'objectbox_local_first',
@@ -589,6 +701,22 @@ void _validateContract(
   for (final canary in _objects(contract['canaries'])) {
     final required = _strings(canary['requiredPackages']);
     final forbidden = _strings(canary['forbiddenPackages']);
+    final pubspecPath = canary['pubspec'];
+    if (pubspecPath is! String) {
+      throw StateError('${canary['id']} has no canary pubspec.');
+    }
+    final pubspec = File('${workspace.path}/$pubspecPath');
+    if (!pubspec.existsSync()) {
+      throw StateError('${canary['id']} canary pubspec is missing.');
+    }
+    final directDartitectDependencies =
+        RegExp(r'^  (dartitect(?:_[a-z0-9_]+)?):\s', multiLine: true)
+            .allMatches(pubspec.readAsStringSync())
+            .map((match) => match.group(1)!)
+            .toSet();
+    final missingGitOverrides = directDartitectDependencies.difference(
+      required.toSet(),
+    );
     if (required.isEmpty ||
         _strings(canary['commands']).isEmpty ||
         canary['residualResourceCensus'] != 0 ||
@@ -596,11 +724,195 @@ void _validateContract(
         forbidden.toSet().length != forbidden.length ||
         required.toSet().intersection(forbidden.toSet()).isNotEmpty ||
         !releasePackages.containsAll(required) ||
-        !releasePackages.containsAll(forbidden)) {
+        !releasePackages.containsAll(forbidden) ||
+        missingGitOverrides.isNotEmpty) {
       throw StateError('${canary['id']} has an incomplete execution contract.');
     }
   }
+  _validateCoverageCatalog(
+    contract: contract,
+    release: release,
+    sdkInventory: sdkInventory,
+    workspace: workspace,
+    canaryIds: ids,
+  );
 }
+
+void _validateCoverageCatalog({
+  required Map<String, Object?> contract,
+  required Map<String, Object?> release,
+  required Map<String, Object?> sdkInventory,
+  required Directory workspace,
+  required Set<String> canaryIds,
+}) {
+  final catalog = _object(contract['catalog']);
+  const sections = <String>{
+    'packages',
+    'entrypoints',
+    'renderers',
+    'profiles',
+    'capabilities',
+    'providers',
+    'scopes',
+    'targets',
+  };
+  if (catalog.keys.toSet().difference(sections).isNotEmpty ||
+      sections.difference(catalog.keys.toSet()).isNotEmpty) {
+    throw StateError('The RC9 canary catalog has an unsupported shape.');
+  }
+  final maps = <String, Map<String, Object?>>{
+    for (final section in sections) section: _object(catalog[section]),
+  };
+  for (final section in maps.entries) {
+    for (final entry in section.value.entries) {
+      final coverage = _strings(entry.value);
+      if (coverage.isEmpty || !canaryIds.containsAll(coverage)) {
+        throw StateError(
+          '${section.key}/${entry.key} has no executable canary.',
+        );
+      }
+    }
+  }
+
+  final inventoryPackages = _objects(sdkInventory['packages']);
+  final expectedPackages = <String>{
+    for (final package in inventoryPackages) package['name']! as String,
+  };
+  if (!_sameSet(maps['packages']!.keys.toSet(), expectedPackages) ||
+      !_sameSet(
+        expectedPackages,
+        _strings(release['publicationOrder']).toSet(),
+      )) {
+    throw StateError(
+      'Every one of the 24 packages must have catalog coverage.',
+    );
+  }
+  final expectedEntrypoints = <String>{
+    for (final package in inventoryPackages)
+      for (final entrypoint in _strings(package['entrypoints']))
+        'package:${package['name']}/$entrypoint',
+  };
+  if (!_sameSet(maps['entrypoints']!.keys.toSet(), expectedEntrypoints)) {
+    throw StateError(
+      'Every one of the 30 public entrypoints must have catalog coverage.',
+    );
+  }
+  final expectedRenderers = _productionRendererIds(workspace);
+  if (!_sameSet(maps['renderers']!.keys.toSet(), expectedRenderers)) {
+    final missing = expectedRenderers.difference(
+      maps['renderers']!.keys.toSet(),
+    );
+    final extra = maps['renderers']!.keys.toSet().difference(expectedRenderers);
+    throw StateError(
+      'Renderer coverage mismatch; missing=$missing extra=$extra.',
+    );
+  }
+  const exactAxes = <String, Set<String>>{
+    'profiles': <String>{'local', 'online', 'cache', 'replica', 'offline-full'},
+    'capabilities': <String>{'credentials', 'attachments', 'forms', 'queries'},
+    'providers': <String>{'drift', 'objectbox', 'dio', 'workmanager', 'sentry'},
+    'scopes': <String>{'application', 'session'},
+    'targets': <String>{'android', 'ios', 'macos', 'windows', 'linux', 'web'},
+  };
+  for (final axis in exactAxes.entries) {
+    if (!_sameSet(maps[axis.key]!.keys.toSet(), axis.value)) {
+      throw StateError('${axis.key} canary coverage is incomplete.');
+    }
+  }
+
+  final canaries = <String, Map<String, Object?>>{
+    for (final canary in _objects(contract['canaries']))
+      canary['id']! as String: canary,
+  };
+  final semanticImports = <String, Set<String>>{
+    for (final canary in canaries.entries)
+      canary.key: _canaryImports(
+        Directory('${workspace.path}/${canary.value['source']}'),
+      ),
+  };
+  for (final entrypoint in maps['entrypoints']!.entries) {
+    final covered = _strings(entrypoint.value)
+        .any((canary) => semanticImports[canary]!.contains(entrypoint.key));
+    if (!covered) {
+      throw StateError(
+        '${entrypoint.key} is cataloged but never imported semantically.',
+      );
+    }
+  }
+  for (final package in maps['packages']!.entries) {
+    final covered = _strings(package.value).any(
+      (canary) =>
+          _strings(canaries[canary]!['requiredPackages']).contains(package.key),
+    );
+    if (!covered) {
+      throw StateError('${package.key} is not required by its mapped canary.');
+    }
+  }
+}
+
+Set<String> _productionRendererIds(Directory workspace) {
+  final root = Directory('${workspace.path}/packages/dartitect_cli/lib/src');
+  final visitor = _RendererIdVisitor();
+  for (final entity in root.listSync(recursive: true, followLinks: false)) {
+    if (entity is! File || !entity.path.endsWith('.dart')) continue;
+    parseString(
+      content: entity.readAsStringSync(),
+      path: entity.path,
+      throwIfDiagnostics: false,
+    ).unit.accept(visitor);
+  }
+  return visitor.ids;
+}
+
+Set<String> _canaryImports(Directory source) {
+  final imports = <String>{};
+  if (!source.existsSync()) return imports;
+  for (final entity in source.listSync(recursive: true, followLinks: false)) {
+    if (entity is! File || !entity.path.endsWith('.dart')) continue;
+    final unit = parseString(
+      content: entity.readAsStringSync(),
+      path: entity.path,
+      throwIfDiagnostics: false,
+    ).unit;
+    for (final directive in unit.directives.whereType<ImportDirective>()) {
+      final uri = directive.uri.stringValue;
+      if (uri?.startsWith('package:dartitect') == true) imports.add(uri!);
+    }
+  }
+  return imports;
+}
+
+final class _RendererIdVisitor extends RecursiveAstVisitor<void> {
+  final Set<String> ids = <String>{};
+
+  @override
+  void visitSimpleStringLiteral(SimpleStringLiteral node) {
+    _record(node.value);
+    super.visitSimpleStringLiteral(node);
+  }
+
+  @override
+  void visitStringInterpolation(StringInterpolation node) {
+    _record(node.toSource());
+    super.visitStringInterpolation(node);
+  }
+
+  void _record(String source) {
+    var value = source;
+    value = value
+        .replaceAll(RegExp(r'''^['"]|['"]$'''), '')
+        .replaceAll(r'$id', '*');
+    if (value != 'blueprint.json' &&
+        RegExp(
+          r'^(?:blueprint|contracts|generation|model|scaffold|wiring)\.[A-Za-z0-9.*_-]+$',
+        ).hasMatch(value)) {
+      ids.add(value);
+    }
+  }
+}
+
+bool _sameSet(Set<String> left, Set<String> right) =>
+    left.length == right.length && left.containsAll(right);
 
 String _hostDesktopTarget() {
   if (Platform.isLinux) return 'linux';

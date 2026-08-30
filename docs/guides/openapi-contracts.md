@@ -28,7 +28,15 @@ The bounded renderer accepts OpenAPI 3.1 objects, arrays, enums, `required`,
 nullable unions, `allOf`, and discriminator-based `oneOf`. It supports
 path/query/header parameters and JSON request/response bodies. Generated output
 contains typed DTOs, bounded JSON codecs, route templates, endpoint
-descriptors/clients, status mappings, and deterministic fixtures.
+descriptors/clients, typed status mappings, narrow per-operation callable
+wrappers, and deterministic fixtures. Clients run over `DioJsonClient`, so the
+selected transport context propagates cancellation, deadlines, credentials,
+and observation.
+
+Config v3 registers each contract's local spec, generated output, and transport
+context. A feature lists exact `(contract, operationId)` selections. Wiring
+places only those `<OperationId>Operation` objects in that feature runtime;
+unselected operations and the full contract client do not enter the graph.
 
 Unknown string formats remain `String` until the project supplies an explicit
 mapping outside generated output. Recursive refs are detected and reported;

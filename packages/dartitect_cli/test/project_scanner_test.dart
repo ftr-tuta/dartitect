@@ -238,7 +238,7 @@ sdks:
       await _write(root, 'pubspec.yaml', 'name: generated_sample\n');
       await _write(root, 'dartitect.json', '''
 {
-  "configVersion": 2,
+  "configVersion": 3,
   "profile": "native_strict",
   "layers": {
     "domain": ["lib/domain/**"],
@@ -255,6 +255,7 @@ sdks:
   "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
   "storageContexts": {},
   "transports": {},
+  "contracts": {},
   "observability": {"provider": "none"},
   "scheduler": {"provider": "none"},
   "extensionSources": []
@@ -271,6 +272,10 @@ sdks:
       final scan = await ProjectScanner(root).scan();
 
       expect(scan.dartFileCount, 1);
+      expect(
+        scan.findings.map((finding) => finding.toJson()).toList(),
+        isEmpty,
+      );
       expect(scan.violations.map((finding) => finding.code).toSet(), <String>{
         DartitectRuleCodes.forbiddenArchitecture,
       });
@@ -287,7 +292,7 @@ sdks:
     await _write(root, 'pubspec.yaml', 'name: scope_sample\n');
     await _write(root, 'dartitect.json', '''
 {
-  "configVersion": 2,
+  "configVersion": 3,
   "profile": "native_strict",
   "layers": {
     "domain": ["lib/domain/**"],
@@ -304,6 +309,7 @@ sdks:
   "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
   "storageContexts": {},
   "transports": {},
+  "contracts": {},
   "observability": {"provider": "none"},
   "scheduler": {"provider": "none"},
   "extensionSources": []
@@ -375,13 +381,13 @@ final Size Function() readSize = () => const Size();
     },
   );
 
-  test('stable config v2 classifies custom layers and suppressions', () async {
+  test('stable config v3 classifies custom layers and suppressions', () async {
     final root = await Directory.systemTemp.createTemp('dartitect-config-v2-');
     addTearDown(() => root.delete(recursive: true));
     await _write(root, 'pubspec.yaml', 'name: configured_sample\n');
     await _write(root, 'dartitect.json', '''
 {
-  "configVersion": 2,
+  "configVersion": 3,
   "profile": "native_strict",
   "layers": {
     "domain": ["lib/model/**"],
@@ -406,6 +412,7 @@ final Size Function() readSize = () => const Size();
   "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
   "storageContexts": {},
   "transports": {},
+  "contracts": {},
   "observability": {"provider": "none"},
   "scheduler": {"provider": "none"},
   "extensionSources": []
@@ -571,7 +578,7 @@ workspace:
     await _write(root, 'packages/app/pubspec.yaml', 'name: app\n');
     await _write(root, 'packages/app/dartitect.json', '''
 {
-  "configVersion": 2,
+  "configVersion": 3,
   "profile": "native_strict",
   "layers": {
     "domain": ["lib/domain/**"],
@@ -588,6 +595,7 @@ workspace:
   "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
   "storageContexts": {},
   "transports": {},
+  "contracts": {},
   "observability": {"provider": "none"},
   "scheduler": {"provider": "none"},
   "extensionSources": []

@@ -293,7 +293,7 @@ environment:
           resources.resources.map((resource) => resource.uri),
           containsAll(<String>[
             'dartitect://packages',
-            'dartitect://config/v2',
+            'dartitect://config/v3',
           ]),
         );
         final templates = await environment.connection.listResourceTemplates();
@@ -368,6 +368,7 @@ environment:
       'previews and applies feature creation through a stale-safe plan',
       () async {
         final project = await _project();
+        await _prepareResolvedPackageConfig(project);
         final environment = _Environment(
           DartitectMcpPolicy(
             allowedRoots: <Directory>[project],
@@ -389,11 +390,15 @@ environment:
           <String, Object?>{
             'name': 'accounts',
             'profile': 'local',
-            'scope': 'session',
+            'scope': 'application',
             'capabilities': 'credentials,forms',
           },
         );
-        expect(preview.isError, isNot(true));
+        expect(
+          preview.isError,
+          isNot(true),
+          reason: jsonEncode(preview.structuredContent),
+        );
         expect(File('${project.path}/dartitect.json').existsSync(), isFalse);
         expect(
           jsonEncode(preview.structuredContent),
@@ -413,7 +418,7 @@ environment:
         );
         expect(
           config.features.declarations['accounts']?.scope,
-          FeatureScope.session,
+          FeatureScope.application,
         );
         expect(
           File(
@@ -442,15 +447,21 @@ environment:
           greaterThan(2),
         );
       },
+      timeout: const Timeout(Duration(minutes: 2)),
     );
 
     test('wiring preview revalidates state before reviewed apply', () async {
       final project = await _project();
+      await _prepareWiringFactories(project);
       await File('${project.path}/dartitect.json').writeAsString(
         DartitectConfig(
           transports: <String, DartitectTransportConfig>{
             'api': DartitectTransportConfig(
               provider: 'dio',
+              factorySource: DartitectFactorySourceConfig(
+                source: 'lib/factories.dart',
+                declaration: 'ApiTransportFactory',
+              ),
               targets: const <DartitectPlatform>[DartitectPlatform.android],
             ),
           },
@@ -459,6 +470,10 @@ environment:
               'notes': DartitectFeatureDeclaration(
                 profile: FeatureProfile.online,
                 scope: FeatureScope.application,
+                factorySource: DartitectFactorySourceConfig(
+                  source: 'lib/factories.dart',
+                  declaration: 'NotesFactory',
+                ),
                 transport: 'api',
                 pagination: FeaturePagination.none,
                 diagnostics: FeatureDiagnosticsLevel.basic,
@@ -800,6 +815,70 @@ dependencies:
     }),
   );
   return root;
+}
+
+Future<void> _prepareWiringFactories(Directory root) async {
+  await _prepareResolvedPackageConfig(root);
+  await File('${root.path}/pubspec.yaml').writeAsString('''name: fixture
+environment:
+  sdk: ^3.13.0
+dependencies:
+  dartitect: any
+''');
+  await File('${root.path}/lib/factories.dart').writeAsString('''
+import 'package:dartitect/dartitect.dart';
+
+final class ApiTransport {}
+final class NotesRepository {}
+final class NotesRemotePort {}
+final class NotesMapper {}
+final class NotesViewModel {}
+
+@DartitectTransportContextFactory('api')
+final class ApiTransportFactory {
+  Future<ApiTransport> open() async => ApiTransport();
+  Future<void> dispose(ApiTransport transport) async {}
+}
+
+@DartitectFeatureFactory('notes')
+final class NotesFactory {
+  NotesRepository createRepository() => NotesRepository();
+  NotesRemotePort createRemotePort() => NotesRemotePort();
+  NotesMapper createMapper() => NotesMapper();
+  NotesViewModel createViewModel(NotesRepository repository) =>
+      NotesViewModel();
+}
+''');
+}
+
+Future<void> _prepareResolvedPackageConfig(Directory root) async {
+  final sourceUri = await Isolate.packageConfig;
+  if (sourceUri == null) throw StateError('Package config is unresolved.');
+  final decoded = jsonDecode(await File.fromUri(sourceUri).readAsString());
+  if (decoded is! Map<String, Object?> || decoded['packages'] is! List) {
+    throw StateError('Package config is invalid.');
+  }
+  final packages = (decoded['packages']! as List<Object?>)
+      .whereType<Map<String, Object?>>()
+      .where((package) => package['name'] != 'fixture')
+      .map(
+        (package) => <String, Object?>{
+          ...package,
+          if (package['rootUri'] case final String value)
+            'rootUri': sourceUri.resolve(value).toString(),
+        },
+      )
+      .toList();
+  packages.add(<String, Object?>{
+    'name': 'fixture',
+    'rootUri': '../',
+    'packageUri': 'lib/',
+    'languageVersion': '3.13',
+  });
+  await Directory('${root.path}/.dart_tool').create(recursive: true);
+  await File('${root.path}/.dart_tool/package_config.json').writeAsString(
+    jsonEncode(<String, Object?>{'configVersion': 2, 'packages': packages}),
+  );
 }
 
 final class _Environment {

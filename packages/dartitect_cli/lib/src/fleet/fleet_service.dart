@@ -2,17 +2,35 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:analyzer/dart/analysis/utilities.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:crypto/crypto.dart';
 
 import '../config/dartitect_config.dart';
 import '../generation/generation_engine.dart';
 import '../generation/wiring_service.dart';
+import '../inspect/consumer_tax.dart';
 import '../model/model_generator.dart';
 import '../model/primary_constructor_migration.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
 import '../verification/verification_service.dart';
 import 'v1_config_migration.dart';
+
+const _rendererManifestMigrationId = 'renderer-manifest-v2-to-v3';
+const _wiringRendererMigrationId = 'wiring-renderers-rc9-v3';
+const _openApiRendererMigrationId = 'openapi-renderer-v3-to-v4';
+
+const _rc9WiringRendererVersions = <String, int>{
+  'wiring.application': 3,
+  'wiring.session': 3,
+  'wiring.feature': 3,
+  'wiring.dio': 3,
+  'wiring.workmanager': 3,
+  'wiring.storage': 4,
+};
+
+const _rc9OpenApiRendererVersions = <String, int>{'contracts.openapi': 4};
 
 /// Result from one closed, allowlisted fleet validation command.
 final class DartitectFleetCommandResult {
@@ -150,6 +168,187 @@ final class DartitectFleetService {
     );
   }
 
+  /// Produces a reproducible source/config/manifest inventory snapshot.
+  Future<DartitectFleetReport> inventory(Iterable<String> roots) async {
+    final projects = await _projects(roots);
+    final results = <Map<String, Object?>>[];
+    for (final project in projects) {
+      final pubspec = File(_join(project.directory.path, 'pubspec.yaml'));
+      final source = await pubspec.readAsString();
+      final configFile = File(_join(project.directory.path, 'dartitect.json'));
+      final config = await configFile.exists()
+          ? await DartitectConfig.load(configFile)
+          : null;
+      final dependencies = _declaredDartitectDependencies(source);
+      final locked = await _lockedVersions(project.directory);
+      final tax = await ConsumerTaxInspector(project.directory).inspect();
+      final entrypoints = await _usedDartitectEntrypoints(project.directory);
+      final manifests = await _generationInventory(project.directory);
+      final profiles =
+          config?.features.declarations.values
+              .map((feature) => feature.profile.wireName)
+              .toSet()
+              .toList() ??
+          <String>[];
+      profiles.sort();
+      final capabilities = <String>{
+        for (final feature
+            in config?.features.declarations.values ??
+                const <DartitectFeatureDeclaration>[])
+          for (final capability in feature.capabilities) capability.wireName,
+        if (config?.observability.provider != 'none') 'observability',
+        if (config?.scheduler.provider != 'none') 'scheduler',
+      }.toList()..sort();
+      final symbols = tax.requiredSymbols;
+      results.add(<String, Object?>{
+        'root': project.label,
+        if (_packageName(source) case final name?) 'name': name,
+        'versions': <Object?>[
+          for (final dependency in dependencies)
+            <String, Object?>{
+              ...dependency,
+              if (locked[dependency['package']] case final version?)
+                'lockedVersion': version,
+            },
+        ],
+        'entrypoints': entrypoints,
+        'symbols': symbols,
+        'profiles': profiles,
+        'capabilities': capabilities,
+        'contexts': <String, Object?>{
+          'storage': <Object?>[
+            for (final entry
+                in config?.storageContexts.entries ??
+                    const <MapEntry<String, DartitectStorageContextConfig>>[])
+              <String, Object?>{
+                'name': entry.key,
+                'provider': entry.value.provider,
+                'scope': entry.value.scope.wireName,
+              },
+          ],
+          'transports': <Object?>[
+            for (final entry
+                in config?.transports.entries ??
+                    const <MapEntry<String, DartitectTransportConfig>>[])
+              <String, Object?>{
+                'name': entry.key,
+                'provider': entry.value.provider,
+                'scope': entry.value.scope.wireName,
+              },
+          ],
+        },
+        'targets':
+            config?.targets.platforms
+                .map((target) => target.wireName)
+                .toList() ??
+            const <String>[],
+        'schemas': <Object?>[
+          for (final feature
+              in config?.features.declarations.entries ??
+                  const <MapEntry<String, DartitectFeatureDeclaration>>[])
+            if (feature.value.dataset case final dataset?)
+              <String, Object?>{
+                'feature': feature.key,
+                'storageContext': feature.value.storageContext,
+                ...dataset.toJson(),
+              },
+          for (final contract
+              in config?.contracts.entries ??
+                  const <MapEntry<String, DartitectContractConfig>>[])
+            <String, Object?>{
+              'contract': contract.key,
+              'spec': contract.value.spec,
+              'output': contract.value.output,
+            },
+        ],
+        'manifests': manifests,
+        'blueprints': await _blueprintLocks(project.directory),
+        'extensions': config?.extensionSources ?? const <String>[],
+        'deprecations': symbols
+            .where(_deprecatedFleetSymbols.contains)
+            .toList(),
+        'analysisMode': tax.architectureTax['analyzerResolvedFiles'] == 0
+            ? 'syntactic'
+            : 'resolved',
+      });
+    }
+    return DartitectFleetReport(
+      command: 'fleet inventory',
+      projects: List<Map<String, Object?>>.unmodifiable(results),
+      exitCode: 0,
+    );
+  }
+
+  /// Compares two inventory snapshots without inspecting live projects.
+  Future<DartitectFleetReport> impact({
+    required String fromSnapshot,
+    required String toSnapshot,
+  }) async {
+    final from = await _loadInventorySnapshot(fromSnapshot);
+    final to = await _loadInventorySnapshot(toSnapshot);
+    final fromProjects = _snapshotProjects(from);
+    final toProjects = _snapshotProjects(to);
+    final roots = <String>{...fromProjects.keys, ...toProjects.keys}.toList()
+      ..sort();
+    final results = <Map<String, Object?>>[];
+    for (final root in roots) {
+      final before = fromProjects[root];
+      final after = toProjects[root];
+      if (_canonical(before) == _canonical(after)) continue;
+      final beforeSymbols = _stringSet(before?['symbols']);
+      final afterSymbols = _stringSet(after?['symbols']);
+      final removedSymbols = beforeSymbols.difference(afterSymbols).toList()
+        ..sort();
+      final addedSymbols = afterSymbols.difference(beforeSymbols).toList()
+        ..sort();
+      final graphChanged = const <String>{
+        'profiles',
+        'capabilities',
+        'contexts',
+        'targets',
+        'schemas',
+        'extensions',
+      }.any((key) => _canonical(before?[key]) != _canonical(after?[key]));
+      final outputs = graphChanged
+          ? _manifestOutputs(after?['manifests'])
+          : const <String>[];
+      results.add(<String, Object?>{
+        'root': root,
+        'status': before == null
+            ? 'added'
+            : after == null
+            ? 'removed'
+            : 'changed',
+        'affectedSymbols': <String, Object?>{
+          'added': addedSymbols,
+          'removed': removedSymbols,
+        },
+        'regeneratedOutputs': outputs,
+        'automatic': <String>[
+          if (graphChanged) 'regenerate manifest-owned outputs',
+          if (_canonical(before?['versions']) != _canonical(after?['versions']))
+            'update declared dependency cohort',
+        ],
+        'domainIntervention': <String>[
+          if (removedSymbols.isNotEmpty)
+            'review removed public symbols: ${removedSymbols.join(', ')}',
+          if (_canonical(before?['profiles']) != _canonical(after?['profiles']))
+            'review feature profile behavior',
+          if (_canonical(before?['schemas']) != _canonical(after?['schemas']))
+            'review domain schema and mapping semantics',
+          if (_canonical(before?['deprecations']) !=
+              _canonical(after?['deprecations']))
+            'review low-level or deprecated API usage',
+        ],
+      });
+    }
+    return DartitectFleetReport(
+      command: 'fleet impact',
+      projects: List<Map<String, Object?>>.unmodifiable(results),
+      exitCode: 0,
+    );
+  }
+
   /// Runs architecture checks over explicit roots without baselines or writes.
   Future<DartitectFleetReport> check(Iterable<String> roots) async {
     final projects = await _projects(roots);
@@ -232,14 +431,14 @@ final class DartitectFleetService {
     );
   }
 
-  /// Applies an exact RC6-to-RC8 cohort transaction and validates every root.
+  /// Applies the registered migration chain to the RC9 source cohort.
   Future<DartitectFleetReport> applyUpgrade(
     Iterable<String> roots, {
     required String targetCohort,
   }) async {
-    if (targetCohort != '1.0.0-rc.8') {
+    if (targetCohort != '1.0.0-rc.9') {
       throw const FormatException(
-        'Fleet apply supports only the exact RC6 to RC8 migration.',
+        'Fleet apply supports only the exact RC9 source migration chain.',
       );
     }
     final projects = await _projects(roots);
@@ -249,6 +448,18 @@ final class DartitectFleetService {
         for (final project in projects)
           project.label: await _previewUpgradeProject(project, targetCohort),
       };
+      final pendingManual = previews.entries
+          .expand(
+            (entry) => (entry.value['operations']! as List<Object?>).where(
+              (operation) => '$operation'.startsWith('MANUAL '),
+            ),
+          )
+          .toList();
+      if (pendingManual.isNotEmpty) {
+        throw const FormatException(
+          'Fleet apply requires all previewed consumer-owned factory actions.',
+        );
+      }
       final snapshot = await _FleetSnapshot.capture(projects);
       await _writeFleetJournal(snapshot);
       final receipts = <Map<String, Object?>>[];
@@ -265,6 +476,7 @@ final class DartitectFleetService {
             'targetCohort': targetCohort,
             'stateToken': preview['stateToken'],
             'operations': preview['operations'],
+            'migrations': preview['migrations'],
             'commands': commandReceipts,
             'result': 'committed',
           };
@@ -291,17 +503,18 @@ final class DartitectFleetService {
     _FleetProject project,
     String targetCohort,
   ) async {
-    if (targetCohort != '1.0.0-rc.8') {
+    if (targetCohort != '1.0.0-rc.9') {
       throw const FormatException(
-        'Fleet upgrade accepts only --to=1.0.0-rc.8.',
+        'Fleet upgrade accepts only --to=1.0.0-rc.9.',
       );
     }
     final pubspec = await File(_join(project.directory.path, 'pubspec.yaml'))
         .readAsString();
-    _requireExactV1Dependencies(pubspec);
+    _requireUpgradeableDependencies(pubspec);
     final dependency = await DartitectProjectService(project.directory)
         .previewDependencyUpgrade(targetCohort);
     final operations = <String>[...dependency.operations];
+    final migrations = <Map<String, String>>[];
     DartitectConfig? migratedConfig;
     final configFile = File(_join(project.directory.path, 'dartitect.json'));
     if (await configFile.exists()) {
@@ -309,15 +522,46 @@ final class DartitectFleetService {
         await configFile.readAsString(),
       );
       migratedConfig = migration.config;
+      migrations.addAll(migration.steps);
+      operations.addAll(<String>[
+        for (final step in migration.steps)
+          'MIGRATION ${step['id']} ${step['action']}',
+        for (final path in migration.manualActions)
+          '${File(_join(project.directory.path, path)).existsSync() ? 'READY' : 'MANUAL'} $path',
+      ]);
       operations.add(
         migration.changed ? 'UPDATE dartitect.json' : 'NO-OP dartitect.json',
       );
-      final wiring = await DartitectWiringService(project.directory)
-          .inspect(config: migratedConfig);
-      operations.addAll(<String>[
-        for (final operation in wiring.plan.operations)
-          '${operation.disposition.name.toUpperCase()} ${operation.operation.relativePath}',
-      ]);
+      final manualReady = migration.manualActions.every(
+        (path) => File(_join(project.directory.path, path)).existsSync(),
+      );
+      if (manualReady) {
+        final wiring = await DartitectWiringService(project.directory)
+            .inspect(config: migratedConfig);
+        operations.addAll(<String>[
+          for (final operation in wiring.plan.operations)
+            '${operation.disposition.name.toUpperCase()} ${operation.operation.relativePath}',
+        ]);
+      }
+    }
+    final rendererAction = await _rendererManifestMigrationAction(
+      project.directory,
+    );
+    migrations.add(<String, String>{
+      'id': _rendererManifestMigrationId,
+      'action': rendererAction,
+    });
+    operations.add('MIGRATION $_rendererManifestMigrationId $rendererAction');
+    for (final migration in <(String, Map<String, int>)>[
+      (_wiringRendererMigrationId, _rc9WiringRendererVersions),
+      (_openApiRendererMigrationId, _rc9OpenApiRendererVersions),
+    ]) {
+      final action = await _rendererVersionMigrationAction(
+        project.directory,
+        migration.$2,
+      );
+      migrations.add(<String, String>{'id': migration.$1, 'action': action});
+      operations.add('MIGRATION ${migration.$1} $action');
     }
     final primary = await PrimaryConstructorMigration(project.directory)
         .inspect();
@@ -352,6 +596,7 @@ final class DartitectFleetService {
       'targetCohort': targetCohort,
       'stateToken': stateToken,
       'operations': normalized,
+      'migrations': migrations,
       'validationCommands': await _validationCommandLabels(project.directory),
       if (migratedConfig != null)
         'featureCount': migratedConfig.features.declarations.length,
@@ -418,6 +663,52 @@ final class DartitectFleetService {
     return receipts;
   }
 
+  static Future<String> _rendererManifestMigrationAction(Directory root) async {
+    final directory = Directory(_join(root.path, '.dartitect/generation'));
+    if (!await directory.exists()) return 'no-op';
+    await for (final entity in directory.list(
+      recursive: true,
+      followLinks: false,
+    )) {
+      if (entity is! File || !_isManifestFile(entity)) continue;
+      final decoded = jsonDecode(await entity.readAsString());
+      if (decoded is Map<String, Object?> && decoded['schemaVersion'] != 3) {
+        return 'apply';
+      }
+    }
+    return 'no-op';
+  }
+
+  static Future<String> _rendererVersionMigrationAction(
+    Directory root,
+    Map<String, int> requiredVersions,
+  ) async {
+    final directory = Directory(_join(root.path, '.dartitect/generation'));
+    if (!await directory.exists()) return 'no-op';
+    await for (final entity in directory.list(
+      recursive: true,
+      followLinks: false,
+    )) {
+      if (entity is! File || !_isManifestFile(entity)) continue;
+      final decoded = jsonDecode(await entity.readAsString());
+      if (decoded is! Map<String, Object?>) continue;
+      final outputs = decoded['outputs'];
+      if (outputs is! List<Object?>) continue;
+      for (final output in outputs) {
+        if (output is! Map<String, Object?>) continue;
+        final rendererId = output['rendererId'];
+        final rendererVersion = output['rendererVersion'];
+        final required = requiredVersions[rendererId];
+        if (required != null &&
+            rendererVersion is int &&
+            rendererVersion < required) {
+          return 'apply';
+        }
+      }
+    }
+    return 'no-op';
+  }
+
   Future<List<String>> _validationCommandLabels(Directory root) async =>
       (await _validationCommands(root))
           .map((command) => command.label)
@@ -442,11 +733,12 @@ final class DartitectFleetService {
           ];
   }
 
-  static void _requireExactV1Dependencies(String pubspec) {
-    final dependencies = _declaredDartitectDependencies(pubspec);
+  static void _requireUpgradeableDependencies(String pubspec) {
+    final dependencies = _declaredDartitectDependencies(pubspec)
+        .where((dependency) => dependency['section'] != 'dependency_overrides');
     if (dependencies.isEmpty) {
       throw const FormatException(
-        'Fleet RC8 migration requires at least one RC6 Dartitect dependency.',
+        'Fleet RC9 migration requires at least one Dartitect dependency.',
       );
     }
     for (final dependency in dependencies) {
@@ -456,9 +748,15 @@ final class DartitectFleetService {
             '1.0.0-rc.6',
             '^1.0.0-rc.6',
             '>=1.0.0-rc.6 <1.0.0',
+            '1.0.0-rc.8',
+            '^1.0.0-rc.8',
+            '>=1.0.0-rc.8 <1.0.0',
+            '1.0.0-rc.9',
+            '^1.0.0-rc.9',
+            '>=1.0.0-rc.9 <1.0.0',
           }.contains(constraint)) {
         throw FormatException(
-          'Dependency ${dependency['package']} is not on the exact RC6 cohort.',
+          'Dependency ${dependency['package']} is outside the RC6/RC8/RC9 chain.',
         );
       }
     }
@@ -621,6 +919,113 @@ final class DartitectFleetService {
       output: '${result.stdout}\n${result.stderr}',
     );
   }
+
+  static Future<List<String>> _usedDartitectEntrypoints(Directory root) async {
+    final entrypoints = <String>{};
+    for (final relative in const <String>['lib', 'test', 'integration_test']) {
+      final directory = Directory(_join(root.path, relative));
+      if (!await directory.exists()) continue;
+      await for (final entity in directory.list(
+        recursive: true,
+        followLinks: false,
+      )) {
+        if (entity is! File || !entity.path.endsWith('.dart')) continue;
+        final unit = parseString(
+          content: await entity.readAsString(),
+          path: entity.path,
+          throwIfDiagnostics: false,
+        ).unit;
+        for (final import in unit.directives.whereType<ImportDirective>()) {
+          final uri = import.uri.stringValue;
+          if (uri?.startsWith('package:dartitect') == true) {
+            entrypoints.add(uri!);
+          }
+        }
+      }
+    }
+    return entrypoints.toList()..sort();
+  }
+
+  static Future<List<Map<String, Object?>>> _generationInventory(
+    Directory root,
+  ) async {
+    final directory = Directory(_join(root.path, '.dartitect/generation'));
+    if (!await directory.exists()) return const <Map<String, Object?>>[];
+    final output = <Map<String, Object?>>[];
+    await for (final entity in directory.list(
+      recursive: true,
+      followLinks: false,
+    )) {
+      if (entity is! File || !_isManifestFile(entity)) continue;
+      final decoded = jsonDecode(await entity.readAsString());
+      if (decoded is! Map<String, Object?> || decoded['entries'] is! List) {
+        continue;
+      }
+      final entries = (decoded['entries']! as List<Object?>)
+          .whereType<Map<String, Object?>>()
+          .toList();
+      output.add(<String, Object?>{
+        'path': entity.path
+            .substring(root.path.length + 1)
+            .replaceAll(Platform.pathSeparator, '/'),
+        'schemaVersion': decoded['schemaVersion'],
+        'renderers': <String>{
+          for (final entry in entries)
+            if (entry['rendererId'] case final String id) id,
+        }.toList()..sort(),
+        'outputs': <String>{
+          for (final entry in entries)
+            if (entry['path'] case final String path) path,
+        }.toList()..sort(),
+      });
+    }
+    output.sort(
+      (left, right) => '${left['path']}'.compareTo('${right['path']}'),
+    );
+    return output;
+  }
+
+  static Future<List<Map<String, Object?>>> _blueprintLocks(
+    Directory root,
+  ) async {
+    final directory = Directory(_join(root.path, '.dartitect/blueprints'));
+    if (!await directory.exists()) return const <Map<String, Object?>>[];
+    final locks = <Map<String, Object?>>[];
+    await for (final entity in directory.list(followLinks: false)) {
+      if (entity is! File || !entity.path.endsWith('.lock.json')) continue;
+      final decoded = jsonDecode(await entity.readAsString());
+      if (decoded is Map<String, Object?>) locks.add(decoded);
+    }
+    locks.sort((left, right) => '${left['id']}'.compareTo('${right['id']}'));
+    return locks;
+  }
+
+  Future<Map<String, Object?>> _loadInventorySnapshot(String rawPath) async {
+    final relative = _normalizeRelative(rawPath, description: 'snapshot path');
+    final boundary = await fleetRoot.resolveSymbolicLinks();
+    final file = File(_join(fleetRoot.path, relative));
+    if (!await file.exists()) {
+      throw const FormatException('Fleet inventory snapshot does not exist.');
+    }
+    final resolved = await file.resolveSymbolicLinks();
+    _requireContained(boundary, resolved, description: 'snapshot path');
+    final decoded = jsonDecode(await File(resolved).readAsString());
+    if (decoded is! Map<String, Object?> ||
+        decoded['command'] != 'fleet inventory' ||
+        decoded['projects'] is! List<Object?>) {
+      throw const FormatException('Unsupported fleet inventory snapshot.');
+    }
+    return decoded;
+  }
+
+  static Map<String, Map<String, Object?>> _snapshotProjects(
+    Map<String, Object?> snapshot,
+  ) => <String, Map<String, Object?>>{
+    for (final project
+        in (snapshot['projects']! as List<Object?>)
+            .whereType<Map<String, Object?>>())
+      project['root']! as String: project,
+  };
 
   Future<List<_FleetProject>> _projects(Iterable<String> roots) async {
     if (!await fleetRoot.exists()) {
@@ -1225,9 +1630,46 @@ Future<List<File>> _fleetFiles(Directory root) async {
   return files;
 }
 
+String _canonical(Object? value) => jsonEncode(_canonicalValue(value));
+
+Object? _canonicalValue(Object? value) {
+  if (value is Map) {
+    final keys = value.keys.map((key) => '$key').toList()..sort();
+    return <String, Object?>{
+      for (final key in keys) key: _canonicalValue(value[key]),
+    };
+  }
+  if (value is List) return value.map(_canonicalValue).toList();
+  return value;
+}
+
+Set<String> _stringSet(Object? value) =>
+    value is List ? value.whereType<String>().toSet() : const <String>{};
+
+List<String> _manifestOutputs(Object? value) {
+  if (value is! List) return const <String>[];
+  final outputs = <String>{};
+  for (final manifest in value.whereType<Map<String, Object?>>()) {
+    outputs.addAll(_stringSet(manifest['outputs']));
+  }
+  return outputs.toList()..sort();
+}
+
+const _deprecatedFleetSymbols = <String>{
+  'DartitectAssemblyBinding',
+  'OwnedGraph',
+  'BootstrapCoordinator',
+  'FeatureAssembly',
+};
+
 String _relativeTo(Directory root, String path) => path
     .substring(root.absolute.path.length + 1)
     .replaceAll(Platform.pathSeparator, '/');
+
+bool _isManifestFile(File file) {
+  final segments = file.uri.pathSegments;
+  return segments.isNotEmpty && segments.last == 'manifest.json';
+}
 
 String _fleetJoin(String left, String right) =>
     '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';

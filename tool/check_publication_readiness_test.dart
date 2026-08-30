@@ -68,6 +68,16 @@ void main() {
     expect(result.exitCode, 1);
     expect(result.stderr, contains('does not match source_sha and ci_run_id'));
   });
+
+  test('rejects stable publication while the UI/UX gate is pending', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+
+    final result = await fixture.check(channel: 'pub-dev-stable');
+
+    expect(result.exitCode, 1);
+    expect(result.stderr, contains('ui-ux-business-neutral'));
+  });
 }
 
 final class _Fixture {
@@ -87,6 +97,8 @@ final class _Fixture {
     await policyFile.parent.create(recursive: true);
     await File('${sourceRoot.path}/tool/actions_readiness_policy.json')
         .copy(policyFile.path);
+    await File('${sourceRoot.path}/tool/stable_candidate_contract.json')
+        .copy('${root.path}/tool/stable_candidate_contract.json');
     await File('${root.path}/README.md').writeAsString('fixture\n');
     await _run(root, 'git', const <String>['init', '-q']);
     await _run(root, 'git', const <String>['config', 'user.name', 'fixture']);
@@ -164,7 +176,11 @@ final class _Fixture {
       File('${artifactRoot.path}/actions-readiness-v1.json')
           .writeAsString(jsonEncode(value));
 
-  Future<ProcessResult> check({int runId = 123, int runAttempt = 1}) {
+  Future<ProcessResult> check({
+    int runId = 123,
+    int runAttempt = 1,
+    String channel = 'github-release',
+  }) {
     final checker = File(
       '${Directory.current.path}/tool/check_publication_readiness.dart',
     );
@@ -175,7 +191,7 @@ final class _Fixture {
         '--root=${root.path}',
         '--source-sha=$sha',
         '--ci-run-id=$runId',
-        '--channel=github-release',
+        '--channel=$channel',
         '--manifest=${artifactRoot.path}/actions-readiness-v1.json',
       ],
       environment: <String, String>{

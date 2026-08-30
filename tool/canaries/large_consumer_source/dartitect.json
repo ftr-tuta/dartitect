@@ -1,0 +1,994 @@
+{
+  "configVersion": 3,
+  "profile": "native_strict",
+  "layers": {
+    "domain": [
+      "**/domain/**"
+    ],
+    "application": [
+      "**/application/**"
+    ],
+    "data": [
+      "**/data/**"
+    ],
+    "infrastructure": [
+      "**/infrastructure/**"
+    ],
+    "presentation": [
+      "**/presentation/**"
+    ]
+  },
+  "compositionRoots": [
+    "lib/main.dart",
+    "test/**",
+    "**/composition/**"
+  ],
+  "generatedInfrastructure": [
+    "**/infrastructure/**/*.g.dart"
+  ],
+  "generatedSuffixes": [
+    ".g.dart",
+    ".dartitect.g.dart"
+  ],
+  "suppressions": [],
+  "targets": {
+    "platforms": [
+      "linux",
+      "web"
+    ]
+  },
+  "storageContexts": {
+    "app_storage": {
+      "provider": "drift",
+      "mode": "durable",
+      "scope": "application",
+      "factorySource": {
+        "source": "lib/large_factories.dart",
+        "declaration": "AppStorageFactory"
+      },
+      "targets": [
+        "linux",
+        "web"
+      ]
+    },
+    "session_storage": {
+      "provider": "drift",
+      "mode": "durable",
+      "scope": "session",
+      "factorySource": {
+        "source": "lib/large_factories.dart",
+        "declaration": "SessionStorageFactory"
+      },
+      "targets": [
+        "linux",
+        "web"
+      ]
+    }
+  },
+  "transports": {
+    "app_api": {
+      "provider": "dio",
+      "scope": "application",
+      "factorySource": {
+        "source": "lib/large_factories.dart",
+        "declaration": "AppTransportFactory"
+      },
+      "targets": [
+        "linux",
+        "web"
+      ]
+    },
+    "session_api": {
+      "provider": "dio",
+      "scope": "session",
+      "factorySource": {
+        "source": "lib/large_factories.dart",
+        "declaration": "SessionTransportFactory"
+      },
+      "targets": [
+        "linux",
+        "web"
+      ]
+    }
+  },
+  "session": {
+    "factorySource": {
+      "source": "lib/large_factories.dart",
+      "declaration": "LargeSessionFactory"
+    }
+  },
+  "contracts": {
+    "app_api": {
+      "spec": "contracts/app_api.json",
+      "output": "lib/contracts/app_api.contracts.dartitect.g.dart",
+      "transport": "app_api"
+    }
+  },
+  "observability": {
+    "provider": "developer"
+  },
+  "scheduler": {
+    "provider": "workmanager",
+    "targets": [
+      "linux",
+      "web"
+    ]
+  },
+  "features": {
+    "declarations": {
+      "local_application_1": {
+        "profile": "local",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "LocalApplication1Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "app_storage",
+        "dataset": {
+          "dataset": "local_application_1",
+          "partition": "default_partition",
+          "codec": "local_application_1_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "local_application_1_transaction"
+        },
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "none",
+        "diagnostics": "basic",
+        "headlessTargets": [],
+        "capabilities": [
+          "credentials"
+        ],
+        "operations": []
+      },
+      "local_application_2": {
+        "profile": "local",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "LocalApplication2Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "app_storage",
+        "dataset": {
+          "dataset": "local_application_2",
+          "partition": "default_partition",
+          "codec": "local_application_2_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "local_application_2_transaction"
+        },
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "none",
+        "diagnostics": "full",
+        "headlessTargets": [],
+        "capabilities": [
+          "attachments"
+        ],
+        "operations": []
+      },
+      "local_application_3": {
+        "profile": "local",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "LocalApplication3Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "app_storage",
+        "dataset": {
+          "dataset": "local_application_3",
+          "partition": "default_partition",
+          "codec": "local_application_3_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "local_application_3_transaction"
+        },
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "none",
+        "diagnostics": "basic",
+        "headlessTargets": [],
+        "capabilities": [
+          "forms"
+        ],
+        "operations": []
+      },
+      "local_session_1": {
+        "profile": "local",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "LocalSession1Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "session_storage",
+        "dataset": {
+          "dataset": "local_session_1",
+          "partition": "default_partition",
+          "codec": "local_session_1_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "local_session_1_transaction"
+        },
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "none",
+        "diagnostics": "full",
+        "headlessTargets": [],
+        "capabilities": [
+          "queries"
+        ],
+        "operations": []
+      },
+      "local_session_2": {
+        "profile": "local",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "LocalSession2Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "session_storage",
+        "dataset": {
+          "dataset": "local_session_2",
+          "partition": "default_partition",
+          "codec": "local_session_2_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "local_session_2_transaction"
+        },
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "none",
+        "diagnostics": "basic",
+        "headlessTargets": [],
+        "capabilities": [
+          "credentials"
+        ],
+        "operations": []
+      },
+      "local_session_3": {
+        "profile": "local",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "LocalSession3Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "session_storage",
+        "dataset": {
+          "dataset": "local_session_3",
+          "partition": "default_partition",
+          "codec": "local_session_3_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "local_session_3_transaction"
+        },
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "none",
+        "diagnostics": "full",
+        "headlessTargets": [],
+        "capabilities": [
+          "attachments"
+        ],
+        "operations": []
+      },
+      "online_application_1": {
+        "profile": "online",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "OnlineApplication1Factory"
+        },
+        "localAuthority": "custom",
+        "transport": "app_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "basic",
+        "headlessTargets": [],
+        "capabilities": [
+          "forms"
+        ],
+        "operations": [
+          {
+            "contract": "app_api",
+            "operationId": "getProbe"
+          }
+        ]
+      },
+      "online_application_2": {
+        "profile": "online",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "OnlineApplication2Factory"
+        },
+        "localAuthority": "custom",
+        "transport": "app_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headlessTargets": [],
+        "capabilities": [
+          "queries"
+        ],
+        "operations": []
+      },
+      "online_application_3": {
+        "profile": "online",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "OnlineApplication3Factory"
+        },
+        "localAuthority": "custom",
+        "transport": "app_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "basic",
+        "headlessTargets": [],
+        "capabilities": [
+          "credentials"
+        ],
+        "operations": []
+      },
+      "online_session_1": {
+        "profile": "online",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "OnlineSession1Factory"
+        },
+        "localAuthority": "custom",
+        "transport": "session_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headlessTargets": [],
+        "capabilities": [
+          "attachments"
+        ],
+        "operations": []
+      },
+      "online_session_2": {
+        "profile": "online",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "OnlineSession2Factory"
+        },
+        "localAuthority": "custom",
+        "transport": "session_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "basic",
+        "headlessTargets": [],
+        "capabilities": [
+          "forms"
+        ],
+        "operations": []
+      },
+      "online_session_3": {
+        "profile": "online",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "OnlineSession3Factory"
+        },
+        "localAuthority": "custom",
+        "transport": "session_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headlessTargets": [],
+        "capabilities": [
+          "queries"
+        ],
+        "operations": []
+      },
+      "cache_application_1": {
+        "profile": "cache",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "CacheApplication1Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "app_storage",
+        "dataset": {
+          "dataset": "cache_application_1",
+          "partition": "default_partition",
+          "codec": "cache_application_1_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "cache_application_1_transaction"
+        },
+        "transport": "app_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "basic",
+        "headlessTargets": [],
+        "capabilities": [
+          "credentials"
+        ],
+        "operations": [
+          {
+            "contract": "app_api",
+            "operationId": "getProbe"
+          }
+        ]
+      },
+      "cache_application_2": {
+        "profile": "cache",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "CacheApplication2Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "app_storage",
+        "dataset": {
+          "dataset": "cache_application_2",
+          "partition": "default_partition",
+          "codec": "cache_application_2_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "cache_application_2_transaction"
+        },
+        "transport": "app_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headlessTargets": [],
+        "capabilities": [
+          "attachments"
+        ],
+        "operations": []
+      },
+      "cache_application_3": {
+        "profile": "cache",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "CacheApplication3Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "app_storage",
+        "dataset": {
+          "dataset": "cache_application_3",
+          "partition": "default_partition",
+          "codec": "cache_application_3_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "cache_application_3_transaction"
+        },
+        "transport": "app_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "basic",
+        "headlessTargets": [],
+        "capabilities": [
+          "forms"
+        ],
+        "operations": []
+      },
+      "cache_session_1": {
+        "profile": "cache",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "CacheSession1Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "session_storage",
+        "dataset": {
+          "dataset": "cache_session_1",
+          "partition": "default_partition",
+          "codec": "cache_session_1_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "cache_session_1_transaction"
+        },
+        "transport": "session_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headlessTargets": [],
+        "capabilities": [
+          "queries"
+        ],
+        "operations": []
+      },
+      "cache_session_2": {
+        "profile": "cache",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "CacheSession2Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "session_storage",
+        "dataset": {
+          "dataset": "cache_session_2",
+          "partition": "default_partition",
+          "codec": "cache_session_2_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "cache_session_2_transaction"
+        },
+        "transport": "session_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "basic",
+        "headlessTargets": [],
+        "capabilities": [
+          "credentials"
+        ],
+        "operations": []
+      },
+      "cache_session_3": {
+        "profile": "cache",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "CacheSession3Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "session_storage",
+        "dataset": {
+          "dataset": "cache_session_3",
+          "partition": "default_partition",
+          "codec": "cache_session_3_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "cache_session_3_transaction"
+        },
+        "transport": "session_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headlessTargets": [],
+        "capabilities": [
+          "attachments"
+        ],
+        "operations": []
+      },
+      "replica_application_1": {
+        "profile": "replica",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "ReplicaApplication1Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "app_storage",
+        "dataset": {
+          "dataset": "replica_application_1",
+          "partition": "default_partition",
+          "codec": "replica_application_1_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "replica_application_1_transaction"
+        },
+        "transport": "app_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "basic",
+        "headlessTargets": [
+          "linux",
+          "web"
+        ],
+        "capabilities": [
+          "forms"
+        ],
+        "operations": [
+          {
+            "contract": "app_api",
+            "operationId": "getProbe"
+          }
+        ]
+      },
+      "replica_application_2": {
+        "profile": "replica",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "ReplicaApplication2Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "app_storage",
+        "dataset": {
+          "dataset": "replica_application_2",
+          "partition": "default_partition",
+          "codec": "replica_application_2_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "replica_application_2_transaction"
+        },
+        "transport": "app_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headlessTargets": [
+          "linux",
+          "web"
+        ],
+        "capabilities": [
+          "queries"
+        ],
+        "operations": []
+      },
+      "replica_application_3": {
+        "profile": "replica",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "ReplicaApplication3Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "app_storage",
+        "dataset": {
+          "dataset": "replica_application_3",
+          "partition": "default_partition",
+          "codec": "replica_application_3_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "replica_application_3_transaction"
+        },
+        "transport": "app_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "basic",
+        "headlessTargets": [
+          "linux",
+          "web"
+        ],
+        "capabilities": [
+          "credentials"
+        ],
+        "operations": []
+      },
+      "replica_session_1": {
+        "profile": "replica",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "ReplicaSession1Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "session_storage",
+        "dataset": {
+          "dataset": "replica_session_1",
+          "partition": "default_partition",
+          "codec": "replica_session_1_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "replica_session_1_transaction"
+        },
+        "transport": "session_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headlessTargets": [
+          "linux",
+          "web"
+        ],
+        "capabilities": [
+          "attachments"
+        ],
+        "operations": []
+      },
+      "replica_session_2": {
+        "profile": "replica",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "ReplicaSession2Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "session_storage",
+        "dataset": {
+          "dataset": "replica_session_2",
+          "partition": "default_partition",
+          "codec": "replica_session_2_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "replica_session_2_transaction"
+        },
+        "transport": "session_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "basic",
+        "headlessTargets": [
+          "linux",
+          "web"
+        ],
+        "capabilities": [
+          "forms"
+        ],
+        "operations": []
+      },
+      "replica_session_3": {
+        "profile": "replica",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "ReplicaSession3Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "session_storage",
+        "dataset": {
+          "dataset": "replica_session_3",
+          "partition": "default_partition",
+          "codec": "replica_session_3_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "replica_session_3_transaction"
+        },
+        "transport": "session_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headlessTargets": [
+          "linux",
+          "web"
+        ],
+        "capabilities": [
+          "queries"
+        ],
+        "operations": []
+      },
+      "offline_full_application_1": {
+        "profile": "offline-full",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "OfflineFullApplication1Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "app_storage",
+        "dataset": {
+          "dataset": "offline_full_application_1",
+          "partition": "default_partition",
+          "codec": "offline_full_application_1_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "offline_full_application_1_transaction"
+        },
+        "transport": "app_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "basic",
+        "headlessTargets": [
+          "linux",
+          "web"
+        ],
+        "capabilities": [
+          "credentials"
+        ],
+        "operations": [
+          {
+            "contract": "app_api",
+            "operationId": "getProbe"
+          }
+        ]
+      },
+      "offline_full_application_2": {
+        "profile": "offline-full",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "OfflineFullApplication2Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "app_storage",
+        "dataset": {
+          "dataset": "offline_full_application_2",
+          "partition": "default_partition",
+          "codec": "offline_full_application_2_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "offline_full_application_2_transaction"
+        },
+        "transport": "app_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headlessTargets": [
+          "linux",
+          "web"
+        ],
+        "capabilities": [
+          "attachments"
+        ],
+        "operations": []
+      },
+      "offline_full_application_3": {
+        "profile": "offline-full",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "OfflineFullApplication3Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "app_storage",
+        "dataset": {
+          "dataset": "offline_full_application_3",
+          "partition": "default_partition",
+          "codec": "offline_full_application_3_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "offline_full_application_3_transaction"
+        },
+        "transport": "app_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "basic",
+        "headlessTargets": [
+          "linux",
+          "web"
+        ],
+        "capabilities": [
+          "forms"
+        ],
+        "operations": []
+      },
+      "offline_full_session_1": {
+        "profile": "offline-full",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "OfflineFullSession1Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "session_storage",
+        "dataset": {
+          "dataset": "offline_full_session_1",
+          "partition": "default_partition",
+          "codec": "offline_full_session_1_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "offline_full_session_1_transaction"
+        },
+        "transport": "session_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headlessTargets": [
+          "linux",
+          "web"
+        ],
+        "capabilities": [
+          "queries"
+        ],
+        "operations": []
+      },
+      "offline_full_session_2": {
+        "profile": "offline-full",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "OfflineFullSession2Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "session_storage",
+        "dataset": {
+          "dataset": "offline_full_session_2",
+          "partition": "default_partition",
+          "codec": "offline_full_session_2_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "offline_full_session_2_transaction"
+        },
+        "transport": "session_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "basic",
+        "headlessTargets": [
+          "linux",
+          "web"
+        ],
+        "capabilities": [
+          "credentials"
+        ],
+        "operations": []
+      },
+      "offline_full_session_3": {
+        "profile": "offline-full",
+        "scope": "session",
+        "factorySource": {
+          "source": "lib/large_factories.dart",
+          "declaration": "OfflineFullSession3Factory"
+        },
+        "localAuthority": "generated_pull",
+        "storageContext": "session_storage",
+        "dataset": {
+          "dataset": "offline_full_session_3",
+          "partition": "default_partition",
+          "codec": "offline_full_session_3_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "offline_full_session_3_transaction"
+        },
+        "transport": "session_api",
+        "targets": [
+          "linux",
+          "web"
+        ],
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headlessTargets": [
+          "linux",
+          "web"
+        ],
+        "capabilities": [
+          "attachments"
+        ],
+        "operations": []
+      }
+    }
+  },
+  "extensionSources": []
+}

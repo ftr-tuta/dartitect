@@ -6,7 +6,7 @@ import 'package:dartitect/dartitect.dart';
 import '../rules/generated_boundary_policy.dart';
 
 /// Current stable on-disk Dartitect configuration version.
-const int currentConfigVersion = 2;
+const int currentConfigVersion = 3;
 
 /// The only architectural profile supported by Dartitect 1.0.
 const String nativeStrictProfile = 'native_strict';
@@ -130,6 +130,134 @@ enum FeatureScope {
       _enumByWireName(values, value, 'feature scope');
 }
 
+/// A statically resolved consumer factory declaration.
+final class DartitectFactorySourceConfig {
+  /// Creates a confined source reference to one public concrete declaration.
+  DartitectFactorySourceConfig({
+    required String source,
+    required this.declaration,
+  }) : source = _normalizeDartSource(source, '/factorySource/source') {
+    if (!RegExp(r'^[A-Z][A-Za-z0-9]*$').hasMatch(declaration)) {
+      throw const DartitectConfigException(
+        '/factorySource/declaration',
+        'expected a public concrete Dart class name',
+      );
+    }
+  }
+
+  /// Confined project-relative Dart source.
+  final String source;
+
+  /// Public concrete class declaration in [source].
+  final String declaration;
+
+  /// Stable JSON representation.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'source': source,
+    'declaration': declaration,
+  };
+}
+
+/// Session graph declaration required by session-scoped resources.
+final class DartitectSessionConfig {
+  /// Creates a session graph declaration.
+  const DartitectSessionConfig({required this.factorySource});
+
+  /// Statically analyzed factory for authenticated session roots.
+  final DartitectFactorySourceConfig factorySource;
+
+  /// Stable JSON representation.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'factorySource': factorySource.toJson(),
+  };
+}
+
+/// How the local presentation authority is constructed for a feature.
+enum FeatureLocalAuthorityStrategy {
+  /// Generate `PullReactiveSource` from the factory's typed `watch` and `read`.
+  generatedPull('generated_pull'),
+
+  /// Use the concrete local-authority object returned by the feature factory.
+  custom('custom');
+
+  const FeatureLocalAuthorityStrategy(this.wireName);
+
+  /// Stable config spelling.
+  final String wireName;
+
+  /// Parses one closed strategy.
+  static FeatureLocalAuthorityStrategy parse(String value) =>
+      _enumByWireName(values, value, 'local-authority strategy');
+}
+
+/// One OpenAPI operation selected into a feature graph.
+final class DartitectOpenApiOperationConfig {
+  /// Creates a typed operation reference.
+  DartitectOpenApiOperationConfig({
+    required this.contract,
+    required this.operationId,
+  }) {
+    if (!_configName.hasMatch(contract)) {
+      throw const DartitectConfigException(
+        '/features/declarations/operations/contract',
+        'expected a registered snake_case contract name',
+      );
+    }
+    if (!RegExp(r'^[A-Za-z][A-Za-z0-9_.-]*$').hasMatch(operationId)) {
+      throw const DartitectConfigException(
+        '/features/declarations/operations/operationId',
+        'expected a stable OpenAPI operationId',
+      );
+    }
+  }
+
+  /// Contract registry key.
+  final String contract;
+
+  /// Exact OpenAPI operationId.
+  final String operationId;
+
+  /// Stable JSON representation.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'contract': contract,
+    'operationId': operationId,
+  };
+}
+
+/// One bounded local OpenAPI contract registered with a transport context.
+final class DartitectContractConfig {
+  /// Creates a contract registration.
+  DartitectContractConfig({
+    required String spec,
+    required String output,
+    required this.transport,
+  }) : spec = _normalizeProjectFile(spec, '/contracts/spec'),
+       output = _normalizeGeneratedOutput(output, '/contracts/output') {
+    if (!_configName.hasMatch(transport)) {
+      throw const DartitectConfigException(
+        '/contracts/transport',
+        'expected a snake_case transport context name',
+      );
+    }
+  }
+
+  /// Confined local OpenAPI 3.1 JSON or YAML source.
+  final String spec;
+
+  /// Confined manifest-owned generated Dart output.
+  final String output;
+
+  /// Transport context used by generated clients.
+  final String transport;
+
+  /// Stable JSON representation.
+  Map<String, Object?> toJson() => <String, Object?>{
+    'spec': spec,
+    'output': output,
+    'transport': transport,
+  };
+}
+
 /// Closed target platform identifiers.
 enum DartitectPlatform {
   /// Android applications.
@@ -247,8 +375,16 @@ final class DartitectStorageContextConfig {
   DartitectStorageContextConfig({
     required this.provider,
     required this.mode,
+    this.scope = FeatureScope.application,
+    DartitectFactorySourceConfig? factorySource,
     required Iterable<DartitectPlatform> targets,
-  }) : targets = _platformSet(targets, '/storageContexts/targets') {
+  }) : factorySource =
+           factorySource ??
+           DartitectFactorySourceConfig(
+             source: 'lib/composition/storage_context_factory.dart',
+             declaration: 'StorageContextFactory',
+           ),
+       targets = _platformSet(targets, '/storageContexts/targets') {
     _validateProviderIdentifier(
       provider,
       pointer: '/storageContexts/provider',
@@ -275,6 +411,12 @@ final class DartitectStorageContextConfig {
   /// Whether operational state survives a process restart.
   final DartitectStorageMode mode;
 
+  /// Application- or session-owned context lifetime.
+  final FeatureScope scope;
+
+  /// Consumer factory that opens this exact provider context.
+  final DartitectFactorySourceConfig factorySource;
+
   /// Exact platforms supported by this context.
   final List<DartitectPlatform> targets;
 
@@ -282,6 +424,8 @@ final class DartitectStorageContextConfig {
   Map<String, Object?> toJson() => <String, Object?>{
     'provider': provider,
     'mode': mode.wireName,
+    'scope': scope.wireName,
+    'factorySource': factorySource.toJson(),
     'targets': targets.map((target) => target.wireName).toList(),
   };
 }
@@ -361,8 +505,16 @@ final class DartitectTransportConfig {
   /// Creates a transport binding for an exact target set.
   DartitectTransportConfig({
     required this.provider,
+    this.scope = FeatureScope.application,
+    DartitectFactorySourceConfig? factorySource,
     required Iterable<DartitectPlatform> targets,
-  }) : targets = _platformSet(targets, '/transports/targets') {
+  }) : factorySource =
+           factorySource ??
+           DartitectFactorySourceConfig(
+             source: 'lib/composition/transport_context_factory.dart',
+             declaration: 'TransportContextFactory',
+           ),
+       targets = _platformSet(targets, '/transports/targets') {
     _validateProviderIdentifier(
       provider,
       pointer: '/transports/provider',
@@ -373,12 +525,20 @@ final class DartitectTransportConfig {
   /// `dio` or a project-local provider identifier.
   final String provider;
 
+  /// Application- or session-owned transport lifetime.
+  final FeatureScope scope;
+
+  /// Consumer factory that opens this exact transport context.
+  final DartitectFactorySourceConfig factorySource;
+
   /// Exact platforms supported by this transport.
   final List<DartitectPlatform> targets;
 
   /// Stable JSON representation.
   Map<String, Object?> toJson() => <String, Object?>{
     'provider': provider,
+    'scope': scope.wireName,
+    'factorySource': factorySource.toJson(),
     'targets': targets.map((target) => target.wireName).toList(),
   };
 }
@@ -452,6 +612,8 @@ final class DartitectFeatureDeclaration {
   DartitectFeatureDeclaration({
     required this.profile,
     required this.scope,
+    DartitectFactorySourceConfig? factorySource,
+    this.localAuthority = FeatureLocalAuthorityStrategy.custom,
     required this.pagination,
     required this.diagnostics,
     this.storageContext,
@@ -460,11 +622,27 @@ final class DartitectFeatureDeclaration {
     Iterable<DartitectPlatform> targets = const <DartitectPlatform>[],
     Iterable<DartitectPlatform> headlessTargets = const <DartitectPlatform>[],
     Iterable<DartitectCapability> capabilities = const <DartitectCapability>[],
-  }) : targets = _optionalPlatformSet(targets),
+    Iterable<DartitectOpenApiOperationConfig> operations =
+        const <DartitectOpenApiOperationConfig>[],
+  }) : factorySource =
+           factorySource ??
+           DartitectFactorySourceConfig(
+             source: 'lib/features/feature/composition/feature_factory.dart',
+             declaration: 'FeatureFactory',
+           ),
+       targets = _optionalPlatformSet(targets),
        headlessTargets = _optionalPlatformSet(headlessTargets),
        capabilities = List<DartitectCapability>.unmodifiable(
          capabilities.toSet().toList()
            ..sort((left, right) => left.wireName.compareTo(right.wireName)),
+       ),
+       operations = List<DartitectOpenApiOperationConfig>.unmodifiable(
+         operations.toSet().toList()..sort((left, right) {
+           final byContract = left.contract.compareTo(right.contract);
+           return byContract != 0
+               ? byContract
+               : left.operationId.compareTo(right.operationId);
+         }),
        ) {
     if (storageContext != null && !_configName.hasMatch(storageContext!)) {
       throw const DartitectConfigException(
@@ -509,6 +687,21 @@ final class DartitectFeatureDeclaration {
           );
         }
     }
+    final hasGeneratedAuthority =
+        localAuthority == FeatureLocalAuthorityStrategy.generatedPull;
+    if (hasGeneratedAuthority && storageContext == null) {
+      throw const DartitectConfigException(
+        '/features/declarations/localAuthority',
+        'generated_pull requires a storage context',
+      );
+    }
+    if (profile == FeatureProfile.online &&
+        localAuthority != FeatureLocalAuthorityStrategy.custom) {
+      throw const DartitectConfigException(
+        '/features/declarations/localAuthority',
+        'online profiles require custom because they have no local authority',
+      );
+    }
     if (this.headlessTargets.isNotEmpty &&
         profile != FeatureProfile.replica &&
         profile != FeatureProfile.offlineFull) {
@@ -524,6 +717,12 @@ final class DartitectFeatureDeclaration {
 
   /// Application or authenticated-session owner.
   final FeatureScope scope;
+
+  /// Consumer-owned factory selected for this feature.
+  final DartitectFactorySourceConfig factorySource;
+
+  /// Generated or custom local-authority construction.
+  final FeatureLocalAuthorityStrategy localAuthority;
 
   /// Named storage context, when this profile uses persistence.
   final String? storageContext;
@@ -549,10 +748,15 @@ final class DartitectFeatureDeclaration {
   /// Independently opted-in stable workflows.
   final List<DartitectCapability> capabilities;
 
+  /// Exact OpenAPI operations included in this feature graph.
+  final List<DartitectOpenApiOperationConfig> operations;
+
   /// Stable JSON representation.
   Map<String, Object?> toJson() => <String, Object?>{
     'profile': profile.wireName,
     'scope': scope.wireName,
+    'factorySource': factorySource.toJson(),
+    'localAuthority': localAuthority.wireName,
     if (storageContext != null) 'storageContext': storageContext,
     if (dataset != null) 'dataset': dataset!.toJson(),
     if (transport != null) 'transport': transport,
@@ -566,6 +770,7 @@ final class DartitectFeatureDeclaration {
     'capabilities': capabilities
         .map((capability) => capability.wireName)
         .toList(),
+    'operations': operations.map((operation) => operation.toJson()).toList(),
   };
 }
 
@@ -599,7 +804,7 @@ final class DartitectFeaturesConfig {
   };
 }
 
-/// Additive modeling configuration for stable config v2.
+/// Additive modeling configuration for stable config v3.
 final class DartitectModelingConfig {
   /// Creates an explicit modeling block.
   const DartitectModelingConfig({
@@ -632,7 +837,7 @@ final class DartitectModelingConfig {
   };
 }
 
-/// Stable v2 Native Strict configuration.
+/// Stable v3 Native Strict configuration.
 final class DartitectConfig {
   /// Creates the default strict configuration.
   DartitectConfig({
@@ -653,6 +858,9 @@ final class DartitectConfig {
         const <String, DartitectStorageContextConfig>{},
     Map<String, DartitectTransportConfig> transports =
         const <String, DartitectTransportConfig>{},
+    Map<String, DartitectContractConfig> contracts =
+        const <String, DartitectContractConfig>{},
+    this.session,
     DartitectObservabilityConfig? observability,
     DartitectSchedulerConfig? scheduler,
     Iterable<String> extensionSources = const <String>[],
@@ -671,6 +879,7 @@ final class DartitectConfig {
            ]),
        storageContexts = _sortedConfigMap(storageContexts),
        transports = _sortedConfigMap(transports),
+       contracts = _sortedConfigMap(contracts),
        observability = observability ?? DartitectObservabilityConfig(),
        scheduler = scheduler ?? DartitectSchedulerConfig(),
        extensionSources = List<String>.unmodifiable(
@@ -693,10 +902,16 @@ final class DartitectConfig {
     for (final name in <String>{
       ...this.storageContexts.keys,
       ...this.transports.keys,
+      ...this.contracts.keys,
     }) {
       if (!_configName.hasMatch(name)) {
+        final section = this.storageContexts.containsKey(name)
+            ? 'storageContexts'
+            : this.transports.containsKey(name)
+            ? 'transports'
+            : 'contracts';
         throw DartitectConfigException(
-          '/${this.storageContexts.containsKey(name) ? 'storageContexts' : 'transports'}/${_pointerToken(name)}',
+          '/$section/${_pointerToken(name)}',
           'expected an ASCII snake_case binding name',
         );
       }
@@ -718,7 +933,7 @@ final class DartitectConfig {
     return DartitectConfig.fromJson(decoded);
   }
 
-  /// Validates a decoded stable-v2 JSON object.
+  /// Validates a decoded stable-v3 JSON object.
   factory DartitectConfig.fromJson(Map<String, Object?> json) {
     const known = <String>{
       'configVersion',
@@ -733,6 +948,8 @@ final class DartitectConfig {
       'targets',
       'storageContexts',
       'transports',
+      'contracts',
+      'session',
       'observability',
       'scheduler',
       'extensionSources',
@@ -743,7 +960,7 @@ final class DartitectConfig {
       throw DartitectConfigException(
         '/configVersion',
         'expected stable version $currentConfigVersion; only an explicit '
-            'Dartitect-project upgrade may migrate config v1',
+            'Dartitect-project upgrade may migrate config v1 or v2',
       );
     }
     final profile = _requiredString(json, 'profile', '');
@@ -772,13 +989,15 @@ final class DartitectConfig {
       targets: _parseTargets(json['targets']),
       storageContexts: _parseStorageContexts(json['storageContexts']),
       transports: _parseTransports(json['transports']),
+      contracts: _parseContracts(json['contracts']),
+      session: _parseSession(json['session']),
       observability: _parseObservability(json['observability']),
       scheduler: _parseScheduler(json['scheduler']),
       extensionSources: _parseExtensionSources(json['extensionSources']),
     );
   }
 
-  /// Stable schema version. The only accepted value is `2`.
+  /// Stable schema version. The only accepted value is `3`.
   final int configVersion;
 
   /// Strict architecture profile. The only accepted value is `native_strict`.
@@ -814,6 +1033,12 @@ final class DartitectConfig {
   /// Named transport bindings shared across feature assemblies.
   final Map<String, DartitectTransportConfig> transports;
 
+  /// Bounded local OpenAPI contracts keyed by snake_case name.
+  final Map<String, DartitectContractConfig> contracts;
+
+  /// Session graph factory, required by session-scoped declarations.
+  final DartitectSessionConfig? session;
+
   /// Explicit observability binding.
   final DartitectObservabilityConfig observability;
 
@@ -841,6 +1066,10 @@ final class DartitectConfig {
     'transports': <String, Object?>{
       for (final entry in transports.entries) entry.key: entry.value.toJson(),
     },
+    'contracts': <String, Object?>{
+      for (final entry in contracts.entries) entry.key: entry.value.toJson(),
+    },
+    if (session != null) 'session': session!.toJson(),
     'observability': observability.toJson(),
     'scheduler': scheduler.toJson(),
     'features': features.toJson(),
@@ -880,16 +1109,50 @@ final class DartitectConfig {
         entry.value.targets,
         '/storageContexts/${_pointerToken(entry.key)}/targets',
       );
+      if (entry.value.scope == FeatureScope.session && session == null) {
+        throw DartitectConfigException(
+          '/storageContexts/${_pointerToken(entry.key)}/scope',
+          'session-scoped contexts require session.factorySource',
+        );
+      }
     }
     for (final entry in transports.entries) {
       validateRestrictedTargets(
         entry.value.targets,
         '/transports/${_pointerToken(entry.key)}/targets',
       );
+      if (entry.value.scope == FeatureScope.session && session == null) {
+        throw DartitectConfigException(
+          '/transports/${_pointerToken(entry.key)}/scope',
+          'session-scoped contexts require session.factorySource',
+        );
+      }
+    }
+    final contractOutputs = <String>{};
+    for (final entry in contracts.entries) {
+      final contract = entry.value;
+      if (!transports.containsKey(contract.transport)) {
+        throw DartitectConfigException(
+          '/contracts/${_pointerToken(entry.key)}/transport',
+          'unknown transport context "${contract.transport}"',
+        );
+      }
+      if (!contractOutputs.add(contract.output)) {
+        throw DartitectConfigException(
+          '/contracts/${_pointerToken(entry.key)}/output',
+          'generated contract outputs must be unique',
+        );
+      }
     }
     for (final entry in features.declarations.entries) {
       final pointer = '/features/declarations/${_pointerToken(entry.key)}';
       final declaration = entry.value;
+      if (declaration.scope == FeatureScope.session && session == null) {
+        throw DartitectConfigException(
+          '$pointer/scope',
+          'session-scoped features require session.factorySource',
+        );
+      }
       final featureTargets = declaration.targets.isEmpty
           ? applicationTargets
           : declaration.targets.toSet();
@@ -932,6 +1195,13 @@ final class DartitectConfig {
             '${declaration.profile.wireName} requires durable operational storage',
           );
         }
+        if (declaration.scope == FeatureScope.application &&
+            storage.scope == FeatureScope.session) {
+          throw DartitectConfigException(
+            '$pointer/storageContext',
+            'application features cannot borrow session-scoped storage',
+          );
+        }
         final dataset = declaration.dataset!;
         final registrationKey = '$storageName/${dataset.dataset}';
         final priorFeature = registeredDatasets[registrationKey];
@@ -959,6 +1229,37 @@ final class DartitectConfig {
           throw DartitectConfigException(
             '$pointer/transport',
             '$transportName does not support ${unsupported.first.wireName}',
+          );
+        }
+        if (declaration.scope == FeatureScope.application &&
+            transport.scope == FeatureScope.session) {
+          throw DartitectConfigException(
+            '$pointer/transport',
+            'application features cannot borrow session-scoped transports',
+          );
+        }
+      }
+      final selectedOperations = <String>{};
+      for (var index = 0; index < declaration.operations.length; index += 1) {
+        final operation = declaration.operations[index];
+        final contract = contracts[operation.contract];
+        if (contract == null) {
+          throw DartitectConfigException(
+            '$pointer/operations/$index/contract',
+            'unknown contract "${operation.contract}"',
+          );
+        }
+        if (declaration.transport != contract.transport) {
+          throw DartitectConfigException(
+            '$pointer/operations/$index/contract',
+            'contract transport ${contract.transport} does not match the feature transport',
+          );
+        }
+        final key = '${operation.contract}/${operation.operationId}';
+        if (!selectedOperations.add(key)) {
+          throw DartitectConfigException(
+            '$pointer/operations/$index',
+            'duplicate OpenAPI operation selection',
           );
         }
       }
@@ -1141,6 +1442,8 @@ final class DartitectConfig {
       const known = <String>{
         'profile',
         'scope',
+        'factorySource',
+        'localAuthority',
         'storageContext',
         'dataset',
         'transport',
@@ -1149,6 +1452,7 @@ final class DartitectConfig {
         'diagnostics',
         'headlessTargets',
         'capabilities',
+        'operations',
       };
       _rejectUnknown(raw, known, pointer);
       final capabilitiesRaw = raw['capabilities'];
@@ -1183,6 +1487,13 @@ final class DartitectConfig {
             _requiredString(raw, 'profile', pointer),
           ),
           scope: FeatureScope.parse(_requiredString(raw, 'scope', pointer)),
+          factorySource: _parseFactorySource(
+            raw['factorySource'],
+            '$pointer/factorySource',
+          ),
+          localAuthority: FeatureLocalAuthorityStrategy.parse(
+            _requiredString(raw, 'localAuthority', pointer),
+          ),
           storageContext: _optionalString(raw, 'storageContext', pointer),
           dataset: _parseStorageDataset(raw['dataset'], '$pointer/dataset'),
           transport: _optionalString(raw, 'transport', pointer),
@@ -1201,6 +1512,10 @@ final class DartitectConfig {
             allowEmpty: true,
           ),
           capabilities: capabilities,
+          operations: _parseOperations(
+            raw['operations'],
+            '$pointer/operations',
+          ),
         );
       } on DartitectConfigException catch (error) {
         final suffix = error.pointer.startsWith('/features/declarations')
@@ -1247,6 +1562,60 @@ final class DartitectConfig {
     }
   }
 
+  static DartitectFactorySourceConfig _parseFactorySource(
+    Object? value,
+    String pointer,
+  ) {
+    final object = _requiredObject(value, pointer);
+    _rejectUnknown(object, const <String>{'source', 'declaration'}, pointer);
+    try {
+      return DartitectFactorySourceConfig(
+        source: _requiredString(object, 'source', pointer),
+        declaration: _requiredString(object, 'declaration', pointer),
+      );
+    } on DartitectConfigException catch (error) {
+      throw DartitectConfigException(
+        error.pointer.replaceFirst('/factorySource', pointer),
+        error.message,
+      );
+    }
+  }
+
+  static List<DartitectOpenApiOperationConfig> _parseOperations(
+    Object? value,
+    String pointer,
+  ) {
+    if (value is! List<Object?>) {
+      throw DartitectConfigException(pointer, 'expected an array');
+    }
+    return <DartitectOpenApiOperationConfig>[
+      for (var index = 0; index < value.length; index += 1)
+        _parseOperation(value[index], '$pointer/$index'),
+    ];
+  }
+
+  static DartitectOpenApiOperationConfig _parseOperation(
+    Object? value,
+    String pointer,
+  ) {
+    final object = _requiredObject(value, pointer);
+    _rejectUnknown(object, const <String>{'contract', 'operationId'}, pointer);
+    try {
+      return DartitectOpenApiOperationConfig(
+        contract: _requiredString(object, 'contract', pointer),
+        operationId: _requiredString(object, 'operationId', pointer),
+      );
+    } on DartitectConfigException catch (error) {
+      throw DartitectConfigException(
+        error.pointer.replaceFirst(
+          '/features/declarations/operations',
+          pointer,
+        ),
+        error.message,
+      );
+    }
+  }
+
   static DartitectTargetsConfig _parseTargets(Object? value) {
     if (value is! Map<String, Object?>) {
       throw const DartitectConfigException('/targets', 'expected an object');
@@ -1278,6 +1647,8 @@ final class DartitectConfig {
     _rejectUnknown(object, const <String>{
       'provider',
       'mode',
+      'scope',
+      'factorySource',
       'targets',
     }, pointer);
     final modeName = _requiredString(object, 'mode', pointer);
@@ -1294,6 +1665,11 @@ final class DartitectConfig {
       return DartitectStorageContextConfig(
         provider: _requiredString(object, 'provider', pointer),
         mode: mode,
+        scope: FeatureScope.parse(_requiredString(object, 'scope', pointer)),
+        factorySource: _parseFactorySource(
+          object['factorySource'],
+          '$pointer/factorySource',
+        ),
         targets: _parsePlatformList(object['targets'], '$pointer/targets'),
       );
     } on DartitectConfigException catch (error) {
@@ -1320,10 +1696,20 @@ final class DartitectConfig {
     String pointer,
   ) {
     final object = _requiredObject(value, pointer);
-    _rejectUnknown(object, const <String>{'provider', 'targets'}, pointer);
+    _rejectUnknown(object, const <String>{
+      'provider',
+      'scope',
+      'factorySource',
+      'targets',
+    }, pointer);
     try {
       return DartitectTransportConfig(
         provider: _requiredString(object, 'provider', pointer),
+        scope: FeatureScope.parse(_requiredString(object, 'scope', pointer)),
+        factorySource: _parseFactorySource(
+          object['factorySource'],
+          '$pointer/factorySource',
+        ),
         targets: _parsePlatformList(object['targets'], '$pointer/targets'),
       );
     } on DartitectConfigException catch (error) {
@@ -1332,6 +1718,50 @@ final class DartitectConfig {
         error.message,
       );
     }
+  }
+
+  static Map<String, DartitectContractConfig> _parseContracts(Object? value) {
+    final entries = _requiredObject(value, '/contracts');
+    return <String, DartitectContractConfig>{
+      for (final entry in entries.entries)
+        entry.key: _parseContract(
+          entry.value,
+          '/contracts/${_pointerToken(entry.key)}',
+        ),
+    };
+  }
+
+  static DartitectContractConfig _parseContract(Object? value, String pointer) {
+    final object = _requiredObject(value, pointer);
+    _rejectUnknown(object, const <String>{
+      'spec',
+      'output',
+      'transport',
+    }, pointer);
+    try {
+      return DartitectContractConfig(
+        spec: _requiredString(object, 'spec', pointer),
+        output: _requiredString(object, 'output', pointer),
+        transport: _requiredString(object, 'transport', pointer),
+      );
+    } on DartitectConfigException catch (error) {
+      throw DartitectConfigException(
+        error.pointer.replaceFirst('/contracts', pointer),
+        error.message,
+      );
+    }
+  }
+
+  static DartitectSessionConfig? _parseSession(Object? value) {
+    if (value == null) return null;
+    final object = _requiredObject(value, '/session');
+    _rejectUnknown(object, const <String>{'factorySource'}, '/session');
+    return DartitectSessionConfig(
+      factorySource: _parseFactorySource(
+        object['factorySource'],
+        '/session/factorySource',
+      ),
+    );
   }
 
   static DartitectObservabilityConfig _parseObservability(Object? value) {
@@ -1509,7 +1939,7 @@ final class DartitectConfig {
       if (!known.contains(key)) {
         throw DartitectConfigException(
           '$parent/${_pointerToken(key)}',
-          'unknown field in closed config v2 schema',
+          'unknown field in closed config v3 schema',
         );
       }
     }
@@ -1578,6 +2008,34 @@ String _normalizeDartSource(String value, String pointer) {
   return normalized;
 }
 
+String _normalizeProjectFile(String value, String pointer) {
+  final normalized = value.trim().replaceAll('\\', '/');
+  if (normalized.isEmpty ||
+      normalized.startsWith('/') ||
+      RegExp(r'^[A-Za-z]:').hasMatch(normalized) ||
+      normalized
+          .split('/')
+          .any((segment) => segment.isEmpty || segment == '..')) {
+    throw DartitectConfigException(
+      pointer,
+      'expected a confined project-relative file',
+    );
+  }
+  return normalized;
+}
+
+String _normalizeGeneratedOutput(String value, String pointer) {
+  final normalized = _normalizeProjectFile(value, pointer);
+  if (!normalized.startsWith('lib/') ||
+      !normalized.endsWith('.dartitect.g.dart')) {
+    throw DartitectConfigException(
+      pointer,
+      'expected a manifest-owned lib/**/*.dartitect.g.dart output',
+    );
+  }
+  return normalized;
+}
+
 T _enumByWireName<T extends Enum>(
   Iterable<T> values,
   String value,
@@ -1587,6 +2045,7 @@ T _enumByWireName<T extends Enum>(
     final wireName = switch (candidate) {
       final FeatureDiagnosticsLevel item => item.wireName,
       final FeatureScope item => item.wireName,
+      final FeatureLocalAuthorityStrategy item => item.wireName,
       final DartitectPlatform item => item.wireName,
       final FeaturePagination item => item.wireName,
       final DartitectCapability item => item.wireName,

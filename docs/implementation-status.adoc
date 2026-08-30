@@ -1,7 +1,7 @@
 = Dartitect 1.0 Git candidate implementation status
 :toc:
 
-Snapshot:: 2026-08-29
+Snapshot:: 2026-08-30
 Release status:: *ACTIONS READINESS PENDING*
 Feature policy:: *FEATURE FREEZE*
 Toolchain floor:: Dart 3.13 / Flutter 3.47.1 stable
@@ -35,11 +35,12 @@ benchmark, clean-clone, and canary gates are implemented.
 The provider canary owns its Drift schema and exercises transaction/checkpoint
 ports; the offline-first canary opens Drift and ObjectBox in separate bounded
 contexts without dual-write.
-The RC8 real vertical Task canary and thin-consumer canary cover target-aware
-profiles, typed local extensions, capability-specific composition, credential
-generations, durable operational contexts, explicit sync triggers, OpenAPI,
-consumer-tax, semantic API compatibility, and observed runtime evidence with
-zero residual resources.
+The RC9 real vertical Task and thin-consumer canaries cover config-v3 factories,
+concrete graphs/hosts, credential generations, durable operational contexts,
+explicit sync triggers, OpenAPI operation selection, schema-2 consumer tax,
+semantic API compatibility, and observed runtime evidence with zero residual
+resources. The large consumer adds 30 features across all five profiles and
+both scopes, Web/Linux builds, fleet migration, and zero residual resources.
 
 | V1S-13
 | IN_PROGRESS
@@ -74,3 +75,7 @@ simulator availability failure makes `CI / Required` fail.
 * consumer-owned retry, auth, schema, transaction, and conflict policy;
 * dependency-free core and isolated optional capabilities;
 * fresh graph construction and reverse teardown in every isolate.
+
+Stable `1.0.0` promotion remains blocked by the machine-readable
+`ui-ux-business-neutral` gate; RC9 contains only material-neutral mechanical
+widgets.

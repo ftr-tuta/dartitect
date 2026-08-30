@@ -25,6 +25,9 @@ the Native Strict application graph. Keep domain/application contracts
 provider-neutral, use constructor injection, and make every resource owned or
 borrowed. Do not add a container, global runtime, provider package, or remote
 telemetry without a stated requirement.
+For config v3 consumers, prefer generated concrete `ApplicationGraph`,
+`SessionGraph`, feature runtime/factory, and `FeatureHost` surfaces. Keep manual
+assemblies and ownership primitives as advanced low-level escape hatches.
 
 ## Workflow
 

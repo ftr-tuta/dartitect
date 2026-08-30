@@ -77,18 +77,27 @@ route-owned reactive paging graph.
 
 Thin entrypoint:
 
-- `DartitectViewModel`, `ownCommand`, `own`, and `forward` centralize
-  notification forwarding and idempotent reverse-order teardown.
+- `DartitectObservableResource`, `DartitectCommand<T, F>`,
+  `DartitectViewModel`, `ownCommand`, `own`, and `forward` provide compile-time
+  command/resource ownership, notification forwarding, and idempotent
+  reverse-order teardown.
 - `ViewModelHost.create`/`value`, `ViewModelStarter`,
   `ViewModelReassembler`, and `ViewModelDisposer` define ViewModel lifetime.
 - `Command0`, `Command1`, and `KeyedCommand1` expose reject, join, drop,
   sequential, restart-latest, concurrent, and bounded per-key policies with
-  exhaustive `CommandState` and `CommandExecution` types.
+  exhaustive `CommandState`, `CommandState.match`, and `CommandExecution`
+  types.
+- `CommandStateBuilder<T, F>` requires builders for all six command states,
+  supplies no visual defaults, borrows its command, and pauses listening below
+  disabled `TickerMode`.
 - `ProgressCommand0`, `ProgressCommand1`, and `KeyedProgressCommand1` preserve
   those policies while injecting execution-fenced typed progress contexts.
 - `ApplicationHost` owns bootstrap/retry/atomic publication and
   `SessionRuntimeController` plus `SessionHost` coordinate route-confirmed
   session replacement without closing application resources.
+- `FeatureHost` transactionally creates one child feature graph and ViewModel,
+  publishes loading/failure/ready, fences late attempts, and closes the
+  ViewModel before feature resources without selecting Material or product UI.
 - `VersionedRestorationCodec`, `RestorableVersionedValue`, and
   `LocalHistoryListenable` adapt explicitly bounded ephemeral UI state.
 - `ListenableSelector` rebuilds only when the selected value changes and detaches
@@ -183,7 +192,7 @@ and `dartitect_testing` for deterministic harnesses. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.8` source candidate. Supported
+The workspace contains the `1.0.0-rc.9` source candidate. Supported
 Git consumption requires a matching tag and published GitHub Release plus the
 complete cohort coordinates in its notes. Without that Release, there is no
 supported consumption path. See the

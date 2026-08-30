@@ -9,7 +9,7 @@ description: Implement Dartitect Result, ownership, composition, commands, ViewM
 
 Use this skill for `Result<T, F>`, resource ownership, composition roots, typed
 progress, bounded local history, `Command0`, ViewModels, application and session
-hosts, versioned UI restoration, isolate graphs, and the basic
+hosts, generated `FeatureHost`, versioned UI restoration, isolate graphs, and the basic
 `dartitect_flutter.dart` entrypoint.
 
 ## When not to use
@@ -31,6 +31,9 @@ ViewModels, domain, repositories, and services.
 Application bootstrap extends `ResourceTransaction`; do not create parallel
 ownership primitives. Replace session graphs only after explicit route-removal
 confirmation, and let application resources outlive them.
+Generated application/session graphs open each declared context once at its
+configured scope. A feature host closes its ViewModel before its feature graph
+and rejects publication after cancellation or disposal.
 
 ## Workflow
 

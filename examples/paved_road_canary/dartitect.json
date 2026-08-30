@@ -1,5 +1,5 @@
 {
-  "configVersion": 2,
+  "configVersion": 3,
   "profile": "native_strict",
   "layers": {
     "domain": ["**/domain/**"],
@@ -17,15 +17,26 @@
     "local_store": {
       "provider": "custom:canary-store",
       "mode": "durable",
+      "scope": "application",
+      "factorySource": {
+        "source": "lib/composition/canary_factories.dart",
+        "declaration": "LocalStoreFactory"
+      },
       "targets": ["android", "ios", "macos", "windows", "linux", "web"]
     }
   },
   "transports": {
     "synthetic": {
       "provider": "custom:synthetic",
+      "scope": "application",
+      "factorySource": {
+        "source": "lib/composition/canary_factories.dart",
+        "declaration": "SyntheticTransportFactory"
+      },
       "targets": ["android", "ios", "macos", "windows", "linux", "web"]
     }
   },
+  "contracts": {},
   "observability": {"provider": "none"},
   "scheduler": {"provider": "none"},
   "features": {
@@ -33,6 +44,11 @@
       "paved_road": {
         "profile": "cache",
         "scope": "application",
+        "factorySource": {
+          "source": "lib/composition/canary_factories.dart",
+          "declaration": "PavedRoadFactory"
+        },
+        "localAuthority": "custom",
         "storageContext": "local_store",
         "dataset": {
           "dataset": "paved_road",
@@ -45,7 +61,8 @@
         "pagination": "cursor",
         "diagnostics": "full",
         "headlessTargets": [],
-        "capabilities": []
+        "capabilities": [],
+        "operations": []
       }
     }
   },

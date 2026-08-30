@@ -16,8 +16,16 @@ void main() {
       addTearDown(() => root.delete(recursive: true));
       final engine = _modelEngine(root);
       const operations = <FileGenerationOperation>[
-        FileGenerationOperation(relativePath: 'lib/a.dart', content: 'a\n'),
-        FileGenerationOperation(relativePath: 'lib/b.dart', content: 'b\n'),
+        FileGenerationOperation(
+          relativePath: 'lib/a.dart',
+          content: 'a\n',
+          rendererId: 'test.fixture',
+        ),
+        FileGenerationOperation(
+          relativePath: 'lib/b.dart',
+          content: 'b\n',
+          rendererId: 'test.fixture',
+        ),
       ];
 
       final dryRun = await engine.apply(operations, dryRun: true);
@@ -44,8 +52,13 @@ void main() {
         FileGenerationOperation(
           relativePath: 'existing.txt',
           content: 'generated\n',
+          rendererId: 'test.fixture',
         ),
-        FileGenerationOperation(relativePath: 'new.txt', content: 'new\n'),
+        FileGenerationOperation(
+          relativePath: 'new.txt',
+          content: 'new\n',
+          rendererId: 'test.fixture',
+        ),
       ]),
       throwsA(isA<GenerationException>()),
     );
@@ -64,14 +77,26 @@ void main() {
 
     await expectLater(
       engine.plan(const <FileGenerationOperation>[
-        FileGenerationOperation(relativePath: '../escape', content: ''),
+        FileGenerationOperation(
+          relativePath: '../escape',
+          content: '',
+          rendererId: 'test.fixture',
+        ),
       ]),
       throwsA(isA<GenerationException>()),
     );
     await expectLater(
       engine.plan(const <FileGenerationOperation>[
-        FileGenerationOperation(relativePath: 'same', content: 'a'),
-        FileGenerationOperation(relativePath: 'same', content: 'b'),
+        FileGenerationOperation(
+          relativePath: 'same',
+          content: 'a',
+          rendererId: 'test.fixture',
+        ),
+        FileGenerationOperation(
+          relativePath: 'same',
+          content: 'b',
+          rendererId: 'test.fixture',
+        ),
       ]),
       throwsA(isA<GenerationException>()),
     );
@@ -110,7 +135,11 @@ void main() {
     final engine = _modelEngine(root);
 
     final directoryPlan = await engine.plan(const <FileGenerationOperation>[
-      FileGenerationOperation(relativePath: 'directory_target', content: ''),
+      FileGenerationOperation(
+        relativePath: 'directory_target',
+        content: '',
+        rendererId: 'test.fixture',
+      ),
     ]);
     expect(
       directoryPlan.operations.single.disposition,
@@ -124,6 +153,7 @@ void main() {
           FileGenerationOperation(
             relativePath: 'linked/escape.txt',
             content: 'escape',
+            rendererId: 'test.fixture',
           ),
         ]),
         throwsA(isA<GenerationException>()),
@@ -138,7 +168,11 @@ void main() {
     await File('${root.path}/same.txt').writeAsString('same\r\n');
 
     final plan = await _modelEngine(root).plan(const <FileGenerationOperation>[
-      FileGenerationOperation(relativePath: 'same.txt', content: 'same\n'),
+      FileGenerationOperation(
+        relativePath: 'same.txt',
+        content: 'same\n',
+        rendererId: 'test.fixture',
+      ),
     ]);
 
     expect(plan.operations.single.disposition, GenerationDisposition.noOp);
@@ -154,6 +188,7 @@ void main() {
       FileGenerationOperation model(String content) => FileGenerationOperation(
         relativePath: 'lib/user.dartitect.g.dart',
         content: content,
+        rendererId: 'test.fixture',
         ownership: GeneratedOwnership.fullyGenerated,
         sourcePath: 'lib/user.dart',
         inputSignature: content,
@@ -197,6 +232,7 @@ void main() {
     const original = FileGenerationOperation(
       relativePath: 'lib/a.dartitect.g.dart',
       content: 'owned\n',
+      rendererId: 'test.fixture',
       ownership: GeneratedOwnership.fullyGenerated,
       sourcePath: 'lib/a.dart',
       inputSignature: 'a',
@@ -266,7 +302,11 @@ void main() {
 
       await expectLater(
         _modelEngine(root).apply(const <FileGenerationOperation>[
-          FileGenerationOperation(relativePath: 'lib/new.dart', content: ''),
+          FileGenerationOperation(
+            relativePath: 'lib/new.dart',
+            content: '',
+            rendererId: 'test.fixture',
+          ),
         ], manageFullyGenerated: true),
         throwsA(
           isA<GenerationException>().having(
@@ -287,7 +327,7 @@ void main() {
   });
 
   test('unsupported namespaced manifest schemas fail closed', () async {
-    for (final schema in <int>[1, 3]) {
+    for (final schema in <int>[1, 4]) {
       final root = await Directory.systemTemp.createTemp(
         'dartitect-namespaced-manifest-schema-$schema-',
       );
@@ -319,6 +359,50 @@ void main() {
       );
       expect(await manifest.readAsString(), original);
     }
+  });
+
+  test('schema-2 manifests migrate to mandatory renderer identities', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-renderer-manifest-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    const operation = FileGenerationOperation(
+      relativePath: 'lib/value.dartitect.g.dart',
+      content: 'value\n',
+      rendererId: 'model.value',
+      ownership: GeneratedOwnership.fullyGenerated,
+      sourcePath: 'lib/value.dart',
+      inputSignature: 'value',
+    );
+    final engine = _modelEngine(root);
+    await engine.apply(const <FileGenerationOperation>[
+      operation,
+    ], manageFullyGenerated: true);
+    final manifest = File(
+      '${root.path}/.dartitect/generation/modeling/manifest.json',
+    );
+    final legacy =
+        jsonDecode(await manifest.readAsString()) as Map<String, Object?>;
+    legacy['schemaVersion'] = 2;
+    final entry =
+        (legacy['outputs']! as List<Object?>).single as Map<String, Object?>;
+    entry.remove('rendererId');
+    await manifest.writeAsString(jsonEncode(legacy));
+
+    final preview = await engine.plan(const <FileGenerationOperation>[
+      operation,
+    ], manageFullyGenerated: true);
+    expect(preview.updates, hasLength(1));
+    await engine.apply(const <FileGenerationOperation>[
+      operation,
+    ], manageFullyGenerated: true);
+
+    final migrated =
+        jsonDecode(await manifest.readAsString()) as Map<String, Object?>;
+    expect(migrated['schemaVersion'], DartitectGenerationVersions.manifest);
+    final migratedEntry =
+        (migrated['outputs']! as List<Object?>).single as Map<String, Object?>;
+    expect(migratedEntry['rendererId'], 'model.value');
   });
 
   test('unsupported journal schema preserves recovery residue', () async {
@@ -532,6 +616,7 @@ void main() {
     const alphaOperation = FileGenerationOperation(
       relativePath: 'lib/value.alpha.g.dart',
       content: 'alpha\n',
+      rendererId: 'test.fixture',
       ownership: GeneratedOwnership.fullyGenerated,
       sourcePath: 'lib/value.dart',
       inputSignature: 'alpha',
@@ -539,6 +624,7 @@ void main() {
     const betaOperation = FileGenerationOperation(
       relativePath: 'lib/value.beta.g.dart',
       content: 'beta\n',
+      rendererId: 'test.fixture',
       ownership: GeneratedOwnership.fullyGenerated,
       sourcePath: 'lib/value.dart',
       inputSignature: 'beta',
@@ -571,6 +657,51 @@ void main() {
     );
   });
 
+  test(
+    'overlapping suffixes respect ownership from sibling manifests',
+    () async {
+      final root = await Directory.systemTemp.createTemp(
+        'dartitect-overlapping-namespaces-',
+      );
+      addTearDown(() => root.delete(recursive: true));
+      const contract = FileGenerationOperation(
+        relativePath: 'lib/api.contracts.dartitect.g.dart',
+        content: 'contract\n',
+        rendererId: 'contracts.fixture',
+        ownership: GeneratedOwnership.fullyGenerated,
+        sourcePath: 'contracts/api.yaml',
+        inputSignature: 'contract',
+      );
+
+      await GenerationEngine(
+        root,
+        namespace: GenerationNamespace.contracts,
+      ).apply(const <FileGenerationOperation>[
+        contract,
+      ], manageFullyGenerated: true);
+
+      final clean = await _modelEngine(root)
+          .plan(const <FileGenerationOperation>[], manageFullyGenerated: true);
+      expect(clean.operations, isEmpty);
+
+      await File('${root.path}/lib/unclaimed.dartitect.g.dart')
+          .writeAsString('consumer\n');
+      final conflicted = await _modelEngine(root)
+          .plan(const <FileGenerationOperation>[], manageFullyGenerated: true);
+      final conflicts = conflicted.operations
+          .where(
+            (operation) =>
+                operation.disposition == GenerationDisposition.conflict,
+          )
+          .toList(growable: false);
+      expect(conflicts, hasLength(1));
+      expect(
+        conflicts.single.operation.relativePath,
+        'lib/unclaimed.dartitect.g.dart',
+      );
+    },
+  );
+
   test('shared project lock serializes different namespaces', () async {
     final root = await Directory.systemTemp.createTemp(
       'dartitect-shared-lock-',
@@ -593,6 +724,7 @@ void main() {
           FileGenerationOperation(
             relativePath: 'first.txt',
             content: 'first\n',
+            rendererId: 'test.fixture',
           ),
         ]);
     await entered.future;
@@ -605,6 +737,7 @@ void main() {
           FileGenerationOperation(
             relativePath: 'second.txt',
             content: 'second\n',
+            rendererId: 'test.fixture',
           ),
         ]);
     await Future<void>.delayed(const Duration(milliseconds: 40));
@@ -624,6 +757,7 @@ void main() {
     FileGenerationOperation model(String content) => FileGenerationOperation(
       relativePath: 'lib/value.dartitect.g.dart',
       content: content,
+      rendererId: 'test.fixture',
       ownership: GeneratedOwnership.fullyGenerated,
       sourcePath: 'lib/value.dart',
       inputSignature: content,
@@ -681,6 +815,7 @@ void main() {
       const operation = FileGenerationOperation(
         relativePath: 'lib/user.dartitect.g.dart',
         content: 'owned\n',
+        rendererId: 'model.value',
         ownership: GeneratedOwnership.fullyGenerated,
         sourcePath: 'lib/user.dart',
         rendererVersion: DartitectGenerationVersions.modelRenderer,
@@ -724,6 +859,7 @@ void main() {
         entry['semanticSchemaVersion'],
         DartitectGenerationVersions.modelingSemanticSchema,
       );
+      expect(entry['rendererId'], 'model.value');
       expect(entry.containsKey('generatorVersion'), isFalse);
     },
   );
@@ -738,6 +874,7 @@ void main() {
       const legacyOperation = FileGenerationOperation(
         relativePath: 'lib/user.dartitect.g.dart',
         content: 'legacy\n',
+        rendererId: 'model.value',
         ownership: GeneratedOwnership.fullyGenerated,
         sourcePath: 'lib/user.dart',
         inputSignature: 'semantic',
@@ -745,6 +882,7 @@ void main() {
       const desired = FileGenerationOperation(
         relativePath: 'lib/user.dartitect.g.dart',
         content: 'desired\n',
+        rendererId: 'model.value',
         ownership: GeneratedOwnership.fullyGenerated,
         sourcePath: 'lib/user.dart',
         inputSignature: 'semantic',
@@ -796,6 +934,7 @@ void main() {
     const operation = FileGenerationOperation(
       relativePath: 'lib/user.dartitect.g.dart',
       content: 'owned\n',
+      rendererId: 'model.value',
       ownership: GeneratedOwnership.fullyGenerated,
       sourcePath: 'lib/user.dart',
       inputSignature: 'semantic',
@@ -838,6 +977,7 @@ void main() {
     const operation = FileGenerationOperation(
       relativePath: 'lib/user.dartitect.g.dart',
       content: 'owned\n',
+      rendererId: 'model.value',
       ownership: GeneratedOwnership.fullyGenerated,
       sourcePath: 'lib/user.dart',
       inputSignature: 'semantic',
@@ -932,6 +1072,7 @@ void main() {
       FileGenerationOperation model(String content) => FileGenerationOperation(
         relativePath: 'lib/user.dartitect.g.dart',
         content: content,
+        rendererId: 'test.fixture',
         ownership: GeneratedOwnership.fullyGenerated,
         sourcePath: 'lib/user.dart',
         inputSignature: content,

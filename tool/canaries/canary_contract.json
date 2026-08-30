@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "cohortVersion": "1.0.0-rc.8",
+  "schemaVersion": 2,
+  "cohortVersion": "1.0.0-rc.9",
   "artifactSource": "git-archive-exact-head",
   "digestAlgorithm": "sha256",
   "installation": {
@@ -12,7 +12,7 @@
   },
   "gitInstallation": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "ref": "v1.0.0-rc.8",
+    "ref": "v1.0.0-rc.9",
     "annotatedTagRequired": true,
     "dependencyOverrides": true,
     "transitiveClosureRequired": true,
@@ -68,6 +68,7 @@
         "dartitect_observability",
         "dartitect_resilience",
         "dartitect_sync",
+        "dartitect_testing",
         "dartitect_transfer",
         "dartitect_workmanager"
       ],
@@ -93,13 +94,62 @@
       "residualResourceCensus": 0
     },
     {
+      "id": "large_consumer",
+      "source": "tool/canaries/large_consumer_source",
+      "pubspec": "tool/canaries/large_consumer/pubspec.yaml",
+      "requiredPackages": [
+        "dartitect",
+        "dartitect_cli",
+        "dartitect_dio",
+        "dartitect_drift",
+        "dartitect_flutter",
+        "dartitect_observability",
+        "dartitect_sync",
+        "dartitect_testing",
+        "dartitect_workmanager"
+      ],
+      "forbiddenPackages": [
+        "dartitect_media",
+        "dartitect_objectbox",
+        "dartitect_sentry"
+      ],
+      "commands": [
+        "flutter pub get",
+        "dart run tool/materialize_large_consumer.dart --fresh",
+        "dart run dartitect_cli:dartitect contracts sync contracts/app_api.json --apply",
+        "dart run tool/verify_large_preview.dart",
+        "dart run dartitect_cli:dartitect wiring sync --apply --json",
+        "dart run dartitect_cli:dartitect wiring sync --dry-run --json",
+        "dart run dartitect_cli:dartitect fleet inventory . --json",
+        "flutter analyze",
+        "flutter analyze",
+        "flutter test",
+        "flutter build web --release",
+        "flutter build web --release",
+        "flutter build linux --release",
+        "dart run dartitect_cli:dartitect fleet upgrade . --to=1.0.0-rc.9 --apply --json"
+      ],
+      "coverage": [
+        "large_30_feature_matrix",
+        "application_session_context_ownership",
+        "web_linux_incremental_builds",
+        "fleet_upgrade_zero_residual",
+        "openapi_feature_selection",
+        "typed_openapi_operation_runtime",
+        "renderer_migration_chain",
+        "induced_error_bound"
+      ],
+      "residualResourceCensus": 0
+    },
+    {
       "id": "minimal",
       "source": "tool/canaries/minimal",
       "pubspec": "tool/canaries/minimal/pubspec.yaml",
       "requiredPackages": [
         "dartitect",
         "dartitect_cli",
-        "dartitect_flutter"
+        "dartitect_flutter",
+        "dartitect_modeling"
       ],
       "forbiddenPackages": [
         "dartitect_geometry",
@@ -141,7 +191,8 @@
         "dartitect_isolates",
         "dartitect_objectbox",
         "dartitect_observability",
-        "dartitect_sync"
+        "dartitect_sync",
+        "dartitect_testing"
       ],
       "forbiddenPackages": [],
       "commands": [
@@ -209,7 +260,196 @@
       ],
       "coverage": ["native_capabilities"],
       "residualResourceCensus": 0
+    },
+    {
+      "id": "adapters",
+      "source": "examples/adapters_app",
+      "pubspec": "tool/canaries/adapters/pubspec.yaml",
+      "requiredPackages": [
+        "dartitect",
+        "dartitect_dio",
+        "dartitect_flutter",
+        "dartitect_media",
+        "dartitect_objectbox",
+        "dartitect_observability",
+        "dartitect_privacy",
+        "dartitect_sentry"
+      ],
+      "forbiddenPackages": [],
+      "commands": [
+        "flutter pub get",
+        "flutter analyze",
+        "flutter test"
+      ],
+      "coverage": [
+        "dio_adapter",
+        "objectbox_adapter",
+        "sentry_fake_hub",
+        "media_privacy_adapters"
+      ],
+      "residualResourceCensus": 0
+    },
+    {
+      "id": "tooling",
+      "source": "tool/canaries/tooling_source",
+      "pubspec": "tool/canaries/tooling/pubspec.yaml",
+      "requiredPackages": [
+        "dartitect",
+        "dartitect_cli",
+        "dartitect_devtools",
+        "dartitect_dio",
+        "dartitect_lints",
+        "dartitect_mcp",
+        "dartitect_modeling_analyzer",
+        "dartitect_testing"
+      ],
+      "forbiddenPackages": [],
+      "commands": [
+        "flutter pub get",
+        "dart run dartitect_cli:dartitect contracts sync contracts/openapi.json --apply",
+        "dart run dartitect_cli:dartitect contracts check contracts/openapi.json",
+        "dart analyze",
+        "dart test"
+      ],
+      "coverage": [
+        "devtools_entrypoint",
+        "lints_entrypoint",
+        "mcp_entrypoint",
+        "testing_entrypoint",
+        "openapi_renderer",
+        "tooling_commands"
+      ],
+      "residualResourceCensus": 0
     }
   ],
+  "catalog": {
+    "packages": {
+      "dartitect": ["minimal"],
+      "dartitect_cli": ["tooling"],
+      "dartitect_devtools": ["tooling"],
+      "dartitect_dio": ["thin_consumer", "adapters"],
+      "dartitect_drift": ["drift_provider"],
+      "dartitect_flutter": ["minimal", "thin_consumer"],
+      "dartitect_geometry": ["native_capabilities"],
+      "dartitect_isolates": ["offline_first"],
+      "dartitect_jobs": ["thin_consumer"],
+      "dartitect_lints": ["tooling"],
+      "dartitect_locale_br": ["native_capabilities"],
+      "dartitect_mcp": ["tooling"],
+      "dartitect_media": ["native_capabilities", "adapters"],
+      "dartitect_modeling": ["modeling"],
+      "dartitect_modeling_analyzer": ["tooling"],
+      "dartitect_objectbox": ["offline_first", "adapters"],
+      "dartitect_observability": ["thin_consumer", "adapters"],
+      "dartitect_privacy": ["native_capabilities", "adapters"],
+      "dartitect_resilience": ["thin_consumer"],
+      "dartitect_sentry": ["adapters"],
+      "dartitect_sync": ["thin_consumer", "offline_first"],
+      "dartitect_testing": ["tooling"],
+      "dartitect_transfer": ["thin_consumer"],
+      "dartitect_workmanager": ["thin_consumer"]
+    },
+    "entrypoints": {
+      "package:dartitect/dartitect.dart": ["minimal"],
+      "package:dartitect/dartitect_credentials.dart": ["thin_consumer"],
+      "package:dartitect_cli/dartitect_cli.dart": ["tooling"],
+      "package:dartitect_cli/dartitect_contracts.dart": ["tooling"],
+      "package:dartitect_devtools/dartitect_devtools.dart": ["tooling"],
+      "package:dartitect_dio/dartitect_dio.dart": ["adapters"],
+      "package:dartitect_drift/dartitect_drift.dart": ["drift_provider"],
+      "package:dartitect_flutter/dartitect_flutter.dart": ["minimal"],
+      "package:dartitect_flutter/dartitect_flutter_forms.dart": ["thin_consumer"],
+      "package:dartitect_flutter/dartitect_flutter_queries.dart": ["thin_consumer"],
+      "package:dartitect_flutter/dartitect_flutter_reactive.dart": ["thin_consumer"],
+      "package:dartitect_geometry/dartitect_geometry.dart": ["native_capabilities"],
+      "package:dartitect_isolates/dartitect_isolates.dart": ["offline_first"],
+      "package:dartitect_jobs/dartitect_jobs.dart": ["thin_consumer"],
+      "package:dartitect_lints/main.dart": ["tooling"],
+      "package:dartitect_locale_br/dartitect_locale_br.dart": ["native_capabilities"],
+      "package:dartitect_mcp/dartitect_mcp.dart": ["tooling"],
+      "package:dartitect_media/dartitect_media.dart": ["native_capabilities"],
+      "package:dartitect_modeling/dartitect_modeling.dart": ["modeling"],
+      "package:dartitect_modeling_analyzer/dartitect_modeling_analyzer.dart": ["tooling"],
+      "package:dartitect_objectbox/dartitect_objectbox.dart": ["offline_first"],
+      "package:dartitect_observability/dartitect_observability.dart": ["adapters"],
+      "package:dartitect_privacy/dartitect_privacy.dart": ["native_capabilities"],
+      "package:dartitect_resilience/dartitect_resilience.dart": ["thin_consumer"],
+      "package:dartitect_sentry/dartitect_sentry.dart": ["adapters"],
+      "package:dartitect_sync/dartitect_sync.dart": ["thin_consumer"],
+      "package:dartitect_testing/dartitect_testing.dart": ["tooling"],
+      "package:dartitect_transfer/dartitect_attachments.dart": ["thin_consumer"],
+      "package:dartitect_transfer/dartitect_transfer.dart": ["thin_consumer"],
+      "package:dartitect_workmanager/dartitect_workmanager.dart": ["thin_consumer"]
+    },
+    "renderers": {
+      "blueprint.*.digest-lock": ["tooling"],
+      "blueprint.*.template": ["tooling"],
+      "contracts.openapi": ["tooling", "large_consumer"],
+      "generation.unmanaged-output": ["tooling"],
+      "model.value": ["modeling"],
+      "scaffold.agents": ["minimal"],
+      "scaffold.config": ["minimal"],
+      "scaffold.cursor-page": ["thin_consumer"],
+      "scaffold.feature-factory": ["thin_consumer"],
+      "scaffold.feature-model": ["thin_consumer"],
+      "scaffold.headless-sync": ["thin_consumer"],
+      "scaffold.local-store": ["thin_consumer"],
+      "scaffold.mapper": ["thin_consumer"],
+      "scaffold.mapping-test": ["thin_consumer"],
+      "scaffold.memory-repository": ["minimal"],
+      "scaffold.mutation": ["thin_consumer"],
+      "scaffold.remote-dto": ["thin_consumer"],
+      "scaffold.remote-port": ["thin_consumer"],
+      "scaffold.repository-contract": ["minimal"],
+      "scaffold.repository-contract-test": ["minimal"],
+      "scaffold.service": ["tooling"],
+      "scaffold.standalone-view-model": ["minimal"],
+      "scaffold.standalone-view-model-test": ["minimal"],
+      "scaffold.sync-dataset": ["thin_consumer"],
+      "scaffold.view": ["minimal"],
+      "scaffold.view-model": ["minimal"],
+      "scaffold.view-model-test": ["minimal"],
+      "scaffold.view-test": ["minimal"],
+      "wiring.application": ["thin_consumer", "large_consumer"],
+      "wiring.dio": ["thin_consumer", "large_consumer"],
+      "wiring.feature": ["thin_consumer", "large_consumer"],
+      "wiring.feature-harness": ["thin_consumer", "large_consumer"],
+      "wiring.session": ["thin_consumer", "large_consumer"],
+      "wiring.storage": ["thin_consumer", "large_consumer"],
+      "wiring.workmanager": ["thin_consumer", "large_consumer"]
+    },
+    "profiles": {
+      "local": ["minimal", "large_consumer"],
+      "online": ["adapters", "large_consumer"],
+      "cache": ["offline_first", "large_consumer"],
+      "replica": ["offline_first", "large_consumer"],
+      "offline-full": ["thin_consumer", "large_consumer"]
+    },
+    "capabilities": {
+      "credentials": ["thin_consumer", "large_consumer"],
+      "attachments": ["thin_consumer", "large_consumer"],
+      "forms": ["thin_consumer", "large_consumer"],
+      "queries": ["thin_consumer", "large_consumer"]
+    },
+    "providers": {
+      "drift": ["drift_provider", "large_consumer"],
+      "objectbox": ["offline_first"],
+      "dio": ["adapters", "large_consumer"],
+      "workmanager": ["thin_consumer", "large_consumer"],
+      "sentry": ["adapters"]
+    },
+    "scopes": {
+      "application": ["minimal", "large_consumer"],
+      "session": ["thin_consumer", "large_consumer"]
+    },
+    "targets": {
+      "android": ["native_capabilities"],
+      "ios": ["native_capabilities"],
+      "macos": ["offline_first"],
+      "windows": ["native_capabilities"],
+      "linux": ["offline_first", "large_consumer"],
+      "web": ["thin_consumer", "large_consumer"]
+    }
+  },
   "deferredToV1S13": []
 }

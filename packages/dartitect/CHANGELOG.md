@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.9
+
+- Add semantic factory annotations and concrete application/session graph contracts while retaining generic assembly primitives as low-level APIs.
+
 ## 1.0.0-rc.8
 
 - Prepare the package for the RC8 greenfield platform baseline and compatible post-1.0 publication cohorts.

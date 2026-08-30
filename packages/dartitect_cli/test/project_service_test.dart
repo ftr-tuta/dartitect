@@ -376,6 +376,30 @@ dev_dependencies:
     },
   );
 
+  test('dependency upgrade preserves structured source overrides', () async {
+    final root = await _project();
+    final pubspec = File('${root.path}/pubspec.yaml');
+    const override = '''dependency_overrides:
+  dartitect:
+    git:
+      url: /tmp/dartitect-candidate
+      ref: v1.0.0-rc.9
+      path: packages/dartitect
+''';
+    await pubspec.writeAsString('''name: fixture
+dependencies:
+  dartitect: ^1.0.0-rc.8
+$override''');
+    final service = DartitectProjectService(root);
+
+    final plan = await service.previewDependencyUpgrade('1.0.0-rc.9');
+    await service.applyChange(plan);
+    final result = await pubspec.readAsString();
+
+    expect(result, contains('dartitect: ^1.0.0-rc.9'));
+    expect(result, endsWith(override));
+  });
+
   test(
     'dependency upgrade rejects stale and structured dependency plans',
     () async {

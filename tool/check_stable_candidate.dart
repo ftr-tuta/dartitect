@@ -17,6 +17,9 @@ Future<void> main(List<String> arguments) async {
       File('${root.path}/tool/stable_candidate_contract.json')
           .readAsStringSync(),
     );
+    final promotionBlockers = value is Map<String, Object?>
+        ? _strings(value['promotionBlockers'])
+        : const <String>[];
     if (value is! Map<String, Object?> ||
         value['schemaVersion'] != 2 ||
         value['goal'] != 'V1-18' ||
@@ -28,8 +31,14 @@ Future<void> main(List<String> arguments) async {
         !_same(_strings(value['requiredNativeCells']), _nativeCells) ||
         value['publicationWorkflow'] != '.github/workflows/publish.yaml' ||
         value['manualTriggerOnly'] != true ||
+        !_same(promotionBlockers, const <String>['ui-ux-business-neutral']) ||
         value['externalAuthorizationRecordsAccepted'] != false) {
       throw StateError('Stable Actions policy is incomplete.');
+    }
+    if (options.manifest != null && promotionBlockers.isNotEmpty) {
+      throw StateError(
+        'Stable promotion is blocked by ${promotionBlockers.join(', ')}.',
+      );
     }
     if (options.manifest != null) {
       final result = await Process.run(Platform.resolvedExecutable, <String>[
@@ -45,7 +54,9 @@ Future<void> main(List<String> arguments) async {
     }
     stdout.writeln(
       options.manifest == null
-          ? 'Stable policy passed with the nominal five-cell Actions matrix.'
+          ? 'Stable policy passed structurally with the nominal five-cell '
+                'Actions matrix; promotion remains blocked by '
+                'ui-ux-business-neutral.'
           : 'Stable candidate passed actions-readiness-v1.',
     );
   } on Object catch (error) {

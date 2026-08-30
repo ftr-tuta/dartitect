@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "cohortVersion": "1.0.0-rc.8",
+  "cohortVersion": "1.0.0-rc.9",
   "candidateState": "SOURCE_CANDIDATE_ASSEMBLED",
   "targetChannel": "UNMATERIALIZED",
   "packageCount": 24,
@@ -44,7 +44,7 @@
   },
   "gitConsumption": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "tag": "v1.0.0-rc.8",
+    "tag": "v1.0.0-rc.9",
     "materialized": false,
     "annotated": true,
     "signed": false,
@@ -63,7 +63,7 @@
     "tool/sdk_inventory.json",
     "tool/generate_release_artifacts.dart",
     "docs/release/package-cohorts.adoc",
-    "docs/release/rc8-handoff.adoc",
+    "docs/release/rc9-handoff.adoc",
     "docs/guides/openapi-contracts.md",
     "packages/dartitect_cli/lib/src/release/generated_release_manifest.dart",
     "packages/dartitect_mcp/lib/src/catalog/generated_catalog.dart",

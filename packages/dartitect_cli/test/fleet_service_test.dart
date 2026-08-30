@@ -109,6 +109,57 @@ void registerMatrix() {
   );
 
   test(
+    'fleet inventory and impact produce reproducible source snapshots',
+    () async {
+      final fleet = await _fleet();
+      final app = await _project(fleet, 'app', '^1.0.0-rc.8');
+      final source = File('${app.path}/lib/main.dart');
+      await source.parent.create(recursive: true);
+      await source.writeAsString('''
+import 'package:dartitect/dartitect.dart';
+
+Result<int, StateError> load() => const Ok<int>(1);
+''');
+      final service = DartitectFleetService(fleet);
+      final before = await service.inventory(<String>['app']);
+      final beforeFile = File('${fleet.path}/before.json');
+      await beforeFile.writeAsString(jsonEncode(before.toJson()));
+
+      await source.writeAsString('''
+import 'package:dartitect/dartitect.dart';
+
+OwnedGraph<Object>? graph;
+Result<int, StateError> load() => const Ok<int>(1);
+''');
+      final after = await service.inventory(<String>['app']);
+      final afterFile = File('${fleet.path}/after.json');
+      await afterFile.writeAsString(jsonEncode(after.toJson()));
+
+      final inventory = after.projects.single;
+      expect(inventory['entrypoints'], <String>[
+        'package:dartitect/dartitect.dart',
+      ]);
+      expect(inventory['symbols'], contains('OwnedGraph'));
+      expect(inventory['deprecations'], contains('OwnedGraph'));
+
+      final impact = await service.impact(
+        fromSnapshot: 'before.json',
+        toSnapshot: 'after.json',
+      );
+      final project = impact.projects.single;
+      expect(project['root'], 'app');
+      expect(
+        project['affectedSymbols'],
+        containsPair('added', contains('OwnedGraph')),
+      );
+      expect(
+        project['domainIntervention'],
+        contains('review low-level or deprecated API usage'),
+      );
+    },
+  );
+
+  test(
     'fleet roots reject traversal, duplicates, and symlink escape',
     () async {
       final fleet = await _fleet();
@@ -177,7 +228,7 @@ void registerMatrix() {
   });
 
   test(
-    'fleet CLI previews RC8 upgrade and writes nothing by default',
+    'fleet CLI previews RC9 upgrade and writes nothing by default',
     () async {
       final fleet = await _fleet();
       final app = await _project(fleet, 'app', '^1.0.0-rc.6');
@@ -196,7 +247,7 @@ void registerMatrix() {
           'upgrade',
           'app',
           '--dry-run',
-          '--to=1.0.0-rc.8',
+          '--to=1.0.0-rc.9',
           '--json',
         ]),
         0,
@@ -216,11 +267,77 @@ void registerMatrix() {
           'fleet',
           'upgrade',
           'app',
-          '--to=1.0.0-rc.8',
+          '--to=1.0.0-rc.9',
         ]),
         0,
       );
       expect(await File('${app.path}/pubspec.yaml').readAsString(), before);
+    },
+  );
+
+  test(
+    'fleet upgrade validates declarations and ignores Git overrides',
+    () async {
+      final fleet = await _fleet();
+      final app = await _project(fleet, 'app', '^1.0.0-rc.8');
+      final pubspec = File('${app.path}/pubspec.yaml');
+      await pubspec.writeAsString('''name: app
+dependencies:
+  dartitect: ^1.0.0-rc.8
+dependency_overrides:
+  dartitect:
+    git:
+      url: /tmp/dartitect-candidate
+      ref: v1.0.0-rc.9
+      path: packages/dartitect
+''');
+
+      final report = await DartitectFleetService(fleet)
+          .previewUpgrade(<String>['app'], targetCohort: '1.0.0-rc.9');
+      final plan = report.projects.single['plan']! as Map<String, Object?>;
+
+      expect(plan['operations'], contains('UPDATE pubspec.yaml'));
+      expect(
+        await pubspec.readAsString(),
+        contains('url: /tmp/dartitect-candidate'),
+      );
+    },
+  );
+
+  test(
+    'fleet records every renderer migration including no-op steps',
+    () async {
+      final fleet = await _fleet();
+      final app = await _project(fleet, 'app', '^1.0.0-rc.8');
+      final manifest = File(
+        '${app.path}/.dartitect/generation/wiring/manifest.json',
+      );
+      await manifest.parent.create(recursive: true);
+      await manifest.writeAsString(
+        jsonEncode(<String, Object?>{
+          'schemaVersion': 3,
+          'outputs': <Object?>[
+            <String, Object?>{
+              'rendererId': 'wiring.feature',
+              'rendererVersion': 2,
+            },
+            <String, Object?>{
+              'rendererId': 'contracts.openapi',
+              'rendererVersion': 4,
+            },
+          ],
+        }),
+      );
+
+      final report = await DartitectFleetService(fleet)
+          .previewUpgrade(<String>['app'], targetCohort: '1.0.0-rc.9');
+      final plan = report.projects.single['plan']! as Map<String, Object?>;
+
+      expect(plan['migrations'], <Object?>[
+        <String, String>{'id': 'renderer-manifest-v2-to-v3', 'action': 'no-op'},
+        <String, String>{'id': 'wiring-renderers-rc9-v3', 'action': 'apply'},
+        <String, String>{'id': 'openapi-renderer-v3-to-v4', 'action': 'no-op'},
+      ]);
     },
   );
 
@@ -238,12 +355,12 @@ void registerMatrix() {
 
     final report = await service.applyUpgrade(<String>[
       'app',
-    ], targetCohort: '1.0.0-rc.8');
+    ], targetCohort: '1.0.0-rc.9');
 
     expect(report.exitCode, 0);
     expect(
       await File('${app.path}/pubspec.yaml').readAsString(),
-      contains('^1.0.0-rc.8'),
+      contains('^1.0.0-rc.9'),
     );
     expect(commands, <String>['dart pub get', 'dart analyze', 'dart test']);
     expect(
@@ -272,7 +389,7 @@ void registerMatrix() {
       service.applyUpgrade(<String>[
         'beta',
         'alpha',
-      ], targetCohort: '1.0.0-rc.8'),
+      ], targetCohort: '1.0.0-rc.9'),
       throwsFormatException,
     );
     expect(await File('${alpha.path}/pubspec.yaml').readAsBytes(), beforeAlpha);

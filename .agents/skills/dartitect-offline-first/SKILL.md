@@ -24,6 +24,10 @@ local transaction is authoritative. A mutation changes domain data and enqueues
 its outbox operation atomically. Reuse one non-empty consumer-scoped idempotency
 key for every at-least-once attempt. Persist acknowledgement before reporting
 synced. Never auto-rollback queued or uncertain changes.
+In config-v3 generated graphs, the feature factory supplies repositories,
+ports, mapping/idempotency/conflict policy, datasets, and ViewModels; Dartitect
+owns outbox/sync/scheduler/diagnostics/cancellation/disposal plumbing. Use the
+generated pull authority only when `LocalStore.watch/read` is authoritative.
 
 ## Workflow
 

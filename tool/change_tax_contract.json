@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "source": "tool/canaries/large_consumer_source",
+  "scenarioCount": 12,
+  "requirements": {
+    "temporaryCopy": true,
+    "manualPlumbingDelta": 0,
+    "recordsManualAndGeneratedDiff": true,
+    "recordsGenerationAnalyzerAndBuild": true,
+    "localTimingsAreNotRatcheted": true
+  },
+  "scenarios": [
+    {
+      "id": "add_credentials",
+      "mutation": "add_capability",
+      "feature": "local_application_2",
+      "value": "credentials",
+      "pendingDecisions": ["credential store and refresh semantics"]
+    },
+    {
+      "id": "add_attachments",
+      "mutation": "add_capability",
+      "feature": "local_application_3",
+      "value": "attachments",
+      "pendingDecisions": ["attachment retention and transfer policy"]
+    },
+    {
+      "id": "add_forms",
+      "mutation": "add_capability",
+      "feature": "local_session_1",
+      "value": "forms",
+      "pendingDecisions": ["validation and draft semantics"]
+    },
+    {
+      "id": "add_queries",
+      "mutation": "add_capability",
+      "feature": "local_session_2",
+      "value": "queries",
+      "pendingDecisions": ["filter and pagination semantics"]
+    },
+    {
+      "id": "diagnostics_full",
+      "mutation": "set_feature_field",
+      "feature": "local_application_1",
+      "field": "diagnostics",
+      "value": "full",
+      "pendingDecisions": ["diagnostic sampling and operational ownership"]
+    },
+    {
+      "id": "pagination_none",
+      "mutation": "set_feature_field",
+      "feature": "online_application_1",
+      "field": "pagination",
+      "value": "none",
+      "pendingDecisions": ["domain paging semantics"]
+    },
+    {
+      "id": "remove_openapi_operation",
+      "mutation": "clear_feature_list",
+      "feature": "online_application_1",
+      "field": "operations",
+      "pendingDecisions": ["status semantics and DTO mapping"]
+    },
+    {
+      "id": "feature_web_only",
+      "mutation": "set_feature_list",
+      "feature": "cache_application_1",
+      "field": "targets",
+      "values": ["web"],
+      "pendingDecisions": ["product platform support"]
+    },
+    {
+      "id": "headless_web_only",
+      "mutation": "set_feature_list",
+      "feature": "replica_application_1",
+      "field": "headlessTargets",
+      "values": ["web"],
+      "pendingDecisions": ["background delivery guarantees"]
+    },
+    {
+      "id": "observability_sentry",
+      "mutation": "set_observability",
+      "value": "sentry",
+      "pendingDecisions": ["production telemetry provider and redaction policy"]
+    },
+    {
+      "id": "scheduler_web_only",
+      "mutation": "scheduler_web_only",
+      "pendingDecisions": ["background platform execution ownership"]
+    },
+    {
+      "id": "downgrade_offline_to_replica",
+      "mutation": "set_feature_field",
+      "feature": "offline_full_application_1",
+      "field": "profile",
+      "value": "replica",
+      "pendingDecisions": ["offline mutation and conflict semantics"]
+    }
+  ]
+}

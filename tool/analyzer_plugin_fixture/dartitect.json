@@ -1,5 +1,5 @@
 {
-  "configVersion": 2,
+  "configVersion": 3,
   "profile": "native_strict",
   "layers": {
     "presentation": ["**/presentation/**"],
@@ -21,6 +21,7 @@
   "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
   "storageContexts": {},
   "transports": {},
+  "contracts": {},
   "observability": {"provider": "none"},
   "scheduler": {"provider": "none"},
   "features": {"declarations": {}},

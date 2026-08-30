@@ -15,6 +15,7 @@ void main() {
 
       final preview = await service.preview(specPath: 'contracts/api.json');
       expect(preview.isValid, isTrue);
+      expect(preview.operationIds, <String>{'getTask'});
       expect(preview.isFresh, isFalse);
       expect(preview.plan!.creates, hasLength(1));
 
@@ -26,7 +27,23 @@ void main() {
       );
       final first = await output.readAsString();
       expect(first, contains('final class const TaskDto'));
-      expect(first, contains('Future<Response<Object?>> getTask'));
+      expect(first, contains('final DioJsonClient _client;'));
+      expect(
+        first,
+        contains(
+          'Future<Result<DioResponse<GetTaskResponse>, DioFailure>> getTask',
+        ),
+      );
+      expect(first, contains('final class GetTaskResponseStatus200'));
+      expect(first, contains('final class GetTaskOperation'));
+      expect(
+        first,
+        contains(
+          'Future<Result<DioResponse<GetTaskResponse>, DioFailure>> call',
+        ),
+      );
+      expect(first, contains('final TaskDto payload;'));
+      expect(first, contains('DioRequestContext? context'));
       expect(first, contains('Uri.encodeComponent'));
       expect(first, isNot(contains('Authorization')));
       expect(first, isNot(contains('Domain')));
@@ -75,6 +92,34 @@ void main() {
       contains('Required property was added.'),
     );
   });
+
+  test(
+    'operation without parameters renders a valid empty signature',
+    () async {
+      final root = await Directory.systemTemp.createTemp('dartitect-openapi-');
+      addTearDown(() => root.delete(recursive: true));
+      final contract = _contract();
+      (contract['paths']!
+          as Map<String, Object?>)['/health'] = <String, Object?>{
+        'get': <String, Object?>{
+          'operationId': 'getHealth',
+          'responses': <String, Object?>{
+            '204': <String, Object?>{'description': 'healthy'},
+          },
+        },
+      };
+      await _writeJson(root, 'contracts/api.json', contract);
+
+      final report = await OpenApiContractService(root)
+          .apply(specPath: 'contracts/api.json');
+      expect(report.isValid, isTrue);
+      final output = await File(
+        '${root.path}/lib/contracts/api.contracts.dartitect.g.dart',
+      ).readAsString();
+      expect(output, contains('String getHealthRoute() => "/health";'));
+      expect(output, isNot(contains('getHealthRoute({})')));
+    },
+  );
 
   test('remote refs and non-JSON pipelines are rejected without IO', () async {
     final root = await Directory.systemTemp.createTemp('dartitect-openapi-');

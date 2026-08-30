@@ -209,7 +209,7 @@ consumer-owned; only manifest-owned outputs can be converged by the tool. The
 analyzer plugin supplies editor feedback, while `dartitect scan` is the CI and
 unsupported-host fallback. MCP is local STDIO, read-only by default, and maps
 to the typed project service rather than a shell. See [model generation](docs/guides/model-generation.md),
-[config v2](docs/guides/config-v2.md),
+[config v3](docs/guides/config-v3.md),
 [typed project-local extensions](docs/guides/project-local-extensions.md),
 [bounded OpenAPI contracts](docs/guides/openapi-contracts.md),
 [credential generations](docs/guides/credential-generations.md),
@@ -255,7 +255,7 @@ The workspace requires Dart `^3.13.0`; Flutter packages require Flutter
 READMEs. Drift accepts consumer-owned native and web executors. ObjectBox has no
 web support. The CLI, modeling analyzer, and MCP server run on the Dart VM.
 
-All packages currently share the `1.0.0-rc.8` source cohort. Do not copy Git
+All packages currently share the `1.0.0-rc.9` source cohort. Do not copy Git
 coordinates from this README. Experimental Git consumption is supported only
 for a tag that has a corresponding published GitHub Release, using the complete
 compatible cohort and dependency coordinates from that Release's notes. If no

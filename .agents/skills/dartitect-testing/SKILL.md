@@ -28,13 +28,15 @@ and disposes what it creates and proves no residual resources.
 Build a matrix across success, expected failure, unexpected crash,
 cancellation/concurrency, lifecycle temperature, disposal, and provider failure.
 Choose deterministic fakes for policy and real fixtures for integration.
-For a public feature profile, run the matching `FeatureContractMatrix.online`,
-`.cache`, `.replica`, or `.offlineFull`; each required row gets a fresh typed
+For a public feature profile, run the matching `FeatureContractMatrix.local`,
+`.online`, `.cache`, `.replica`, or `.offlineFull`; each required row gets a fresh typed
 runtime driver. The matrix owns faults, event journal, observed store,
 acknowledgements, graph registrations, and `ResourceCensus`; fixtures never
 return facts or a residual map. Derive success, expected failure, crash,
 cancellation, concurrency, restart, and teardown evidence from those observed
 instruments.
+Prefer the generated `<Feature>FeatureHarness` in `test/support`; consumers add
+only domain fixtures, selected policies, and domain assertions.
 
 Read [references/runtime-and-reactive.md](references/runtime-and-reactive.md),
 [references/sync.md](references/sync.md),

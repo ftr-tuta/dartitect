@@ -224,11 +224,20 @@ Future<void> _configureScenario(
             'api': DartitectTransportConfig(provider: 'dio', targets: targets),
           }
         : const <String, DartitectTransportConfig>{},
+    session: feature?.scope == 'session'
+        ? DartitectSessionConfig(
+            factorySource: DartitectFactorySourceConfig(
+              source: 'lib/composition/session_factory.dart',
+              declaration: 'SessionFactory',
+            ),
+          )
+        : prior.session,
     observability: DartitectObservabilityConfig(
       provider: scenario.observability,
     ),
   );
   await file.writeAsString(next.encode(), flush: true);
+  await _writeContextFactories(project, feature);
   if (scenario.extensions) {
     await File('${project.path}/lib/project_extensions.dart').writeAsString('''
 import 'package:dartitect/dartitect.dart';
@@ -269,10 +278,9 @@ import 'package:generated_extensions/composition/application_module.wiring.darti
 
 void main() {
   test('generated local extensions are owned and disposed', () async {
-    final coordinator = ApplicationModule.create<Never, Never>();
+    final coordinator = ApplicationModule.create();
     final attempt = await coordinator.run();
-    final success =
-        attempt as BootstrapSucceeded<ApplicationGraph<Never, Never>>;
+    final success = attempt as BootstrapSucceeded<ApplicationGraph>;
     final graph = success.graph;
     expect(graph.root.localClock.disposed, isFalse);
     expect(graph.root.localAudit.disposed, isFalse);
@@ -307,8 +315,8 @@ void main() {
                     "import 'package:sentry/sentry.dart';",
               )
               .replaceFirst(
-                '  create: ApplicationModule.create<Never, Never>,',
-                '  create: () => ApplicationModule.create<Never, Never>(\n'
+                '  create: ApplicationModule.create,',
+                '  create: () => ApplicationModule.create(\n'
                     '    createObservability: _createObservability,\n'
                     '  ),',
               ) +
@@ -343,6 +351,66 @@ final class _DiscardingSentryTransport implements Transport {
       ),
       flush: true,
     );
+  }
+}
+
+Future<void> _writeContextFactories(
+  Directory project,
+  _FeatureScenario? feature,
+) async {
+  if (feature == null ||
+      (!feature.storage && !feature.transport && feature.scope != 'session')) {
+    return;
+  }
+  final composition = Directory('${project.path}/lib/composition');
+  await composition.create(recursive: true);
+  if (feature.storage) {
+    await File('${composition.path}/storage_context_factory.dart')
+        .writeAsString('''
+import 'package:dartitect/dartitect.dart';
+
+final class StorageContext {}
+
+@DartitectApplicationContextFactory('primary')
+final class StorageContextFactory {
+  const StorageContextFactory();
+
+  Future<StorageContext> open() async => StorageContext();
+
+  Future<void> dispose(StorageContext context) async {}
+}
+''', flush: true);
+  }
+  if (feature.transport) {
+    await File('${composition.path}/transport_context_factory.dart')
+        .writeAsString('''
+import 'package:dartitect/dartitect.dart';
+
+final class TransportContext {}
+
+@DartitectTransportContextFactory('api')
+final class TransportContextFactory {
+  const TransportContextFactory();
+
+  Future<TransportContext> open() async => TransportContext();
+
+  Future<void> dispose(TransportContext context) async {}
+}
+''', flush: true);
+  }
+  if (feature.scope == 'session') {
+    await File('${composition.path}/session_factory.dart').writeAsString('''
+import 'package:dartitect/dartitect.dart';
+
+final class AuthenticatedSession {}
+
+@DartitectSessionFactory()
+final class SessionFactory {
+  const SessionFactory();
+
+  AuthenticatedSession create() => AuthenticatedSession();
+}
+''', flush: true);
   }
 }
 

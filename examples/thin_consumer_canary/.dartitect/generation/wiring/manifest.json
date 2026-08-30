@@ -1,55 +1,70 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "namespace": "wiring",
   "protocolVersion": 1,
   "outputs": [
     {
       "path": "lib/composition/application_module.wiring.dartitect.g.dart",
       "source": "dartitect.json",
-      "rendererVersion": 2,
+      "rendererId": "wiring.application",
+      "rendererVersion": 3,
       "semanticSchemaVersion": 2,
-      "inputDigest": "eb73c32aaf707a3f481395a56541e1d1932fb6f431c75cd2a22189088a0a771a",
-      "outputDigest": "e6c1536c513616cb597b3cc0df98ecb1ccc8ca79c95ab88604ae4116810b0a66"
+      "inputDigest": "9b3f589e9c1642d0a7fbd25df894fd7b285686fd5bbbd5372dd9cf7b995fdbc4",
+      "outputDigest": "1a4f673683ef87dce6604ed65307f35d63ec076d54ec4a4b3aec9d9d3735adf6"
     },
     {
       "path": "lib/composition/session_module.wiring.dartitect.g.dart",
       "source": "dartitect.json",
-      "rendererVersion": 2,
+      "rendererId": "wiring.session",
+      "rendererVersion": 3,
       "semanticSchemaVersion": 2,
-      "inputDigest": "eb73c32aaf707a3f481395a56541e1d1932fb6f431c75cd2a22189088a0a771a",
-      "outputDigest": "deadeb01d95991b1dd9edc997dcb3d72233c9aa8eaaaac2eeee3463f37a6b9b7"
+      "inputDigest": "9b3f589e9c1642d0a7fbd25df894fd7b285686fd5bbbd5372dd9cf7b995fdbc4",
+      "outputDigest": "d713a26e035290e759cbb15f1e7fb1e2bc4e6b9415c28126fd3a8d75de3bd96d"
     },
     {
       "path": "lib/features/tasks/composition/tasks.wiring.dartitect.g.dart",
       "source": "dartitect.json",
-      "rendererVersion": 2,
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
       "semanticSchemaVersion": 1,
-      "inputDigest": "ee256fc8606d4ecb4258cfdc8d3f93e467c7d048dc087284b5641cda7f885e3f",
-      "outputDigest": "5dc8098153be10b0e94573ddd3d3035b5777c6c8c41e3d27743fe9837f9ea496"
+      "inputDigest": "b9e6c7e7f198e7c8ed641bb41cd9d2b3b7771c88f1b8a0dbc186cb217b8f1924",
+      "outputDigest": "40b2eba0bb12ed5a868c270db346d591efc2c7643853d2bdb03fcbbfc83ca097"
     },
     {
       "path": "lib/features/tasks/composition/tasks_workmanager.wiring.dartitect.g.dart",
       "source": "dartitect.json",
-      "rendererVersion": 2,
+      "rendererId": "wiring.workmanager",
+      "rendererVersion": 3,
       "semanticSchemaVersion": 1,
-      "inputDigest": "5aaebd13db04be8d893453b504654163ed4f0199ee353d8c1be43f50893e8fc9",
-      "outputDigest": "b8793ee241d667b55c5763bbc6b160830965f545f2ca74971de70c0f88141dfe"
+      "inputDigest": "a1758e305784b662d3a2857358d60cf85c089ac55ad1b318c147dbb05fb69a82",
+      "outputDigest": "b3e241f378f9b59bd69e14cbf1fe9b7204e55dd26ed6a302a33d35b921cbeb26"
     },
     {
       "path": "lib/features/tasks/infrastructure/tasks_dio.wiring.dartitect.g.dart",
       "source": "dartitect.json",
-      "rendererVersion": 2,
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
       "semanticSchemaVersion": 1,
-      "inputDigest": "e9e1706f98c3f60bdbdc7180ebc726acece814ceee18ee7a314078c6f602f9e7",
-      "outputDigest": "4f56bfed5db2b41399cb2fa96a0eb3afd862cc4f4595559f6b08f6939c369e1a"
+      "inputDigest": "d8a3e1ecc6ce2c82621954013420ceeeb9e3a97a6e88f6ed3c0356118ef3ed28",
+      "outputDigest": "9a5483dd617f6bdbd52f8e289c7aaf7ce7fa7928415c56d68ec5b7b6888ef184"
     },
     {
       "path": "lib/infrastructure/storage/primary_drift.wiring.dartitect.g.dart",
       "source": "dartitect.json",
-      "rendererVersion": 3,
+      "rendererId": "wiring.storage",
+      "rendererVersion": 4,
       "semanticSchemaVersion": 2,
-      "inputDigest": "eeaa4a5d188ce37260d9b07804499e97a3df7baec99c2a7fcd89b63fc2a44f28",
-      "outputDigest": "2680961f40597badd4465fcabfd42a8242c2d52ca4575378320d1cd480db0832"
+      "inputDigest": "f5bcd1af9c0cebc95f24c30f47ee7074851c36dbf3d8d0182f5488fadd031076",
+      "outputDigest": "afe2dc5f73024700ce78472537c6eedcb362daa194d9a2b948ce28444e6d2f17"
+    },
+    {
+      "path": "test/support/tasks_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "a47aec71e0920f03f8c7fac590f1622470397c18876268e79caf257f0c05b4ca",
+      "outputDigest": "d6127214394aedd76a711aa6c6cf1be3069c15a8a7b32d8993a41e9bd6e14514"
     }
   ]
 }

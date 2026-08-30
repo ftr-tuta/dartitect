@@ -76,6 +76,6 @@ Read the [paved-road guide](../../docs/guides/paved-road-platform.md).
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.8` source candidate. Supported Git use
+The workspace contains the `1.0.0-rc.9` source candidate. Supported Git use
 requires coordinates from a matching tagged GitHub Release; otherwise there is
 no supported consumption path.

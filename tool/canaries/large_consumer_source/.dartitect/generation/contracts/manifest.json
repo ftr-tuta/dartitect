@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 3,
+  "namespace": "contracts",
+  "protocolVersion": 1,
+  "outputs": [
+    {
+      "path": "lib/contracts/app_api.contracts.dartitect.g.dart",
+      "source": "contracts/app_api.json",
+      "rendererId": "contracts.openapi",
+      "rendererVersion": 4,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "458b033161ffeaca4208af65d6c4753731c8ea69a8366a6e4f8c36cec792e278",
+      "outputDigest": "f75a7ea571d08659849603550cf2cfd8a5fed9da3c994b27481f925c98bb6d47"
+    }
+  ]
+}

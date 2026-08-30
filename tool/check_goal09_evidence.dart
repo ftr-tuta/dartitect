@@ -23,6 +23,8 @@ void main() {
     'Future<DartitectFleetReport> versions',
     'Future<DartitectFleetReport> check',
     'Future<DartitectFleetReport> policy',
+    'Future<DartitectFleetReport> inventory',
+    'Future<DartitectFleetReport> impact({',
     'Future<DartitectFleetReport> previewUpgrade',
     'Future<DartitectFleetReport> applyUpgrade',
     'resolveSymbolicLinks',
@@ -56,6 +58,8 @@ void main() {
         !dispatcher.contains("case 'versions':") ||
         !dispatcher.contains("case 'check':") ||
         !dispatcher.contains("case 'policy':") ||
+        !dispatcher.contains("case 'inventory':") ||
+        !dispatcher.contains("case 'impact':") ||
         !dispatcher.contains("case 'upgrade':") ||
         !dispatcher.contains("'dry-run'") ||
         !dispatcher.contains("'apply'") ||
@@ -127,6 +131,14 @@ void main() {
     'workmanager_preview_and_unsupported',
     'wiring_noop_zero_writes',
     'main_paved_road_15_lines',
+    'large_30_feature_matrix',
+    'application_session_context_ownership',
+    'web_linux_incremental_builds',
+    'fleet_upgrade_zero_residual',
+    'openapi_feature_selection',
+    'typed_openapi_operation_runtime',
+    'renderer_migration_chain',
+    'induced_error_bound',
     'flutter_simple',
     'flutter_mvvm',
     'objectbox_local_first',
@@ -134,6 +146,8 @@ void main() {
     'drift_objectbox_bounded_contexts',
     'mixed_dartitect_objectbox_drift',
     'drift_provider_package',
+    'drift_consumer_owned_schema',
+    'drift_sync_ports',
     'outbox_sync',
     'desktop',
     'session_replacement',
@@ -141,6 +155,17 @@ void main() {
     'large_assets',
     'multipackage_workspace',
     'consumer_owned_codegen',
+    'native_capabilities',
+    'dio_adapter',
+    'objectbox_adapter',
+    'sentry_fake_hub',
+    'media_privacy_adapters',
+    'devtools_entrypoint',
+    'lints_entrypoint',
+    'mcp_entrypoint',
+    'testing_entrypoint',
+    'openapi_renderer',
+    'tooling_commands',
   };
   final coverage = <String>{
     for (final entry in canaries) ..._strings(entry['coverage']),
@@ -148,8 +173,8 @@ void main() {
   if (!coverage.containsAll(requiredCoverage)) {
     errors.add('Goal 09 canary coverage is incomplete.');
   }
-  if (canaries.length != 6) {
-    errors.add('Goal 09 requires all six isolated packaged canaries.');
+  if (canaries.length != 9) {
+    errors.add('Goal 09 requires all nine isolated packaged canaries.');
   }
   final evidence = <String, List<String>>{
     'examples/model_generator_fixture/test/user_test.dart': <String>[
@@ -161,8 +186,10 @@ void main() {
         <String>[
           'TasksFeatureWiring.capabilities',
           'DartitectWorkmanagerPlatform.windows',
-          'runDartitectApplication',
         ],
+    'examples/thin_consumer_canary/lib/main.dart': <String>[
+      'runDartitectApplication',
+    ],
     'tool/canaries/minimal/lib/main.dart': <String>['CompositionRoot'],
     'tool/canaries/minimal/test/hardening_canary_test.dart': <String>[
       '8 * 1024 * 1024',
@@ -181,6 +208,33 @@ void main() {
     ],
     'examples/reference_app/test/drift_objectbox_bounded_contexts_test.dart':
         <String>['separate bounded contexts without dual writes'],
+    'tool/canaries/large_consumer_source/test/large_consumer_test.dart':
+        <String>[
+          '30 concrete feature graphs open and close with exact scopes',
+          'isA<GetProbeOperation>()',
+          'census.verifyZero()',
+        ],
+    'tool/canaries/large_consumer_source/tool/verify_large_preview.dart':
+        <String>['featureOutputs.length != 30', 'inducedError.length >= 512'],
+    'packages/dartitect_cli/test/fleet_service_test.dart': <String>[
+      'service.inventory',
+      'service.impact',
+      'fleet records every renderer migration including no-op steps',
+    ],
+    'examples/adapters_app/lib/runtime/adapters_runtime.dart': <String>[
+      'final hub = Hub(',
+      '_DiscardingSentryTransport',
+    ],
+    'tool/canaries/tooling_source/lib/tooling_probe.dart': <String>[
+      'DartitectDevToolsRegistration',
+      'DartitectMcpPolicy',
+      'ResourceCensus',
+    ],
+    'tool/canaries/tooling_source/test/renderer_catalog_test.dart': <String>[
+      'operation.rendererId',
+      'blueprint.renderer-canary.template',
+      'generation.unmanaged-output',
+    ],
     'tool/provider_constructor_evidence/objectbox_5_3_2_primary.dart.fixture':
         <String>['final class FixtureEntity({', '@Id() var id'],
     '.github/workflows/ci.yaml': <String>[
@@ -302,7 +356,7 @@ void main() {
   }
   stdout.writeln(
     'Goal 09 evidence passes: confined transactional fleet, pinned policy, '
-    'journaled rollback, six isolated canaries plus provider/workspace fixtures, '
+    'journaled rollback, nine formal isolated canaries plus provider/workspace fixtures, '
     'same-host 5/20 benchmarks, and release ADRs.',
   );
 }

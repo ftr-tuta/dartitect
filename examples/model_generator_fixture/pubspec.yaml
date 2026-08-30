@@ -8,7 +8,7 @@ environment:
   sdk: ^3.13.0
 
 dependencies:
-  dartitect_modeling: ^1.0.0-rc.8
+  dartitect_modeling: ^1.0.0-rc.9
 
 dev_dependencies:
   test: ^1.26.3

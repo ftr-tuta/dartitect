@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.9
+
+- Add config v3, semantic factory compilation, concrete graphs and feature harnesses, typed OpenAPI operation selection, schema-2 consumer tax, fleet inventory/impact, versioned migrations, and confined blueprints.
+
 ## 1.0.0-rc.8
 
 - Prepare the package for the RC8 greenfield platform baseline and compatible post-1.0 publication cohorts.

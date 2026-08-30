@@ -1,14 +1,49 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dartitect/dartitect.dart';
+import 'package:dartitect/dartitect_credentials.dart';
+import 'package:dartitect_observability/dartitect_observability.dart';
 import 'package:dio/dio.dart';
 
 import 'cancellation_binding.dart';
+import 'credentials_interceptor.dart';
+import 'instrumentation.dart';
 import 'result_mapping.dart';
 import 'route_template.dart';
 
 /// Cancellation contract accepted by typed JSON execution.
 typedef CancellationToken = CancellationSignal;
+
+/// Decodes one payload for an explicitly declared response status.
+typedef DioStatusDecoder<T> = T Function(Object? json);
+
+/// Per-attempt transport context propagated into Dio execution.
+final class DioRequestContext {
+  /// Creates a bounded request context without headers or credential values.
+  DioRequestContext({
+    this.cancellation,
+    this.deadline,
+    this.traceParent,
+    this.credentialGeneration,
+  }) {
+    if (deadline != null && !deadline!.isUtc) {
+      throw ArgumentError.value(deadline, 'deadline', 'Must use UTC.');
+    }
+  }
+
+  /// Borrowed cooperative cancellation signal.
+  final CancellationSignal? cancellation;
+
+  /// Optional absolute UTC transport deadline.
+  final DateTime? deadline;
+
+  /// Validated parent trace identity used by installed instrumentation.
+  final TraceContext? traceParent;
+
+  /// Exact credential generation expected by an installed interceptor.
+  final CredentialGeneration? credentialGeneration;
+}
 
 /// One validated, explicitly declared JSON endpoint.
 final class DioEndpoint<T> {
@@ -16,9 +51,13 @@ final class DioEndpoint<T> {
   DioEndpoint({
     required String method,
     required this.route,
-    required this.decode,
+    this.decode,
+    Map<int, DioStatusDecoder<T>>? statusDecoders,
     required Set<int> acceptedStatusCodes,
   }) : method = method.toUpperCase(),
+       statusDecoders = Map<int, DioStatusDecoder<T>>.unmodifiable(
+         statusDecoders ?? <int, DioStatusDecoder<T>>{},
+       ),
        acceptedStatusCodes = Set<int>.unmodifiable(acceptedStatusCodes) {
     if (!const <String>{
       'GET',
@@ -37,6 +76,21 @@ final class DioEndpoint<T> {
         'must contain valid HTTP status codes',
       );
     }
+    if (decode == null &&
+        !acceptedStatusCodes.every(this.statusDecoders.containsKey)) {
+      throw ArgumentError(
+        'Every accepted status requires a decoder when decode is omitted.',
+      );
+    }
+    if (this.statusDecoders.keys.any(
+      (status) => !acceptedStatusCodes.contains(status),
+    )) {
+      throw ArgumentError.value(
+        this.statusDecoders.keys,
+        'statusDecoders',
+        'May contain only accepted status codes.',
+      );
+    }
   }
 
   /// Uppercase GET, POST, PUT, PATCH, or DELETE.
@@ -46,7 +100,10 @@ final class DioEndpoint<T> {
   final RouteTemplate route;
 
   /// Consumer-owned JSON-to-value decoder.
-  final T Function(Object? json) decode;
+  final DioStatusDecoder<T>? decode;
+
+  /// Status-specific decoders used for declared OpenAPI response unions.
+  final Map<int, DioStatusDecoder<T>> statusDecoders;
 
   /// Status codes considered successful for this endpoint.
   final Set<int> acceptedStatusCodes;
@@ -72,8 +129,10 @@ abstract interface class DioJsonClient {
     DioEndpoint<T> endpoint, {
     Map<String, Object?> query = const <String, Object?>{},
     Map<String, String> pathParameters = const <String, String>{},
+    Map<String, Object?> headers = const <String, Object?>{},
     Object? jsonBody,
     CancellationToken? cancellation,
+    DioRequestContext? context,
   });
 }
 
@@ -92,33 +151,62 @@ final class DefaultDioJsonClient implements DioJsonClient {
     DioEndpoint<T> endpoint, {
     Map<String, Object?> query = const <String, Object?>{},
     Map<String, String> pathParameters = const <String, String>{},
+    Map<String, Object?> headers = const <String, Object?>{},
     Object? jsonBody,
     CancellationToken? cancellation,
+    DioRequestContext? context,
   }) async {
+    if (cancellation != null && context?.cancellation != null) {
+      throw ArgumentError(
+        'Supply cancellation directly or through context, not both.',
+      );
+    }
     final resolved = _resolveRoute(endpoint.route, pathParameters);
     if (resolved case Err<DioFailure>(:final failure, :final stackTrace)) {
       return Err<DioFailure>(failure, stackTrace);
     }
     final path = (resolved as Ok<String>).value;
-    final binding = cancellation == null
-        ? null
-        : DioCancellationBinding(cancellation);
+    final requestCancellation = _DioRequestCancellation(
+      cancellation: context?.cancellation ?? cancellation,
+      deadline: context?.deadline,
+    );
+    if (requestCancellation.deadlineExceeded) {
+      requestCancellation.dispose();
+      return Err<DioFailure>(
+        DioDeadlineExceededFailure(deadline: context!.deadline!),
+        StackTrace.current,
+      );
+    }
     try {
       final captured = await captureDioException<Response<String>>(
         () => dio.request<String>(
           path,
           data: jsonBody,
           queryParameters: query,
-          cancelToken: binding?.token,
+          cancelToken: requestCancellation.token,
           options: Options(
             method: endpoint.method,
             responseType: ResponseType.plain,
             validateStatus: (_) => true,
+            headers: headers,
+            extra: <String, Object?>{
+              if (context?.traceParent case final parent?)
+                DioInstrumentation.parentTraceContextExtraKey: parent,
+              if (context?.credentialGeneration case final generation?)
+                DioCredentialsInterceptor.credentialGenerationExtraKey:
+                    generation,
+            },
           ),
         ),
       );
       switch (captured) {
         case Err<Object>(:final failure, :final stackTrace):
+          if (requestCancellation.deadlineExceeded) {
+            return Err<DioFailure>(
+              DioDeadlineExceededFailure(deadline: context!.deadline!),
+              stackTrace,
+            );
+          }
           return Err<DioFailure>(failure as DioFailure, stackTrace);
         case Ok<dynamic>(:final value):
           final response = value as Response<String>;
@@ -131,9 +219,10 @@ final class DefaultDioJsonClient implements DioJsonClient {
             );
           }
           try {
+            final decoder = endpoint.statusDecoders[status] ?? endpoint.decode!;
             return Ok<DioResponse<T>>(
               DioResponse<T>(
-                payload: endpoint.decode(
+                payload: decoder(
                   response.data == null || response.data!.isEmpty
                       ? null
                       : jsonDecode(response.data!),
@@ -149,8 +238,54 @@ final class DefaultDioJsonClient implements DioJsonClient {
           }
       }
     } finally {
-      binding?.dispose();
+      requestCancellation.dispose();
     }
+  }
+}
+
+final class _DioRequestCancellation implements Disposable {
+  _DioRequestCancellation({
+    required CancellationSignal? cancellation,
+    required DateTime? deadline,
+  }) {
+    if (cancellation == null && deadline == null) return;
+    _source = CancellationSource();
+    _binding = DioCancellationBinding(_source!.signal);
+    _registration = cancellation?.register(_source!.cancel);
+    if (deadline != null) {
+      final remaining = deadline.difference(DateTime.now().toUtc());
+      if (remaining <= Duration.zero) {
+        _deadlineExceeded = true;
+        _source!.cancel('Dio request deadline exceeded');
+      } else {
+        _deadlineTimer = Timer(remaining, () {
+          _deadlineExceeded = true;
+          _source!.cancel('Dio request deadline exceeded');
+        });
+      }
+    }
+  }
+
+  CancellationSource? _source;
+  DioCancellationBinding? _binding;
+  CancellationRegistration? _registration;
+  Timer? _deadlineTimer;
+  bool _deadlineExceeded = false;
+
+  CancelToken? get token => _binding?.token;
+
+  bool get deadlineExceeded => _deadlineExceeded;
+
+  @override
+  void dispose() {
+    _deadlineTimer?.cancel();
+    _registration?.dispose();
+    _binding?.dispose();
+    _source?.dispose();
+    _deadlineTimer = null;
+    _registration = null;
+    _binding = null;
+    _source = null;
   }
 }
 

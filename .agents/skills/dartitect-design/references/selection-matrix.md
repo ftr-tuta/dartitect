@@ -5,7 +5,8 @@
   `dartitect_modeling` and `$dartitect-modeling`; capabilities remain separately
   opt-in and Analyzer tooling stays out of runtime.
 - Basic Flutter ViewModels and commands: add `dartitect_flutter` and keep the
-  established `dartitect_flutter.dart` entrypoint.
+  established `dartitect_flutter.dart` entrypoint. Generated `FeatureHost` and
+  `CommandStateBuilder` remain Material-neutral; product UI stays consumer-owned.
 - Hot/warm/cold resources, causal refresh, families, collections, selectors, or
   advanced builders: use the opt-in reactive entrypoint and
   `$dartitect-reactive`.

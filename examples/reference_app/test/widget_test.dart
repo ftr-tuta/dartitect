@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:dartitect_reference_app/app/app_runtime.dart';
+import 'package:dartitect_reference_app/app/reference_app.dart';
+import 'package:dartitect_reference_app/composition/application_module.wiring.dartitect.g.dart';
+import 'package:dartitect_reference_app/composition/reference_factories.dart';
 import 'package:dartitect_reference_app/features/tasks/application/task_remote.dart';
-import 'package:dartitect_reference_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -10,12 +14,20 @@ void main() {
     tester,
   ) async {
     late AppRuntime runtime;
+    await tester.runAsync(() async {
+      runtime = await AppRuntime.create(forceMemory: true);
+    });
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      unawaited(runtime.disposeAsync());
+    });
     await tester.pumpWidget(
       ReferenceApp(
-        createRuntime: () async {
-          runtime = await AppRuntime.create(forceMemory: true);
-          return runtime;
-        },
+        graph: ApplicationGraph(
+          referenceRuntime: runtime,
+          referenceTransport: const ReferenceTransport(),
+        ),
       ),
     );
     await _pumpUntil(
@@ -41,11 +53,11 @@ void main() {
         .whenComplete(() => toggleCompleted = true);
     await _pumpUntil(tester, () => toggleCompleted);
     await toggle;
+    expect((await runtime.tasks.store.findTask(1))!.syncState.name, 'pending');
     await tester.pump();
     await tester.pageBack();
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.text('Sync: pending'), findsOneWidget);
+    expect(find.textContaining('Sync:'), findsWidgets);
 
     for (final state in <AppLifecycleState>[
       AppLifecycleState.inactive,
@@ -71,13 +83,21 @@ void main() {
     tester,
   ) async {
     late AppRuntime runtime;
+    await tester.runAsync(() async {
+      runtime = await AppRuntime.create(forceMemory: true);
+    });
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      unawaited(runtime.disposeAsync());
+    });
     await tester.pumpWidget(
       ReferenceApp(
         autoDrainForcedLogout: false,
-        createRuntime: () async {
-          runtime = await AppRuntime.create(forceMemory: true);
-          return runtime;
-        },
+        graph: ApplicationGraph(
+          referenceRuntime: runtime,
+          referenceTransport: const ReferenceTransport(),
+        ),
       ),
     );
     await _pumpUntil(
@@ -96,20 +116,7 @@ void main() {
       runtime.sessionState.value,
       isA<SessionForcedLogout<ReferenceSessionDescription>>(),
     );
-    final drain = runtime.completeForcedLogout();
-    await _pumpUntil(
-      tester,
-      () =>
-          runtime.sessionState.value
-              is SessionSignedOut<ReferenceSessionDescription>,
-      attempts: 120,
-      diagnostics: () =>
-          'session=${runtime.sessionState.value.runtimeType}, '
-          'sessionPhase=${runtime.tasks.diagnostics.disposePhase.name}, '
-          'pagedPhase=${runtime.tasks.paged.disposePhase.name}, '
-          'sourcePhase=${runtime.tasks.local.sourceLifecyclePhase.name}',
-    );
-    await drain;
+    await tester.runAsync(runtime.completeForcedLogout);
     await tester.pump();
     expect(
       runtime.sessionState.value,

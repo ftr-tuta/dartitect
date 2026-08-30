@@ -1,7 +1,7 @@
 = Dartitect 1.0 Actions readiness
 
-The currently assembled RC8 baseline across five publication cohorts is
-`1.0.0-rc.8`. This policy must
+The currently assembled RC9 baseline across five publication cohorts is
+`1.0.0-rc.9`. This policy must
 authorize that exact source before the publication workflow can act on it.
 
 Status:: ACTIONS READINESS PENDING
@@ -21,6 +21,11 @@ inside `CI` and therefore contributes to the single required result.
 `CI / Required` depends on every Linux, Windows, macOS/iOS, Android emulator,
 Drift Web/Chrome, clean-clone, Git-consumption, and OSV job. A failure, cancellation, or skipped
 dependency makes the aggregate check fail.
+
+The Linux floor cell also reproduces the 12-scenario change-tax study on one
+pinned runner. Each scenario must keep semantic architecture plumbing at zero
+while recording manual/generated diffs and real generation, analyzer, and build
+durations.
 
 == Main readiness artifact
 
@@ -48,6 +53,15 @@ The nominal matrix is identical for RC and stable validation:
 
 No technical evidence uses consumer hardware or a privately managed runner.
 Local runs are optional development feedback only.
+
+== Stable promotion blocker
+
+RC9 intentionally includes only the mechanical, business-neutral
+`FeatureHost` and `CommandStateBuilder` widgets. The machine-readable stable
+candidate contract retains the pending `ui-ux-business-neutral` gate. It blocks
+the `pub-dev-stable` channel and any `1.0.0` promotion until the next plan
+reviews the remaining reusable UI/UX boundary under the same package,
+entrypoint, renderer, and canary-coverage rules.
 
 == Drift storage matrix
 

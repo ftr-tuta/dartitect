@@ -1,0 +1,907 @@
+{
+  "schemaVersion": 3,
+  "namespace": "wiring",
+  "protocolVersion": 1,
+  "outputs": [
+    {
+      "path": "lib/composition/application_module.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.application",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 2,
+      "inputDigest": "8d64abe256c4bfa659e47d203344150690219de16767fb44ab8fceefd3e69320",
+      "outputDigest": "d94110d9b41496157a0e8e3bb55e2bcda0fafe869486e405ffe9af9b4b73214f"
+    },
+    {
+      "path": "lib/composition/session_module.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.session",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 2,
+      "inputDigest": "8d64abe256c4bfa659e47d203344150690219de16767fb44ab8fceefd3e69320",
+      "outputDigest": "3f8b2e92d978a990189cff8dbb75819e030ce6d1b6384ca88d01dd8fe6d92068"
+    },
+    {
+      "path": "lib/features/cache_application_1/composition/cache_application_1.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "333ac3a0ebd487ff273f7b577185eecca34181263ecf728a4108a1a4b6eca893",
+      "outputDigest": "20ffb8ba9fb46e451db8fcc8b8225bc6ce960b26edd4e19fa5c7ede44189c5c9"
+    },
+    {
+      "path": "lib/features/cache_application_1/infrastructure/cache_application_1_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "8dcd47805da3d251e38baa2424ba02bc13809a6f7eee79c50f8c27eefb317115",
+      "outputDigest": "bd35020cd371274497ad0716898e49112a34143af7f3767f550b357828a49965"
+    },
+    {
+      "path": "lib/features/cache_application_2/composition/cache_application_2.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "c9dbd155219d265edf8ff51e6c16c81cc7df2c2050146ecbfbe04fb77ac42dd9",
+      "outputDigest": "0fce25217d9727f59f14f4e203f7bec7eb6b816cca4d924e27872683497c3c45"
+    },
+    {
+      "path": "lib/features/cache_application_2/infrastructure/cache_application_2_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "fa208dacd235e12fed237926b96dab2ff6142961f3f88fd973fb155adbe0544f",
+      "outputDigest": "2d72981f3968cd77fbe904014d1429a53c46ff1d51994ebc52ec816c36e8ebc7"
+    },
+    {
+      "path": "lib/features/cache_application_3/composition/cache_application_3.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "ba11e450b0ea53db924b570b431d2f60c20c4382ceb3cd27b84600ddd04c16ad",
+      "outputDigest": "56c9ec86ceb50921e0026ad7f5e6720600ec892ed55e0a44869ba4cd05af37a4"
+    },
+    {
+      "path": "lib/features/cache_application_3/infrastructure/cache_application_3_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "569cef70e9006ce4e6196738706a693996af520490ddc411fb397992913926af",
+      "outputDigest": "10564d64245ab006406980d032b135bd4d5315667774e89e9e259f68a98f7f2b"
+    },
+    {
+      "path": "lib/features/cache_session_1/composition/cache_session_1.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "4941ed063f828816fae68c7ad1588778abbb162f3a95ee411813fe17b928ede4",
+      "outputDigest": "5b2ca236ae6d4200e65ca11e6ca1e2db5129bb2a21bebfdf62c025d34a3b8430"
+    },
+    {
+      "path": "lib/features/cache_session_1/infrastructure/cache_session_1_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "08775d80e9c5aa2dfaa47f9413c7af39cd4e4011719bec0d30dc0148342e72a8",
+      "outputDigest": "70cfa1a4be671790d97c09e52a701c2d1232557f3035a19b44471496ce810510"
+    },
+    {
+      "path": "lib/features/cache_session_2/composition/cache_session_2.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "2819c563d9e0a2255cb2ae5b622e36421058f66555e4f1633c9890de3275e172",
+      "outputDigest": "34b3c46eff1c6183dd4505e10842c64130b4de8daee0f18fd4438312341a4b4e"
+    },
+    {
+      "path": "lib/features/cache_session_2/infrastructure/cache_session_2_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "4a327a53433381e27fa53dfb65ca7dbf5afc79f0c7d111266412658cd541d5e0",
+      "outputDigest": "2f1a50b4c425cf74257d5322f53bab736b334d21ce1108d708e47ab860b076fb"
+    },
+    {
+      "path": "lib/features/cache_session_3/composition/cache_session_3.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "065b9fdb86b5155879f7697d586cfb07c3b83bc42094d2158b5df5a14ab9f1fd",
+      "outputDigest": "ca26d148813ce0adce146b5c951a0a6cf88d6141d71633ac29ad2109219c72a4"
+    },
+    {
+      "path": "lib/features/cache_session_3/infrastructure/cache_session_3_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "8cf28ab1058d1d74b4b76ffba757b2c9f1ae560780fc3dad6bfa42dfb64ec7df",
+      "outputDigest": "ddfb9a5b9b471d0994522a3904c38e5b1b92f6d3f426ec5297f81e0599cc891f"
+    },
+    {
+      "path": "lib/features/local_application_1/composition/local_application_1.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "19a71c33edff73c9043470c71e02dc69bc33d27d10e9cefc10b66221fc98e640",
+      "outputDigest": "38a0c7956d8fbc1e8a18a987b5ca3121db0efe9c687ac4c085bffb0281fcc745"
+    },
+    {
+      "path": "lib/features/local_application_2/composition/local_application_2.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "01884d11a93849dc65dccc46924169073447029b7c4b298781b6f944fb7042c1",
+      "outputDigest": "c4e77b160f15526bd44d08b05a5f7897dc44509bcd487850a1a1666859c3efbd"
+    },
+    {
+      "path": "lib/features/local_application_3/composition/local_application_3.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "fa83b5cc6195da50085ca1f089cf28687bce99884b0db1c2e7044e653af0e272",
+      "outputDigest": "58a4896a51a7ea56f8e33f23c46dfcd5f9922032d15561bcb231f6771fb82999"
+    },
+    {
+      "path": "lib/features/local_session_1/composition/local_session_1.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "c3cdb500754a45df358fcb307f8e75e42c8318fc43131d952d03a4fa580b97b8",
+      "outputDigest": "3cd388bd9e1dbeae38b8d3126f0d379183113fb10166493c826fc6231d036446"
+    },
+    {
+      "path": "lib/features/local_session_2/composition/local_session_2.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "fe094b8f66ceaf395cb732715f1ccbb16dc1da87ea14300b508b6f6d2252e55b",
+      "outputDigest": "1496624736607338e85fc994f99a993e245ffe880bfcd2f6d5f8b67f4530dc2e"
+    },
+    {
+      "path": "lib/features/local_session_3/composition/local_session_3.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "e08c13d83b93f74e9ceec07d6e9e02a6adb59f3f608c6f3352bd33651b09b53c",
+      "outputDigest": "0a03cd46bdc615ffebe278fe41a0978cb4ca464212238cf1f11c4ba8e59b0f7f"
+    },
+    {
+      "path": "lib/features/offline_full_application_1/composition/offline_full_application_1.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "f61b5ceb766b5dcf30a1bb4473eb14fa4e691c497f677242af7ff9979d13ceb3",
+      "outputDigest": "33477cc98f8cf9ee092de98fb2eeba6dd42e44512df1d54264c8bbfd239df784"
+    },
+    {
+      "path": "lib/features/offline_full_application_1/composition/offline_full_application_1_workmanager.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.workmanager",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "5788a2a898c42cf8663b703e29bbfee27d03e24c75bad70fd924d869dceca36a",
+      "outputDigest": "3a85736d7f912246f57753bf17d8d22f1d56c411842cf35838786ae5ed59ba2f"
+    },
+    {
+      "path": "lib/features/offline_full_application_1/infrastructure/offline_full_application_1_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "b16df26e3cbbc30257a8196ab30cf36a4baa4e3645b524b392db1698ff5de347",
+      "outputDigest": "290045c6d25adff54c983d6feccdfb00e64b0392dab42a3705fbe8b49b05703e"
+    },
+    {
+      "path": "lib/features/offline_full_application_2/composition/offline_full_application_2.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "b1c2bc186c053c842ecb6f063b9a41c12f8c112bf741b7e646ad057ede9e5a62",
+      "outputDigest": "d42073ed747d382950b449c46ab8ef79f4c5dd3de7e96f68927aef0e90ab0e0f"
+    },
+    {
+      "path": "lib/features/offline_full_application_2/composition/offline_full_application_2_workmanager.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.workmanager",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "80b3bb3650b14504bb8a22bec6622bd51e583de16c1dd39a754ba3c876297ae4",
+      "outputDigest": "1174bb1b652f6a14ff10fdd11aa5064bf76b9c173b93f9614821a91442bf7e49"
+    },
+    {
+      "path": "lib/features/offline_full_application_2/infrastructure/offline_full_application_2_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "a915d4d39043456efa4bcca9708f2c0d0ee888203eddff889e1843aeae3366ba",
+      "outputDigest": "45eb99bd59da94d8d90ebde4ec19bc66dd42a2f6f0d72114684d2b88a05db9f3"
+    },
+    {
+      "path": "lib/features/offline_full_application_3/composition/offline_full_application_3.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "66ceba34402fa2fcffa661d54c057330ba55d45c5c5a913ca4b95c846427cd61",
+      "outputDigest": "ea91d74e6a5f599b3014c6ac1cc9bae7fe648ee882498e50046a1ddf402a456e"
+    },
+    {
+      "path": "lib/features/offline_full_application_3/composition/offline_full_application_3_workmanager.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.workmanager",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "5350e60f8f2c77054073bfb56907b6a5ecda39346d28d9f5b1da42ad9df49ded",
+      "outputDigest": "fa926a458f6ed9c6b051175efa1c4af5074c3dc7f2fb4c22f9b0e58e90f228cc"
+    },
+    {
+      "path": "lib/features/offline_full_application_3/infrastructure/offline_full_application_3_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "1d0468926872907248b38e344b569d9212284194ed66acf27962c9606269c179",
+      "outputDigest": "be7d4a98ee75804e72ef09b98d32ed1cf3c2fbede877425ca2650ecc8d135199"
+    },
+    {
+      "path": "lib/features/offline_full_session_1/composition/offline_full_session_1.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "d73a9a3e96fc33794e7a6b4a4212f526a70ffc3b30aa82f2f4d1057d00b028d4",
+      "outputDigest": "5fc33f327fecd3c6027db2313d7f0257e82484852ffea5dd4b4feb40940a3682"
+    },
+    {
+      "path": "lib/features/offline_full_session_1/composition/offline_full_session_1_workmanager.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.workmanager",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "c33348e51290a806c3ecc84f12e4c6e23579ff3dae5d02d82ce8a5617a54116b",
+      "outputDigest": "d2d22753950599c1114b96712828a41de346c2d555b14c86e1b6b818ca3768e6"
+    },
+    {
+      "path": "lib/features/offline_full_session_1/infrastructure/offline_full_session_1_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "ca2b9ef1a75c141d8c25625c4d79d697f74945ca0b295b983b995c62d4c678a7",
+      "outputDigest": "1e6762a5f2300d09ecb5ce9278a7942b370a21eb45368cfaef932650173ad69f"
+    },
+    {
+      "path": "lib/features/offline_full_session_2/composition/offline_full_session_2.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "1270f129264e408a733f8fb6df670379763bb5f53418f147ddca12e7b79246b3",
+      "outputDigest": "f27335cadc527b5255f5673d32a9a4ce044232f6740f313290af6a78c0cef815"
+    },
+    {
+      "path": "lib/features/offline_full_session_2/composition/offline_full_session_2_workmanager.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.workmanager",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "24a64b45083c51509924aeaf1541d1f12d5b01c4812c682863236675a46a1092",
+      "outputDigest": "0a2874116fdcf88054467ab6c0b14e3f922d77c990558482f8c13546fee5a996"
+    },
+    {
+      "path": "lib/features/offline_full_session_2/infrastructure/offline_full_session_2_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "bca149635da4d7ee2e54ddcd44fa825b5d717eacb232666537af0dec50f31c6b",
+      "outputDigest": "f982dbfb7fdfb151e6edc7114780facd2a22e24d15f1c1c4ebbc6a15f181f87b"
+    },
+    {
+      "path": "lib/features/offline_full_session_3/composition/offline_full_session_3.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "4b6ceaaf83143e8931d2af84a3dfeeabd0b56711b6f5b3f63bcbdc28a4f0edf4",
+      "outputDigest": "4927f106dab5368709ad3654c8141ea345a2373333b25a2065c4bca664de96f8"
+    },
+    {
+      "path": "lib/features/offline_full_session_3/composition/offline_full_session_3_workmanager.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.workmanager",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "dd4f76fde0faaa74499f1205849679a686c7dd188fcf95416f4050b4c1b7eadd",
+      "outputDigest": "44aaf923ed3f944ffc322f76ead266e70ffef97a791a538f3602b03a4d680a33"
+    },
+    {
+      "path": "lib/features/offline_full_session_3/infrastructure/offline_full_session_3_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "909c17857e9774e9dc2edbc17f58c299eb2fd81e0e8bc117d03177f5502defef",
+      "outputDigest": "0968dbb28c73766d34d6f78e5a728343847752d4a0529727f9bbb636fd928ff9"
+    },
+    {
+      "path": "lib/features/online_application_1/composition/online_application_1.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "a6b00824ac03f11f6e06c80e2c71a9271bd9feacabcdcd70de3e1290984ad126",
+      "outputDigest": "106f1d9994fec114703fc3da809e199359cb2d384588684474f98be058e76358"
+    },
+    {
+      "path": "lib/features/online_application_1/infrastructure/online_application_1_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "41fcf3d7390bc9de487386a499a4bae153a08cf09c807e4b6e1def8789f92396",
+      "outputDigest": "dcecb6cfcbc0a169914615ff19c5ae1c642b510b649e4029bbe540d3c88c3d2b"
+    },
+    {
+      "path": "lib/features/online_application_2/composition/online_application_2.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "fca1ed9b1dc56be9d2a46642e1f48e67c186b8d707db2a96e77d4a4ff7933ac5",
+      "outputDigest": "ae838c77aa419221385ac8e621f04d659cb604debcf4c3d1b4597c882cc6a24c"
+    },
+    {
+      "path": "lib/features/online_application_2/infrastructure/online_application_2_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "21529dd03451f7d63215f83f51bb47adefbfdb2e160ad7d080db8fba1da8d5de",
+      "outputDigest": "5513db630c048d64d7db8f247e7c0eccd050683fa9bb2fa8b6ca2b6aa2c95459"
+    },
+    {
+      "path": "lib/features/online_application_3/composition/online_application_3.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "033b94e01499810bb8c1c0564874e2b3ce00151422c7c69fe833d33d1d3a894f",
+      "outputDigest": "8d9ea6c7f4b294271b6ae2715e1d4b8720186ca6d40774a58adf692e47754110"
+    },
+    {
+      "path": "lib/features/online_application_3/infrastructure/online_application_3_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "c828bf85338d3b0d4232841ccfd13386222acf1bb124909f8ef0f59bf7096341",
+      "outputDigest": "e779583485df77f33f1b964acaaa5af21c28c230518965f61cd2829641380750"
+    },
+    {
+      "path": "lib/features/online_session_1/composition/online_session_1.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "010781fe80fc5f578b934127c68a24b5ad84037bf1db371c27639bdb2d09a9ab",
+      "outputDigest": "457e8f28c2647eb0c5bbfb0675af4deba92bdea370202857a3236c633ae28b30"
+    },
+    {
+      "path": "lib/features/online_session_1/infrastructure/online_session_1_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "7441b63a84d47dce06763eb75e58adef469ca73f9464381827d548a6fc15bf66",
+      "outputDigest": "b94027821ac61613804a6a334fda36d5fc985e44d8295faa840dd47febdb93bb"
+    },
+    {
+      "path": "lib/features/online_session_2/composition/online_session_2.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "b67b62659d0af5c11b61176ac8582f0d7c6e0842df6167b4ba88d9a35584851b",
+      "outputDigest": "853de206b732adc79ad4b19f8357ccb3b03851576a852fe9eb95eedec9d53214"
+    },
+    {
+      "path": "lib/features/online_session_2/infrastructure/online_session_2_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "ab8b979977968d3aeaf08b58a208a3adada554b8cbcfbcc80364aa69c6fc8c15",
+      "outputDigest": "33805a37b028383581eabfbdc9ff40024a9621a7c1207c85a6549b7ab3c4136d"
+    },
+    {
+      "path": "lib/features/online_session_3/composition/online_session_3.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "cf3df3c23c3a8c85620a076f6b7b15f22c225fff6222a58a1b87afa8cd08803c",
+      "outputDigest": "7e046acee997e238c0237a9fa75d3215ac2a3d3298a301b5c8e1986d00fabe09"
+    },
+    {
+      "path": "lib/features/online_session_3/infrastructure/online_session_3_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "816c0de72c492f32a41a5cbed1a5dda8130748137b28d43939a42c455eba0fe6",
+      "outputDigest": "a74ea61f53cc52ca03d3f1011d1fe324961b6121366d5645254edc04d4ac03a0"
+    },
+    {
+      "path": "lib/features/replica_application_1/composition/replica_application_1.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "36f95f6339ac7eedaefff2df241d40ca51088df289c00270d8bd4caa4cfe1936",
+      "outputDigest": "21767f11e2b30271c8579c7a20a4d6744f364c48416aec0fa84b650737ef98f2"
+    },
+    {
+      "path": "lib/features/replica_application_1/composition/replica_application_1_workmanager.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.workmanager",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "8ea7aff97055ec93516988089a653231f84b127faa50513ae21a66cddce09a28",
+      "outputDigest": "08fb1c51b4e0f3a523823a65fc4e8ac03df7fdd86321264162025dc7a6ef08c8"
+    },
+    {
+      "path": "lib/features/replica_application_1/infrastructure/replica_application_1_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "441dfe4fb51fb56b1a087e23985b08c2e0db865e361cbaeccb788603ee34411f",
+      "outputDigest": "2616fb6ebd91dc7c50d8e4f7b9310d6dbd078c315df8189851f13d50a065d5be"
+    },
+    {
+      "path": "lib/features/replica_application_2/composition/replica_application_2.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "1c6f96ab3e629828923f25a32c4f5c5605642efe5bbef450d4ffde215e4fa920",
+      "outputDigest": "905395382e900f319802a8c833bb3ab94b50956499e29424a7234b8b9ba9e036"
+    },
+    {
+      "path": "lib/features/replica_application_2/composition/replica_application_2_workmanager.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.workmanager",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "9104fa09307356c3f5eb684ed148d5deaf63844514451941cd8354999e7c9770",
+      "outputDigest": "bb7d69df391c3cc5282c3dd7b00cc88b8443f099c7eaa246c417f23f8b96aad4"
+    },
+    {
+      "path": "lib/features/replica_application_2/infrastructure/replica_application_2_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "90c61acf703f87508c90ab335ea03f7565e32c77fc767fb95e01eec7694bf7b5",
+      "outputDigest": "0155089feeb5acd181b09d5aa0873e3ebe5533b961c7404c8b65031e4ab3c337"
+    },
+    {
+      "path": "lib/features/replica_application_3/composition/replica_application_3.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "dbefb5d9e3fc333a217433ccaf415505923572c04f8a143da55297345129c364",
+      "outputDigest": "977c715bfbb34e84468d3bd74a6d2a54198972bf831407dda634cb0405aeec1e"
+    },
+    {
+      "path": "lib/features/replica_application_3/composition/replica_application_3_workmanager.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.workmanager",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "2aff879421782c9e1659bec7f3fb61139bfb0196aa95fabddbb1754abb10e983",
+      "outputDigest": "0cccf2ca6cc8cb79381865136e60b0e1aa0f052a9eeec15f09f29489afa101e9"
+    },
+    {
+      "path": "lib/features/replica_application_3/infrastructure/replica_application_3_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "284d960d5a52088a9a230e54069de97378a317a596bce3f875ec964d3bd5dc03",
+      "outputDigest": "9bdb600e33897b527fae35171c49123ac5a8cfee4a2e38e3a168af2ebc44919f"
+    },
+    {
+      "path": "lib/features/replica_session_1/composition/replica_session_1.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "00b363c946e0eed0a797f402d3ef30cb8d52f4183524629026cbe96b2451da02",
+      "outputDigest": "3d1900ad29f65ce240d68952a84b22238f0324a711007c39e4d2b4bdaf7bf276"
+    },
+    {
+      "path": "lib/features/replica_session_1/composition/replica_session_1_workmanager.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.workmanager",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "58992824ac66d98313262f55217d4b5007030ede302deb9078af28dcd95e6099",
+      "outputDigest": "b21c7de6538302e48ecb27604c6c0c1b796462a1950e5a414e366689235516a7"
+    },
+    {
+      "path": "lib/features/replica_session_1/infrastructure/replica_session_1_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "712da6c928db8d1970b5e5c8340004f7d0934d17ca8317fbb1197b015d37c57f",
+      "outputDigest": "ed6b2a498345260b0c764f76cb6b751ce2a80892f070cb758cc2403f0be05a1c"
+    },
+    {
+      "path": "lib/features/replica_session_2/composition/replica_session_2.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "afc37603cf4d691a414c796a537fb9e9be272ba930edae980601f42f25fbcbb2",
+      "outputDigest": "3b29ad290a0f66048eabbe6092f74f6bb6193f4f1fa7cbad0470f5f3ef25f5f6"
+    },
+    {
+      "path": "lib/features/replica_session_2/composition/replica_session_2_workmanager.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.workmanager",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "ea446f2e644e4deccaec22493cdabb75739c5d146a714103de182692917600d2",
+      "outputDigest": "91b46ec8069323be23d936225e069c9d28cb0df96648c30ab44e7210a4cb6d18"
+    },
+    {
+      "path": "lib/features/replica_session_2/infrastructure/replica_session_2_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "7e28e97f2b3999ce726c60a20719f746fe57835c6dd4622b81d96e112d66d4aa",
+      "outputDigest": "74c4798250dea022b6374b97cdcc5abdea5350ab65f30091f794e5d85ea24f94"
+    },
+    {
+      "path": "lib/features/replica_session_3/composition/replica_session_3.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "97adade58dde3ef60c1c28dd5fb2e26007b3d892237e69bc2254a7282ae7b525",
+      "outputDigest": "e30b03e962c14f3712d89b3e6a3b3dbec2f288f44e475ca32a096c57f9428ea0"
+    },
+    {
+      "path": "lib/features/replica_session_3/composition/replica_session_3_workmanager.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.workmanager",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "5420e1d84ba6dce6a0b2fc4c79ff750f05aad7aea8a1a89f08336a14b9cafb34",
+      "outputDigest": "a53559115915156ac6658facd3fa9606f32f87b724dd6b18c55231addbfe830b"
+    },
+    {
+      "path": "lib/features/replica_session_3/infrastructure/replica_session_3_dio.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.dio",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "3322997d8df3775913d22deec277082e308b8738fb4beb912e971a698d6eccdf",
+      "outputDigest": "deac3eda7941c1167639f6968c2a06929bf50f49054391a86ac3d433e7bcd15c"
+    },
+    {
+      "path": "lib/infrastructure/storage/app_storage_drift.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.storage",
+      "rendererVersion": 4,
+      "semanticSchemaVersion": 2,
+      "inputDigest": "60ee9347bfb010a7ccdedf4d14514abc18c2260f230e62532012f0f5cf7ffe09",
+      "outputDigest": "0eb6fd5981b9de9f50698aa0402c2b1ae93e2a3bbe496d04c2c3e4817c8cb8d7"
+    },
+    {
+      "path": "lib/infrastructure/storage/session_storage_drift.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.storage",
+      "rendererVersion": 4,
+      "semanticSchemaVersion": 2,
+      "inputDigest": "497a4f647d1bed7696af5614fd488a535e48fa6e68e1fab3536b084ea9354119",
+      "outputDigest": "21d8ea0f9d3292aa774c7c182e7691af6bbcdbc2df34b330546d6ab677d5c1a2"
+    },
+    {
+      "path": "test/support/cache_application_1_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "550e66b1d75fb9a8ba3d5535413aa115b3bc963374704aac5375d217a468d20d",
+      "outputDigest": "0e70f94f6d9b006c5a73ee2ad455d0e3aa8be9962608f7a57d24e722c5656032"
+    },
+    {
+      "path": "test/support/cache_application_2_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "7331ca159c9df3486a889a28f5a5514e40a562988f53152ed4b144bc2464a835",
+      "outputDigest": "b45f46ea7ac68ea60bd7c683a4f79e479a8042cf13c5f24a24b396eb4a2171d5"
+    },
+    {
+      "path": "test/support/cache_application_3_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "764cd24efb348ed5714f7c814f7f50b29058da2d10fe938757fb23efcdf56151",
+      "outputDigest": "9779757f64d8bb7a9abe34ddb66cd810ea5ccf5587ceaec0070385d26688ecce"
+    },
+    {
+      "path": "test/support/cache_session_1_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "6496d17a0eb0723f5babeed19c5067fb04ce433365177d1fbf14598b4528261b",
+      "outputDigest": "13515e4175c3081fa9b12cca44464199e339cdcd7ff31c8ab6034f7967b25555"
+    },
+    {
+      "path": "test/support/cache_session_2_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "50ac8baa9b8e3710cf048546e3cef7a2e08015ef7d8707139711415c106ff671",
+      "outputDigest": "95761f187844b9db171905f9e8242f1fb17b2a4544e0a94b21962c4d27ae5d56"
+    },
+    {
+      "path": "test/support/cache_session_3_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "f59e8d485ff599d5e8171f6fc446f9b46ca92ec3520b54164a393231a847fe33",
+      "outputDigest": "44eff0cf061ed69630e4cc0593914d40f110c5831ad92d1fd12d79c6e6166c5c"
+    },
+    {
+      "path": "test/support/local_application_1_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "4e8d0e4427f370fcc01f023b57ec6538e7a74bf1937ae524ed79cef3f66f069b",
+      "outputDigest": "6c95c5227b9ab331aad0ded3966620efa43e2e8b5b344a28b3065c57f61d5ad7"
+    },
+    {
+      "path": "test/support/local_application_2_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "c734af0592242c33fe9fe7c9b865c7782c56fef9dfa7996a1195a8aee71a0782",
+      "outputDigest": "a644779d3bcde6fdd087206f5451b2153d135e3a6f4009d09b7f4bb65f531810"
+    },
+    {
+      "path": "test/support/local_application_3_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "760a753f093f66c8c35c97c42b3e5fcbf87880a7b45d8b8484a1d0fcfd65b146",
+      "outputDigest": "ccc17359a274da2fc7b50668a4333d4d3a13b4edef9bcefba54d57e8941b98d5"
+    },
+    {
+      "path": "test/support/local_session_1_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "7a87f2abb87f9779df8b2349f92e5556c6d934317640e7317129377fcfe6f7d5",
+      "outputDigest": "857233759166ebfca5939f753e53877f4153602970fb0719510f24ae6db7006c"
+    },
+    {
+      "path": "test/support/local_session_2_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "c8452a3d105e157d4bcfd9e725e263baa5524bffecb3147957471dc61c2056e5",
+      "outputDigest": "1904b98017710b3d7def8664c5e1de67d46c5fde6894382d0169b4d63c2a53d8"
+    },
+    {
+      "path": "test/support/local_session_3_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "fa45e04d3a8bb22209fa3ce0591a132fdc37ba80403a8c14270e14eb8ac93190",
+      "outputDigest": "547653be9453a9e32f2a76eefcc4acf75f1ede8b2bbdd01af1c26051083a7b16"
+    },
+    {
+      "path": "test/support/offline_full_application_1_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "79996d0e1656f9076184bb99a7a700ad867189cbc2495c60780b9653ef3adb4b",
+      "outputDigest": "8b09711d75ad8b830a0516a0097bdd0df822a49ff799c207bbe9f233c21b46d2"
+    },
+    {
+      "path": "test/support/offline_full_application_2_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "59f88c512efb815a54ab4694bbda77430bcd890321b2df6dbfc24cfd1ccf668e",
+      "outputDigest": "afa0027f75b4c80e84b964890111cc05510ff3034a42ce629637505df37e5998"
+    },
+    {
+      "path": "test/support/offline_full_application_3_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "3053ee903496d81cc28c649493f4ac27d33c765030375d27cf2b824bc4c98299",
+      "outputDigest": "b4fc592f878fa210e6d4e4d707ad76fe8a3f98fc7cbfbea49fea299d7d9fff37"
+    },
+    {
+      "path": "test/support/offline_full_session_1_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "138edd67de5505f9bcb66a0b606b83f350935823dc031788a676ce5a09f3dd1a",
+      "outputDigest": "dcddc48b4507533d5766c51dd2ecedfb1556e85a8336b811046e4ad2dd46b322"
+    },
+    {
+      "path": "test/support/offline_full_session_2_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "fb7d2db729716bb8c88fae55ffa1c04b4d96258df55bb3bcbef4221a1e619ef0",
+      "outputDigest": "1a4a9de233014cd7dbb6e3175822e15952aef9bb68ad5fd088a7c45d77eb778e"
+    },
+    {
+      "path": "test/support/offline_full_session_3_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "d59d56c2e73e79aade215481444ebb3d5cd8bf9e6dfd317818f29fc61f5ca8da",
+      "outputDigest": "abb5307f430bb9296e7c71f9063b24cd52ff2cf80ff562fb4b023fdc43f0ea0e"
+    },
+    {
+      "path": "test/support/online_application_1_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "f7db0f17c33f21a424b7f44c4b389e9f5e72cfe886969b0d50e71dd2797c1bc1",
+      "outputDigest": "ed6688d8f27bb1cd7c54d3cf4da8f090faedc92a117496ec60157b0577c13c16"
+    },
+    {
+      "path": "test/support/online_application_2_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "f46b28de5959c64c5a6bf854605b3c08e09d4699bc6045c1a91164dbb049ede9",
+      "outputDigest": "f8450738712a189ead0053bb46b9c2fafb536add4eb19ea1ee993566ec0c2311"
+    },
+    {
+      "path": "test/support/online_application_3_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "dc13d010be8eb388a0c31270e6f47e726767d02eb7c4c1fe83ed1710fa651e85",
+      "outputDigest": "355a91caaa775bc6b0cef960fb9a5bb226c9f859a9b1384e72501b1b603e5aa3"
+    },
+    {
+      "path": "test/support/online_session_1_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "0cf46ed217e3e4677dd920ebb637eabf5ad12f880b701116790b5f177d176e6c",
+      "outputDigest": "2902c3d7bfa844f4e325f2b3eaeeb46ff7f2463a2acb8e402c8162cfd9e0e50c"
+    },
+    {
+      "path": "test/support/online_session_2_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "0cd84c96233eeb2268c80152c64169a1f388b6786c2b72bb69ca953db90eedcb",
+      "outputDigest": "2f39f0ea1957f941889308497805c7c37450eecda3aff492f8ed295105b1cf90"
+    },
+    {
+      "path": "test/support/online_session_3_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "5dcb9603bf92b9ca6701addaa9e25e6218dbca14332cd2c82d199916fd787faf",
+      "outputDigest": "9d88494c3904de41f47decddade0398d9cd56524b5f3e6b6744d6a0c3cc61867"
+    },
+    {
+      "path": "test/support/replica_application_1_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "42d382ef7fe794f5e10920a2b7692cbbf3ceddc59c0064cf057698dc92b76696",
+      "outputDigest": "e928409b98134e2224d54dcc2b5fa7e9c62a0735a4ce8f5201e5613119623be0"
+    },
+    {
+      "path": "test/support/replica_application_2_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "2c75eacb7e4fa48dd397a5647ecbb72ac5c06284436e0f281fc995819f0cf714",
+      "outputDigest": "2d249b004d296e91d52911c1d395be3713f10069f5a68e58304df7adf8fd1f28"
+    },
+    {
+      "path": "test/support/replica_application_3_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "e2ac57cd4d3020a40eb71e1ba19ababd67292beb6feef53849b1c1884e22b89f",
+      "outputDigest": "7bca9414fef7215635601e1d1c0579a2f590ee119e2dee390814ed596c8b3573"
+    },
+    {
+      "path": "test/support/replica_session_1_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "124231ea94cef799ee7e9c7ced05b4a5bc73595a6842829a6b73d15223584168",
+      "outputDigest": "961aae53ad73ca25653e03c26bbda0e898a99cc0119b7a5b50803b656997f296"
+    },
+    {
+      "path": "test/support/replica_session_2_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "9a5169117f8f3daf6e576e1dd5854c96300a3f86c0de1b8d2a0cf433ae4c51f0",
+      "outputDigest": "bbd58ba6646223bf86400e23bb5a4a40b45c1292e3d5807e940b19d0076e07b7"
+    },
+    {
+      "path": "test/support/replica_session_3_feature_harness.wiring.dartitect.g.dart",
+      "source": "dartitect.json",
+      "rendererId": "wiring.feature-harness",
+      "rendererVersion": 1,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "28d61a4697dcf289c1ceffde52433e254ebcee9afbbdfad370ab98e7af31bdc2",
+      "outputDigest": "f5d1ecb9f125908daa722e249f581212461ca818df0576712021f3b278b9a1bd"
+    }
+  ]
+}

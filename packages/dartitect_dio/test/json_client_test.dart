@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_dio/dartitect_dio.dart';
+import 'package:dartitect_observability/dartitect_observability.dart';
 import 'package:dio/dio.dart';
 import 'package:test/test.dart';
 
@@ -160,6 +161,58 @@ void main() {
       dio.close();
     },
   );
+
+  test('status decoders and request context stay typed and bounded', () async {
+    late RequestOptions observed;
+    var requests = 0;
+    final dio = Dio()
+      ..httpClientAdapter = _JsonAdapter((options) {
+        requests += 1;
+        observed = options;
+        return ResponseBody.fromString('{}', 404);
+      });
+    addTearDown(dio.close);
+    final parent = TraceContext(
+      traceId: '1' * 32,
+      spanId: '2' * 16,
+      traceFlags: '01',
+    );
+    final endpoint = DioEndpoint<String>(
+      method: 'GET',
+      route: RouteTemplate('/tasks'),
+      acceptedStatusCodes: const <int>{200, 404},
+      statusDecoders: <int, DioStatusDecoder<String>>{
+        200: (_) => 'found',
+        404: (_) => 'missing',
+      },
+    );
+
+    final result = await DefaultDioJsonClient(dio).execute<String>(
+      endpoint,
+      headers: const <String, Object?>{'X-Mode': 'canary'},
+      context: DioRequestContext(traceParent: parent),
+    );
+
+    expect((result as Ok<DioResponse<String>>).value.payload, 'missing');
+    expect(observed.headers['X-Mode'], 'canary');
+    expect(
+      observed.extra[DioInstrumentation.parentTraceContextExtraKey],
+      same(parent),
+    );
+    expect(requests, 1);
+
+    final expired = await DefaultDioJsonClient(dio).execute<String>(
+      endpoint,
+      context: DioRequestContext(
+        deadline: DateTime.now().toUtc().subtract(const Duration(seconds: 1)),
+      ),
+    );
+    expect(
+      (expired as Err<DioFailure>).failure,
+      isA<DioDeadlineExceededFailure>(),
+    );
+    expect(requests, 1);
+  });
 }
 
 final class _JsonAdapter implements HttpClientAdapter {

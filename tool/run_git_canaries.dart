@@ -29,7 +29,7 @@ Future<void> main(List<String> arguments) async {
           .readAsStringSync(),
     ),
   );
-  if (contract['schemaVersion'] != 1 ||
+  if (contract['schemaVersion'] != 2 ||
       contract['cohortVersion'] != release['cohortVersion'] ||
       options.ref != 'v${release['cohortVersion']}') {
     throw StateError('Git tag and canary release cohorts differ.');
@@ -169,6 +169,64 @@ Future<Map<String, Object?>> _runCanary({
       await run('flutter', const <String>['analyze']);
       await run('flutter', const <String>['test']);
       await run('flutter', const <String>['build', 'web', '--release']);
+    case 'large_consumer':
+      await run('dart', const <String>[
+        'run',
+        'tool/materialize_large_consumer.dart',
+        '--fresh',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'contracts',
+        'sync',
+        'contracts/app_api.json',
+        '--apply',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'tool/verify_large_preview.dart',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'wiring',
+        'sync',
+        '--apply',
+        '--json',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'wiring',
+        'sync',
+        '--dry-run',
+        '--json',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'fleet',
+        'inventory',
+        '.',
+        '--json',
+      ]);
+      await run('flutter', const <String>['analyze']);
+      await run('flutter', const <String>['analyze']);
+      await run('flutter', const <String>['test']);
+      await run('flutter', const <String>['build', 'web', '--release']);
+      await run('flutter', const <String>['build', 'web', '--release']);
+      await run('flutter', const <String>['build', 'linux', '--release']);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'fleet',
+        'upgrade',
+        '.',
+        '--to=1.0.0-rc.9',
+        '--apply',
+        '--json',
+      ]);
     case 'minimal':
       await run('dart', const <String>[
         'run',
@@ -227,6 +285,27 @@ Future<Map<String, Object?>> _runCanary({
     case 'native_capabilities':
       await run('flutter', const <String>['analyze']);
       await run('flutter', const <String>['test']);
+    case 'adapters':
+      await run('flutter', const <String>['analyze']);
+      await run('flutter', const <String>['test']);
+    case 'tooling':
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'contracts',
+        'sync',
+        'contracts/openapi.json',
+        '--apply',
+      ]);
+      await run('dart', const <String>[
+        'run',
+        'dartitect_cli:dartitect',
+        'contracts',
+        'check',
+        'contracts/openapi.json',
+      ]);
+      await run('dart', const <String>['analyze']);
+      await run('dart', const <String>['test']);
     default:
       throw StateError('Unknown canary: $id.');
   }
@@ -543,7 +622,7 @@ final class _Options {
 
   factory _Options.parse(List<String> arguments) {
     String? repository;
-    var ref = 'v1.0.0-rc.8';
+    var ref = 'v1.0.0-rc.9';
     var keepArtifacts = false;
     for (final argument in arguments) {
       if (argument.startsWith('--repository=')) {

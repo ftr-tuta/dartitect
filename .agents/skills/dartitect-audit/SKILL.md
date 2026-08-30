@@ -29,6 +29,8 @@ dual-write are also errors.
 
 1. Record tests, analyzer, `dartitect doctor`, `dartitect scan`, and
    `dartitect inspect --consumer-tax --json`.
+   Treat schema-2 `architectureTax` as a zero budget, while `generatedTax` is
+   additive infrastructure evidence and `productCode` never blocks.
 2. Inventory composition roots, owners, disposal order, repositories,
    background entrypoints, provider SDKs, and telemetry paths.
 3. Classify each boundary as conforming, non-conforming, or not evidenced.

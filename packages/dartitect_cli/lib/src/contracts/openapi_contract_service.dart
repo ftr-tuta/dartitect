@@ -57,6 +57,8 @@ final class OpenApiContractReport {
     required this.command,
     required this.specPath,
     required this.outputPath,
+    required this.operationIds,
+    required this.operationTypes,
     required this.findings,
     required this.plan,
     required this.applied,
@@ -71,6 +73,12 @@ final class OpenApiContractReport {
 
   /// Project-relative fully-generated Dart output.
   final String outputPath;
+
+  /// Explicit stable operation IDs declared by this contract.
+  final Set<String> operationIds;
+
+  /// Public operation-object type generated for each declared operation ID.
+  final Map<String, String> operationTypes;
 
   /// Validation and compatibility findings.
   final List<OpenApiContractFinding> findings;
@@ -109,6 +117,8 @@ final class OpenApiContractReport {
     'command': command,
     'spec': specPath,
     'output': outputPath,
+    'operationIds': operationIds.toList()..sort(),
+    'operationTypes': operationTypes,
     'valid': isValid,
     'compatible': isCompatible,
     'fresh': isFresh,
@@ -232,9 +242,10 @@ final class OpenApiContractService {
       final operation = FileGenerationOperation(
         relativePath: resolvedOutput,
         content: content,
+        rendererId: 'contracts.openapi',
         ownership: GeneratedOwnership.fullyGenerated,
         sourcePath: current.relativePath,
-        rendererVersion: 3,
+        rendererVersion: 4,
         semanticSchemaVersion: 1,
         inputSignature: signature,
       );
@@ -258,10 +269,19 @@ final class OpenApiContractService {
         ], manageFullyGenerated: true);
       }
     }
+    final operationTypes = <String, String>{
+      if (current != null)
+        for (final operation in _OpenApiRenderer(current)._operations())
+          operation.wireName: '${_pascal(operation.name)}Operation',
+    };
     return OpenApiContractReport(
       command: command,
       specPath: current?.relativePath ?? _portable(specPath),
       outputPath: resolvedOutput,
+      operationIds: Set<String>.unmodifiable(
+        current == null ? const <String>{} : _declaredOperationIds(current),
+      ),
+      operationTypes: Map<String, String>.unmodifiable(operationTypes),
       findings: List<OpenApiContractFinding>.unmodifiable(findings),
       plan: plan,
       applied: applied,
@@ -540,6 +560,7 @@ void _validateContract(
   List<OpenApiContractFinding> findings,
 ) {
   final root = document.root;
+  final operationIds = <String>{};
   final version = root['openapi'];
   if (version is! String || !version.startsWith('3.1.')) {
     _error(
@@ -593,6 +614,16 @@ void _validateContract(
         if (operation == null) {
           _error(findings, 'DT3103', pointer, 'Operations must be objects.');
           continue;
+        }
+        if (operation['operationId'] case final String operationId) {
+          if (!operationIds.add(operationId)) {
+            _error(
+              findings,
+              'DT3103',
+              '$pointer/operationId',
+              'OpenAPI operationId values must be unique.',
+            );
+          }
         }
         if (operation.containsKey('callbacks')) {
           _error(
@@ -650,6 +681,23 @@ void _validateContract(
       );
     }
   }
+}
+
+Set<String> _declaredOperationIds(_OpenApiDocument document) {
+  final result = <String>{};
+  final paths = _mapOrNull(document.root['paths']);
+  if (paths == null) return result;
+  for (final pathEntry in paths.entries) {
+    final pathItem = _mapOrNull(_dereference(document, pathEntry.value));
+    if (pathItem == null) continue;
+    for (final method in _httpMethods) {
+      final operation = _mapOrNull(_dereference(document, pathItem[method]));
+      if (operation?['operationId'] case final String operationId) {
+        result.add(operationId);
+      }
+    }
+  }
+  return result;
 }
 
 void _validateParameters(
@@ -1133,7 +1181,8 @@ final class _OpenApiRenderer {
     if (operations.isNotEmpty) {
       buffer
         ..writeln()
-        ..writeln("import 'package:dio/dio.dart';");
+        ..writeln("import 'package:dartitect/dartitect.dart';")
+        ..writeln("import 'package:dartitect_dio/dartitect_dio.dart';");
     }
     buffer
       ..writeln()
@@ -1377,16 +1426,48 @@ final class _OpenApiRenderer {
     List<_OperationIr> operations,
   ) {
     for (final operation in operations) {
+      final responseType = '${_pascal(operation.name)}Response';
+      final pathParameters = operation.parameters
+          .where((parameter) => parameter.location == 'path')
+          .toList(growable: false);
       buffer
         ..writeln()
         ..writeln('/// Expands the local OpenAPI route template.')
-        ..write('String ${operation.name}Route({');
-      for (final parameter in operation.parameters.where(
-        (parameter) => parameter.location == 'path',
-      )) {
-        buffer.write('required ${parameter.type} ${parameter.dartName},');
+        ..write('String ${operation.name}Route(');
+      if (pathParameters.isNotEmpty) {
+        buffer.write('{');
+        for (final parameter in pathParameters) {
+          buffer.write('required ${parameter.type} ${parameter.dartName},');
+        }
+        buffer.write('}');
       }
-      buffer..writeln('}) => ${_routeExpression(operation)};');
+      buffer
+        ..writeln(') => ${_routeExpression(operation)};')
+        ..writeln()
+        ..writeln('/// Declared status union for ${operation.wireName}.')
+        ..writeln('sealed class $responseType {')
+        ..writeln('  const $responseType();')
+        ..writeln('  int get statusCode;')
+        ..writeln('}');
+      for (final response in operation.responses.entries) {
+        final variant = '${responseType}Status${response.key}';
+        final schema = operation.responseSchemas[response.key];
+        buffer
+          ..writeln()
+          ..writeln('/// Declared HTTP ${response.key} response.')
+          ..writeln('final class $variant extends $responseType {');
+        if (schema == null) {
+          buffer.writeln('  const $variant();');
+        } else {
+          buffer
+            ..writeln('  const $variant(this.payload);')
+            ..writeln('  final ${response.value} payload;');
+        }
+        buffer
+          ..writeln('  @override')
+          ..writeln('  int get statusCode => ${response.key};')
+          ..writeln('}');
+      }
     }
     buffer
       ..writeln()
@@ -1411,20 +1492,50 @@ final class _OpenApiRenderer {
     buffer
       ..writeln('];')
       ..writeln()
-      ..writeln(
-        '/// Borrowed-Dio client; credentials remain in their explicit pipeline.',
-      )
+      ..writeln('/// Borrowed typed client with explicit per-attempt context.')
       ..writeln('final class ${contractName}Client {')
-      ..writeln('  const ${contractName}Client(this._dio);')
+      ..writeln('  const ${contractName}Client(this._client);')
       ..writeln()
-      ..writeln('  final Dio _dio;');
+      ..writeln('  final DioJsonClient _client;');
     for (final operation in operations) {
+      final responseType = '${_pascal(operation.name)}Response';
       buffer
+        ..writeln()
+        ..writeln(
+          '  static final DioEndpoint<$responseType> _${operation.name}Endpoint =',
+        )
+        ..writeln('      DioEndpoint<$responseType>(')
+        ..writeln(
+          '        method: ${_literal(operation.method.toUpperCase())},',
+        )
+        ..writeln('        route: RouteTemplate(${_literal(operation.path)}),')
+        ..writeln('        acceptedStatusCodes: const <int>{');
+      for (final response in operation.responses.entries) {
+        buffer.writeln('          ${response.key},');
+      }
+      buffer
+        ..writeln('        },')
+        ..writeln(
+          '        statusDecoders: <int, DioStatusDecoder<$responseType>>{',
+        );
+      for (final response in operation.responses.entries) {
+        final variant = '${responseType}Status${response.key}';
+        final schema = operation.responseSchemas[response.key];
+        final decoded = schema == null
+            ? 'const $variant()'
+            : '$variant(${_decodeExpression(schema, 'json', required: true)})';
+        buffer.writeln('          ${response.key}: (json) => $decoded,');
+      }
+      buffer
+        ..writeln('        },')
+        ..writeln('      );')
         ..writeln()
         ..writeln(
           '  /// Calls ${operation.method.toUpperCase()} ${operation.path}.',
         )
-        ..writeln('  Future<Response<Object?>> ${operation.name}({');
+        ..writeln(
+          '  Future<Result<DioResponse<$responseType>, DioFailure>> ${operation.name}({',
+        );
       for (final parameter in operation.parameters) {
         buffer.writeln(
           '    ${parameter.required ? 'required ' : ''}${parameter.type} ${parameter.dartName},',
@@ -1436,16 +1547,20 @@ final class _OpenApiRenderer {
         );
       }
       buffer
-        ..writeln('  }) => _dio.request<Object?>(')
-        ..write('    ${operation.name}Route(');
+        ..writeln('    DioRequestContext? context,')
+        ..writeln('  }) => _client.execute<$responseType>(')
+        ..writeln('    _${operation.name}Endpoint,')
+        ..writeln('    pathParameters: <String, String>{');
       for (final parameter in operation.parameters.where(
         (parameter) => parameter.location == 'path',
       )) {
-        buffer.write('${parameter.dartName}: ${parameter.dartName},');
+        buffer.writeln(
+          '      ${_literal(parameter.wireName)}: ${parameter.dartName}.toString(),',
+        );
       }
       buffer
-        ..writeln('),')
-        ..writeln('    queryParameters: <String, Object?>{');
+        ..writeln('    },')
+        ..writeln('    query: <String, Object?>{');
       for (final parameter in operation.parameters.where(
         (parameter) => parameter.location == 'query',
       )) {
@@ -1458,9 +1573,7 @@ final class _OpenApiRenderer {
       }
       buffer
         ..writeln('    },')
-        ..writeln('    options: Options(')
-        ..writeln('      method: ${_literal(operation.method.toUpperCase())},')
-        ..writeln('      headers: <String, Object?>{');
+        ..writeln('    headers: <String, Object?>{');
       for (final parameter in operation.parameters.where(
         (parameter) => parameter.location == 'header',
       )) {
@@ -1471,15 +1584,56 @@ final class _OpenApiRenderer {
           '${_literal(parameter.wireName)}: ${parameter.dartName},',
         );
       }
-      buffer
-        ..writeln('      },')
-        ..writeln('    ),');
+      buffer.writeln('    },');
       if (operation.bodyType != null) {
-        buffer.writeln('    data: ${operation.bodyEncodeExpression('body')},');
+        buffer.writeln(
+          '    jsonBody: ${operation.bodyEncodeExpression('body')},',
+        );
       }
-      buffer.writeln('  );');
+      buffer
+        ..writeln('    context: context,')
+        ..writeln('  );');
     }
     buffer.writeln('}');
+    for (final operation in operations) {
+      final responseType = '${_pascal(operation.name)}Response';
+      final operationType = '${_pascal(operation.name)}Operation';
+      buffer
+        ..writeln()
+        ..writeln('/// Narrow callable client for only ${operation.wireName}.')
+        ..writeln('final class $operationType {')
+        ..writeln('  $operationType(DioJsonClient client)')
+        ..writeln('      : _contract = ${contractName}Client(client);')
+        ..writeln()
+        ..writeln('  final ${contractName}Client _contract;')
+        ..writeln()
+        ..writeln(
+          '  Future<Result<DioResponse<$responseType>, DioFailure>> call({',
+        );
+      for (final parameter in operation.parameters) {
+        buffer.writeln(
+          '    ${parameter.required ? 'required ' : ''}${parameter.type} ${parameter.dartName},',
+        );
+      }
+      if (operation.bodyType != null) {
+        buffer.writeln(
+          '    ${operation.bodyRequired ? 'required ' : ''}${operation.bodyType} body,',
+        );
+      }
+      buffer
+        ..writeln('    DioRequestContext? context,')
+        ..writeln('  }) => _contract.${operation.name}(');
+      for (final parameter in operation.parameters) {
+        buffer.writeln('    ${parameter.dartName}: ${parameter.dartName},');
+      }
+      if (operation.bodyType != null) {
+        buffer.writeln('    body: body,');
+      }
+      buffer
+        ..writeln('    context: context,')
+        ..writeln('  );')
+        ..writeln('}');
+    }
   }
 
   List<_OperationIr> _operations() {
@@ -1537,6 +1691,7 @@ final class _OpenApiRenderer {
         );
         final bodySchema = _jsonSchemaFromContent(requestBody);
         final responses = <int, String>{};
+        final responseSchemas = <int, Object?>{};
         final responseMap = _mapOrNull(operation['responses']);
         if (responseMap != null) {
           for (final response in responseMap.entries) {
@@ -1544,6 +1699,7 @@ final class _OpenApiRenderer {
             if (status == null) continue;
             final boundary = _mapOrNull(_dereference(document, response.value));
             final schema = _jsonSchemaFromContent(boundary);
+            responseSchemas[status] = schema;
             responses[status] = schema == null
                 ? 'void'
                 : _dartType(schema, required: true);
@@ -1566,6 +1722,10 @@ final class _OpenApiRenderer {
             bodyRequired: requestBody?['required'] == true,
             responses: Map<int, String>.fromEntries(
               responses.entries.toList()
+                ..sort((left, right) => left.key.compareTo(right.key)),
+            ),
+            responseSchemas: Map<int, Object?>.fromEntries(
+              responseSchemas.entries.toList()
                 ..sort((left, right) => left.key.compareTo(right.key)),
             ),
             renderer: this,
@@ -1756,6 +1916,7 @@ final class _OperationIr {
     required this.bodyType,
     required this.bodyRequired,
     required this.responses,
+    required this.responseSchemas,
     required this.renderer,
   });
 
@@ -1768,6 +1929,7 @@ final class _OperationIr {
   final String? bodyType;
   final bool bodyRequired;
   final Map<int, String> responses;
+  final Map<int, Object?> responseSchemas;
   final _OpenApiRenderer renderer;
 
   String bodyEncodeExpression(String expression) => renderer._encodeExpression(

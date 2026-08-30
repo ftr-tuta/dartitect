@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'generated_boundary_policy.dart';
 
-/// Resolves stable-v2 boundary configuration for an analyzer source file.
+/// Resolves stable-v3 boundary configuration for an analyzer source file.
 ///
 /// The nearest `dartitect.json` wins. Paths are made relative to that file so
 /// the analyzer host applies the same project-relative globs as CLI scans on
@@ -11,7 +11,7 @@ import 'generated_boundary_policy.dart';
 final class DartitectLintBoundaryResolver {
   const DartitectLintBoundaryResolver._();
 
-  /// Classifies [sourcePath] with its nearest valid stable-v2 configuration.
+  /// Classifies [sourcePath] with its nearest valid stable-v3 configuration.
   static DartitectSourceClassification classify(String sourcePath) {
     return resolve(sourcePath).classification;
   }
@@ -51,7 +51,7 @@ final class DartitectLintBoundaryResolver {
           classifier = _parse(config.readAsStringSync());
           if (classifier == null) {
             configurationError =
-                'Invalid dartitect.json; fix stable-v2 boundary configuration.';
+                'Invalid dartitect.json; fix stable-v3 boundary configuration.';
           }
         } on FileSystemException {
           classifier = null;
@@ -80,7 +80,7 @@ final class DartitectLintBoundaryResolver {
     try {
       final decoded = jsonDecode(source);
       if (decoded is! Map<String, Object?> ||
-          decoded['configVersion'] != 2 ||
+          decoded['configVersion'] != 3 ||
           decoded['profile'] != 'native_strict') {
         return null;
       }

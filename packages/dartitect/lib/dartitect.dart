@@ -7,6 +7,7 @@ export 'src/concurrency/operation_progress.dart';
 export 'src/concurrency/projection_executor.dart';
 export 'src/diagnostics/diagnostics_protocol.dart';
 export 'src/extensions/local_extension.dart';
+export 'src/factories/factory_annotations.dart';
 export 'src/feature_profile.dart';
 export 'src/id_generator.dart';
 export 'src/lifecycle/assembly_binding.dart';

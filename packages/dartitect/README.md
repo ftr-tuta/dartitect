@@ -152,7 +152,7 @@ Project-only infrastructure can use the confined
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.8` source candidate. Supported
+The workspace contains the `1.0.0-rc.9` source candidate. Supported
 Git consumption requires a tag with a corresponding published GitHub Release
 and the coordinates from that Release's notes. If no compatible Release exists,
 there is no supported consumption path; see the
