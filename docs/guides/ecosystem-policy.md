@@ -30,7 +30,7 @@ authorize publication, leak provider types, or contain secrets.
 ```console
 dartitect dependencies audit --json
 dartitect dependencies explain <package>
-dartitect scan --no-baseline
+dartitect scan
 dartitect verify --json
 ```
 
@@ -41,5 +41,5 @@ Before adding a Dartitect dependency or replacement, ask:
 
 > É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
 
-All three answers must be yes; company/product behavior remains in
-`softgran_*`, `agrox_*`, or the application.
+All three answers must be yes; non-neutral reusable infrastructure belongs in a
+typed project-local extension and business behavior remains in the application.

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-/// Verifies lockstep versions, internal constraints, and publication order.
+/// Verifies package metadata, compatibility ranges, cohorts, and publication DAG.
 void main(List<String> arguments) {
   try {
     final root = _root(arguments);
@@ -12,20 +12,79 @@ void main(List<String> arguments) {
       ),
     );
     final errors = <String>[];
-    if (contract['schemaVersion'] != 1 || contract['series'] != '1.0.x') {
+    if (contract['schemaVersion'] != 2 || contract['series'] != '1.0.x') {
       errors.add('Package release contract has an unsupported schema/series.');
     }
-    final cohort = contract['cohortVersion'];
-    final constraint = contract['internalConstraint'];
-    if (cohort is! String || constraint is! String) {
-      errors.add('Package release cohort and constraint must be strings.');
+    final baseline = contract['baselineVersion'];
+    final candidateTag = contract['candidateTag'];
+    final declaredCount = contract['packageCount'];
+    if (baseline is! String ||
+        candidateTag != 'v$baseline' ||
+        declaredCount is! int) {
+      errors.add('Baseline, package count, or candidate tag is invalid.');
     }
-    final expectedConstraint = cohort is String
-        ? _constraintFor(cohort, errors)
-        : null;
-    if (expectedConstraint != null && constraint != expectedConstraint) {
+
+    final compatibility = _objectOrNull(contract['compatibility']);
+    final defaultRange = compatibility?['defaultRange'];
+    final packageRanges = _objectOrNull(compatibility?['packageRanges']);
+    if (defaultRange is! String ||
+        packageRanges == null ||
+        compatibility?['prereleaseBaselineRequired'] != true ||
+        compatibility?['stableIndependentPatches'] != true ||
+        compatibility?['stableDefaultRange'] != '>=1.0.0 <1.1.0') {
+      errors.add('Compatibility policy is incomplete.');
+    }
+    final manifestPackages =
+        _objectOrNull(contract['packages']) ?? const <String, Object?>{};
+    final inventoryDecisions = _objectOrNull(contract['inventoryDecisions']);
+    if (declaredCount is int && manifestPackages.length != declaredCount) {
       errors.add(
-        'Internal constraint is $constraint; expected $expectedConstraint.',
+        'Package count is ${manifestPackages.length}; expected $declaredCount.',
+      );
+    }
+    if (inventoryDecisions == null ||
+        inventoryDecisions.keys
+            .toSet()
+            .difference(manifestPackages.keys.toSet())
+            .isNotEmpty ||
+        manifestPackages.keys
+            .toSet()
+            .difference(inventoryDecisions.keys.toSet())
+            .isNotEmpty ||
+        inventoryDecisions.values.any(
+          (value) => value is! String || value.trim().isEmpty,
+        )) {
+      errors.add('Every package must have one inventory decision.');
+    }
+
+    final cohorts = _objectOrNull(contract['publicationCohorts']);
+    const cohortNames = <String>{
+      'foundation',
+      'platformServices',
+      'providerAdapters',
+      'tooling',
+      'leafUtilities',
+    };
+    if (cohorts == null ||
+        cohorts.keys.toSet().difference(cohortNames).isNotEmpty ||
+        cohortNames.difference(cohorts.keys.toSet()).isNotEmpty) {
+      errors.add('Publication cohorts must define the five reviewed cohorts.');
+    }
+    final cohortPackages = <String>[
+      if (cohorts != null)
+        for (final name in cohortNames) ..._strings(cohorts[name], errors),
+    ];
+    if (cohortPackages.length != cohortPackages.toSet().length ||
+        cohortPackages
+            .toSet()
+            .difference(manifestPackages.keys.toSet())
+            .isNotEmpty ||
+        manifestPackages.keys
+            .toSet()
+            .difference(cohortPackages.toSet())
+            .isNotEmpty) {
+      errors.add(
+        'Every package must belong to exactly one publication cohort.',
       );
     }
 
@@ -34,6 +93,11 @@ void main(List<String> arguments) {
     final flattened = <String>[for (final layer in layers) ...layer];
     if (!_sameList(flattened, order)) {
       errors.add('Publication order must exactly flatten publication layers.');
+    }
+    if (order.toSet().length != order.length ||
+        order.toSet().difference(manifestPackages.keys.toSet()).isNotEmpty ||
+        manifestPackages.keys.toSet().difference(order.toSet()).isNotEmpty) {
+      errors.add('Publication order must contain every package exactly once.');
     }
     _validatePolicy(contract, errors);
 
@@ -75,17 +139,20 @@ void main(List<String> arguments) {
               ).firstMatch(changelog.readAsStringSync())?.group(1)
             : null;
         if (firstRelease != version) {
-          errors.add('$name changelog does not begin with cohort $version.');
+          errors.add('$name changelog does not begin with version $version.');
         }
       }
     }
 
-    final names = packages.keys.toSet();
-    if (names.length != order.length || !names.containsAll(order)) {
-      errors.add('Publication order does not contain every package exactly.');
-    }
-    if (order.toSet().length != order.length) {
-      errors.add('Publication order contains duplicate packages.');
+    if (packages.keys
+            .toSet()
+            .difference(manifestPackages.keys.toSet())
+            .isNotEmpty ||
+        manifestPackages.keys
+            .toSet()
+            .difference(packages.keys.toSet())
+            .isNotEmpty) {
+      errors.add('Workspace packages and release manifest packages differ.');
     }
     final positions = <String, int>{
       for (var index = 0; index < order.length; index += 1) order[index]: index,
@@ -95,16 +162,25 @@ void main(List<String> arguments) {
         for (final package in layers[index]) package: index,
     };
     for (final entry in packages.entries) {
-      if (entry.value.version != cohort) {
-        errors.add(
-          '${entry.key} is ${entry.value.version}; expected cohort $cohort.',
-        );
+      final metadata = _objectOrNull(manifestPackages[entry.key]);
+      if (metadata == null ||
+          metadata['version'] != entry.value.version ||
+          metadata['platforms'] is! List<Object?> ||
+          metadata['stability'] is! String) {
+        errors.add('${entry.key} does not match its release metadata.');
+      }
+      if (baseline is String &&
+          baseline.contains('-') &&
+          compatibility?['prereleaseBaselineRequired'] == true &&
+          entry.value.version != baseline) {
+        errors.add('${entry.key} must start from RC8 baseline $baseline.');
       }
       for (final dependency in entry.value.dependencies.entries) {
-        if (dependency.value != constraint) {
+        final expected = packageRanges?[dependency.key] ?? defaultRange;
+        if (dependency.value != expected) {
           errors.add(
             '${entry.key} -> ${dependency.key} uses ${dependency.value}; '
-            'expected $constraint.',
+            'expected compatible range $expected.',
           );
         }
         final dependencyPosition = positions[dependency.key];
@@ -136,8 +212,8 @@ void main(List<String> arguments) {
       return;
     }
     stdout.writeln(
-      'Package release contract passed for ${packages.length} packages at '
-      '$cohort in topological order.',
+      'Package release contract passed for ${packages.length} packages from '
+      'baseline $baseline with compatible independent patch ranges.',
     );
   } on Object catch (error) {
     stderr.writeln('Package release contract could not be read: $error');
@@ -157,17 +233,6 @@ Directory _root(List<String> arguments) {
   );
 }
 
-String? _constraintFor(String version, List<String> errors) {
-  if (RegExp(r'^1\.0\.0-(?:dev|rc)\.[1-9][0-9]*$').hasMatch(version)) {
-    return '>=$version <1.0.0';
-  }
-  if (RegExp(r'^1\.0\.(?:0|[1-9][0-9]*)$').hasMatch(version)) {
-    return '>=$version <1.1.0';
-  }
-  errors.add('Unsupported lockstep cohort version: $version.');
-  return null;
-}
-
 void _validatePolicy(Map<String, Object?> contract, List<String> errors) {
   final artifact = _objectOrNull(contract['artifactContract']);
   if (artifact == null ||
@@ -178,6 +243,13 @@ void _validatePolicy(Map<String, Object?> contract, List<String> errors) {
       artifact['dependencyOverrides'] != false ||
       artifact['digestAlgorithm'] != 'sha256') {
     errors.add('Artifact reproducibility policy is incomplete.');
+  }
+  final candidate = _objectOrNull(contract['gitCandidate']);
+  if (candidate == null ||
+      candidate['tag'] != contract['candidateTag'] ||
+      candidate['materialized'] != false ||
+      candidate['pubDevPublication'] != false) {
+    errors.add('Candidate tag policy is incomplete.');
   }
   final partial = _objectOrNull(contract['partialFailurePolicy']);
   if (partial == null ||

@@ -11,9 +11,11 @@ Future<void> main() async {
           .readAsStringSync(),
     ),
   );
-  final expectedVersion = release['cohortVersion'];
-  if (expectedVersion is! String) {
-    throw const FormatException('Invalid package release cohort.');
+  final expectedPackageCount = release['packageCount'];
+  final releasePackages = release['packages'];
+  if (expectedPackageCount is! int ||
+      releasePackages is! Map<String, Object?>) {
+    throw const FormatException('Invalid package release metadata.');
   }
 
   final platforms = _object(
@@ -36,8 +38,11 @@ Future<void> main() async {
       .where((directory) => File('${directory.path}/pubspec.yaml').existsSync())
       .toList();
   packages.sort((left, right) => left.path.compareTo(right.path));
-  if (packages.length != 24) {
-    errors.add('Expected 24 publishable packages; found ${packages.length}.');
+  if (packages.length != expectedPackageCount) {
+    errors.add(
+      'Expected $expectedPackageCount publishable packages; '
+      'found ${packages.length}.',
+    );
   }
 
   for (final package in packages) {
@@ -53,6 +58,10 @@ Future<void> main() async {
     if (description == null || description.length < 40) {
       errors.add('$name: description is too short.');
     }
+    final releasePackage = releasePackages[name];
+    final expectedVersion = releasePackage is Map<String, Object?>
+        ? releasePackage['version']
+        : null;
     if (version != expectedVersion) {
       errors.add('$name: expected version $expectedVersion, found $version.');
     }
@@ -131,8 +140,8 @@ Future<void> main() async {
       .cast<File>()
       .toList();
   guides.sort((left, right) => left.path.compareTo(right.path));
-  if (guides.length != 19) {
-    errors.add('Expected 19 English guides; found ${guides.length}.');
+  if (guides.length != 23) {
+    errors.add('Expected 23 English guides; found ${guides.length}.');
   }
 
   final markdown = await root

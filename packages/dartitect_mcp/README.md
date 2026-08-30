@@ -31,7 +31,7 @@ The host owns stdin/stdout and chooses allowed canonical roots.
 `DartitectMcpPolicy` bounds roots, result size, time, and write permission.
 `DartitectMcpServer` maps MCP tools to the typed `DartitectProjectService`; it
 never shells out or parses CLI text. Resources come from generated package
-metadata, diagnostics, English guides, config v1, and the reviewed API snapshot.
+metadata, diagnostics, English guides, config v2, and the reviewed API snapshot.
 
 Writes are off by default. When enabled, a preview produces an opaque,
 short-lived, single-use plan ID. Apply requires explicit confirmation and client
@@ -66,7 +66,7 @@ Future<void> main() async {
 
 Tools cover inspect, scan, doctor, finding explanation, conformance audit,
 change previews, and guarded apply. Resources cover packages, package details,
-diagnostics, English guides, and config v1. There is no create, shell, process
+diagnostics, English guides, and config v2. There is no create, shell, process
 argument, arbitrary file-read, or network tool.
 
 ## Ownership and lifecycle
@@ -116,7 +116,7 @@ Use the `dartitect-mcp` managed skill for agent workflows. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.6` source candidate. Use only coordinates
+The workspace contains the `1.0.0-rc.8` source candidate. Use only coordinates
 from a matching tag with a published GitHub Release and complete compatible
 cohort notes. If none exists, there is no supported consumption path. See the
 [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

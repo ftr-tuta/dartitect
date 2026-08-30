@@ -49,5 +49,5 @@ Before adding a capability, answer:
 
 > É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
 
-All three answers must be “yes”. Otherwise the capability belongs in
-`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.
+All three answers must be “yes”. Otherwise reusable infrastructure belongs in
+a typed project-local extension and business behavior stays in the application.

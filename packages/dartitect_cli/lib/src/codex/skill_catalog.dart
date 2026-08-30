@@ -59,7 +59,7 @@ or provider boundary when the required Dartitect packages are not yet clear.
 
 ## When not to use
 
-Use `$dartitect-audit` to inspect an existing codebase without changing it.
+Use `$dartitect-audit` to inspect a Dartitect-created project without changing it.
 Route detailed runtime, reactive, offline-first, telemetry, adapter, testing,
 CLI, or MCP work to the matching focused skill after suitability and the stack
 are decided.
@@ -150,15 +150,15 @@ application architecture runtimes.
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-audit
-description: Audit an existing Dart or Flutter codebase for Native Strict conformance without changing it. Use for read-only evidence and strict architecture classification.
+description: Audit a Dartitect-created project for Native Strict conformance without changing it. Use for read-only evidence after development or a Dartitect SDK upgrade.
 ---
 
 # Audit Dartitect conformance
 
 ## When to use
 
-Use this skill when existing architecture, globals, providers, violations, or
-lifecycle assumptions must be assessed against Native Strict boundaries.
+Use this skill when a project created with Dartitect must revalidate its
+architecture, globals, providers, lifecycle, or SDK upgrade evidence.
 
 ## When not to use
 
@@ -169,22 +169,23 @@ ownership, or concrete runtime boundaries.
 ## Invariants
 
 Inspection is read-only. Report evidence without modifying code, dependencies,
-configuration, baselines, or generated files. Treat `dartitect verify` and
-`scan --no-baseline` as canonical read-only evidence. Installed Riverpod, BLoC,
+configuration or generated files. Treat `dartitect verify` and `dartitect scan`
+as canonical read-only evidence. Installed Riverpod, BLoC,
 Provider, GetIt, MobX, Signals, or equivalent architecture runtimes are Native
 Strict errors. Provider leakage, service location, duplicate ownership, and
 dual-write are also errors.
 
 ## Workflow
 
-1. Record tests, analyzer, `dartitect doctor`, and `dartitect scan --no-baseline`.
+1. Record tests, analyzer, `dartitect doctor`, `dartitect scan`, and
+   `dartitect inspect --consumer-tax --json`.
 2. Inventory composition roots, owners, disposal order, repositories,
    background entrypoints, provider SDKs, and telemetry paths.
 3. Classify each boundary as conforming, non-conforming, or not evidenced.
 4. Record prohibited runtime packages separately from advisory alternatives and
    approved consumer-owned infrastructure.
-5. Return a conformance report, bounded adoption observations, and the exact
-   commands used; do not mutate or claim automatic conversion.
+5. Return a conformance report, upgrade observations, and the exact commands
+   used; do not mutate or claim adoption or automatic conversion.
 
 Read [references/inventory.md](references/inventory.md) for evidence collection
 and [references/conformance-audit.md](references/conformance-audit.md) for the
@@ -193,10 +194,10 @@ CLI/MCP boundary.
 ## Validate
 
 Confirm the report is reproducible, contains no write or migration action, uses
-the unbaselined scan, and distinguishes unsupported architecture runtimes from
+the strict scan, and distinguishes unsupported architecture runtimes from
 consumer-owned infrastructure packages.
 ''',
-      'references/inventory.md': r'''# Existing-codebase inventory
+      'references/inventory.md': r'''# Dartitect project inventory
 
 Record:
 
@@ -216,8 +217,8 @@ test evidence, and conformance status. Do not add a proposed migration slice.
       'references/conformance-audit.md': r'''# Conformance audit
 
 Start with read-only CLI operations. `inspect`, `scan`, and `doctor` do not write.
-Run `scan --no-baseline` as the canonical gate. A reviewed baseline may describe
-known debt for other workflows, but it never changes conformance evidence.
+Run `dartitect scan` as the canonical gate. Greenfield projects cannot hide
+architecture findings behind debt baselines.
 
 The local MCP may assist discovery with bounded inspect, scan, doctor, explain,
 conformance, and preview tools. `dartitect_audit_conformance` reports strict
@@ -770,6 +771,12 @@ Create `DioOwner` or borrow an injected Dio instance in infrastructure. Map
 cancellation, transport, HTTP, and configuration failures distinctly. Preserve
 the caller's cancellation and concurrency semantics.
 
+Credential requests carry `CredentialGeneration` in Dio request extras. Bind
+waiting to `CancelToken`, invalidate only that generation, and deduplicate
+concurrent 401 logout. Authenticated replay stays disabled unless the consumer
+supplies both a retry client and an explicit semantic idempotency policy. Permit
+at most one replay and never repeat streams or multipart/upload bodies.
+
 Record only allowlisted method/protocol/status facts—never body, headers, query,
 credentials, or identifying path. Propagate only through the configured W3C
 propagator. Reject duplicate tracing/capture between Dartitect and `sentry_dio`.
@@ -898,7 +905,11 @@ cancellation/concurrency, lifecycle temperature, disposal, and provider failure.
 Choose deterministic fakes for policy and real fixtures for integration.
 For a public feature profile, run the matching `FeatureContractMatrix.online`,
 `.cache`, `.replica`, or `.offlineFull`; each required row gets a fresh typed
-fixture and returns a framework-neutral result with disposal evidence.
+runtime driver. The matrix owns faults, event journal, observed store,
+acknowledgements, graph registrations, and `ResourceCensus`; fixtures never
+return facts or a residual map. Derive success, expected failure, crash,
+cancellation, concurrency, restart, and teardown evidence from those observed
+instruments.
 
 Read [references/runtime-and-reactive.md](references/runtime-and-reactive.md),
 [references/sync.md](references/sync.md),
@@ -974,9 +985,13 @@ session recovery that does not auto-deliver uncertain records.
       'references/tooling.md': r'''# Tooling tests
 
 Use temporary roots and injected process/filesystem boundaries. Cover read-only
-commands, dry-run/apply separation, unknown config rejection, reviewed baseline
-fingerprints, stale plans, conflicts, recovery journals, symlink/path escape,
+commands, dry-run/apply separation, unknown config rejection, strict findings,
+expiring suppressions, stale plans, conflicts, recovery journals, symlink/path escape,
 permissions, Unicode and spaces, and idempotent managed-skill sync.
+
+Run consumer-tax fixtures for local through offline-full. Require zero manual
+assembly plumbing, no untyped/null capability slots, explicit dependency
+closure, bounded generated bytes, and recorded analyzer/build timing ratchets.
 
 Native setup tests remain offline by injecting download, archive, host, temp
 root, and atomic replacement. Cover supported mappings, pinned hashes, corrupt
@@ -1037,9 +1052,8 @@ outputs. Run `dartitect model check` in CI. Commit every
 `*.dartitect.g.dart` output and namespaced manifest so a clean
 checkout compiles without installing the CLI.
 
-Use `dartitect model migrate primary` to preview traditional-to-primary
-constructor edits. Only `--apply` may take the project lock, journal source
-bytes, revalidate, and commit or roll back the complete semantic edit.
+New model generators and analyzer quick fixes emit the required primary
+constructor syntax directly. The public CLI does not convert existing models.
 
 Never hand-edit or force-adopt a generated model. A digest conflict means the
 consumer bytes must be reviewed and ownership restored explicitly. A pending
@@ -1071,15 +1085,15 @@ concurrency, pending recovery, and stable JSON/SARIF/exit codes.
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-tooling
-description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, fleet, lints, semantic compiler, generators, native setup, and release gates. Use for shell/CI architecture tooling; MCP configuration and protocol work belongs to the MCP skill.
+description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, fleet, bounded OpenAPI contracts, lints, semantic compiler, generators, native setup, and release gates. Use for shell/CI architecture tooling; MCP configuration and protocol work belongs to the MCP skill.
 ---
 
 # Operate Dartitect tooling
 
 ## When to use
 
-Use this skill for CLI commands/services, stable config v1, verify/scanner/doctor policy,
-baselines, analyzer diagnostics, generators, Codex sync, native fixture setup,
+Use this skill for CLI commands/services, stable config v2, verify/scanner/doctor policy,
+bounded local OpenAPI contracts, analyzer diagnostics, generators, Codex sync, native fixture setup,
 or repository release gates.
 
 ## When not to use
@@ -1090,9 +1104,8 @@ opt-in MCP writes. Use runtime skills for application behavior.
 ## Invariants
 
 Inspection and `dartitect verify` are strictly read-only. Mutations preview by default or provide explicit
-dry-run/apply separation. Reject experimental versions and preserve unknown v1
-extension fields without interpreting them.
-Baselines cover reviewed existing debt only. Generators stage, validate, refuse
+dry-run/apply separation. Reject experimental versions and keep config blocks
+closed and typed. Generators stage, validate, refuse
 conflicts, and recover transactionally. Codex sync replaces only valid
 manifest-owned skills and preserves consumer-owned files/directories.
 Every reviewed project change binds only its semantic inputs in a sorted
@@ -1122,17 +1135,21 @@ generated-consumer behavior, and unchanged tracked files after verification.
       'references/cli-scan-and-lints.md': r'''# CLI, scan, and lints
 
 Keep `inspect`, `scan`, and ordinary `doctor` read-only. Deep doctor is explicit
-and bounded. Accept exactly stable config v1 with `native_strict`; reject
-experimental versions, preserve unknown v1 extension keys without interpreting
-them, never store credentials, and provide no compatibility migrator.
-The additive `features` section declares `online`, `cache`, `replica`, or
-`offline-full` plus consumer provider identifiers. `verify` checks declarative
+and bounded. Accept exactly stable config v2 with `native_strict`; reject
+experimental versions, unknown keys, credentials, and opaque plugin data.
+The target-aware `features` section declares `local`, `online`, `cache`,
+`replica`, or `offline-full` and refers to named provider blocks. `verify` checks declarative
 compatibility; behavioral guarantees remain contract-matrix evidence.
 
+`dartitect contracts check|sync` accepts only confined local OpenAPI 3.1 JSON
+or YAML and local refs. Keep network access, streaming, multipart, callbacks,
+webhooks, automatic security execution, and inferred domain mapping outside the
+generator. Preview before apply and classify additive versus breaking changes.
+
 Scan only declared roots using real path segments; ignore nested caches and
-generated code. A baseline fingerprints code, path, and evidence without line
-number. New findings fail, obsolete entries warn, and local suppressions require
-a reason. Keep CLI and official analyzer-plugin diagnostics semantically aligned
+generated code. Every finding fails strict scan. Local suppressions require an
+owner, reason, and expiry, and release doctor rejects all suppressions. Keep CLI
+and official analyzer-plugin diagnostics semantically aligned
 through the versioned true/false-positive corpus while respecting their
 different hosts and entrypoints. Prefer element/library identity when resolved.
 Sensitive metadata needs a recognized telemetry sink. Generated fallback needs
@@ -1238,7 +1255,7 @@ by configured names. Do not put credentials in command arguments or environment.
 The closed read surface provides inspect, verify, bounded scan, doctor, finding
 explanation, conformance auditing, and modeling migration previews. Generated resources expose
 package metadata, diagnostics, canonical English guides, and credential-free
-config v1. There is no free-form file resource. Results include structured
+config v2. There is no free-form file resource. Results include structured
 content plus compatible JSON text. Read tools/previews are annotated read-only;
 only apply is mutable/destructive.
 ''',

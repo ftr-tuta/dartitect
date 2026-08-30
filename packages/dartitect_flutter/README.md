@@ -34,9 +34,11 @@ Flutter is required on its supported platforms.
 
 A composition root constructs a ViewModel and injects application ports.
 Authoritative state flows down through native listenables; user intent travels
-up through methods or Commands. A `ViewModelHost` owns or borrows the ViewModel
-explicitly. One-shot UI reactions travel through a bounded `EffectChannel` and
-are consumed by one mounted `EffectListener`; replayable session truth uses
+up through methods or Commands. `DartitectViewModel` centrally owns commands
+and feature-local resources, forwards their notifications, and drains them in
+reverse order. A `ViewModelHost` owns or borrows the ViewModel explicitly.
+One-shot UI reactions travel through a bounded `EffectChannel` and are consumed
+by one mounted `EffectListener`; replayable session truth uses
 `SessionStateController` instead.
 
 In the reactive entrypoint, one `ReactiveOwner` owns typed values, computeds,
@@ -75,6 +77,8 @@ route-owned reactive paging graph.
 
 Thin entrypoint:
 
+- `DartitectViewModel`, `ownCommand`, `own`, and `forward` centralize
+  notification forwarding and idempotent reverse-order teardown.
 - `ViewModelHost.create`/`value`, `ViewModelStarter`,
   `ViewModelReassembler`, and `ViewModelDisposer` define ViewModel lifetime.
 - `Command0`, `Command1`, and `KeyedCommand1` expose reject, join, drop,
@@ -179,7 +183,7 @@ and `dartitect_testing` for deterministic harnesses. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.6` source candidate. Supported
+The workspace contains the `1.0.0-rc.8` source candidate. Supported
 Git consumption requires a matching tag and published GitHub Release plus the
 complete cohort coordinates in its notes. Without that Release, there is no
 supported consumption path. See the

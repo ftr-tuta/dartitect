@@ -1,86 +1,218 @@
 // GENERATED CODE - DO NOT EDIT BY HAND.
-// Managed by `dartitect wiring sync` from strict config v1.
-// ignore_for_file: prefer_initializing_formals
+// Managed by `dartitect wiring sync` from strict config v2.
 
 import 'dart:async';
 
 import 'package:dartitect/dartitect.dart';
 
-/// Direct constructor inputs for the PavedRoad feature graph.
-final class PavedRoadFeatureModule<R, V> implements AsyncDisposable {
-  PavedRoadFeatureModule({
-    required this.repository,
-    required this.persistenceProvider,
-    required this.transportProvider,
-    required this.resource,
-    required this.command,
-    required this.pagination,
-    required this.outbox,
-    required this.syncDataset,
-    required this.job,
-    required this.diagnostics,
-    required this.contractFixture,
-    required this.createViewModel,
-    required FutureOr<void> Function() dispose,
-  }) : _dispose = dispose;
+/// Capability-closed typed assembly for the PavedRoad feature graph.
+final class PavedRoadFeatureAssembly<
+  Repository extends Object,
+  Storage extends Object,
+  Transport extends Object,
+  LocalAuthority extends Object,
+  Pagination extends Object,
+  Diagnostics extends Object,
+  ViewModel extends Object
+>
+    implements AsyncDisposable {
+  PavedRoadFeatureAssembly._(this._graph, this.createViewModel);
 
-  final R repository;
-  final Object? persistenceProvider;
-  final Object transportProvider;
-  final Object? resource;
-  final Object? command;
-  final Object? pagination;
-  final Object? outbox;
-  final Object? syncDataset;
-  final Object? job;
-  final Object? diagnostics;
-  final Object contractFixture;
-  final V Function(R repository) createViewModel;
-  final FutureOr<void> Function() _dispose;
-  var _disposed = false;
+  /// Acquires exactly the owned or borrowed bindings selected by config v2.
+  static Future<
+    PavedRoadFeatureAssembly<
+      Repository,
+      Storage,
+      Transport,
+      LocalAuthority,
+      Pagination,
+      Diagnostics,
+      ViewModel
+    >
+  >
+  create<
+    Repository extends Object,
+    Storage extends Object,
+    Transport extends Object,
+    LocalAuthority extends Object,
+    Pagination extends Object,
+    Diagnostics extends Object,
+    ViewModel extends Object
+  >({
+    required DartitectAssemblyBinding<Repository> repository,
+    required DartitectAssemblyBinding<Storage> storage,
+    required DartitectAssemblyBinding<Transport> transport,
+    required DartitectAssemblyBinding<LocalAuthority> localAuthority,
+    required DartitectAssemblyBinding<Pagination> pagination,
+    required DartitectAssemblyBinding<Diagnostics> diagnostics,
+    required ViewModel Function(
+      PavedRoadFeatureAssembly<
+        Repository,
+        Storage,
+        Transport,
+        LocalAuthority,
+        Pagination,
+        Diagnostics,
+        ViewModel
+      >
+      assembly,
+    )
+    createViewModel,
+  }) async {
+    final graph = await ResourceTransaction.create(
+      (transaction) =>
+          _PavedRoadFeatureBindings<
+            Repository,
+            Storage,
+            Transport,
+            LocalAuthority,
+            Pagination,
+            Diagnostics
+          >(
+            repository: repository.bind(transaction),
+            storage: storage.bind(transaction),
+            transport: transport.bind(transaction),
+            localAuthority: localAuthority.bind(transaction),
+            pagination: pagination.bind(transaction),
+            diagnostics: diagnostics.bind(transaction),
+          ),
+      label: 'paved_road-feature-assembly',
+    );
+    return PavedRoadFeatureAssembly<
+      Repository,
+      Storage,
+      Transport,
+      LocalAuthority,
+      Pagination,
+      Diagnostics,
+      ViewModel
+    >._(graph, createViewModel);
+  }
 
-  V buildViewModel() {
-    if (_disposed) throw StateError('PavedRoad feature module is disposed.');
-    return createViewModel(repository);
+  final OwnedGraph<
+    _PavedRoadFeatureBindings<
+      Repository,
+      Storage,
+      Transport,
+      LocalAuthority,
+      Pagination,
+      Diagnostics
+    >
+  >
+  _graph;
+
+  Repository get repository => _graph.root.repository;
+  Storage get storage => _graph.root.storage;
+  Transport get transport => _graph.root.transport;
+  LocalAuthority get localAuthority => _graph.root.localAuthority;
+  Pagination get pagination => _graph.root.pagination;
+  Diagnostics get diagnostics => _graph.root.diagnostics;
+
+  /// Constructs presentation state from this exact typed assembly.
+  final ViewModel Function(
+    PavedRoadFeatureAssembly<
+      Repository,
+      Storage,
+      Transport,
+      LocalAuthority,
+      Pagination,
+      Diagnostics,
+      ViewModel
+    >
+    assembly,
+  )
+  createViewModel;
+
+  /// Whether every owned binding has completed teardown.
+  bool get isDisposed => _graph.isDisposed;
+
+  /// Creates the ViewModel while the assembly remains live.
+  ViewModel buildViewModel() {
+    if (!_graph.isAccepting) {
+      throw StateError('PavedRoad feature assembly is disposed.');
+    }
+    return createViewModel(this);
   }
 
   @override
-  Future<void> disposeAsync() async {
-    if (_disposed) return;
-    _disposed = true;
-    await _dispose();
-  }
+  Future<void> disposeAsync() => _graph.disposeAsync();
 }
+
+final class _PavedRoadFeatureBindings<
+  Repository extends Object,
+  Storage extends Object,
+  Transport extends Object,
+  LocalAuthority extends Object,
+  Pagination extends Object,
+  Diagnostics extends Object
+>({
+  required final Repository repository,
+  required final Storage storage,
+  required final Transport transport,
+  required final LocalAuthority localAuthority,
+  required final Pagination pagination,
+  required final Diagnostics diagnostics,
+});
 
 /// Closed generated facts used by composition and capability reporting.
 abstract final class PavedRoadFeatureWiring {
-  static const String profile = 'offline-full';
+  static const String profile = 'cache';
   static const String scope = 'application';
-  static const String persistenceNative = 'memory';
-  static const String persistenceWeb = 'memory';
-  static const String transport = 'custom:synthetic';
+  static const String storageContext = 'local_store';
+  static const String transport = 'synthetic';
+  static const List<String> targets = <String>[];
   static const String pagination = 'cursor';
   static const String diagnostics = 'full';
-  static const String scheduler = 'none';
-  static const List<String> headlessPlatforms = <String>[];
+  static const List<String> headlessTargets = <String>[];
   static const List<String> capabilities = <String>[];
 
   /// Creates the public application-host factory while keeping graph ownership
   /// and atomic publication inside generated code.
-  static BootstrapCoordinator<V> Function() application<R, V>({
-    required FutureOr<PavedRoadFeatureModule<R, V>> Function() createModule,
+  static BootstrapCoordinator<ViewModel> Function() application<
+    Repository extends Object,
+    Storage extends Object,
+    Transport extends Object,
+    LocalAuthority extends Object,
+    Pagination extends Object,
+    Diagnostics extends Object,
+    ViewModel extends Object
+  >({
+    required FutureOr<
+      PavedRoadFeatureAssembly<
+        Repository,
+        Storage,
+        Transport,
+        LocalAuthority,
+        Pagination,
+        Diagnostics,
+        ViewModel
+      >
+    >
+    Function()
+    createAssembly,
   }) =>
-      () => BootstrapCoordinator<V>(
+      () => BootstrapCoordinator<ViewModel>(
         stages: const <BootstrapStage>[],
         buildRoot: (transaction, context) async {
           context.throwIfUnavailable();
-          final module = transaction.own<PavedRoadFeatureModule<R, V>>(
-            await createModule(),
-            (value) => value.disposeAsync(),
-            label: 'paved_road-feature-module',
-          );
+          final assembly = transaction
+              .own<
+                PavedRoadFeatureAssembly<
+                  Repository,
+                  Storage,
+                  Transport,
+                  LocalAuthority,
+                  Pagination,
+                  Diagnostics,
+                  ViewModel
+                >
+              >(
+                await createAssembly(),
+                (value) => value.disposeAsync(),
+                label: 'paved_road-feature-assembly',
+              );
           context.throwIfUnavailable();
-          return module.buildViewModel();
+          return assembly.buildViewModel();
         },
       );
 }

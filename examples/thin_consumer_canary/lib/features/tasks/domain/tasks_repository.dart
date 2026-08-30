@@ -1,5 +1,7 @@
 import 'package:dartitect/dartitect.dart';
 
+import 'tasks_model.dart';
+
 /// Expected failure at the Tasks repository boundary.
 final class TasksFailure implements Exception {
   const TasksFailure(this.code);
@@ -9,5 +11,5 @@ final class TasksFailure implements Exception {
 
 /// Pure-Dart Tasks repository contract.
 abstract interface class TasksRepository {
-  Future<Result<List<String>, TasksFailure>> load();
+  Future<Result<List<Task>, TasksFailure>> load();
 }

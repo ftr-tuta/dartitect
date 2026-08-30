@@ -17,9 +17,10 @@ consumer currently needs a shared listenable surface.
 
 == Decision
 
-Dartitect 1.0 is Native Strict and greenfield-only. Existing projects may run a
-read-only conformance audit, but the project does not provide a runtime
-migration, compatibility shim, or coexistence workflow. Views receive
+Dartitect 1.0 is Native Strict and greenfield-only. The project does not provide
+an adoption audit, runtime migration, compatibility shim, legacy zone, or
+coexistence workflow for unrelated applications. Read-only conformance and
+versioned SDK upgrades apply only to projects created with Dartitect. Views receive
 ViewModels, dependencies use constructor injection, relevant writes use methods,
 Commands, or explicit transactions, and every state/resource boundary has one
 owner.
@@ -38,7 +39,7 @@ sufficient by itself.
 
 == Consequences
 
-`scan --no-baseline` remains the canonical greenfield conformance gate.
+`scan` remains the canonical greenfield conformance gate.
 Advisory alternatives, approved consumer boundaries, approved primitives,
 review-required packages, and Native Strict prohibitions remain distinct.
 Infrastructure providers and durable data protocols stay consumer-owned.

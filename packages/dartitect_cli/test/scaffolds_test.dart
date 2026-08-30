@@ -13,7 +13,7 @@ void main() {
       withoutDomain.map((operation) => operation.relativePath),
       containsAll(<String>[
         'lib/features/orders/application/orders_repository.dart',
-        'lib/features/orders/infrastructure/memory_orders_repository.dart',
+        'test/support/features/orders/memory_orders_repository.dart',
         'lib/features/orders/composition/orders_composition.dart',
         'lib/features/orders/presentation/orders_view_model.dart',
         'lib/features/orders/presentation/orders_view.dart',
@@ -34,12 +34,11 @@ void main() {
     expect(viewModel, contains('Command0<List<String>, OrdersFailure>'));
     expect(
       viewModel,
-      contains(
-        '// The async path calls ChangeNotifier.dispose after draining the command.\n'
-        '  // ignore: must_call_super\n'
-        '  void dispose() => unawaited(disposeAsync());',
-      ),
+      contains('final class OrdersViewModel(OrdersRepository repository)'),
     );
+    expect(viewModel, contains('loadCommand = ownCommand('));
+    expect(viewModel, isNot(contains('addListener')));
+    expect(viewModel, isNot(contains('void dispose()')));
     expect(viewModel, isNot(contains('BuildContext')));
     final view = withoutDomain
         .singleWhere(
@@ -47,21 +46,37 @@ void main() {
         )
         .content;
     expect(view, contains('ViewModelHost<OrdersViewModel>.create'));
+    expect(view, contains('required this.repository'));
     expect(view, isNot(contains('infrastructure/')));
+    expect(
+      withoutDomain
+          .where((operation) => operation.relativePath.startsWith('lib/'))
+          .map((operation) => operation.relativePath),
+      everyElement(isNot(anyOf(contains('/fake_'), contains('/memory_')))),
+    );
   });
 
-  test('four stable profiles render their required architectural seams', () {
+  test('five stable profiles render their required architectural seams', () {
     const factory = ScaffoldFactory(packageName: 'sample_app');
 
     final rendered = <FeatureProfile, List<FileGenerationOperation>>{
       for (final profile in FeatureProfile.values)
         profile: factory.profile(
-          FeatureScaffoldOptions(profile: profile, scope: FeatureScope.session),
+          FeatureScaffoldOptions(
+            profile: profile,
+            scope: FeatureScope.session,
+            storageContext: switch (profile) {
+              FeatureProfile.local || FeatureProfile.online => null,
+              _ => 'primary',
+            },
+            transport: profile == FeatureProfile.local ? null : 'api',
+          ),
           'catalog',
         ),
     };
 
     expect(FeatureProfile.values.map((value) => value.wireName), <String>[
+      'local',
       'online',
       'cache',
       'replica',
@@ -69,6 +84,10 @@ void main() {
     ]);
     for (final operations in rendered.values) {
       final paths = operations.map((operation) => operation.relativePath);
+      expect(
+        paths.where((path) => path.startsWith('lib/')),
+        everyElement(isNot(anyOf(contains('/fake_'), contains('/memory_')))),
+      );
       expect(paths, contains(endsWith('catalog_model.dart')));
       expect(paths, contains(endsWith('catalog_view_model.dart')));
       expect(paths, contains(endsWith('catalog_composition.dart')));
@@ -79,8 +98,10 @@ void main() {
                 operation.relativePath.endsWith('catalog_view_model.dart'),
           )
           .content;
-      expect(viewModel, contains('// ignore: must_call_super'));
-      expect(viewModel, contains('super.dispose();'));
+      expect(viewModel, contains('extends DartitectViewModel'));
+      expect(viewModel, contains('loadCommand = ownCommand('));
+      expect(viewModel, isNot(contains('addListener')));
+      expect(viewModel, isNot(contains('void dispose()')));
       final model = operations
           .singleWhere(
             (operation) =>
@@ -131,11 +152,10 @@ void main() {
       FeatureScaffoldOptions(
         profile: FeatureProfile.offlineFull,
         scope: FeatureScope.session,
-        persistenceNative: 'drift',
-        persistenceWeb: 'drift',
-        transport: 'dio',
+        storageContext: 'primary',
+        transport: 'api',
         pagination: FeaturePagination.cursor,
-        headlessPlatforms: const <DartitectPlatform>{DartitectPlatform.android},
+        headlessTargets: const <DartitectPlatform>{DartitectPlatform.android},
         diagnostics: FeatureDiagnosticsLevel.full,
         capabilities: const <DartitectCapability>{
           DartitectCapability.credentials,

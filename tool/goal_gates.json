@@ -12,7 +12,7 @@
   },
   "releaseStatus": "ACTIONS_READINESS_PENDING",
   "featurePolicy": "FEATURE_FREEZE",
-  "target": {"packageCount": 24, "entrypointCount": 29},
+  "target": {"packageCount": 24, "entrypointCount": 30},
   "statusPolicy": {
     "allowed": [
       "PLANNED", "IN_PROGRESS", "BLOCKED", "IMPLEMENTED_LOCAL",
@@ -121,7 +121,7 @@
       "coveredPaths": ["packages/*/pubspec.yaml", "packages/*/CHANGELOG.md", "VERSIONING.adoc", "docs/architecture/package-topology.adoc", "docs/release/publication-runbook.adoc", "tool/package_release_contract.json", "tool/check_package_release_contract.dart", "tool/check_package_release_contract_test.dart", "tool/release_audit.dart", "tool/verify.dart"],
       "acceptance": ["Freeze lockstep 1.0.x versioning, internal constraints, compatibility, topological publication, partial-failure recovery, and reproducible artifacts."],
       "gateCommands": ["dart run tool/check_package_topology.dart", "dart run tool/check_package_release_contract.dart", "dart test tool/check_package_release_contract_test.dart", "dart run tool/release_audit.dart --publish-dry-run"],
-      "evidence": ["VERSIONING.adoc", "docs/release/publication-runbook.adoc", "tool/package_release_contract.json", "tool/check_package_release_contract_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "evidence": ["VERSIONING.adoc", "docs/release/package-cohorts.adoc", "docs/release/publication-runbook.adoc", "tool/package_release_contract.json", "tool/generate_release_artifacts.dart", "tool/check_package_release_contract_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-10", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": ["V1S-06", "V1S-07", "V1S-08", "V1S-09"],
@@ -161,7 +161,7 @@
       "coveredPaths": ["README*", ".github/ISSUE_TEMPLATE/bug_report.yml", ".agents/skills/**/.dartitect-skill.json", "docs/**", "examples/**", "packages/**/README*", "packages/**/CHANGELOG.md", "packages/**/pubspec.yaml", "pubspec.yaml", "tool/api_surface.snapshot.json", "tool/sdk_inventory.json", "tool/package_release_contract.json", "tool/rc_candidate_contract.json", "tool/check_rc_candidate.dart", "tool/check_pub_dev_identity.dart", "tool/run_clean_clone_release_audit.dart", "tool/release_audit.dart", "tool/generate_supply_chain.dart"],
       "acceptance": ["Finish English docs, API review, examples, clean clone, dry-runs, Dartdoc, SBOM, licenses, advisories, ownership checks, changelogs, and the rc.N candidate."],
       "gateCommands": ["dart run tool/release_audit.dart --docs --publish-dry-run"],
-      "evidence": ["tool/rc_candidate_contract.json", "tool/check_rc_candidate.dart", "tool/check_pub_dev_identity.dart", "tool/run_clean_clone_release_audit.dart", "docs/release/pub-dev-identity-audit.adoc", "docs/release/public-api-review.adoc", "docs/release/sbom.spdx.json", "docs/release/dependency-licenses.json"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "evidence": ["tool/rc_candidate_contract.json", "tool/check_rc_candidate.dart", "tool/check_pub_dev_identity.dart", "tool/run_clean_clone_release_audit.dart", "docs/release/rc8-handoff.adoc", "docs/release/pub-dev-identity-audit.adoc", "docs/release/public-api-review.adoc", "docs/release/sbom.spdx.json", "docs/release/dependency-licenses.json"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-15", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-14"],

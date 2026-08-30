@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-rc.8
+
+- Prepare the package for the RC8 greenfield platform baseline and compatible post-1.0 publication cohorts.
+- Add target-aware feature profiles, typed project-local extension contracts,
+  credential generations/leases, and generation-fenced invalidation.
+
 ## 1.0.0-rc.6
 
 - Complete this package's lockstep RC6 vertical-platform contracts.

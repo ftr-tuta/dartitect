@@ -1,5 +1,9 @@
 import '../domain/tasks_model.dart';
 import 'tasks_remote_dto.dart';
 
-TasksModel mapTasksRemoteDto(TasksRemoteDto dto) =>
-    TasksModel(id: dto.id, labels: <String>[dto.label]);
+Task mapTasksRemoteDto(TasksRemoteDto dto) => Task(
+  id: dto.id,
+  title: dto.title,
+  version: dto.version,
+  status: TaskStatus.values.byName(dto.status),
+);

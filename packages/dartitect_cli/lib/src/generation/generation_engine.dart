@@ -9,7 +9,7 @@ import 'project_lock.dart';
 /// Independent compatibility versions used by generation and reporting.
 abstract final class DartitectGenerationVersions {
   /// Package release version; never used as generated ownership identity.
-  static const String release = '1.0.0-rc.6';
+  static const String release = '1.0.0-rc.8';
 
   /// Cross-component generation protocol version.
   static const int protocol = 1;
@@ -44,6 +44,12 @@ final class GenerationNamespace {
   /// Fully-generated Dartitect model parts.
   static const modeling = GenerationNamespace(
     'modeling',
+    fullyGeneratedSuffix: '.dartitect.g.dart',
+  );
+
+  /// Fully-generated clients and DTOs from a bounded local OpenAPI contract.
+  static const contracts = GenerationNamespace(
+    'contracts',
     fullyGeneratedSuffix: '.dartitect.g.dart',
   );
 
@@ -353,6 +359,8 @@ final class GenerationEngine {
     final reservedMismatch =
         namespace.name == GenerationNamespace.modeling.name &&
             namespace != GenerationNamespace.modeling ||
+        namespace.name == GenerationNamespace.contracts.name &&
+            namespace != GenerationNamespace.contracts ||
         namespace.name == GenerationNamespace.scaffolding.name &&
             namespace != GenerationNamespace.scaffolding;
     if (!RegExp(r'^[a-z][a-z0-9-]*$').hasMatch(namespace.name) ||

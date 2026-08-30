@@ -44,7 +44,7 @@ import 'package:flutter/widgets.dart';
       currentDirectory: root,
       stdoutSink: output,
       stderrSink: errors,
-    ).run(<String>['scan', '--sarif', '--no-baseline']);
+    ).run(<String>['scan', '--sarif']);
     final report = jsonDecode(output.toString()) as Map<String, Object?>;
     final runs = report['runs']! as List<Object?>;
     final run = runs.single! as Map<String, Object?>;
@@ -134,27 +134,105 @@ import 'package:flutter/widgets.dart';
     );
   });
 
-  test(
-    'baseline hides existing violations but no-baseline reveals them',
-    () async {
-      final root = await Directory.systemTemp.createTemp('dartitect-baseline-');
-      addTearDown(() => root.delete(recursive: true));
-      await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
-      await Directory('${root.path}/lib/domain').create(recursive: true);
-      await File('${root.path}/lib/domain/a.dart')
-          .writeAsString("import 'package:flutter/widgets.dart';\n");
-      final output = StringBuffer();
-      final runner = DartitectCliRunner(
+  test('release doctor rejects an explicit memory storage context', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-release-memory-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
+    await File('${root.path}/dartitect.json').writeAsString(
+      DartitectConfig(
+        suppressions: <DartitectSuppression>[
+          DartitectSuppression(
+            code: 'DT1001',
+            path: 'lib/domain/**',
+            reason: 'Temporary fixture exception',
+            owner: 'fixture',
+            expiresAt: DateTime.utc(2099, 12, 31),
+          ),
+        ],
+        targets: DartitectTargetsConfig(const <DartitectPlatform>[
+          DartitectPlatform.android,
+        ]),
+        storageContexts: <String, DartitectStorageContextConfig>{
+          'preview': DartitectStorageContextConfig(
+            provider: 'memory',
+            mode: DartitectStorageMode.memory,
+            targets: const <DartitectPlatform>[DartitectPlatform.android],
+          ),
+        },
+        features: DartitectFeaturesConfig(
+          declarations: <String, DartitectFeatureDeclaration>{
+            'notes': DartitectFeatureDeclaration(
+              profile: FeatureProfile.local,
+              scope: FeatureScope.application,
+              storageContext: 'preview',
+              dataset: DartitectStorageDatasetConfig.forFeature('notes'),
+              pagination: FeaturePagination.none,
+              diagnostics: FeatureDiagnosticsLevel.off,
+            ),
+          },
+        ),
+      ).encode(),
+    );
+    final output = StringBuffer();
+
+    expect(
+      await DartitectCliRunner(
         currentDirectory: root,
         stdoutSink: output,
         stderrSink: StringBuffer(),
-      );
+      ).run(<String>['doctor', '--release', '--json']),
+      1,
+    );
+    expect(output.toString(), contains('DT2103'));
+    expect(output.toString(), contains('DT2104'));
+    expect(output.toString(), contains('/storageContexts/preview/mode'));
+  });
 
-      expect(await runner.run(<String>['baseline', 'create']), 0);
-      expect(await runner.run(<String>['scan']), 0);
-      expect(await runner.run(<String>['scan', '--no-baseline']), 1);
-    },
-  );
+  test('release doctor rejects inline suppressions without config', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-release-suppression-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
+    final source = File('${root.path}/lib/domain/value.dart');
+    await source.parent.create(recursive: true);
+    await source.writeAsString('''
+// dartitect-ignore: DT1001 -- temporary release fixture
+import 'package:flutter/widgets.dart';
+''');
+    final output = StringBuffer();
+
+    expect(
+      await DartitectCliRunner(
+        currentDirectory: root,
+        stdoutSink: output,
+        stderrSink: StringBuffer(),
+      ).run(<String>['doctor', '--release', '--json']),
+      1,
+    );
+    expect(output.toString(), contains('DT2104'));
+  });
+
+  test('scan is always strict and baseline commands are rejected', () async {
+    final root = await Directory.systemTemp.createTemp('dartitect-baseline-');
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
+    await Directory('${root.path}/lib/domain').create(recursive: true);
+    await File('${root.path}/lib/domain/a.dart')
+        .writeAsString("import 'package:flutter/widgets.dart';\n");
+    final output = StringBuffer();
+    final runner = DartitectCliRunner(
+      currentDirectory: root,
+      stdoutSink: output,
+      stderrSink: StringBuffer(),
+    );
+
+    expect(await runner.run(<String>['scan']), 1);
+    expect(await runner.run(<String>['baseline', 'create']), 2);
+    expect(await runner.run(<String>['scan', '--no-baseline']), 2);
+  });
 
   test('codex sync is idempotent and preserves existing AGENTS.md', () async {
     final root = await Directory.systemTemp.createTemp('dartitect-codex-');
@@ -186,14 +264,77 @@ import 'package:flutter/widgets.dart';
     );
   }, timeout: const Timeout(Duration(minutes: 2)));
 
+  test('create app requires targets and rejects productive defaults', () async {
+    final root = await Directory.systemTemp.createTemp('dartitect-app-');
+    addTearDown(() => root.delete(recursive: true));
+    final output = StringBuffer();
+    final errors = StringBuffer();
+    final runner = DartitectCliRunner(
+      currentDirectory: root,
+      stdoutSink: output,
+      stderrSink: errors,
+    );
+
+    expect(
+      await runner.run(<String>['create', 'app', 'sample', '--dry-run']),
+      2,
+    );
+    expect(errors.toString(), contains('--targets is required'));
+    errors.clear();
+
+    expect(
+      await runner.run(<String>[
+        'create',
+        'app',
+        'sample',
+        '--targets=android,web',
+        '--transport=dio',
+        '--dry-run',
+      ]),
+      2,
+    );
+    expect(errors.toString(), contains('valid only for create feature'));
+    errors.clear();
+
+    expect(
+      await runner.run(<String>[
+        'create',
+        'app',
+        'sample',
+        '--targets=android,web',
+        '--dry-run',
+      ]),
+      0,
+    );
+    expect(output.toString(), contains('TARGETS android,web'));
+    expect(output.toString(), isNot(contains('EXAMPLE')));
+    expect(errors.toString(), isEmpty);
+  });
+
   test(
     'create feature accepts paved-road profile and provider options',
     () async {
       final root = await Directory.systemTemp.createTemp('dartitect-profile-');
       addTearDown(() => root.delete(recursive: true));
       await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
-      await File('${root.path}/dartitect.json')
-          .writeAsString(DartitectConfig(scheduler: 'workmanager').encode());
+      await File('${root.path}/dartitect.json').writeAsString(
+        DartitectConfig(
+          storageContexts: <String, DartitectStorageContextConfig>{
+            'primary': DartitectStorageContextConfig(
+              provider: 'drift',
+              mode: DartitectStorageMode.durable,
+              targets: const <DartitectPlatform>[DartitectPlatform.android],
+            ),
+          },
+          transports: <String, DartitectTransportConfig>{
+            'api': DartitectTransportConfig(
+              provider: 'dio',
+              targets: const <DartitectPlatform>[DartitectPlatform.android],
+            ),
+          },
+          scheduler: DartitectSchedulerConfig(provider: 'workmanager'),
+        ).encode(),
+      );
       final output = StringBuffer();
       final errors = StringBuffer();
       final runner = DartitectCliRunner(
@@ -207,11 +348,10 @@ import 'package:flutter/widgets.dart';
         'feature',
         'orders',
         '--profile=offline-full',
-        '--persistence-native=drift',
-        '--persistence-web=drift',
-        '--transport=dio',
+        '--storage-context=primary',
+        '--transport=api',
         '--pagination=cursor',
-        '--headless-sync',
+        '--headless-targets=android',
         '--diagnostics=full',
         '--dry-run',
       ]);
@@ -247,9 +387,8 @@ import 'package:flutter/widgets.dart';
           'feature',
           'orders',
           '--profile=online',
-          '--persistence-native=drift',
-          '--persistence-web=drift',
-          '--transport=dio',
+          '--storage-context=primary',
+          '--transport=api',
           '--dry-run',
         ]),
         2,
@@ -257,4 +396,63 @@ import 'package:flutter/widgets.dart';
       expect(errors.toString(), contains('online profiles require'));
     },
   );
+
+  test('contracts check and sync use stable preview/apply semantics', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-contract-cli-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    await File('${root.path}/api.json').writeAsString(jsonEncode(_cliContract));
+    final output = StringBuffer();
+    final errors = StringBuffer();
+    final runner = DartitectCliRunner(
+      currentDirectory: root,
+      stdoutSink: output,
+      stderrSink: errors,
+    );
+
+    expect(
+      await runner.run(<String>['contracts', 'sync', 'api.json', '--json']),
+      1,
+    );
+    expect(jsonDecode(output.toString()), containsPair('applied', false));
+    output.clear();
+
+    expect(
+      await runner.run(<String>[
+        'contracts',
+        'sync',
+        'api.json',
+        '--apply',
+        '--json',
+      ]),
+      0,
+    );
+    expect(jsonDecode(output.toString()), containsPair('applied', true));
+    output.clear();
+
+    expect(
+      await runner.run(<String>['contracts', 'check', 'api.json', '--json']),
+      0,
+    );
+    expect(jsonDecode(output.toString()), containsPair('fresh', true));
+    expect(errors.toString(), isEmpty);
+  });
 }
+
+const _cliContract = <String, Object?>{
+  'openapi': '3.1.0',
+  'info': <String, Object?>{'title': 'CLI contract', 'version': '1'},
+  'paths': <String, Object?>{},
+  'components': <String, Object?>{
+    'schemas': <String, Object?>{
+      'Message': <String, Object?>{
+        'type': 'object',
+        'required': <Object?>['value'],
+        'properties': <String, Object?>{
+          'value': <String, Object?>{'type': 'string'},
+        },
+      },
+    },
+  },
+};

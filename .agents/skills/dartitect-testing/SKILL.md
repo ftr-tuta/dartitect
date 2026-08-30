@@ -30,7 +30,11 @@ cancellation/concurrency, lifecycle temperature, disposal, and provider failure.
 Choose deterministic fakes for policy and real fixtures for integration.
 For a public feature profile, run the matching `FeatureContractMatrix.online`,
 `.cache`, `.replica`, or `.offlineFull`; each required row gets a fresh typed
-fixture and returns a framework-neutral result with disposal evidence.
+runtime driver. The matrix owns faults, event journal, observed store,
+acknowledgements, graph registrations, and `ResourceCensus`; fixtures never
+return facts or a residual map. Derive success, expected failure, crash,
+cancellation, concurrency, restart, and teardown evidence from those observed
+instruments.
 
 Read [references/runtime-and-reactive.md](references/runtime-and-reactive.md),
 [references/sync.md](references/sync.md),
@@ -50,5 +54,5 @@ Before adding a capability, answer:
 
 > É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
 
-All three answers must be “yes”. Otherwise the capability belongs in
-`softgran_*`, `agrox_*`, or the application, not in a Dartitect package.
+All three answers must be “yes”. Otherwise reusable infrastructure belongs in
+a typed project-local extension and business behavior stays in the application.

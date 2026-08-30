@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:dartitect/dartitect.dart';
 
+import 'resource_census.dart';
+
 /// Stable behavioral cases required by one or more feature profiles.
 enum FeatureContract {
   /// Successful typed remote read.
@@ -10,8 +12,17 @@ enum FeatureContract {
   /// Expected remote failure remains distinct from a crash.
   expectedFailure,
 
+  /// Unexpected crashes retain their identity and stack.
+  unexpectedCrash,
+
   /// Cooperative cancellation stops publication.
   cancellation,
+
+  /// Two admitted operations complete without hidden global serialization.
+  concurrency,
+
+  /// A fresh graph reopens durable state.
+  restart,
 
   /// Teardown leaves no owned resources.
   zeroResiduals,
@@ -21,9 +32,6 @@ enum FeatureContract {
 
   /// Remote refresh completes only after local observation.
   refreshObservation,
-
-  /// Restart preserves durable cached state.
-  cacheRestart,
 
   /// Checkpoint advances only after durable application.
   durableCheckpoint,
@@ -44,188 +52,783 @@ enum FeatureContract {
   conflictRecovery,
 }
 
-/// Closed observable facts accepted as contract evidence.
+/// Closed facts derived by the matrix from observed runtime evidence.
 enum FeatureContractFact {
-  /// A typed success was returned.
+  /// A typed success event was observed.
   typedSuccess,
 
-  /// The successful value reached the declared authority.
+  /// The declared authority published a value.
   valuePublished,
 
-  /// An expected typed failure was observed.
+  /// A typed expected failure event was observed.
   typedFailure,
 
-  /// No unexpected crash was translated into an expected failure.
+  /// Expected failure/crash identity remained distinct.
   crashPreserved,
 
-  /// Cancellation reached the admitted operation.
+  /// Cooperative cancellation reached the operation.
   cancellationObserved,
 
-  /// Cancelled or stale work did not publish.
+  /// Cancelled work did not publish.
   stalePublicationRejected,
 
-  /// Presentation read only the local authority.
+  /// Both concurrent admissions completed and drained.
+  concurrentExecutionsCompleted,
+
+  /// Presentation read the local snapshot.
   localSnapshotObserved,
 
-  /// Remote data committed through the local transaction.
+  /// Remote input committed locally.
   remoteCommittedLocally,
 
-  /// Refresh waited for the exact local revision.
+  /// The exact committed revision was observed.
   exactRevisionObserved,
 
-  /// A fresh graph reopened durable state.
+  /// Restart created another application graph.
   freshGraphCreated,
 
-  /// Durable state survived restart.
+  /// The new graph read prior durable state.
   durableStateRecovered,
 
-  /// Dataset data committed before its checkpoint.
+  /// Dataset coverage committed before checkpointing.
   dataCommittedBeforeCheckpoint,
 
-  /// The checkpoint was persisted durably.
+  /// Checkpoint matches applied coverage.
   checkpointPersisted,
 
-  /// A stale fencing token was rejected atomically.
+  /// A stale fencing token was rejected.
   staleFencingRejected,
 
-  /// The current fencing token committed atomically.
+  /// A current fencing token committed.
   currentFencingCommitted,
 
-  /// A fresh headless graph was created per admitted execution.
+  /// Headless execution opened its own graph.
   freshHeadlessGraph,
 
-  /// Duplicate headless input was bounded or deduplicated.
+  /// Duplicate input shared bounded headless work.
   duplicateHeadlessRequestHandled,
 
-  /// The headless graph drained before close.
+  /// Headless acknowledgement preceded graph drain.
   headlessGraphDrained,
 
-  /// Domain mutation and outbox enqueue committed atomically.
+  /// Domain and outbox share one revision.
   domainAndOutboxAtomic,
 
-  /// Failed local mutation and enqueue rolled back together.
+  /// A failed atomic transaction changed neither side.
   atomicRollback,
 
-  /// Uncertain delivery was persisted.
+  /// Uncertain delivery state persisted.
   uncertaintyPersisted,
 
-  /// Uncertain delivery was not retried automatically.
+  /// No second automatic delivery attempt occurred.
   uncertainRetryStopped,
 
-  /// Conflict state was persisted durably.
+  /// Conflict state persisted.
   conflictPersisted,
 
-  /// An explicit consumer conflict policy decided recovery.
+  /// Explicit consumer policy resolved the conflict.
   explicitConflictPolicy,
 }
 
-/// Typed, closed evidence returned after one fixture stimulus.
-final class FeatureContractObservation {
-  /// Creates an immutable observation for [contract].
-  FeatureContractObservation({
-    required this.contract,
-    required Iterable<FeatureContractFact> facts,
-  }) : facts = Set<FeatureContractFact>.unmodifiable(facts);
+/// Runtime events produced only by concrete observed harness operations.
+enum FeatureRuntimeEventKind {
+  /// An application graph opened.
+  graphOpened,
 
-  /// Contract exercised by the stimulus.
-  final FeatureContract contract;
+  /// An application graph closed.
+  graphClosed,
 
-  /// Closed observable facts produced by the fixture.
-  final Set<FeatureContractFact> facts;
+  /// A remote operation returned typed success.
+  remoteSucceeded,
+
+  /// A typed expected failure occurred.
+  expectedFailure,
+
+  /// The matrix caught an unexpected crash.
+  crashObserved,
+
+  /// The matrix caught cooperative cancellation.
+  cancellationObserved,
+
+  /// The authority published a revision.
+  publication,
+
+  /// One concurrent operation began.
+  operationStarted,
+
+  /// One concurrent operation completed.
+  operationCompleted,
+
+  /// The local authority was read.
+  localSnapshotRead,
+
+  /// Remote input committed locally.
+  remoteCommitted,
+
+  /// A local revision was observed.
+  revisionObserved,
+
+  /// Durable restart state was written.
+  durableWritten,
+
+  /// Durable restart state was read.
+  durableRead,
+
+  /// Dataset coverage was applied.
+  datasetApplied,
+
+  /// A checkpoint was persisted.
+  checkpointWritten,
+
+  /// A stale fence was rejected.
+  staleFenceRejected,
+
+  /// A current fence committed.
+  currentFenceCommitted,
+
+  /// A headless graph opened.
+  headlessGraphOpened,
+
+  /// A headless graph closed.
+  headlessGraphClosed,
+
+  /// Domain and outbox committed atomically.
+  domainOutboxCommitted,
+
+  /// Domain and outbox rolled back atomically.
+  domainOutboxRolledBack,
+
+  /// Delivery was attempted.
+  deliveryAttempted,
+
+  /// Uncertainty was persisted.
+  uncertaintyPersisted,
+
+  /// A conflict was persisted.
+  conflictPersisted,
+
+  /// Explicit policy resolved a conflict.
+  conflictResolved,
 }
 
-/// Framework-neutral residual-resource census captured after disposal.
-final class FeatureResidualCensus {
-  /// Creates a census from non-negative resource counts.
-  FeatureResidualCensus(Map<String, int> counts)
-    : counts = Map<String, int>.unmodifiable(counts) {
-    for (final entry in this.counts.entries) {
-      if (entry.key.trim().isEmpty || entry.value < 0) {
-        throw ArgumentError.value(counts, 'counts', 'Invalid census entry.');
-      }
+/// One payload-bounded observed event.
+final class FeatureRuntimeEvent {
+  /// Creates one observed event.
+  const FeatureRuntimeEvent({
+    required this.kind,
+    required this.sequence,
+    this.revision,
+    this.identifier,
+    this.graphId,
+  });
+
+  /// Event category.
+  final FeatureRuntimeEventKind kind;
+
+  /// Monotonic row-local sequence.
+  final int sequence;
+
+  /// Optional store revision or fencing token.
+  final int? revision;
+
+  /// Optional bounded operation/request identifier.
+  final String? identifier;
+
+  /// Optional matrix-owned graph identifier.
+  final int? graphId;
+}
+
+/// Headless acknowledgement kinds observed by the matrix.
+enum FeatureHeadlessAckKind {
+  /// A new request was admitted.
+  accepted,
+
+  /// A duplicate was routed to retained work.
+  duplicate,
+
+  /// Admitted work reached a terminal acknowledgement.
+  terminal,
+}
+
+/// One bounded headless acknowledgement.
+final class FeatureHeadlessAcknowledgement {
+  /// Creates one observed acknowledgement.
+  const FeatureHeadlessAcknowledgement({
+    required this.kind,
+    required this.requestId,
+    required this.graphId,
+  });
+
+  /// Acknowledgement category.
+  final FeatureHeadlessAckKind kind;
+
+  /// Bounded consumer request identifier.
+  final String requestId;
+
+  /// Matrix-owned graph identifier.
+  final int graphId;
+}
+
+/// Typed injected crash used to prove identity preservation.
+final class FeatureInjectedCrash implements Exception {
+  FeatureInjectedCrash._(this.generation);
+
+  /// Fault-controller generation that created this exact crash.
+  final int generation;
+}
+
+/// Matrix-owned deterministic fault controller supplied to the driver.
+final class FeatureFaultController {
+  bool _expectedFailure = false;
+  FeatureInjectedCrash? _crash;
+  int _generation = 0;
+
+  /// Whether the current row requested an expected failure.
+  bool get expectedFailureArmed => _expectedFailure;
+
+  /// Exact crash instance armed for the row, when present.
+  FeatureInjectedCrash? get armedCrash => _crash;
+
+  void _armExpectedFailure() => _expectedFailure = true;
+
+  void _armCrash() {
+    _generation += 1;
+    _crash = FeatureInjectedCrash._(_generation);
+  }
+
+  /// Consumes the expected-failure request once.
+  bool takeExpectedFailure() {
+    final armed = _expectedFailure;
+    _expectedFailure = false;
+    return armed;
+  }
+
+  /// Throws the exact matrix-owned crash when armed.
+  void throwIfCrashArmed() {
+    final crash = _crash;
+    _crash = null;
+    if (crash != null) throw crash;
+  }
+}
+
+/// Exact store counters captured before and after a stimulus.
+final class FeatureObservedStoreSnapshot {
+  /// Creates one immutable store snapshot.
+  const FeatureObservedStoreSnapshot({
+    required this.revision,
+    required this.publications,
+    required this.durableWrites,
+    required this.durableReads,
+    required this.dataRevision,
+    required this.checkpointRevision,
+    required this.staleFenceRejections,
+    required this.currentFenceCommits,
+    required this.domainRevision,
+    required this.outboxRevision,
+    required this.atomicRollbacks,
+    required this.deliveryAttempts,
+    required this.uncertainOperations,
+    required this.persistedConflicts,
+    required this.resolvedConflicts,
+    required this.operationsStarted,
+    required this.operationsCompleted,
+    required this.activeOperations,
+  });
+
+  /// Current local revision.
+  final int revision;
+
+  /// Authority publication count.
+  final int publications;
+
+  /// Durable write count.
+  final int durableWrites;
+
+  /// Durable read count.
+  final int durableReads;
+
+  /// Latest locally applied dataset revision.
+  final int dataRevision;
+
+  /// Latest persisted checkpoint revision.
+  final int checkpointRevision;
+
+  /// Atomically rejected stale fence count.
+  final int staleFenceRejections;
+
+  /// Current fence commit count.
+  final int currentFenceCommits;
+
+  /// Domain transaction revision.
+  final int domainRevision;
+
+  /// Outbox transaction revision.
+  final int outboxRevision;
+
+  /// Atomic rollback count.
+  final int atomicRollbacks;
+
+  /// Actual delivery attempt count.
+  final int deliveryAttempts;
+
+  /// Persisted uncertain-operation count.
+  final int uncertainOperations;
+
+  /// Persisted conflict count.
+  final int persistedConflicts;
+
+  /// Explicitly resolved conflict count.
+  final int resolvedConflicts;
+
+  /// Admitted operation count.
+  final int operationsStarted;
+
+  /// Completed operation count.
+  final int operationsCompleted;
+
+  /// Currently active operation count.
+  final int activeOperations;
+}
+
+/// Matrix-owned observable store used by real fixture drivers.
+final class FeatureObservedStore {
+  FeatureObservedStore._(this._record);
+
+  final void Function(
+    FeatureRuntimeEventKind kind, {
+    int? revision,
+    String? identifier,
+    int? graphId,
+  })
+  _record;
+
+  int _revision = 0;
+  int _publications = 0;
+  int _durableWrites = 0;
+  int _durableReads = 0;
+  int _dataRevision = 0;
+  int _checkpointRevision = 0;
+  int _staleFenceRejections = 0;
+  int _currentFenceCommits = 0;
+  int _fencingToken = 0;
+  int _domainRevision = 0;
+  int _outboxRevision = 0;
+  int _atomicRollbacks = 0;
+  int _deliveryAttempts = 0;
+  int _uncertainOperations = 0;
+  int _persistedConflicts = 0;
+  int _resolvedConflicts = 0;
+  int _operationsStarted = 0;
+  int _operationsCompleted = 0;
+  int _activeOperations = 0;
+
+  /// Whether a restart seed currently exists.
+  bool get hasDurableState => _durableWrites > 0;
+
+  /// Current local revision.
+  int get revision => _revision;
+
+  /// Current immutable counters.
+  FeatureObservedStoreSnapshot snapshot() => FeatureObservedStoreSnapshot(
+    revision: _revision,
+    publications: _publications,
+    durableWrites: _durableWrites,
+    durableReads: _durableReads,
+    dataRevision: _dataRevision,
+    checkpointRevision: _checkpointRevision,
+    staleFenceRejections: _staleFenceRejections,
+    currentFenceCommits: _currentFenceCommits,
+    domainRevision: _domainRevision,
+    outboxRevision: _outboxRevision,
+    atomicRollbacks: _atomicRollbacks,
+    deliveryAttempts: _deliveryAttempts,
+    uncertainOperations: _uncertainOperations,
+    persistedConflicts: _persistedConflicts,
+    resolvedConflicts: _resolvedConflicts,
+    operationsStarted: _operationsStarted,
+    operationsCompleted: _operationsCompleted,
+    activeOperations: _activeOperations,
+  );
+
+  /// Records a typed remote success without publishing it implicitly.
+  void remoteSucceeded() => _record(FeatureRuntimeEventKind.remoteSucceeded);
+
+  /// Records one expected, typed boundary failure.
+  void expectedFailure() => _record(FeatureRuntimeEventKind.expectedFailure);
+
+  /// Publishes one value through the declared authority.
+  void publish() {
+    _publications += 1;
+    _record(FeatureRuntimeEventKind.publication, revision: _revision);
+  }
+
+  /// Begins one observed admitted operation.
+  FeatureOperationLease beginOperation() {
+    _operationsStarted += 1;
+    _activeOperations += 1;
+    _record(FeatureRuntimeEventKind.operationStarted);
+    return FeatureOperationLease._(this);
+  }
+
+  void _completeOperation() {
+    if (_activeOperations <= 0) throw StateError('Operation underflow.');
+    _activeOperations -= 1;
+    _operationsCompleted += 1;
+    _record(FeatureRuntimeEventKind.operationCompleted);
+  }
+
+  /// Reads the local snapshot used by presentation.
+  void readLocalSnapshot() =>
+      _record(FeatureRuntimeEventKind.localSnapshotRead, revision: _revision);
+
+  /// Commits remote input locally and returns its new revision.
+  int commitRemoteLocally() {
+    _revision += 1;
+    _record(FeatureRuntimeEventKind.remoteCommitted, revision: _revision);
+    return _revision;
+  }
+
+  /// Observes an exact local revision.
+  void observeRevision(int revision) {
+    if (revision < 0) {
+      throw ArgumentError.value(revision, 'revision', 'Must not be negative.');
+    }
+    _record(FeatureRuntimeEventKind.revisionObserved, revision: revision);
+  }
+
+  /// Writes durable state used by a later fresh graph.
+  void writeDurableState() {
+    _durableWrites += 1;
+    _revision += 1;
+    _record(FeatureRuntimeEventKind.durableWritten, revision: _revision);
+  }
+
+  /// Reads a previously written durable value.
+  void readDurableState() {
+    if (!hasDurableState) throw StateError('No durable state exists.');
+    _durableReads += 1;
+    _record(FeatureRuntimeEventKind.durableRead, revision: _revision);
+  }
+
+  /// Applies one dataset revision locally.
+  int applyDataset() {
+    _dataRevision += 1;
+    _record(FeatureRuntimeEventKind.datasetApplied, revision: _dataRevision);
+    return _dataRevision;
+  }
+
+  /// Persists a checkpoint only for already-applied coverage.
+  void writeCheckpoint(int revision) {
+    if (revision <= _checkpointRevision || revision > _dataRevision) {
+      throw StateError('Checkpoint does not match applied local coverage.');
+    }
+    _checkpointRevision = revision;
+    _record(FeatureRuntimeEventKind.checkpointWritten, revision: revision);
+  }
+
+  /// Observes an atomically rejected stale fencing token.
+  void rejectStaleFence(int token) {
+    if (token >= _fencingToken) throw StateError('Fence is not stale.');
+    _staleFenceRejections += 1;
+    _record(FeatureRuntimeEventKind.staleFenceRejected, revision: token);
+  }
+
+  /// Commits a current monotonic fencing token.
+  void commitCurrentFence(int token) {
+    if (token <= _fencingToken) throw StateError('Fence is not current.');
+    _fencingToken = token;
+    _currentFenceCommits += 1;
+    _record(FeatureRuntimeEventKind.currentFenceCommitted, revision: token);
+  }
+
+  /// Commits domain and outbox revisions in one observed transaction.
+  void commitDomainAndOutbox(String operationId) {
+    _validateIdentifier(operationId, 'operationId');
+    final revision = _domainRevision + 1;
+    _domainRevision = revision;
+    _outboxRevision = revision;
+    _record(
+      FeatureRuntimeEventKind.domainOutboxCommitted,
+      revision: revision,
+      identifier: operationId,
+    );
+  }
+
+  /// Proves the failed transaction changed neither side.
+  void rollbackDomainAndOutbox() {
+    _atomicRollbacks += 1;
+    _record(FeatureRuntimeEventKind.domainOutboxRolledBack);
+  }
+
+  /// Records one actual delivery attempt for an operation.
+  void attemptDelivery(String operationId) {
+    _validateIdentifier(operationId, 'operationId');
+    _deliveryAttempts += 1;
+    _record(FeatureRuntimeEventKind.deliveryAttempted, identifier: operationId);
+  }
+
+  /// Persists uncertainty for the exact attempted operation.
+  void persistUncertainty(String operationId) {
+    _validateIdentifier(operationId, 'operationId');
+    _uncertainOperations += 1;
+    _record(
+      FeatureRuntimeEventKind.uncertaintyPersisted,
+      identifier: operationId,
+    );
+  }
+
+  /// Persists a conflict awaiting explicit policy.
+  void persistConflict(String operationId) {
+    _validateIdentifier(operationId, 'operationId');
+    _persistedConflicts += 1;
+    _record(FeatureRuntimeEventKind.conflictPersisted, identifier: operationId);
+  }
+
+  /// Applies explicit consumer conflict policy.
+  void resolveConflict(String operationId) {
+    _validateIdentifier(operationId, 'operationId');
+    if (_persistedConflicts <= _resolvedConflicts) {
+      throw StateError('No persisted conflict is awaiting resolution.');
+    }
+    _resolvedConflicts += 1;
+    _record(FeatureRuntimeEventKind.conflictResolved, identifier: operationId);
+  }
+
+  static void _validateIdentifier(String value, String name) {
+    if (value.trim().isEmpty) {
+      throw ArgumentError.value(value, name, 'Must not be blank.');
+    }
+  }
+}
+
+/// Exact-once observed operation completion.
+final class FeatureOperationLease implements Disposable {
+  FeatureOperationLease._(this._store);
+
+  FeatureObservedStore? _store;
+
+  @override
+  void dispose() {
+    final store = _store;
+    _store = null;
+    store?._completeOperation();
+  }
+}
+
+/// Matrix-owned observed runtime, store, fault, acknowledgement, and census.
+final class FeatureContractHarness {
+  /// Creates an empty row harness.
+  FeatureContractHarness()
+    : resources = ResourceCensus(),
+      faults = FeatureFaultController() {
+    store = FeatureObservedStore._(_record);
+  }
+
+  /// Real resource census owned by the matrix, never supplied by a fixture.
+  final ResourceCensus resources;
+
+  /// Deterministic matrix-owned fault controller.
+  final FeatureFaultController faults;
+
+  /// Observed store whose writes are inspected after the stimulus.
+  late final FeatureObservedStore store;
+
+  final List<FeatureRuntimeEvent> _events = <FeatureRuntimeEvent>[];
+  final List<FeatureHeadlessAcknowledgement> _acknowledgements =
+      <FeatureHeadlessAcknowledgement>[];
+  int _sequence = 0;
+  int _nextGraphId = 0;
+
+  /// Immutable ordered observed events.
+  List<FeatureRuntimeEvent> get events =>
+      List<FeatureRuntimeEvent>.unmodifiable(_events);
+
+  /// Immutable headless acknowledgements.
+  List<FeatureHeadlessAcknowledgement> get acknowledgements =>
+      List<FeatureHeadlessAcknowledgement>.unmodifiable(_acknowledgements);
+
+  /// Opens a matrix-owned application graph registration.
+  FeatureGraphLease openGraph() => _openGraph(headless: false);
+
+  /// Opens a matrix-owned headless graph registration.
+  FeatureGraphLease openHeadlessGraph() => _openGraph(headless: true);
+
+  FeatureGraphLease _openGraph({required bool headless}) {
+    _nextGraphId += 1;
+    final graphId = _nextGraphId;
+    final kind = headless ? 'headlessGraphs' : 'graphs';
+    final lease = resources.acquire(kind);
+    _record(
+      headless
+          ? FeatureRuntimeEventKind.headlessGraphOpened
+          : FeatureRuntimeEventKind.graphOpened,
+      graphId: graphId,
+    );
+    return FeatureGraphLease._(this, graphId, headless, lease);
+  }
+
+  /// Records an accepted headless request against an open graph.
+  void acceptHeadless(String requestId, int graphId) {
+    _validateAck(requestId, graphId);
+    _acknowledgements.add(
+      FeatureHeadlessAcknowledgement(
+        kind: FeatureHeadlessAckKind.accepted,
+        requestId: requestId,
+        graphId: graphId,
+      ),
+    );
+  }
+
+  /// Records a duplicate request routed to the retained execution.
+  void duplicateHeadless(String requestId, int graphId) {
+    _validateAck(requestId, graphId);
+    _acknowledgements.add(
+      FeatureHeadlessAcknowledgement(
+        kind: FeatureHeadlessAckKind.duplicate,
+        requestId: requestId,
+        graphId: graphId,
+      ),
+    );
+  }
+
+  /// Records terminal acknowledgement before graph drain.
+  void completeHeadless(String requestId, int graphId) {
+    _validateAck(requestId, graphId);
+    _acknowledgements.add(
+      FeatureHeadlessAcknowledgement(
+        kind: FeatureHeadlessAckKind.terminal,
+        requestId: requestId,
+        graphId: graphId,
+      ),
+    );
+  }
+
+  void _validateAck(String requestId, int graphId) {
+    if (requestId.trim().isEmpty || graphId <= 0) {
+      throw ArgumentError('Headless acknowledgement is invalid.');
     }
   }
 
-  /// A canonical empty census.
-  const FeatureResidualCensus.empty() : counts = const <String, int>{};
+  void _record(
+    FeatureRuntimeEventKind kind, {
+    int? revision,
+    String? identifier,
+    int? graphId,
+  }) {
+    _sequence += 1;
+    _events.add(
+      FeatureRuntimeEvent(
+        kind: kind,
+        sequence: _sequence,
+        revision: revision,
+        identifier: identifier,
+        graphId: graphId,
+      ),
+    );
+  }
 
-  /// Static resource category to residual count.
-  final Map<String, int> counts;
+  void _recordCrash() => _record(FeatureRuntimeEventKind.crashObserved);
 
-  /// Whether every owned resource was released.
-  bool get isEmpty => counts.values.every((count) => count == 0);
+  void _recordCancellation() =>
+      _record(FeatureRuntimeEventKind.cancellationObserved);
 
-  /// Total residual resources.
-  int get total => counts.values.fold(0, (total, count) => total + count);
+  void _closeGraph(int graphId, bool headless) => _record(
+    headless
+        ? FeatureRuntimeEventKind.headlessGraphClosed
+        : FeatureRuntimeEventKind.graphClosed,
+    graphId: graphId,
+  );
 }
 
-/// Typed online-profile stimulus and observation fixture.
-abstract interface class OnlineFeatureContractFixture
+/// Exact-once graph registration around one fixture runtime.
+final class FeatureGraphLease implements Disposable {
+  FeatureGraphLease._(this._owner, this.graphId, this.headless, this._lease);
+
+  FeatureContractHarness? _owner;
+  CensusLease? _lease;
+
+  /// Matrix-assigned graph identifier.
+  final int graphId;
+
+  /// Whether this represents an inner headless graph.
+  final bool headless;
+
+  @override
+  void dispose() {
+    final owner = _owner;
+    _owner = null;
+    if (owner == null) return;
+    _lease?.dispose();
+    _lease = null;
+    owner._closeGraph(graphId, headless);
+  }
+}
+
+/// Driver receives stimuli and acts on real matrix-owned harness primitives.
+/// It cannot return facts, observations, or a residual-resource map.
+abstract interface class OnlineFeatureContractDriver
     implements AsyncDisposable {
-  /// Exercises a successful typed remote read.
-  FutureOr<FeatureContractObservation> stimulateOnlineRead();
-
-  /// Exercises an expected typed remote failure.
-  FutureOr<FeatureContractObservation> stimulateExpectedFailure();
-
-  /// Exercises cooperative cancellation and its publication fence.
-  FutureOr<FeatureContractObservation> stimulateCancellation();
-
-  /// Captures residual resources after [disposeAsync] completes.
-  FeatureResidualCensus get residualCensus;
+  /// Executes [contract] using [cancellation] and the injected row harness.
+  FutureOr<void> stimulate(
+    FeatureContract contract,
+    CancellationSignal cancellation,
+  );
 }
 
-/// Additional cache-profile stimuli.
-abstract interface class CacheFeatureContractFixture
-    implements OnlineFeatureContractFixture {
-  /// Exercises presentation backed only by local authority.
-  FutureOr<FeatureContractObservation> stimulateLocalAuthority();
+/// Marker for cache-profile drivers.
+abstract interface class CacheFeatureContractDriver
+    implements OnlineFeatureContractDriver {}
 
-  /// Exercises exact-revision observation after refresh.
-  FutureOr<FeatureContractObservation> stimulateRefreshObservation();
+/// Marker for replica-profile drivers.
+abstract interface class ReplicaFeatureContractDriver
+    implements CacheFeatureContractDriver {}
 
-  /// Exercises a restart with durable cached state.
-  FutureOr<FeatureContractObservation> stimulateCacheRestart();
-}
+/// Marker for offline-full-profile drivers.
+abstract interface class OfflineFullFeatureContractDriver
+    implements ReplicaFeatureContractDriver {}
 
-/// Additional replica-profile stimuli.
-abstract interface class ReplicaFeatureContractFixture
-    implements CacheFeatureContractFixture {
-  /// Exercises data commit followed by a durable checkpoint.
-  FutureOr<FeatureContractObservation> stimulateDurableCheckpoint();
-
-  /// Exercises current and stale fencing tokens.
-  FutureOr<FeatureContractObservation> stimulateFencing();
-
-  /// Exercises deduplicated headless work with a fresh graph.
-  FutureOr<FeatureContractObservation> stimulateHeadlessExecution();
-}
-
-/// Additional offline-full profile stimuli.
-abstract interface class OfflineFullFeatureContractFixture
-    implements ReplicaFeatureContractFixture {
-  /// Exercises atomic domain mutation and outbox enqueue.
-  FutureOr<FeatureContractObservation> stimulateAtomicOutbox();
-
-  /// Exercises persisted uncertainty without blind retry.
-  FutureOr<FeatureContractObservation> stimulateUncertainDelivery();
-
-  /// Exercises explicit, durable conflict recovery.
-  FutureOr<FeatureContractObservation> stimulateConflictRecovery();
-}
-
-/// Factory that creates a fresh typed fixture for every matrix row.
-final class FeatureContractFixtures<T extends OnlineFeatureContractFixture> {
-  /// Creates a fixture factory.
+/// Factory that receives matrix-owned instruments and creates a fresh runtime.
+final class FeatureContractFixtures<T extends OnlineFeatureContractDriver> {
+  /// Creates a driver factory.
   const FeatureContractFixtures({required this.create});
 
-  /// Creates a fresh fixture.
-  final FutureOr<T> Function() create;
+  /// Creates one fresh runtime graph driver.
+  final FutureOr<T> Function(FeatureContractHarness harness) create;
 }
 
-/// Framework-neutral result of one matrix row.
+/// Evidence derived by the matrix after observed stimulus and teardown.
+final class FeatureContractObservation {
+  FeatureContractObservation._({
+    required this.contract,
+    required Set<FeatureContractFact> facts,
+    required List<FeatureRuntimeEvent> events,
+    required this.store,
+    required List<FeatureHeadlessAcknowledgement> acknowledgements,
+  }) : facts = Set<FeatureContractFact>.unmodifiable(facts),
+       events = List<FeatureRuntimeEvent>.unmodifiable(events),
+       acknowledgements = List<FeatureHeadlessAcknowledgement>.unmodifiable(
+         acknowledgements,
+       );
+
+  /// Contract exercised by this row.
+  final FeatureContract contract;
+
+  /// Facts derived by the matrix, never supplied by the fixture.
+  final Set<FeatureContractFact> facts;
+
+  /// Ordered observed events.
+  final List<FeatureRuntimeEvent> events;
+
+  /// Terminal observed store counters.
+  final FeatureObservedStoreSnapshot store;
+
+  /// Observed headless acknowledgements.
+  final List<FeatureHeadlessAcknowledgement> acknowledgements;
+}
+
+/// Framework-neutral result of one independently observed matrix row.
 final class FeatureContractResult {
-  /// Creates a row result.
+  /// Creates one immutable matrix result.
   const FeatureContractResult({
     required this.profile,
     required this.contract,
@@ -237,167 +840,366 @@ final class FeatureContractResult {
     this.stackTrace,
   });
 
-  /// Matrix profile.
+  /// Profile that selected the row.
   final FeatureProfile profile;
 
-  /// Stable contract row.
+  /// Executed contract.
   final FeatureContract contract;
 
-  /// Whether fixture creation completed.
+  /// Whether at least one runtime factory completed.
   final bool fixtureCreated;
 
-  /// Whether mandatory fixture cleanup was attempted.
+  /// Whether driver cleanup was attempted.
   final bool disposeAttempted;
 
-  /// Whether residual census verification ran after disposal.
+  /// Whether the matrix-owned census was checked.
   final bool censusChecked;
 
-  /// Typed evidence returned by the stimulus.
+  /// Derived observation when stimulus evidence was available.
   final FeatureContractObservation? observation;
 
-  /// First stimulus, validation, cleanup, or census failure.
+  /// First evidence, stimulus, cleanup, or census error.
   final Object? error;
 
-  /// Original first-failure stack.
+  /// Original stack for [error].
   final StackTrace? stackTrace;
 
-  /// Whether the row completed with valid evidence and zero residuals.
+  /// Whether observed evidence, cleanup, and the real census all passed.
   bool get succeeded => error == null;
 }
 
 /// Required behavioral matrix for one paved-road feature profile.
-final class FeatureContractMatrix<T extends OnlineFeatureContractFixture> {
-  /// Creates an online matrix.
+final class FeatureContractMatrix<T extends OnlineFeatureContractDriver> {
+  /// Creates the online-profile matrix.
   FeatureContractMatrix.online({required FeatureContractFixtures<T> fixtures})
     : this._(FeatureProfile.online, fixtures);
 
-  /// Creates a cache matrix.
+  /// Creates the cache-profile matrix.
   FeatureContractMatrix.cache({required FeatureContractFixtures<T> fixtures})
     : this._(FeatureProfile.cache, fixtures);
 
-  /// Creates a replica matrix.
+  /// Creates the replica-profile matrix.
   FeatureContractMatrix.replica({required FeatureContractFixtures<T> fixtures})
     : this._(FeatureProfile.replica, fixtures);
 
-  /// Creates an offline-full matrix.
+  /// Creates the offline-full-profile matrix.
   FeatureContractMatrix.offlineFull({
     required FeatureContractFixtures<T> fixtures,
   }) : this._(FeatureProfile.offlineFull, fixtures);
 
   FeatureContractMatrix._(this.profile, this.fixtures);
 
-  /// Matrix profile from `package:dartitect`.
+  /// Selected feature profile.
   final FeatureProfile profile;
 
-  /// Fresh typed fixture factory.
+  /// Fresh runtime factory.
   final FeatureContractFixtures<T> fixtures;
 
   /// Stable required rows in execution order.
   List<FeatureContract> get requiredContracts =>
       _requirements[profile]!.keys.toList(growable: false);
 
-  /// Executes and verifies every row against a fresh fixture.
+  /// Executes every row with matrix-owned evidence and a new graph.
   Future<List<FeatureContractResult>> run() async {
     final results = <FeatureContractResult>[];
     for (final contract in requiredContracts) {
-      T? fixture;
-      var fixtureCreated = false;
-      var disposeAttempted = false;
-      var censusChecked = false;
-      FeatureContractObservation? observation;
-      Object? failure;
-      StackTrace? failureStack;
-      try {
-        fixture = await fixtures.create();
-        fixtureCreated = true;
-        observation = await _stimulate(fixture, contract);
-        _verifyObservation(
-          observation,
-          contract,
-          _requirements[profile]![contract]!,
-        );
-      } catch (error, stackTrace) {
-        failure = error;
-        failureStack = stackTrace;
-      } finally {
-        if (fixtureCreated && fixture != null) {
-          disposeAttempted = true;
-          try {
-            await fixture.disposeAsync();
-            censusChecked = true;
-            final census = fixture.residualCensus;
-            if (!census.isEmpty) {
-              throw StateError(
-                'Feature contract left ${census.total} residual resource(s).',
-              );
-            }
-          } catch (error, stackTrace) {
-            failure ??= error;
-            failureStack ??= stackTrace;
-          }
-        }
-      }
-      results.add(
-        FeatureContractResult(
-          profile: profile,
-          contract: contract,
-          fixtureCreated: fixtureCreated,
-          disposeAttempted: disposeAttempted,
-          censusChecked: censusChecked,
-          observation: observation,
-          error: failure,
-          stackTrace: failureStack,
-        ),
-      );
+      results.add(await _runRow(contract));
     }
     return List<FeatureContractResult>.unmodifiable(results);
   }
 
-  static FutureOr<FeatureContractObservation> _stimulate(
-    OnlineFeatureContractFixture fixture,
-    FeatureContract contract,
-  ) => switch (contract) {
-    FeatureContract.onlineRead => fixture.stimulateOnlineRead(),
-    FeatureContract.expectedFailure => fixture.stimulateExpectedFailure(),
-    FeatureContract.cancellation => fixture.stimulateCancellation(),
-    FeatureContract.zeroResiduals => FeatureContractObservation(
-      contract: FeatureContract.zeroResiduals,
-      facts: const <FeatureContractFact>{},
-    ),
-    FeatureContract.localAuthority =>
-      (fixture as CacheFeatureContractFixture).stimulateLocalAuthority(),
-    FeatureContract.refreshObservation =>
-      (fixture as CacheFeatureContractFixture).stimulateRefreshObservation(),
-    FeatureContract.cacheRestart =>
-      (fixture as CacheFeatureContractFixture).stimulateCacheRestart(),
-    FeatureContract.durableCheckpoint =>
-      (fixture as ReplicaFeatureContractFixture).stimulateDurableCheckpoint(),
-    FeatureContract.fencing =>
-      (fixture as ReplicaFeatureContractFixture).stimulateFencing(),
-    FeatureContract.headlessExecution =>
-      (fixture as ReplicaFeatureContractFixture).stimulateHeadlessExecution(),
-    FeatureContract.atomicOutbox =>
-      (fixture as OfflineFullFeatureContractFixture).stimulateAtomicOutbox(),
-    FeatureContract.uncertainDelivery =>
-      (fixture as OfflineFullFeatureContractFixture)
-          .stimulateUncertainDelivery(),
-    FeatureContract.conflictRecovery =>
-      (fixture as OfflineFullFeatureContractFixture)
-          .stimulateConflictRecovery(),
-  };
+  Future<FeatureContractResult> _runRow(FeatureContract contract) async {
+    final harness = FeatureContractHarness();
+    final before = harness.store.snapshot();
+    var fixtureCreated = false;
+    var disposeAttempted = false;
+    var censusChecked = false;
+    Object? failure;
+    StackTrace? failureStack;
+    Object? expectedCrash;
+    Object? observedCrash;
+    var cancellationObserved = false;
+    FeatureContractObservation? observation;
 
-  static void _verifyObservation(
-    FeatureContractObservation observation,
-    FeatureContract contract,
-    Set<FeatureContractFact> required,
-  ) {
-    if (observation.contract != contract ||
-        !observation.facts.containsAll(required)) {
-      throw StateError(
-        'Feature contract evidence is incomplete or mismatched.',
-      );
+    Future<void> useFreshDriver({required bool restartPass}) async {
+      final graph = harness.openGraph();
+      T? driver;
+      try {
+        driver = await fixtures.create(harness);
+        fixtureCreated = true;
+        final outcome = await _stimulate(
+          driver,
+          harness,
+          contract,
+          restartPass: restartPass,
+        );
+        expectedCrash ??= outcome.expectedCrash;
+        observedCrash ??= outcome.observedCrash;
+        cancellationObserved =
+            cancellationObserved || outcome.cancellationObserved;
+      } finally {
+        if (driver != null) {
+          disposeAttempted = true;
+          await driver.disposeAsync();
+        }
+        graph.dispose();
+      }
     }
+
+    try {
+      await useFreshDriver(restartPass: false);
+      if (contract == FeatureContract.restart) {
+        harness.resources.verifyZero();
+        await useFreshDriver(restartPass: true);
+      }
+      final facts = _deriveFacts(
+        contract,
+        harness,
+        before,
+        expectedCrash: expectedCrash,
+        observedCrash: observedCrash,
+        cancellationObserved: cancellationObserved,
+      );
+      observation = FeatureContractObservation._(
+        contract: contract,
+        facts: facts,
+        events: harness.events,
+        store: harness.store.snapshot(),
+        acknowledgements: harness.acknowledgements,
+      );
+      final required = _requirements[profile]![contract]!;
+      if (!facts.containsAll(required)) {
+        throw StateError('Observed feature evidence is incomplete.');
+      }
+    } on Object catch (error, stackTrace) {
+      failure = error;
+      failureStack = stackTrace;
+    } finally {
+      try {
+        censusChecked = true;
+        harness.resources.verifyZero();
+      } on Object catch (error, stackTrace) {
+        failure ??= error;
+        failureStack ??= stackTrace;
+      }
+    }
+    return FeatureContractResult(
+      profile: profile,
+      contract: contract,
+      fixtureCreated: fixtureCreated,
+      disposeAttempted: disposeAttempted,
+      censusChecked: censusChecked,
+      observation: observation,
+      error: failure,
+      stackTrace: failureStack,
+    );
   }
+
+  static Future<_StimulusOutcome> _stimulate(
+    OnlineFeatureContractDriver driver,
+    FeatureContractHarness harness,
+    FeatureContract contract, {
+    required bool restartPass,
+  }) async {
+    final cancellation = CancellationSource();
+    Object? expectedCrash;
+    Object? observedCrash;
+    var cancellationObserved = false;
+    try {
+      switch (contract) {
+        case FeatureContract.expectedFailure:
+          harness.faults._armExpectedFailure();
+          await driver.stimulate(contract, cancellation.signal);
+        case FeatureContract.unexpectedCrash:
+          harness.faults._armCrash();
+          expectedCrash = harness.faults.armedCrash;
+          try {
+            await driver.stimulate(contract, cancellation.signal);
+          } on Object catch (error) {
+            observedCrash = error;
+            harness._recordCrash();
+          }
+        case FeatureContract.cancellation:
+          final operation = Future<void>.sync(
+            () => driver.stimulate(contract, cancellation.signal),
+          );
+          scheduleMicrotask(
+            () => cancellation.cancel('feature-contract-cancellation'),
+          );
+          try {
+            await operation;
+          } on CancellationException {
+            cancellationObserved = true;
+            harness._recordCancellation();
+          }
+        case FeatureContract.concurrency:
+          await Future.wait<void>(<Future<void>>[
+            Future<void>.sync(
+              () => driver.stimulate(contract, cancellation.signal),
+            ),
+            Future<void>.sync(
+              () => driver.stimulate(contract, cancellation.signal),
+            ),
+          ]);
+        case FeatureContract.restart:
+          await driver.stimulate(contract, cancellation.signal);
+          if (restartPass && !harness.store.hasDurableState) {
+            throw StateError('Restart pass did not recover durable state.');
+          }
+        case FeatureContract.onlineRead ||
+            FeatureContract.zeroResiduals ||
+            FeatureContract.localAuthority ||
+            FeatureContract.refreshObservation ||
+            FeatureContract.durableCheckpoint ||
+            FeatureContract.fencing ||
+            FeatureContract.headlessExecution ||
+            FeatureContract.atomicOutbox ||
+            FeatureContract.uncertainDelivery ||
+            FeatureContract.conflictRecovery:
+          await driver.stimulate(contract, cancellation.signal);
+      }
+    } finally {
+      cancellation.dispose();
+    }
+    return _StimulusOutcome(
+      expectedCrash: expectedCrash,
+      observedCrash: observedCrash,
+      cancellationObserved: cancellationObserved,
+    );
+  }
+
+  static Set<FeatureContractFact> _deriveFacts(
+    FeatureContract contract,
+    FeatureContractHarness harness,
+    FeatureObservedStoreSnapshot before, {
+    required Object? expectedCrash,
+    required Object? observedCrash,
+    required bool cancellationObserved,
+  }) {
+    final after = harness.store.snapshot();
+    final events = harness.events;
+    bool has(FeatureRuntimeEventKind kind) =>
+        events.any((event) => event.kind == kind);
+    int first(FeatureRuntimeEventKind kind) =>
+        events.firstWhere((event) => event.kind == kind).sequence;
+    final facts = <FeatureContractFact>{};
+
+    if (has(FeatureRuntimeEventKind.remoteSucceeded)) {
+      facts.add(FeatureContractFact.typedSuccess);
+    }
+    if (after.publications > before.publications) {
+      facts.add(FeatureContractFact.valuePublished);
+    }
+    if (has(FeatureRuntimeEventKind.expectedFailure)) {
+      facts.add(FeatureContractFact.typedFailure);
+    }
+    if (contract == FeatureContract.expectedFailure &&
+        has(FeatureRuntimeEventKind.expectedFailure) &&
+        !has(FeatureRuntimeEventKind.crashObserved)) {
+      facts.add(FeatureContractFact.crashPreserved);
+    }
+    if (contract == FeatureContract.unexpectedCrash &&
+        expectedCrash != null &&
+        identical(expectedCrash, observedCrash)) {
+      facts.add(FeatureContractFact.crashPreserved);
+    }
+    if (cancellationObserved) {
+      facts.add(FeatureContractFact.cancellationObserved);
+      if (after.publications == before.publications) {
+        facts.add(FeatureContractFact.stalePublicationRejected);
+      }
+    }
+    if (after.operationsStarted - before.operationsStarted >= 2 &&
+        after.operationsCompleted - before.operationsCompleted >= 2 &&
+        after.activeOperations == 0) {
+      facts.add(FeatureContractFact.concurrentExecutionsCompleted);
+    }
+    if (has(FeatureRuntimeEventKind.localSnapshotRead)) {
+      facts.add(FeatureContractFact.localSnapshotObserved);
+    }
+    if (has(FeatureRuntimeEventKind.remoteCommitted)) {
+      facts.add(FeatureContractFact.remoteCommittedLocally);
+    }
+    final observedRevisions = events
+        .where(
+          (event) => event.kind == FeatureRuntimeEventKind.revisionObserved,
+        )
+        .map((event) => event.revision);
+    if (observedRevisions.contains(after.revision)) {
+      facts.add(FeatureContractFact.exactRevisionObserved);
+    }
+    if (events
+            .where((event) => event.kind == FeatureRuntimeEventKind.graphOpened)
+            .length >=
+        2) {
+      facts.add(FeatureContractFact.freshGraphCreated);
+    }
+    if (after.durableWrites > before.durableWrites &&
+        after.durableReads > before.durableReads) {
+      facts.add(FeatureContractFact.durableStateRecovered);
+    }
+    if (has(FeatureRuntimeEventKind.datasetApplied) &&
+        has(FeatureRuntimeEventKind.checkpointWritten) &&
+        first(FeatureRuntimeEventKind.datasetApplied) <
+            first(FeatureRuntimeEventKind.checkpointWritten)) {
+      facts.add(FeatureContractFact.dataCommittedBeforeCheckpoint);
+      if (after.checkpointRevision == after.dataRevision) {
+        facts.add(FeatureContractFact.checkpointPersisted);
+      }
+    }
+    if (after.staleFenceRejections > before.staleFenceRejections) {
+      facts.add(FeatureContractFact.staleFencingRejected);
+    }
+    if (after.currentFenceCommits > before.currentFenceCommits) {
+      facts.add(FeatureContractFact.currentFencingCommitted);
+    }
+    if (has(FeatureRuntimeEventKind.headlessGraphOpened)) {
+      facts.add(FeatureContractFact.freshHeadlessGraph);
+    }
+    if (harness.acknowledgements.any(
+      (ack) => ack.kind == FeatureHeadlessAckKind.duplicate,
+    )) {
+      facts.add(FeatureContractFact.duplicateHeadlessRequestHandled);
+    }
+    if (has(FeatureRuntimeEventKind.headlessGraphClosed) &&
+        harness.acknowledgements.any(
+          (ack) => ack.kind == FeatureHeadlessAckKind.terminal,
+        )) {
+      facts.add(FeatureContractFact.headlessGraphDrained);
+    }
+    if (after.domainRevision > before.domainRevision &&
+        after.domainRevision == after.outboxRevision) {
+      facts.add(FeatureContractFact.domainAndOutboxAtomic);
+    }
+    if (after.atomicRollbacks > before.atomicRollbacks) {
+      facts.add(FeatureContractFact.atomicRollback);
+    }
+    if (after.uncertainOperations > before.uncertainOperations) {
+      facts.add(FeatureContractFact.uncertaintyPersisted);
+      if (after.deliveryAttempts - before.deliveryAttempts == 1) {
+        facts.add(FeatureContractFact.uncertainRetryStopped);
+      }
+    }
+    if (after.persistedConflicts > before.persistedConflicts) {
+      facts.add(FeatureContractFact.conflictPersisted);
+    }
+    if (after.resolvedConflicts > before.resolvedConflicts) {
+      facts.add(FeatureContractFact.explicitConflictPolicy);
+    }
+    return facts;
+  }
+}
+
+final class _StimulusOutcome {
+  const _StimulusOutcome({
+    required this.expectedCrash,
+    required this.observedCrash,
+    required this.cancellationObserved,
+  });
+
+  final Object? expectedCrash;
+  final Object? observedCrash;
+  final bool cancellationObserved;
 }
 
 const Map<FeatureProfile, Map<FeatureContract, Set<FeatureContractFact>>>
@@ -412,25 +1214,24 @@ _requirements =
           FeatureContractFact.typedFailure,
           FeatureContractFact.crashPreserved,
         },
+        FeatureContract.unexpectedCrash: <FeatureContractFact>{
+          FeatureContractFact.crashPreserved,
+        },
         FeatureContract.cancellation: <FeatureContractFact>{
           FeatureContractFact.cancellationObserved,
           FeatureContractFact.stalePublicationRejected,
+        },
+        FeatureContract.concurrency: <FeatureContractFact>{
+          FeatureContractFact.concurrentExecutionsCompleted,
+        },
+        FeatureContract.restart: <FeatureContractFact>{
+          FeatureContractFact.freshGraphCreated,
+          FeatureContractFact.durableStateRecovered,
         },
         FeatureContract.zeroResiduals: <FeatureContractFact>{},
       },
       FeatureProfile.cache: <FeatureContract, Set<FeatureContractFact>>{
-        FeatureContract.onlineRead: <FeatureContractFact>{
-          FeatureContractFact.typedSuccess,
-          FeatureContractFact.valuePublished,
-        },
-        FeatureContract.expectedFailure: <FeatureContractFact>{
-          FeatureContractFact.typedFailure,
-          FeatureContractFact.crashPreserved,
-        },
-        FeatureContract.cancellation: <FeatureContractFact>{
-          FeatureContractFact.cancellationObserved,
-          FeatureContractFact.stalePublicationRejected,
-        },
+        ..._onlineRequirements,
         FeatureContract.localAuthority: <FeatureContractFact>{
           FeatureContractFact.localSnapshotObserved,
           FeatureContractFact.remoteCommittedLocally,
@@ -438,36 +1239,9 @@ _requirements =
         FeatureContract.refreshObservation: <FeatureContractFact>{
           FeatureContractFact.exactRevisionObserved,
         },
-        FeatureContract.cacheRestart: <FeatureContractFact>{
-          FeatureContractFact.freshGraphCreated,
-          FeatureContractFact.durableStateRecovered,
-        },
-        FeatureContract.zeroResiduals: <FeatureContractFact>{},
       },
       FeatureProfile.replica: <FeatureContract, Set<FeatureContractFact>>{
-        FeatureContract.onlineRead: <FeatureContractFact>{
-          FeatureContractFact.typedSuccess,
-          FeatureContractFact.valuePublished,
-        },
-        FeatureContract.expectedFailure: <FeatureContractFact>{
-          FeatureContractFact.typedFailure,
-          FeatureContractFact.crashPreserved,
-        },
-        FeatureContract.cancellation: <FeatureContractFact>{
-          FeatureContractFact.cancellationObserved,
-          FeatureContractFact.stalePublicationRejected,
-        },
-        FeatureContract.localAuthority: <FeatureContractFact>{
-          FeatureContractFact.localSnapshotObserved,
-          FeatureContractFact.remoteCommittedLocally,
-        },
-        FeatureContract.refreshObservation: <FeatureContractFact>{
-          FeatureContractFact.exactRevisionObserved,
-        },
-        FeatureContract.cacheRestart: <FeatureContractFact>{
-          FeatureContractFact.freshGraphCreated,
-          FeatureContractFact.durableStateRecovered,
-        },
+        ..._cacheRequirements,
         FeatureContract.durableCheckpoint: <FeatureContractFact>{
           FeatureContractFact.dataCommittedBeforeCheckpoint,
           FeatureContractFact.checkpointPersisted,
@@ -481,45 +1255,9 @@ _requirements =
           FeatureContractFact.duplicateHeadlessRequestHandled,
           FeatureContractFact.headlessGraphDrained,
         },
-        FeatureContract.zeroResiduals: <FeatureContractFact>{},
       },
       FeatureProfile.offlineFull: <FeatureContract, Set<FeatureContractFact>>{
-        FeatureContract.onlineRead: <FeatureContractFact>{
-          FeatureContractFact.typedSuccess,
-          FeatureContractFact.valuePublished,
-        },
-        FeatureContract.expectedFailure: <FeatureContractFact>{
-          FeatureContractFact.typedFailure,
-          FeatureContractFact.crashPreserved,
-        },
-        FeatureContract.cancellation: <FeatureContractFact>{
-          FeatureContractFact.cancellationObserved,
-          FeatureContractFact.stalePublicationRejected,
-        },
-        FeatureContract.localAuthority: <FeatureContractFact>{
-          FeatureContractFact.localSnapshotObserved,
-          FeatureContractFact.remoteCommittedLocally,
-        },
-        FeatureContract.refreshObservation: <FeatureContractFact>{
-          FeatureContractFact.exactRevisionObserved,
-        },
-        FeatureContract.cacheRestart: <FeatureContractFact>{
-          FeatureContractFact.freshGraphCreated,
-          FeatureContractFact.durableStateRecovered,
-        },
-        FeatureContract.durableCheckpoint: <FeatureContractFact>{
-          FeatureContractFact.dataCommittedBeforeCheckpoint,
-          FeatureContractFact.checkpointPersisted,
-        },
-        FeatureContract.fencing: <FeatureContractFact>{
-          FeatureContractFact.staleFencingRejected,
-          FeatureContractFact.currentFencingCommitted,
-        },
-        FeatureContract.headlessExecution: <FeatureContractFact>{
-          FeatureContractFact.freshHeadlessGraph,
-          FeatureContractFact.duplicateHeadlessRequestHandled,
-          FeatureContractFact.headlessGraphDrained,
-        },
+        ..._replicaRequirements,
         FeatureContract.atomicOutbox: <FeatureContractFact>{
           FeatureContractFact.domainAndOutboxAtomic,
           FeatureContractFact.atomicRollback,
@@ -532,6 +1270,62 @@ _requirements =
           FeatureContractFact.conflictPersisted,
           FeatureContractFact.explicitConflictPolicy,
         },
-        FeatureContract.zeroResiduals: <FeatureContractFact>{},
+      },
+    };
+
+const Map<FeatureContract, Set<FeatureContractFact>> _onlineRequirements =
+    <FeatureContract, Set<FeatureContractFact>>{
+      FeatureContract.onlineRead: <FeatureContractFact>{
+        FeatureContractFact.typedSuccess,
+        FeatureContractFact.valuePublished,
+      },
+      FeatureContract.expectedFailure: <FeatureContractFact>{
+        FeatureContractFact.typedFailure,
+        FeatureContractFact.crashPreserved,
+      },
+      FeatureContract.unexpectedCrash: <FeatureContractFact>{
+        FeatureContractFact.crashPreserved,
+      },
+      FeatureContract.cancellation: <FeatureContractFact>{
+        FeatureContractFact.cancellationObserved,
+        FeatureContractFact.stalePublicationRejected,
+      },
+      FeatureContract.concurrency: <FeatureContractFact>{
+        FeatureContractFact.concurrentExecutionsCompleted,
+      },
+      FeatureContract.restart: <FeatureContractFact>{
+        FeatureContractFact.freshGraphCreated,
+        FeatureContractFact.durableStateRecovered,
+      },
+      FeatureContract.zeroResiduals: <FeatureContractFact>{},
+    };
+
+const Map<FeatureContract, Set<FeatureContractFact>> _cacheRequirements =
+    <FeatureContract, Set<FeatureContractFact>>{
+      ..._onlineRequirements,
+      FeatureContract.localAuthority: <FeatureContractFact>{
+        FeatureContractFact.localSnapshotObserved,
+        FeatureContractFact.remoteCommittedLocally,
+      },
+      FeatureContract.refreshObservation: <FeatureContractFact>{
+        FeatureContractFact.exactRevisionObserved,
+      },
+    };
+
+const Map<FeatureContract, Set<FeatureContractFact>> _replicaRequirements =
+    <FeatureContract, Set<FeatureContractFact>>{
+      ..._cacheRequirements,
+      FeatureContract.durableCheckpoint: <FeatureContractFact>{
+        FeatureContractFact.dataCommittedBeforeCheckpoint,
+        FeatureContractFact.checkpointPersisted,
+      },
+      FeatureContract.fencing: <FeatureContractFact>{
+        FeatureContractFact.staleFencingRejected,
+        FeatureContractFact.currentFencingCommitted,
+      },
+      FeatureContract.headlessExecution: <FeatureContractFact>{
+        FeatureContractFact.freshHeadlessGraph,
+        FeatureContractFact.duplicateHeadlessRequestHandled,
+        FeatureContractFact.headlessGraphDrained,
       },
     };

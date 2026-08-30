@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-rc.8
+
+- Prepare the package for the RC8 greenfield platform baseline and compatible post-1.0 publication cohorts.
+- Add durable operational storage-context registrations and explicit,
+  coalescing `SyncTriggerCoordinator` state without hidden retries.
+
 ## 1.0.0-rc.6
 
 - Complete this package's lockstep RC6 vertical-platform contracts.

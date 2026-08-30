@@ -11,8 +11,8 @@ import '../diagnostics/models.dart';
 import '../generation/generation_engine.dart';
 import '../generation/scaffolds.dart';
 import '../model/model_generator.dart';
-import '../model/primary_constructor_migration.dart';
 import '../policy/ecosystem_policy.dart';
+import '../release/package_compatibility.dart';
 import '../scan/baseline.dart';
 import '../scan/project_scanner.dart';
 
@@ -32,9 +32,6 @@ enum DartitectChangeKind {
 
   /// Converge fully generated modeling parts and ownership metadata.
   modelSync,
-
-  /// Apply reviewed primary-constructor source edits transactionally.
-  modelPrimaryMigration,
 }
 
 /// One project-relative semantic input bound to a reviewed change plan.
@@ -196,17 +193,18 @@ final class DartitectProjectService {
   /// Returns consolidated project metadata and architecture findings.
   Future<CommandEnvelope> inspectProject() => _readOnly('inspect');
 
-  /// Scans architecture boundaries, optionally applying the reviewed baseline.
-  Future<CommandEnvelope> scanArchitecture({bool useBaseline = true}) =>
-      _readOnly('scan', useBaseline: useBaseline);
+  /// Scans architecture boundaries strictly.
+  Future<CommandEnvelope> scanArchitecture() => _readOnly('scan');
 
   /// Validates configuration, toolchain, skills, and optional analyzer state.
-  Future<CommandEnvelope> doctorProject({bool deep = false}) =>
-      _readOnly('doctor', deep: deep);
+  Future<CommandEnvelope> doctorProject({
+    bool deep = false,
+    bool release = false,
+  }) => _readOnly('doctor', deep: deep, release: release);
 
   /// Audits Native Strict conformance without proposing a migration workflow.
   Future<Map<String, Object?>> auditConformance() async {
-    final report = await scanArchitecture(useBaseline: false);
+    final report = await scanArchitecture();
     final policy = await EcosystemPolicy.load(root);
     final dependencies =
         (report.project['dependencies'] as List<Object?>?)
@@ -241,7 +239,7 @@ final class DartitectProjectService {
       },
       'project': report.project,
       'compliant': compliant,
-      'canonicalGate': 'dartitect scan --no-baseline',
+      'canonicalGate': 'dartitect scan',
       'runtimeConflicts': runtimeConflicts,
       'findings': <Object?>[
         for (final finding in report.findings) finding.toJson(),
@@ -273,8 +271,6 @@ final class DartitectProjectService {
         _validatedTargetCohort(targetCohort),
       ),
       DartitectChangeKind.modelSync => _previewModelSync(),
-      DartitectChangeKind.modelPrimaryMigration =>
-        _previewModelPrimaryMigration(),
     };
   }
 
@@ -362,65 +358,18 @@ final class DartitectProjectService {
                 result.updatedPaths.isNotEmpty ||
                 result.deletedPaths.isNotEmpty,
           );
-        case DartitectChangeKind.modelPrimaryMigration:
-          final result = await PrimaryConstructorMigration(root).apply();
-          return DartitectChangeReceipt(
-            kind: plan.kind,
-            operations: plan.operations,
-            changed: result.applied && result.operations.isNotEmpty,
-          );
       }
     });
   }
 
   Future<CommandEnvelope> _readOnly(
     String command, {
-    bool useBaseline = true,
     bool deep = false,
+    bool release = false,
   }) async {
     final scan = await ProjectScanner(root).scan();
     final findings = <DartitectFinding>[...scan.findings];
-    var violations = <DartitectFinding>[...scan.violations];
-    if (command == 'scan' && useBaseline) {
-      final baselineFile = File(_join(root.path, '.dartitect/baseline.json'));
-      if (await baselineFile.exists()) {
-        try {
-          final baseline = await DartitectBaseline.load(baselineFile);
-          final current = violations.map(fingerprintFinding).toSet();
-          violations = violations
-              .where(
-                (violation) => !baseline.fingerprints.contains(
-                  fingerprintFinding(violation),
-                ),
-              )
-              .toList();
-          for (final obsolete in baseline.fingerprints.difference(current)) {
-            findings.add(
-              DartitectFinding(
-                code: 'DT2301',
-                severity: FindingSeverity.warning,
-                message: 'Baseline entry is obsolete.',
-                path: '.dartitect/baseline.json',
-                evidence: obsolete,
-                remediation: 'Review and recreate the baseline.',
-              ),
-            );
-          }
-        } on FormatException catch (error) {
-          findings.add(
-            DartitectFinding(
-              code: 'DT2300',
-              severity: FindingSeverity.error,
-              message: 'The architecture baseline is invalid.',
-              path: '.dartitect/baseline.json',
-              evidence: error.message,
-              remediation: 'Recreate the baseline after reviewing violations.',
-            ),
-          );
-        }
-      }
-    }
-
+    final violations = <DartitectFinding>[...scan.violations];
     DartitectConfig? config;
     final configFile = File(_join(root.path, 'dartitect.json'));
     if (await configFile.exists()) {
@@ -453,7 +402,7 @@ final class DartitectProjectService {
     }
 
     if (command == 'doctor') {
-      findings.addAll(_doctorFindings(scan, config));
+      findings.addAll(await _doctorFindings(scan, config, release: release));
       findings.addAll(await _splashFindings(scan));
       findings.addAll(await _skillFindings());
       findings.addAll(await _toolingFindings(scan, config));
@@ -481,10 +430,11 @@ final class DartitectProjectService {
     );
   }
 
-  List<DartitectFinding> _doctorFindings(
+  Future<List<DartitectFinding>> _doctorFindings(
     ProjectScan scan,
-    DartitectConfig? config,
-  ) {
+    DartitectConfig? config, {
+    required bool release,
+  }) async {
     final findings = <DartitectFinding>[];
     final version = RegExp(r'^(\d+)\.(\d+)').firstMatch(Platform.version);
     final major = int.tryParse(version?.group(1) ?? '0') ?? 0;
@@ -498,6 +448,55 @@ final class DartitectProjectService {
           remediation: 'Upgrade the Dart/Flutter SDK.',
         ),
       );
+    }
+    for (final incompatibility in await DartitectLockCompatibility.inspect(
+      File(_join(root.path, 'pubspec.lock')),
+    )) {
+      findings.add(
+        DartitectFinding(
+          code: 'DT2105',
+          severity: FindingSeverity.error,
+          message:
+              '${incompatibility.package} ${incompatibility.version} is not '
+              'compatible with this Dartitect SDK.',
+          path: 'pubspec.lock',
+          evidence: incompatibility.expectedRange,
+          remediation:
+              'Resolve a version accepted by the generated package '
+              'compatibility manifest.',
+        ),
+      );
+    }
+    if (release) {
+      if (config != null) {
+        for (final entry in config.storageContexts.entries) {
+          if (entry.value.mode != DartitectStorageMode.memory) continue;
+          findings.add(
+            DartitectFinding(
+              code: 'DT2103',
+              severity: FindingSeverity.error,
+              message:
+                  'Memory storage context ${entry.key} is not release-eligible.',
+              path: 'dartitect.json',
+              evidence: '/storageContexts/${entry.key}/mode',
+              remediation: 'Select an explicit durable provider for every release target.',
+            ),
+          );
+        }
+      }
+      if (scan.suppressionCount > 0) {
+        findings.add(
+          DartitectFinding(
+            code: 'DT2104',
+            severity: FindingSeverity.error,
+            message: 'Architecture suppressions are not release-eligible.',
+            path: '.',
+            evidence: '${scan.suppressionCount} suppression(s)',
+            remediation:
+                'Resolve every suppressed finding before a release build.',
+          ),
+        );
+      }
     }
     return findings;
   }
@@ -698,32 +697,6 @@ final class DartitectProjectService {
     );
     return DartitectChangePlan(
       kind: DartitectChangeKind.modelSync,
-      operations: List<String>.unmodifiable(operations),
-      preview: preview,
-      stateToken: manifest.digest,
-      semanticManifest: manifest,
-    );
-  }
-
-  Future<DartitectChangePlan> _previewModelPrimaryMigration() async {
-    final report = await PrimaryConstructorMigration(root).inspect();
-    if (report.diagnostics.isNotEmpty) {
-      throw const DartitectChangeException(
-        'model_migration_diagnostics',
-        'Primary-constructor migration requires consumer review in `dartitect '
-            'verify --json`.',
-      );
-    }
-    final operations = <String>[
-      for (final operation in report.operations) 'UPDATE ${operation.path}',
-    ];
-    final preview = jsonEncode(report.toJson());
-    final manifest = await _semanticManifest(
-      DartitectChangeKind.modelPrimaryMigration,
-      preview,
-    );
-    return DartitectChangePlan(
-      kind: DartitectChangeKind.modelPrimaryMigration,
       operations: List<String>.unmodifiable(operations),
       preview: preview,
       stateToken: manifest.digest,
@@ -1127,9 +1100,6 @@ final class DartitectProjectService {
       DartitectChangeKind.dependencyUpgrade =>
         await _dependencyUpgradeSemanticInputs(),
       DartitectChangeKind.modelSync => await _modelSemanticInputs(),
-      DartitectChangeKind.modelPrimaryMigration => await _modelSemanticInputs(
-        primaryMigration: true,
-      ),
     };
     final inputs = <DartitectSemanticInput>[
       DartitectSemanticInput(
@@ -1242,9 +1212,7 @@ final class DartitectProjectService {
     '.dartitect/dependency-upgrade.transaction.json',
   };
 
-  Future<Set<String>> _modelSemanticInputs({
-    bool primaryMigration = false,
-  }) async {
+  Future<Set<String>> _modelSemanticInputs() async {
     final inputs = await _baselineSemanticInputs();
     inputs.addAll(<String>{
       '.dartitect/generation/modeling/manifest.json',
@@ -1252,10 +1220,6 @@ final class DartitectProjectService {
       '.dartitect/generation/modeling/transaction',
       '.dartitect-model-outputs.json',
       '.dartitect-generation.json',
-      if (primaryMigration)
-        '.dartitect/generation/model-primary-migration/source-journal.json',
-      if (primaryMigration)
-        '.dartitect/generation/model-primary-migration/transaction',
     });
     return inputs;
   }

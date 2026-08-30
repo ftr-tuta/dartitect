@@ -208,7 +208,7 @@ final class DartitectBoundaryRule extends MultiAnalysisRule {
   static const invalidConfiguration = LintCode(
     'dartitect_invalid_configuration',
     'dartitect.json is invalid; analyzer defaults are active only to continue diagnostics.',
-    correctionMessage: 'Fix the stable-v1 configuration; run `dartitect doctor` for the exact field.',
+    correctionMessage: 'Fix the stable-v2 configuration; run `dartitect doctor` for the exact field.',
     uniqueName: 'DartitectLint.invalidConfiguration',
   );
 

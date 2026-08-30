@@ -1,7 +1,8 @@
 = Getting started
 
-Add `dartitect` to a Dart project and `dartitect_flutter` to a Flutter project.
-Keep domain contracts free of both when ordinary Dart types suffice.
+Start with a new Dartitect project. There is no conversion, gradual adoption,
+legacy zone, or competing-runtime mode. Keep domain contracts free of
+Dartitect types when ordinary Dart types suffice.
 
 [source,dart]
 ----
@@ -32,14 +33,17 @@ At a route boundary, use `ViewModelHost.create` for an owned ViewModel and
 `ListenableBuilder`, `ValueListenableBuilder`, or `ListenableSelector` at the
 smallest rebuilding fragment.
 
-Install the CLI executable and inspect a project:
+Create only the requested platforms, review config v2, and preview every
+generated change:
 
 [source,shell]
 ----
-dart run dartitect_cli:dartitect init --dry-run
+dart run dartitect_cli:dartitect create app orders_app --targets=android,web
+cd orders_app
 dart run dartitect_cli:dartitect scan --json
 dart run dartitect_cli:dartitect doctor
-dart run dartitect_cli:dartitect create feature orders --domain --dry-run
+dart run dartitect_cli:dartitect create feature orders \
+  --profile=local --scope=application --targets=android,web --dry-run
 ----
 
 Generated-once files belong to the consumer immediately. A conflicting file is

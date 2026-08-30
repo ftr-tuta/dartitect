@@ -9,35 +9,29 @@ final class FeatureScaffoldOptions {
   FeatureScaffoldOptions({
     required this.profile,
     required this.scope,
-    String? persistenceNative,
-    String? persistenceWeb,
-    this.transport = 'dio',
+    this.storageContext,
+    this.dataset,
+    this.transport,
+    Set<DartitectPlatform> targets = const <DartitectPlatform>{},
     this.pagination = FeaturePagination.none,
-    Set<DartitectPlatform> headlessPlatforms = const <DartitectPlatform>{},
+    Set<DartitectPlatform> headlessTargets = const <DartitectPlatform>{},
     this.diagnostics = FeatureDiagnosticsLevel.basic,
     Set<DartitectCapability> capabilities = const <DartitectCapability>{},
-  }) : persistenceNative =
-           persistenceNative ?? _defaultPersistence(profile, web: false),
-       persistenceWeb =
-           persistenceWeb ?? _defaultPersistence(profile, web: true),
-       headlessPlatforms = Set<DartitectPlatform>.unmodifiable(
-         headlessPlatforms,
-       ),
+  }) : targets = Set<DartitectPlatform>.unmodifiable(targets),
+       headlessTargets = Set<DartitectPlatform>.unmodifiable(headlessTargets),
        capabilities = Set<DartitectCapability>.unmodifiable(capabilities) {
     DartitectFeatureDeclaration(
       profile: profile,
       scope: scope,
-      persistence: FeaturePersistenceMatrix(
-        native: this.persistenceNative,
-        web: this.persistenceWeb,
-      ),
+      storageContext: storageContext,
+      dataset: storageContext == null
+          ? null
+          : dataset ?? DartitectStorageDatasetConfig.forFeature('feature'),
       transport: transport,
+      targets: targets,
       pagination: pagination,
       diagnostics: diagnostics,
-      headless: <DartitectPlatform, bool>{
-        for (final platform in DartitectPlatform.values)
-          platform: this.headlessPlatforms.contains(platform),
-      },
+      headlessTargets: headlessTargets,
       capabilities: capabilities,
     );
   }
@@ -48,31 +42,29 @@ final class FeatureScaffoldOptions {
   /// Application or session graph lifetime.
   final FeatureScope scope;
 
-  /// Consumer-selected native persistence provider.
-  final String persistenceNative;
+  /// Consumer-selected named storage context.
+  final String? storageContext;
 
-  /// Consumer-selected web persistence provider.
-  final String persistenceWeb;
+  /// Explicit operational dataset facts, or create-feature defaults.
+  final DartitectStorageDatasetConfig? dataset;
 
-  /// Consumer-selected transport provider.
-  final String transport;
+  /// Consumer-selected named transport.
+  final String? transport;
+
+  /// Feature target restriction; empty inherits application targets.
+  final Set<DartitectPlatform> targets;
 
   /// Generated pagination policy.
   final FeaturePagination pagination;
 
   /// Platforms that opt in to headless execution.
-  final Set<DartitectPlatform> headlessPlatforms;
+  final Set<DartitectPlatform> headlessTargets;
 
   /// Generated payload-free diagnostics level.
   final FeatureDiagnosticsLevel diagnostics;
 
   /// Stable opt-in workflows.
   final Set<DartitectCapability> capabilities;
-
-  static String _defaultPersistence(
-    FeatureProfile profile, {
-    required bool web,
-  }) => profile == FeatureProfile.online ? 'none' : 'memory';
 }
 
 /// Validated Dart identifier naming pair.
@@ -128,6 +120,7 @@ final class ScaffoldFactory {
       ),
     ];
     final operations = switch (options.profile) {
+      FeatureProfile.local => <FileGenerationOperation>[...base],
       FeatureProfile.online => <FileGenerationOperation>[
         ...base,
         ..._remoteReadBlueprint(name),
@@ -159,7 +152,7 @@ final class ScaffoldFactory {
               'lib/features/${name.snake}/application/${name.snake}_cursor_page.dart',
           content: _cursorPage(name),
         ),
-      if (options.headlessPlatforms.isNotEmpty)
+      if (options.headlessTargets.isNotEmpty)
         FileGenerationOperation(
           relativePath:
               'lib/features/${name.snake}/composition/${name.snake}_headless_sync.dart',
@@ -185,7 +178,7 @@ final class ScaffoldFactory {
       relativePath: 'AGENTS.md',
       content: '''# Dartitect architecture contract
 
-- Validate with `flutter analyze`, `flutter test`, and `dart run dartitect_cli:dartitect inspect --json`.
+- Validate with `flutter analyze`, `flutter test`, `dart run dartitect_cli:dartitect inspect --json`, and `dart run dartitect_cli:dartitect inspect --consumer-tax --json`.
 - Use constructor injection and explicit composition roots.
 - Domain must not import Flutter, data implementations, or adapters.
 - Presentation and ViewModels must not import Dio or ObjectBox.
@@ -193,7 +186,7 @@ final class ScaffoldFactory {
 - `ViewModelHost.create` owns its value; `ViewModelHost.value` borrows it.
 - Keep routing and UI effects in Widgets.
 - Before adding infrastructure, ask: É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
-- It belongs in Dartitect only when all three answers are yes; otherwise keep it in `softgran_*`, `agrox_*`, or the application.
+- It belongs in Dartitect only when all three answers are yes; otherwise use a typed project-local extension or keep business behavior in the application.
 ''',
     ),
   ];
@@ -213,12 +206,12 @@ final class ScaffoldFactory {
       ),
       FileGenerationOperation(
         relativePath:
-            '$root/infrastructure/memory_${name.snake}_repository.dart',
+            'test/support/features/${name.snake}/memory_${name.snake}_repository.dart',
         content: _memoryRepository(name, contractLayer: contractLayer),
       ),
       FileGenerationOperation(
         relativePath: '$root/composition/${name.snake}_composition.dart',
-        content: _composition(name),
+        content: _composition(name, contractLayer: contractLayer),
       ),
       FileGenerationOperation(
         relativePath: '$root/presentation/${name.snake}_view_model.dart',
@@ -274,7 +267,7 @@ final class ScaffoldFactory {
       ),
       FileGenerationOperation(
         relativePath:
-            '$root/infrastructure/memory_${name.snake}_repository.dart',
+            'test/support/features/${name.snake}/memory_${name.snake}_repository.dart',
         content: _memoryRepository(name, contractLayer: 'domain'),
       ),
       FileGenerationOperation(
@@ -320,7 +313,8 @@ final class ${name.pascal}Service {
         content: _remoteMapper(name),
       ),
       FileGenerationOperation(
-        relativePath: '$root/infrastructure/fake_${name.snake}_remote.dart',
+        relativePath:
+            'test/support/features/${name.snake}/fake_${name.snake}_remote.dart',
         content: _fakeRemote(name),
       ),
       FileGenerationOperation(
@@ -340,7 +334,7 @@ final class ${name.pascal}Service {
       ),
       FileGenerationOperation(
         relativePath:
-            '$root/infrastructure/fake_${name.snake}_local_store.dart',
+            'test/support/features/${name.snake}/fake_${name.snake}_local_store.dart',
         content: _fakeLocalStore(name),
       ),
       FileGenerationOperation(
@@ -359,7 +353,7 @@ final class ${name.pascal}Service {
       ),
       FileGenerationOperation(
         relativePath:
-            '$root/infrastructure/fake_${name.snake}_outbox_store.dart',
+            'test/support/features/${name.snake}/fake_${name.snake}_outbox_store.dart',
         content: _fakeOutboxStore(name),
       ),
       FileGenerationOperation(
@@ -378,7 +372,8 @@ final class ${name.pascal}Service {
         content: _syncDataset(name),
       ),
       FileGenerationOperation(
-        relativePath: '$root/infrastructure/fake_${name.snake}_sync_ports.dart',
+        relativePath:
+            'test/support/features/${name.snake}/fake_${name.snake}_sync_ports.dart',
         content: _fakeSyncPorts(name),
       ),
       FileGenerationOperation(
@@ -523,10 +518,9 @@ ${name.pascal}Model map${name.pascal}RemoteDto(
 
   String _fakeRemote(ScaffoldName name) =>
       '''import 'package:dartitect/dartitect.dart';
-
-import '../application/${name.snake}_remote_port.dart';
-import '../domain/${name.snake}_model.dart';
-import '../domain/${name.snake}_repository.dart';
+import 'package:$packageName/features/${name.snake}/application/${name.snake}_remote_port.dart';
+import 'package:$packageName/features/${name.snake}/domain/${name.snake}_model.dart';
+import 'package:$packageName/features/${name.snake}/domain/${name.snake}_repository.dart';
 
 final class Fake${name.pascal}Remote implements ${name.pascal}RemotePort {
   @override
@@ -575,10 +569,9 @@ abstract interface class ${name.pascal}LocalStore {
       '''import 'dart:async';
 
 import 'package:dartitect/dartitect.dart';
-
-import '../application/${name.snake}_local_store.dart';
-import '../domain/${name.snake}_model.dart';
-import '../domain/${name.snake}_repository.dart';
+import 'package:$packageName/features/${name.snake}/application/${name.snake}_local_store.dart';
+import 'package:$packageName/features/${name.snake}/domain/${name.snake}_model.dart';
+import 'package:$packageName/features/${name.snake}/domain/${name.snake}_repository.dart';
 
 final class Fake${name.pascal}LocalStore implements ${name.pascal}LocalStore {
   final StreamController<void> changes = StreamController<void>.broadcast();
@@ -638,9 +631,8 @@ typedef ${name.pascal}MutationLane =
   String _fakeOutboxStore(ScaffoldName name) =>
       '''import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
-
-import '../application/${name.snake}_mutation.dart';
-import '../domain/${name.snake}_repository.dart';
+import 'package:$packageName/features/${name.snake}/application/${name.snake}_mutation.dart';
+import 'package:$packageName/features/${name.snake}/domain/${name.snake}_repository.dart';
 
 final class Fake${name.pascal}OutboxStore
     implements MutationOutboxStore<String, ${name.pascal}Mutation, ${name.pascal}Failure> {
@@ -690,8 +682,9 @@ final class Fake${name.pascal}OutboxStore
       '''import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
 import 'package:$packageName/features/${name.snake}/application/${name.snake}_mutation.dart';
-import 'package:$packageName/features/${name.snake}/infrastructure/fake_${name.snake}_outbox_store.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/features/${name.snake}/fake_${name.snake}_outbox_store.dart';
 
 void main() {
   test('fake persists the exact idempotency key', () async {
@@ -785,42 +778,26 @@ void main() {
 ''';
 
   String _standaloneViewModel(ScaffoldName name) =>
-      '''import 'dart:async';
-
-import 'package:dartitect/dartitect.dart';
+      '''import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_flutter/dartitect_flutter.dart';
-import 'package:flutter/foundation.dart';
 
 /// Constructor-injected native state for the ${name.pascal} feature.
-final class ${name.pascal}ViewModel extends ChangeNotifier
-    implements AsyncDisposable {
-  ${name.pascal}ViewModel(
-    Future<Result<void, String>> Function() start,
-  ) : startCommand = Command0<void, String>(start) {
-    startCommand.addListener(notifyListeners);
+final class ${name.pascal}ViewModel(
+  Future<Result<void, String>> Function() start,
+) extends DartitectViewModel {
+  /// Owns the command for this ViewModel lifetime.
+  this {
+    startCommand = ownCommand(
+      Command0<void, String>(start),
+      label: 'startCommand',
+    );
   }
 
-  final Command0<void, String> startCommand;
+  late final Command0<void, String> startCommand;
 
   Future<void> start() async {
     await startCommand.execute();
   }
-
-  Future<void>? _disposeFuture;
-
-  @override
-  Future<void> disposeAsync() => _disposeFuture ??= _dispose();
-
-  Future<void> _dispose() async {
-    startCommand.removeListener(notifyListeners);
-    await startCommand.disposeAsync();
-    super.dispose();
-  }
-
-  @override
-  // The async path calls ChangeNotifier.dispose after draining the command.
-  // ignore: must_call_super
-  void dispose() => unawaited(disposeAsync());
 }
 ''';
 
@@ -828,25 +805,22 @@ final class ${name.pascal}ViewModel extends ChangeNotifier
     ScaffoldName name, {
     required String contractLayer,
   }) =>
-      '''import 'dart:async';
-
-import 'package:dartitect/dartitect.dart';
-import 'package:dartitect_flutter/dartitect_flutter.dart';
-import 'package:flutter/foundation.dart';
+      '''import 'package:dartitect_flutter/dartitect_flutter.dart';
 
 import '../$contractLayer/${name.snake}_repository.dart';
 
 /// Native MVVM state that depends only on the repository contract.
-final class ${name.pascal}ViewModel extends ChangeNotifier
-    implements AsyncDisposable {
-  ${name.pascal}ViewModel(${name.pascal}Repository repository)
-      : loadCommand = Command0<List<String>, ${name.pascal}Failure>(
-          repository.load,
-        ) {
-    loadCommand.addListener(notifyListeners);
+final class ${name.pascal}ViewModel(${name.pascal}Repository repository)
+    extends DartitectViewModel {
+  /// Owns the repository command for this ViewModel lifetime.
+  this {
+    loadCommand = ownCommand(
+      Command0<List<String>, ${name.pascal}Failure>(repository.load),
+      label: 'loadCommand',
+    );
   }
 
-  final Command0<List<String>, ${name.pascal}Failure> loadCommand;
+  late final Command0<List<String>, ${name.pascal}Failure> loadCommand;
 
   List<String> get items => switch (loadCommand.state) {
     CommandSuccessState<List<String>, ${name.pascal}Failure>(:final value) =>
@@ -859,22 +833,6 @@ final class ${name.pascal}ViewModel extends ChangeNotifier
   Future<void> start() async {
     await loadCommand.execute();
   }
-
-  Future<void>? _disposeFuture;
-
-  @override
-  Future<void> disposeAsync() => _disposeFuture ??= _dispose();
-
-  Future<void> _dispose() async {
-    loadCommand.removeListener(notifyListeners);
-    await loadCommand.disposeAsync();
-    super.dispose();
-  }
-
-  @override
-  // The async path calls ChangeNotifier.dispose after draining the command.
-  // ignore: must_call_super
-  void dispose() => unawaited(disposeAsync());
 }
 ''';
 
@@ -888,11 +846,13 @@ import '${name.snake}_view_model.dart';
 
 /// Composition boundary for the ${name.pascal} feature.
 final class ${name.pascal}Page extends StatelessWidget {
-  const ${name.pascal}Page({super.key});
+  const ${name.pascal}Page({required this.repository, super.key});
+
+  final ${name.pascal}Repository repository;
 
   @override
   Widget build(BuildContext context) => ViewModelHost<${name.pascal}ViewModel>.create(
-    create: ${name.pascal}Composition.createViewModel,
+    create: () => ${name.pascal}Composition.createViewModel(repository),
     start: (viewModel) => viewModel.start(),
     builder: (context, viewModel) => ${name.pascal}View(viewModel: viewModel),
   );
@@ -994,8 +954,7 @@ abstract interface class ${name.pascal}Repository {
     required String contractLayer,
   }) =>
       '''import 'package:dartitect/dartitect.dart';
-
-import '../$contractLayer/${name.snake}_repository.dart';
+import 'package:$packageName/features/${name.snake}/$contractLayer/${name.snake}_repository.dart';
 
 /// Deterministic memory implementation owned by the composition root.
 final class Memory${name.pascal}Repository implements ${name.pascal}Repository {
@@ -1011,23 +970,23 @@ final class Memory${name.pascal}Repository implements ${name.pascal}Repository {
 }
 ''';
 
-  String _composition(ScaffoldName name) =>
-      '''import '../infrastructure/memory_${name.snake}_repository.dart';
+  String _composition(ScaffoldName name, {required String contractLayer}) =>
+      '''import '../$contractLayer/${name.snake}_repository.dart';
 import '../presentation/${name.snake}_view_model.dart';
 
 /// Explicit provider-aware composition boundary for ${name.pascal}.
 abstract final class ${name.pascal}Composition {
-  static ${name.pascal}ViewModel createViewModel() {
-    final repository = Memory${name.pascal}Repository();
-    return ${name.pascal}ViewModel(repository);
-  }
+  static ${name.pascal}ViewModel createViewModel(
+    ${name.pascal}Repository repository,
+  ) => ${name.pascal}ViewModel(repository);
 }
 ''';
 
   String _repositoryContractTest(ScaffoldName name) =>
       '''import 'package:dartitect/dartitect.dart';
-import 'package:$packageName/features/${name.snake}/infrastructure/memory_${name.snake}_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/features/${name.snake}/memory_${name.snake}_repository.dart';
 
 void main() {
   test('memory repository satisfies the public contract', () async {
@@ -1044,12 +1003,16 @@ void main() {
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../support/features/${name.snake}/memory_${name.snake}_repository.dart';
+
 void main() {
   testWidgets('page owns its ViewModel and renders local data', (tester) async {
     await tester.pumpWidget(
-      const Directionality(
+      Directionality(
         textDirection: TextDirection.ltr,
-        child: ${name.pascal}Page(),
+        child: ${name.pascal}Page(
+          repository: Memory${name.pascal}Repository(),
+        ),
       ),
     );
     await tester.pump();

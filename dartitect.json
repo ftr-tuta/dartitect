@@ -1,5 +1,5 @@
 {
-  "configVersion": 1,
+  "configVersion": 2,
   "profile": "native_strict",
   "layers": {
     "domain": ["**/domain/**"],
@@ -26,7 +26,8 @@
     "**/integration_test/**",
     "**/composition/**",
     "**/*_composition_root.dart",
-    "tool/drift_web_fixture/**"
+    "tool/drift_web_fixture/**",
+    "tool/drift_fixture/**"
   ],
   "generatedInfrastructure": [
     "**/infrastructure/**/*.g.dart"
@@ -39,10 +40,11 @@
     ".dartitect.g.dart"
   ],
   "suppressions": [],
-  "features": {
-    "declarations": {}
-  },
-  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
-  "scheduler": "none",
-  "extensions": {}
+  "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
+  "storageContexts": {},
+  "transports": {},
+  "observability": {"provider": "none"},
+  "scheduler": {"provider": "none"},
+  "features": {"declarations": {}},
+  "extensionSources": []
 }

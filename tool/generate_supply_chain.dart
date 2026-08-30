@@ -107,20 +107,24 @@ Future<void> main(List<String> arguments) async {
         'relationships': relationships,
       })}\n';
   final licenses =
-      '${encoder.convert(<String, Object?>{'schemaVersion': 1, 'generatedFor': 'lockstep candidate cohort $cohort', 'packages': licenseInventory})}\n';
+      '${encoder.convert(<String, Object?>{'schemaVersion': 1, 'generatedFor': 'release baseline $cohort', 'packages': licenseInventory})}\n';
   final sbomFile = File('${output.path}/sbom.spdx.json');
   final licenseFile = File('${output.path}/dependency-licenses.json');
   if (arguments.contains('--check')) {
-    final matches =
-        await sbomFile.exists() &&
-        await sbomFile.readAsString() == sbom &&
-        await licenseFile.exists() &&
-        await licenseFile.readAsString() == licenses;
-    if (!matches) {
+    final mismatches = <String>[
+      if (await _artifactMismatch(sbomFile, sbom) case final mismatch?)
+        mismatch,
+      if (await _artifactMismatch(licenseFile, licenses) case final mismatch?)
+        mismatch,
+    ];
+    if (mismatches.isNotEmpty) {
       stderr.writeln(
         'Supply-chain artifacts are stale; run '
         'dart run tool/generate_supply_chain.dart.',
       );
+      for (final mismatch in mismatches) {
+        stderr.writeln(mismatch);
+      }
       exitCode = 1;
       return;
     }
@@ -147,11 +151,14 @@ Future<(String, String?)> _licenseFor(Uri? rootUri) async {
   final entities = await directory.list(followLinks: false).toList();
   final candidates = entities
       .whereType<File>()
-      .where((file) => _basename(file.path).toUpperCase().startsWith('LICENSE'))
+      .where((file) => _fileName(file).toUpperCase().startsWith('LICENSE'))
       .toList();
-  candidates.sort((left, right) => left.path.compareTo(right.path));
+  candidates.sort(
+    (left, right) => left.uri.toString().compareTo(right.uri.toString()),
+  );
   if (candidates.isEmpty) return ('NOASSERTION', null);
   final text = await candidates.first.readAsString();
+  final licenseFileName = _canonicalLicenseFileName(candidates.first);
   final license = text.contains('Apache License')
       ? 'Apache-2.0'
       : text.contains('MIT License') ||
@@ -160,11 +167,69 @@ Future<(String, String?)> _licenseFor(Uri? rootUri) async {
       : text.contains('Redistribution and use in source and binary forms')
       ? 'BSD-3-Clause'
       : 'NOASSERTION';
-  return (license, _basename(candidates.first.path));
+  return (license, licenseFileName);
 }
 
 String _safeId(String value) =>
     value.replaceAll(RegExp(r'[^A-Za-z0-9.-]'), '-');
 
-String _basename(String path) =>
-    path.split(Platform.pathSeparator).where((part) => part.isNotEmpty).last;
+String _fileName(File file) => file.uri.pathSegments.last;
+
+String _canonicalLicenseFileName(File file) {
+  final name = _fileName(file);
+  return 'LICENSE${name.substring('LICENSE'.length)}';
+}
+
+Future<String?> _artifactMismatch(File file, String expected) async {
+  if (!await file.exists()) return '${file.path}: missing';
+  final actual = await file.readAsString();
+  if (actual == expected) return null;
+  try {
+    final difference = _firstJsonDifference(
+      jsonDecode(actual),
+      jsonDecode(expected),
+      r'$',
+    );
+    return difference == null
+        ? '${file.path}: JSON matches but serialization differs'
+        : '${file.path}: $difference';
+  } on FormatException catch (error) {
+    return '${file.path}: invalid tracked JSON: $error';
+  }
+}
+
+String? _firstJsonDifference(Object? actual, Object? expected, String path) {
+  if (actual is Map && expected is Map) {
+    final keys = <Object?>{...actual.keys, ...expected.keys}.toList()
+      ..sort((left, right) => '$left'.compareTo('$right'));
+    for (final key in keys) {
+      if (!actual.containsKey(key)) return '$path.$key is missing in tracked';
+      if (!expected.containsKey(key)) {
+        return '$path.$key exists only in tracked';
+      }
+      final difference = _firstJsonDifference(
+        actual[key],
+        expected[key],
+        '$path.$key',
+      );
+      if (difference != null) return difference;
+    }
+    return null;
+  }
+  if (actual is List && expected is List) {
+    if (actual.length != expected.length) {
+      return '$path length is ${actual.length}; expected ${expected.length}';
+    }
+    for (var index = 0; index < actual.length; index += 1) {
+      final difference = _firstJsonDifference(
+        actual[index],
+        expected[index],
+        '$path[$index]',
+      );
+      if (difference != null) return difference;
+    }
+    return null;
+  }
+  if (actual == expected) return null;
+  return '$path is ${jsonEncode(actual)}; expected ${jsonEncode(expected)}';
+}

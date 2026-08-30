@@ -3,7 +3,7 @@
 ## Purpose
 
 Local Dart VM inspection, architecture scanning, diagnostics, stable config,
-reviewed baselines, modeling generation/migration, dependency/fleet policy,
+strict greenfield scans, modeling generation, dependency/fleet policy,
 managed Codex skill synchronization, and transactional filesystem changes.
 
 ## When to use
@@ -42,8 +42,11 @@ rule and preserves consumer-owned skills and an existing `AGENTS.md`.
 
 ```console
 dartitect inspect --json
-dartitect scan --no-baseline
+dartitect inspect --consumer-tax --json
+dartitect scan
 dartitect doctor
+dartitect contracts check api/openapi.yaml --json
+dartitect contracts sync api/openapi.yaml --dry-run
 dartitect model check --json
 dartitect model sync
 dartitect codex sync --dry-run
@@ -55,15 +58,21 @@ document their own `--dry-run`/apply form in `example/README.md`.
 ## Public API tour
 
 - `DartitectProjectService` is the shared typed inspect/scan/doctor/change layer.
+- `ConsumerTaxInspector` measures manual plumbing, capability closure, generated
+  size, and profile ratchets without writing the project.
 - `ProjectScanner`, `DartitectFinding`, `DartitectRuleCodes`, source
   classification, and SARIF/report types expose architecture results.
 - `DartitectConfig`, `ConfigMigrator`, and `nativeStrictProfile` define stable
-  config v1 and architecture defaults.
-- `DartitectBaseline` fingerprints code/path/evidence without line numbers.
+  config v2 and architecture defaults.
+- `LocalExtensionCompiler` analyzes typed extension declarations confined to
+  the project without executing their code or loading a plugin.
+- `OpenApiContractService` validates local OpenAPI 3.1 JSON/YAML, classifies
+  additive/breaking changes, and generates bounded contract code through the
+  focused `dartitect_contracts.dart` tooling entrypoint.
 - `DartitectChangePlan`, semantic inputs/manifests, receipts, and
   `GenerationEngine` implement preview/revalidation/recovery.
-- `DartitectModelGenerator` and `PrimaryConstructorMigration` consume shared
-  semantic modeling IR.
+- `DartitectModelGenerator` consumes shared semantic modeling IR and emits
+  primary constructors directly.
 - `EcosystemDependencyAuditor` and policy types provide pinned offline
   dependency decisions.
 - `DartitectFleetService` confines explicit application roots and returns
@@ -76,9 +85,13 @@ document their own `--dry-run`/apply form in `example/README.md`.
   preserving consumer-owned skill directories.
 - `DartitectVerificationService` and `DartitectCliRunner` map services to stable
   JSON and exit codes.
-- `FeatureProfile` and scaffold/generation types expose the `online`, `cache`,
-  `replica`, and `offline-full` paths plus reviewed file-ownership contracts
-  for tooling authors. Pre-1.0 blueprint aliases are not accepted.
+- `FeatureProfile` and scaffold/generation types expose the `local`, `online`, `cache`,
+  `replica`, and `offline-full` paths plus capability-closed typed assemblies
+  and reviewed file-ownership contracts for tooling authors. Absent
+  capabilities generate no field, and test doubles remain under
+  `test/support`. Generated assemblies consume typed owned-or-borrowed bindings
+  transactionally and own their complete teardown; consumers do not implement
+  a module-wide disposal callback. Pre-1.0 blueprint aliases are not accepted.
 
 ## Ownership and lifecycle
 
@@ -132,12 +145,15 @@ Use `dartitect_lints` for editor feedback,
 bounded local agent interface. Read
 [getting started](../../docs/guides/getting-started.md),
 [model generation](../../docs/guides/model-generation.md),
+[OpenAPI contracts](../../docs/guides/openapi-contracts.md),
+[project-local extensions](../../docs/guides/project-local-extensions.md),
+[consumer tax](../../docs/guides/consumer-tax.md),
 [fleet tooling](../../docs/guides/fleet-tooling.md), and
 [MCP](../../docs/guides/mcp.md).
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.6` source candidate. Global activation or
+The workspace contains the `1.0.0-rc.8` source candidate. Global activation or
 Git use is supported only from coordinates in a matching tagged GitHub Release.
 If no compatible Release exists, there is no supported consumption path. See
 the [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

@@ -4,44 +4,56 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 void main() {
-  test('accepts one exact lockstep cohort in dependency layers', () async {
-    final fixture = await _Fixture.create();
+  test(
+    'accepts one RC baseline with a generated compatibility range',
+    () async {
+      final fixture = await _Fixture.create();
+      addTearDown(fixture.dispose);
+
+      final result = await fixture.check();
+
+      expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
+      expect(result.stdout, contains('2 packages from baseline 1.0.0-rc.8'));
+    },
+  );
+
+  test('accepts independent stable patches declared by the manifest', () async {
+    final fixture = await _Fixture.create(
+      baseline: '1.0.0',
+      syncVersion: '1.0.3',
+      constraint: '>=1.0.0 <1.1.0',
+    );
     addTearDown(fixture.dispose);
 
     final result = await fixture.check();
 
     expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
-    expect(result.stdout, contains('2 packages at 1.0.0-rc.9'));
   });
 
-  test('accepts a release-candidate lockstep cohort', () async {
-    final fixture = await _Fixture.create(cohort: '1.0.0-rc.3');
-    addTearDown(fixture.dispose);
+  test(
+    'rejects workspace version that differs from package metadata',
+    () async {
+      final fixture = await _Fixture.create(
+        syncVersion: '1.0.0-rc.9',
+        manifestSyncVersion: '1.0.0-rc.8',
+      );
+      addTearDown(fixture.dispose);
 
-    final result = await fixture.check();
+      final result = await fixture.check();
 
-    expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
-    expect(result.stdout, contains('2 packages at 1.0.0-rc.3'));
-  });
-
-  test('rejects a mixed package cohort', () async {
-    final fixture = await _Fixture.create(syncVersion: '1.0.0-rc.8');
-    addTearDown(fixture.dispose);
-
-    final result = await fixture.check();
-
-    expect(result.exitCode, 1);
-    expect(result.stderr, contains('expected cohort'));
-  });
+      expect(result.exitCode, 1);
+      expect(result.stderr, contains('does not match its release metadata'));
+    },
+  );
 
   test('rejects a broad internal constraint', () async {
-    final fixture = await _Fixture.create(constraint: '^1.0.0-rc.9');
+    final fixture = await _Fixture.create(constraint: '^1.0.0-rc.8');
     addTearDown(fixture.dispose);
 
     final result = await fixture.check();
 
     expect(result.exitCode, 1);
-    expect(result.stderr, contains('uses ^1.0.0-rc.9'));
+    expect(result.stderr, contains('uses ^1.0.0-rc.8'));
   });
 
   test('rejects publication in the dependency layer or later', () async {
@@ -65,8 +77,9 @@ final class _Fixture {
   final Directory root;
 
   static Future<_Fixture> create({
-    String cohort = '1.0.0-rc.9',
+    String baseline = '1.0.0-rc.8',
     String? syncVersion,
+    String? manifestSyncVersion,
     String? constraint,
     List<List<String>> layers = const <List<String>>[
       <String>['dartitect'],
@@ -77,21 +90,49 @@ final class _Fixture {
       'dartitect-release-contract-',
     );
     await Directory('${root.path}/tool').create(recursive: true);
-    final internalConstraint = constraint ?? '>=$cohort <1.0.0';
-    await _package(root, 'dartitect', cohort);
+    final expectedConstraint = baseline.contains('-')
+        ? '>=$baseline <1.0.0'
+        : '>=1.0.0 <1.1.0';
+    final actualSyncVersion = syncVersion ?? baseline;
+    await _package(root, 'dartitect', baseline);
     await _package(
       root,
       'dartitect_sync',
-      syncVersion ?? cohort,
-      dependency: internalConstraint,
+      actualSyncVersion,
+      dependency: constraint ?? expectedConstraint,
     );
     final order = <String>[for (final layer in layers) ...layer];
     await File('${root.path}/tool/package_release_contract.json').writeAsString(
       jsonEncode(<String, Object?>{
-        'schemaVersion': 1,
+        'schemaVersion': 2,
         'series': '1.0.x',
-        'cohortVersion': cohort,
-        'internalConstraint': '>=$cohort <1.0.0',
+        'cohortVersion': baseline,
+        'baselineVersion': baseline,
+        'candidateTag': 'v$baseline',
+        'packageCount': 2,
+        'publicEntrypointCount': 1,
+        'compatibility': <String, Object?>{
+          'defaultRange': expectedConstraint,
+          'packageRanges': <String, Object?>{},
+          'prereleaseBaselineRequired': true,
+          'stableIndependentPatches': true,
+          'stableDefaultRange': '>=1.0.0 <1.1.0',
+        },
+        'inventoryDecisions': <String, Object?>{
+          'dartitect': 'fixture-foundation',
+          'dartitect_sync': 'fixture-platform-service',
+        },
+        'publicationCohorts': <String, Object?>{
+          'foundation': <String>['dartitect'],
+          'platformServices': <String>['dartitect_sync'],
+          'providerAdapters': <String>[],
+          'tooling': <String>[],
+          'leafUtilities': <String>[],
+        },
+        'packages': <String, Object?>{
+          'dartitect': _metadata(baseline),
+          'dartitect_sync': _metadata(manifestSyncVersion ?? actualSyncVersion),
+        },
         'publicationLayers': layers,
         'publicationOrder': order,
         'artifactContract': <String, Object?>{
@@ -101,6 +142,11 @@ final class _Fixture {
           'pathDependencies': false,
           'dependencyOverrides': false,
           'digestAlgorithm': 'sha256',
+        },
+        'gitCandidate': <String, Object?>{
+          'tag': 'v$baseline',
+          'materialized': false,
+          'pubDevPublication': false,
         },
         'partialFailurePolicy': <String, Object?>{
           'automaticRetry': false,
@@ -112,6 +158,12 @@ final class _Fixture {
     );
     return _Fixture(root);
   }
+
+  static Map<String, Object?> _metadata(String version) => <String, Object?>{
+    'version': version,
+    'platforms': <String>['Dart'],
+    'stability': 'fixture',
+  };
 
   Future<ProcessResult> check() async {
     final checker = File(

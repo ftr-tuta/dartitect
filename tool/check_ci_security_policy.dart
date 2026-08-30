@@ -147,7 +147,7 @@ void _auditWorkflows(Directory root, List<String> errors) {
     'GITHUB_EVENT_NAME\" == \"merge_group',
     '--exclude-merge-commits',
     'Clean clone / release audit',
-    'Git consumption / v1.0.0-rc.6',
+    'Git consumption / v1.0.0-rc.8',
     'tool/run_git_canaries.dart',
     'name: CI / Required',
     'android-media-current-emulator',

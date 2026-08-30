@@ -16,8 +16,8 @@ Every proposed Dartitect capability must answer yes to this question:
 _É business-neutral, difícil de implementar corretamente e gera
 infraestrutura repetitiva no consumidor?_
 
-If any answer is no, the capability remains in +softgran_*+, +agrox_*+, or the
-application. Config v1 accepts only +native_strict+, closed provider/platform
+If any answer is no, reusable infrastructure remains in a typed project-local
+extension and business behavior remains in the application. Config v1 accepts only +native_strict+, closed provider/platform
 identifiers, and namespaced +extensions+. Feature behavior uses the four
 +FeatureProfile+ values; pre-1.0 blueprint names and overlap controls are
 removed.

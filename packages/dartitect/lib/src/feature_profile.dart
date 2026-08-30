@@ -1,5 +1,8 @@
 /// Stable behavioral profiles understood across Dartitect tooling and tests.
 enum FeatureProfile {
+  /// Device-local behavior with no transport or synchronization capability.
+  local('local'),
+
   /// Remote authority without durable local persistence.
   online('online'),
 

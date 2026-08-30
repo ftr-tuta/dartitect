@@ -3,40 +3,38 @@
 Install `dartitect_cli`, run read-only discovery first, and review every preview:
 
 ```console
-dart pub global activate dartitect_cli 1.0.0-rc.6
+dart pub global activate dartitect_cli 1.0.0-rc.8
 dartitect inspect --json
-dartitect scan --no-baseline
+dartitect scan
 dartitect doctor
 dartitect doctor --deep
 dartitect init --dry-run
-dartitect baseline create --dry-run
 dartitect codex sync --dry-run
 dartitect model check --json
-dartitect model migrate primary --json
 dartitect model sync
 dartitect dependencies audit --json
 dartitect dependencies explain uuid
 dartitect fleet versions apps/a apps/b --root . --json
 dartitect fleet check apps/a apps/b --root . --json
 dartitect fleet policy apps/a --root . --bundle=tool/fleet_policy_bundle.json --sha256=<sha256> --json
-dartitect create app shop --preset=offline-hybrid --transport=dio --observability=developer --scheduler=workmanager
-dartitect create feature orders --profile=offline-full --scope=session --persistence-native=drift --persistence-web=drift --transport=dio --pagination=cursor --headless-sync
+dartitect create app shop --targets=android,ios,web
+dartitect create feature orders --profile=offline-full --scope=session --targets=android,ios,web --storage-context=primary --transport=api --pagination=cursor --headless-targets=android,ios
 dartitect wiring sync --dry-run --json
-dartitect fleet upgrade apps/a --root . --to=1.0.0-rc.6 --json
-dartitect fleet upgrade apps/a --root . --to=1.0.0-rc.6 --apply --json
+dartitect fleet upgrade apps/a --root . --to=1.0.0-rc.8 --json
+dartitect fleet upgrade apps/a --root . --to=1.0.0-rc.8 --apply --json
 ```
 
-Mutating counterparts are `init` without `--dry-run`, `baseline create` without
-`--dry-run`, and `codex sync` without `--dry-run`. `create` generators also
-support `--dry-run`; MCP exposes only the bounded feature preview. Config
-migration is accepted only through the exact journaled RC5-to-RC6 fleet path.
+Mutating counterparts are `init` and `codex sync` without `--dry-run`. `create` generators also
+support `--dry-run`; MCP exposes only the bounded feature preview. `create app`
+emits an empty shell and no productive provider defaults; examples require
+explicit `--example=tasks`. Config migration is accepted only through the
+versioned Dartitect-project fleet path.
 Unlike create-only mutators, convergent `model sync` previews by default and
 only `model sync --apply` writes or recovers; `--dry-run` and `--apply` cannot
 be combined. Generated outputs and
 `.dartitect/generation/modeling/manifest.json` are committed.
-Primary-constructor migration also previews by default; only
-`model migrate primary --apply` writes source under the shared project lock and
-its namespaced source journal.
+Generators and analyzer quick fixes emit primary constructors directly; the
+public CLI has no general model-conversion command.
 Fleet report/check/policy commands never write. Upgrade previews by default;
 `--apply` acquires the fleet lock and ordered project locks, journals all bytes,
 runs only allowlisted validation, and commits the cohort atomically or restores

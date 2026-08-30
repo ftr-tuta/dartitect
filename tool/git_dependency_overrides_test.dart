@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:test/test.dart';
@@ -12,10 +13,10 @@ void main() {
       root,
       const <String>['dartitect_flutter'],
       repository: 'https://example.invalid/dartitect.git',
-      ref: 'v1.0.0-rc.6',
+      ref: 'v1.0.0-rc.8',
     );
     expect(_packages(output), <String>['dartitect', 'dartitect_flutter']);
-    expect(output, contains('ref: v1.0.0-rc.6'));
+    expect(output, contains('ref: v1.0.0-rc.8'));
   });
 
   test('computes deeper adapter closure in publication order', () {
@@ -36,17 +37,17 @@ void main() {
   test(
     'supports any combination of the complete twenty-four-package cohort',
     () {
-      final contract = File('${root.path}/tool/package_release_contract.json')
-          .readAsStringSync();
-      final names = RegExp(
-        r'^      "(dartitect(?:_[a-z]+)*)"',
-        multiLine: true,
-      ).allMatches(contract).map((match) => match.group(1)!).toSet();
+      final contract = jsonDecode(
+        File('${root.path}/tool/package_release_contract.json')
+            .readAsStringSync(),
+      ) as Map<String, Object?>;
+      final packages = contract['packages']! as Map<String, Object?>;
+      final names = packages.keys.toSet();
       final output = buildGitDependencyOverrides(
         root,
         names,
         repository: 'https://example.invalid/dartitect.git',
-        ref: 'v1.0.0-rc.6',
+        ref: 'v1.0.0-rc.8',
       );
       expect(_packages(output).toSet(), hasLength(24));
     },
@@ -58,7 +59,7 @@ void main() {
         root,
         const <String>['not_dartitect'],
         repository: 'https://example.invalid/dartitect.git',
-        ref: 'v1.0.0-rc.6',
+        ref: 'v1.0.0-rc.8',
       ),
       throwsArgumentError,
     );

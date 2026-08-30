@@ -1,5 +1,5 @@
 {
-  "configVersion": 1,
+  "configVersion": 2,
   "profile": "native_strict",
   "layers": {
     "presentation": ["**/presentation/**"],
@@ -18,8 +18,11 @@
     ".dartitect.g.dart"
   ],
   "suppressions": [],
+  "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
+  "storageContexts": {},
+  "transports": {},
+  "observability": {"provider": "none"},
+  "scheduler": {"provider": "none"},
   "features": {"declarations": {}},
-  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
-  "scheduler": "none",
-  "extensions": {}
+  "extensionSources": []
 }

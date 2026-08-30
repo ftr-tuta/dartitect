@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dartitect_cli/dartitect_cli.dart';
+import 'package:dartitect_cli/src/scan/baseline.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -237,7 +238,7 @@ sdks:
       await _write(root, 'pubspec.yaml', 'name: generated_sample\n');
       await _write(root, 'dartitect.json', '''
 {
-  "configVersion": 1,
+  "configVersion": 2,
   "profile": "native_strict",
   "layers": {
     "domain": ["lib/domain/**"],
@@ -251,9 +252,12 @@ sdks:
   "generatedSuffixes": [".g.dart", ".dartitect.g.dart"],
   "suppressions": [],
   "features": {"declarations": {}},
-  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
-  "scheduler": "none",
-  "extensions": {}
+  "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
+  "storageContexts": {},
+  "transports": {},
+  "observability": {"provider": "none"},
+  "scheduler": {"provider": "none"},
+  "extensionSources": []
 }
 ''');
       await _write(
@@ -283,7 +287,7 @@ sdks:
     await _write(root, 'pubspec.yaml', 'name: scope_sample\n');
     await _write(root, 'dartitect.json', '''
 {
-  "configVersion": 1,
+  "configVersion": 2,
   "profile": "native_strict",
   "layers": {
     "domain": ["lib/domain/**"],
@@ -297,9 +301,12 @@ sdks:
   "generatedSuffixes": [".g.dart", ".dartitect.g.dart"],
   "suppressions": [],
   "features": {"declarations": {}},
-  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
-  "scheduler": "none",
-  "extensions": {}
+  "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
+  "storageContexts": {},
+  "transports": {},
+  "observability": {"provider": "none"},
+  "scheduler": {"provider": "none"},
+  "extensionSources": []
 }
 ''');
     await _write(
@@ -368,13 +375,13 @@ final Size Function() readSize = () => const Size();
     },
   );
 
-  test('stable config v1 classifies custom layers and suppressions', () async {
-    final root = await Directory.systemTemp.createTemp('dartitect-config-v1-');
+  test('stable config v2 classifies custom layers and suppressions', () async {
+    final root = await Directory.systemTemp.createTemp('dartitect-config-v2-');
     addTearDown(() => root.delete(recursive: true));
     await _write(root, 'pubspec.yaml', 'name: configured_sample\n');
     await _write(root, 'dartitect.json', '''
 {
-  "configVersion": 1,
+  "configVersion": 2,
   "profile": "native_strict",
   "layers": {
     "domain": ["lib/model/**"],
@@ -392,13 +399,16 @@ final Size Function() readSize = () => const Size();
       "path": "lib/model/legacy.dart",
       "reason": "Reviewed compatibility shim",
       "owner": "architecture",
-      "permanentJustification": "Public compatibility contract"
+      "expiresAt": "2099-12-31"
     }
   ],
   "features": {"declarations": {}},
-  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
-  "scheduler": "none",
-  "extensions": {}
+  "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
+  "storageContexts": {},
+  "transports": {},
+  "observability": {"provider": "none"},
+  "scheduler": {"provider": "none"},
+  "extensionSources": []
 }
 ''');
     await _write(
@@ -561,7 +571,7 @@ workspace:
     await _write(root, 'packages/app/pubspec.yaml', 'name: app\n');
     await _write(root, 'packages/app/dartitect.json', '''
 {
-  "configVersion": 1,
+  "configVersion": 2,
   "profile": "native_strict",
   "layers": {
     "domain": ["lib/domain/**"],
@@ -575,9 +585,12 @@ workspace:
   "generatedSuffixes": [".g.dart", ".dartitect.g.dart"],
   "suppressions": [],
   "features": {"declarations": {}},
-  "platforms": ["android", "ios", "macos", "windows", "linux", "web"],
-  "scheduler": "none",
-  "extensions": {}
+  "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
+  "storageContexts": {},
+  "transports": {},
+  "observability": {"provider": "none"},
+  "scheduler": {"provider": "none"},
+  "extensionSources": []
 }
 ''');
     await _write(

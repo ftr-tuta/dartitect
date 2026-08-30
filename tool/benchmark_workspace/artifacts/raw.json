@@ -4,7 +4,7 @@
   "warmupSamples": 3,
   "repetitions": 15,
   "comparators": {
-    "dartitect_flutter": "1.0.0-rc.6",
+    "dartitect_flutter": "1.0.0-rc.8",
     "flutter_riverpod": "3.4.2",
     "flutter_bloc": "9.1.1",
     "bloc_concurrency": "0.3.0"

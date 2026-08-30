@@ -7,6 +7,11 @@ sanitized instrumentation adapters around a consumer-generated Drift database.
 The package does not define a database, table, migration, executor, or query
 abstraction.
 
+Config-v2 generation exposes one `<Context>DartitectDriftFragment` whose
+operational `tables` are explicitly included by the consumer-owned database.
+The fragment versions only SDK-owned operational tables; domain migrations
+remain consumer-owned.
+
 ## When to use
 
 Use it after an application has selected Drift and owns a generated
@@ -159,7 +164,7 @@ Combine with `dartitect_sync` for mutation/outbox and dataset orchestration,
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.6` source candidate. Supported
+The workspace contains the `1.0.0-rc.8` source candidate. Supported
 Git consumption requires a matching tag and published GitHub Release and uses
 the complete cohort coordinates from its notes. If none exists, there is no
 supported consumption path. See the

@@ -26,7 +26,6 @@ Future<void> main(List<String> arguments) async {
       'scan',
       '--root',
       '.',
-      '--no-baseline',
     ]),
     const _Command('dart', <String>[
       'packages/dartitect_cli/bin/dartitect.dart',
@@ -55,6 +54,11 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>[
       'run',
       'tool/check_package_release_contract.dart',
+    ]),
+    const _Command('dart', <String>[
+      'run',
+      'tool/generate_release_artifacts.dart',
+      '--check',
     ]),
     if (!stableCohort)
       const _Command('dart', <String>['run', 'tool/check_rc_candidate.dart']),
@@ -194,6 +198,14 @@ Future<void> main(List<String> arguments) async {
       '--check',
     ]),
     const _Command('dart', <String>['run', 'tool/check_api_snapshot.dart']),
+    const _Command('dart', <String>[
+      'test',
+      'tool/check_api_snapshot_test.dart',
+    ]),
+    const _Command('dart', <String>[
+      'run',
+      'tool/check_generated_output_compatibility.dart',
+    ]),
     for (final package in <String>[
       'dartitect',
       'dartitect_devtools',
@@ -228,6 +240,15 @@ Future<void> main(List<String> arguments) async {
     const _Command('flutter', <String>['test', 'examples/paved_road_canary']),
     const _Command('flutter', <String>[
       'test',
+      'examples/thin_consumer_canary',
+    ]),
+    const _Command('dart', <String>[
+      'run',
+      'dartitect_cli:dartitect',
+      'inspect',
+      '--consumer-tax',
+      '--json',
+      '--root',
       'examples/thin_consumer_canary',
     ]),
     const _Command('dart', <String>[
@@ -267,6 +288,24 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>[
       'test',
       'examples/model_generator_fixture',
+    ]),
+    const _Command('dart', <String>[
+      'test',
+      'examples/openapi_contract_fixture',
+    ]),
+    const _Command('dart', <String>[
+      'test',
+      'examples/api_compatibility_fixture',
+    ]),
+    const _Command('dart', <String>[
+      'run',
+      'dartitect_cli:dartitect',
+      'contracts',
+      'check',
+      'contracts/tasks.yaml',
+      '--root',
+      'examples/openapi_contract_fixture',
+      '--json',
     ]),
     const _Command('dart', <String>[
       'test',

@@ -7,13 +7,13 @@ once, sorted, and never followed through escaping symlinks.
 dartitect fleet versions apps/a apps/b --root . --json
 dartitect fleet check apps/a apps/b --root . --json
 dartitect fleet upgrade apps/a apps/b \
-  --root . --to=1.0.0-rc.6 --apply --json
+  --root . --to=1.0.0-rc.8 --apply --json
 ```
 
 Upgrade preview is deterministic across the complete cohort. Apply acquires a
 fleet lock and project locks in order, journals every affected byte, upgrades
-dependencies, runs the exact RC5-to-RC6 config/codemod, synchronizes primary
-constructors, models, wiring, and operational schemas, then executes only the
+dependencies, runs the exact Dartitect RC6/v1-to-RC8/v2 upgrade, synchronizes
+primary constructors, models, wiring, and operational schemas, then executes only the
 allowlisted pub-get, analyze, test, and contract-matrix commands.
 
 No project commits until every project passes. Failure restores every codebase

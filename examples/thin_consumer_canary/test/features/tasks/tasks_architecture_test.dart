@@ -14,6 +14,9 @@ void main() {
         .where((file) => file.path.endsWith('.dart'));
     for (final file in files) {
       final source = file.readAsStringSync();
+      final name = file.uri.pathSegments.last;
+      expect(name, isNot(startsWith('fake_')));
+      expect(name, isNot(startsWith('memory_')));
       if (file.path.contains('/presentation/') ||
           file.path.contains('/domain/')) {
         expect(source, isNot(contains('package:dio/')));
@@ -21,6 +24,48 @@ void main() {
       }
       expect(source, isNot(contains('GetIt')));
     }
+  });
+
+  test('consumer-owned files contain no structural plumbing', () {
+    final root = _packageRoot('thin_consumer_canary');
+    final lib = Directory('${root.path}/lib');
+    final forbidden = <String>[
+      'OwnedGraph',
+      'ResourceTransaction',
+      'DioOwner',
+      'DriftDatabaseOwner',
+      'ObjectBoxStoreOwner',
+      'StreamSubscription',
+      'CancelToken',
+      'addListener(',
+      'removeListener(',
+      'Timer(',
+    ];
+    final generated = <File>[];
+    for (final file
+        in lib
+            .listSync(recursive: true)
+            .whereType<File>()
+            .where((candidate) => candidate.path.endsWith('.dart'))) {
+      final source = file.readAsStringSync();
+      if (file.path.endsWith('.dartitect.g.dart')) {
+        generated.add(file);
+        continue;
+      }
+      for (final marker in forbidden) {
+        expect(
+          source,
+          isNot(contains(marker)),
+          reason: '$marker is structural plumbing in ${file.path}',
+        );
+      }
+    }
+    final generatedSource = generated
+        .map((file) => file.readAsStringSync())
+        .join('\n');
+    expect(generatedSource, contains('OwnedGraph'));
+    expect(generatedSource, contains('ResourceTransaction'));
+    expect(generatedSource, contains('DartitectAssemblyBinding'));
   });
 }
 

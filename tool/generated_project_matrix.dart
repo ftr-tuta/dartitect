@@ -1,39 +1,39 @@
+import 'dart:convert';
 import 'dart:io';
+
+import '../packages/dartitect_cli/lib/src/config/dartitect_config.dart';
 
 Future<void> main(List<String> arguments) async {
   final workspace = File.fromUri(Platform.script).parent.parent.absolute;
   final builds = arguments.contains('--builds');
+  final requested = arguments
+      .where((argument) => !argument.startsWith('--'))
+      .toSet();
   const scenarios = <_Scenario>[
-    _Scenario('minimal', preset: 'minimal', observability: 'none'),
+    _Scenario('minimal', observability: 'none'),
+    _Scenario('extensions', observability: 'none', extensions: true),
     _Scenario(
       'online',
-      preset: 'minimal',
       observability: 'developer',
-      feature: _FeatureScenario('search', profile: 'online'),
+      feature: _FeatureScenario('search', profile: 'online', transport: true),
     ),
     _Scenario(
       'offline',
-      preset: 'offline-hybrid',
       observability: 'developer',
       feature: _FeatureScenario(
         'orders',
         profile: 'offline-full',
         scope: 'session',
-        persistenceNative: 'drift',
-        persistenceWeb: 'drift',
+        storage: true,
+        transport: true,
         pagination: true,
-        headless: true,
         capabilities: 'credentials,attachments,forms,queries',
       ),
     ),
-    _Scenario(
-      'sentry',
-      preset: 'offline-hybrid',
-      observability: 'sentry',
-      background: true,
-    ),
+    _Scenario('sentry', observability: 'sentry', background: true),
   ];
   for (final scenario in scenarios) {
+    if (requested.isNotEmpty && !requested.contains(scenario.label)) continue;
     await _validateScenario(workspace, scenario, builds: builds);
   }
 }
@@ -58,11 +58,10 @@ Future<void> _validateScenario(
       'generated_${scenario.label}',
       '--root',
       parent.path,
-      '--preset=${scenario.preset}',
-      '--transport=dio',
-      '--observability=${scenario.observability}',
-      '--scheduler=workmanager',
+      '--targets=linux,web',
     ]);
+    await _configureScenario(workspace, project, scenario);
+    await _run(project, 'flutter', const <String>['pub', 'get']);
     final feature = scenario.feature;
     if (feature != null) {
       await _run(workspace, 'dart', <String>[
@@ -75,11 +74,10 @@ Future<void> _validateScenario(
         project.path,
         '--profile=${feature.profile}',
         '--scope=${feature.scope}',
-        '--persistence-native=${feature.persistenceNative}',
-        '--persistence-web=${feature.persistenceWeb}',
-        '--transport=dio',
+        '--targets=linux,web',
+        if (feature.storage) '--storage-context=primary',
+        if (feature.transport) '--transport=api',
         if (feature.pagination) '--pagination=cursor',
-        if (feature.headless) '--headless-sync',
         '--diagnostics=full',
         if (feature.capabilities.isNotEmpty)
           '--capabilities=${feature.capabilities}',
@@ -138,12 +136,38 @@ Future<void> backgroundMain(SendPort output) async {
       'run',
       'dartitect_cli:dartitect',
       'scan',
-      '--no-baseline',
       '--root',
       project.path,
     ]);
-    await _run(project, 'flutter', const <String>['analyze']);
-    await _run(project, 'flutter', const <String>['test']);
+    final analysisMillis = await _runTimed(project, 'flutter', const <String>[
+      'analyze',
+    ]);
+    final int buildMillis;
+    if (scenario.feature == null && !scenario.extensions) {
+      buildMillis = await _runTimed(project, 'flutter', const <String>[
+        'build',
+        'bundle',
+      ]);
+    } else {
+      buildMillis = await _runTimed(project, 'flutter', const <String>['test']);
+    }
+    await _writeConsumerTaxMetrics(
+      project,
+      analysisMillis: analysisMillis,
+      buildMillis: buildMillis,
+    );
+    await _run(workspace, 'dart', <String>[
+      'run',
+      'dartitect_cli:dartitect',
+      'inspect',
+      '--consumer-tax',
+      '--json',
+      '--root',
+      project.path,
+    ]);
+    if (scenario.label == 'minimal') {
+      await _verifyMinimalDependencyClosure(project);
+    }
     await _verifyProviderNeutralScaffold(project, scenario);
     if (builds) {
       await _run(project, 'flutter', const <String>['build', 'web']);
@@ -159,6 +183,221 @@ Future<void> backgroundMain(SendPort output) async {
       stderr.writeln('Matrix artifacts retained at ${parent.path}');
     }
   }
+}
+
+Future<void> _configureScenario(
+  Directory workspace,
+  Directory project,
+  _Scenario scenario,
+) async {
+  final file = File('${project.path}/dartitect.json');
+  final prior = DartitectConfig.parse(await file.readAsString());
+  const targets = <DartitectPlatform>[
+    DartitectPlatform.linux,
+    DartitectPlatform.web,
+  ];
+  final feature = scenario.feature;
+  final next = DartitectConfig(
+    configVersion: prior.configVersion,
+    profile: prior.profile,
+    layers: prior.layers,
+    compositionRoots: prior.compositionRoots,
+    generatedInfrastructure: prior.generatedInfrastructure,
+    generatedSuffixes: prior.generatedSuffixes,
+    suppressions: prior.suppressions,
+    modeling: prior.modeling,
+    extensionSources: scenario.extensions
+        ? const <String>['lib/project_extensions.dart']
+        : const <String>[],
+    targets: DartitectTargetsConfig(targets),
+    storageContexts: feature?.storage ?? false
+        ? <String, DartitectStorageContextConfig>{
+            'primary': DartitectStorageContextConfig(
+              provider: 'drift',
+              mode: DartitectStorageMode.durable,
+              targets: targets,
+            ),
+          }
+        : const <String, DartitectStorageContextConfig>{},
+    transports: feature?.transport ?? false
+        ? <String, DartitectTransportConfig>{
+            'api': DartitectTransportConfig(provider: 'dio', targets: targets),
+          }
+        : const <String, DartitectTransportConfig>{},
+    observability: DartitectObservabilityConfig(
+      provider: scenario.observability,
+    ),
+  );
+  await file.writeAsString(next.encode(), flush: true);
+  if (scenario.extensions) {
+    await File('${project.path}/lib/project_extensions.dart').writeAsString('''
+import 'package:dartitect/dartitect.dart';
+
+final class LocalClock {
+  var disposed = false;
+}
+
+@DartitectProjectExtension()
+final class LocalClockExtension
+    implements DartitectLocalExtension<LocalClock> {
+  @override
+  LocalClock build() => LocalClock();
+
+  @override
+  void dispose(LocalClock binding) => binding.disposed = true;
+}
+
+final class LocalAudit {
+  var disposed = false;
+}
+
+@DartitectProjectExtension()
+final class LocalAuditExtension
+    implements DartitectLocalExtension<LocalAudit> {
+  @override
+  LocalAudit build() => LocalAudit();
+
+  @override
+  void dispose(LocalAudit binding) => binding.disposed = true;
+}
+''', flush: true);
+    await File('${project.path}/test/extension_ownership_test.dart')
+        .writeAsString('''
+import 'package:dartitect/dartitect.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:generated_extensions/composition/application_module.wiring.dartitect.g.dart';
+
+void main() {
+  test('generated local extensions are owned and disposed', () async {
+    final coordinator = ApplicationModule.create<Never, Never>();
+    final attempt = await coordinator.run();
+    final success =
+        attempt as BootstrapSucceeded<ApplicationGraph<Never, Never>>;
+    final graph = success.graph;
+    expect(graph.root.localClock.disposed, isFalse);
+    expect(graph.root.localAudit.disposed, isFalse);
+
+    await graph.disposeAsync();
+
+    expect(graph.root.localClock.disposed, isTrue);
+    expect(graph.root.localAudit.disposed, isTrue);
+    await graph.disposeAsync();
+    await coordinator.disposeAsync();
+  });
+}
+''', flush: true);
+  }
+  await _addLocalSdkDependencies(workspace, project, <String>{
+    if (scenario.observability != 'none') 'dartitect_observability',
+    if (scenario.observability == 'sentry') 'dartitect_sentry',
+    if (feature?.transport ?? false) 'dartitect_dio',
+    if (feature?.storage ?? false) 'dartitect_drift',
+    if (feature?.profile == 'offline-full') 'dartitect_sync',
+  });
+  if (scenario.background) {
+    final main = File('${project.path}/lib/main.dart');
+    final mainSource = await main.readAsString();
+    await main.writeAsString(
+      mainSource
+              .replaceFirst(
+                "import 'package:dartitect_flutter/dartitect_flutter.dart';",
+                "import 'package:dartitect_flutter/dartitect_flutter.dart';\n"
+                    "import 'package:dartitect_observability/dartitect_observability.dart';\n"
+                    "import 'package:dartitect_sentry/dartitect_sentry.dart';\n"
+                    "import 'package:sentry/sentry.dart';",
+              )
+              .replaceFirst(
+                '  create: ApplicationModule.create<Never, Never>,',
+                '  create: () => ApplicationModule.create<Never, Never>(\n'
+                    '    createObservability: _createObservability,\n'
+                    '  ),',
+              ) +
+          '''
+
+final _sentryHub = Hub(
+  SentryOptions()
+    ..dsn = 'https://public@example.invalid/1'
+    ..transport = _DiscardingSentryTransport(),
+);
+
+ObservabilityRuntime _createObservability() => ObservabilityRuntime(
+  logSinks: <LogSinkRegistration>[
+    LogSinkRegistration.borrowed(SentryLogSink(hub: _sentryHub)),
+  ],
+);
+
+final class _DiscardingSentryTransport implements Transport {
+  @override
+  Future<SentryId?> send(SentryEnvelope envelope) async => null;
+}
+''',
+      flush: true,
+    );
+    final pubspec = File('${project.path}/pubspec.yaml');
+    final source = await pubspec.readAsString();
+    await pubspec.writeAsString(
+      source.replaceFirst(
+        'dev_dependencies:\n',
+        '  sentry: ^9.27.0\n'
+            'dev_dependencies:\n',
+      ),
+      flush: true,
+    );
+  }
+}
+
+Future<void> _addLocalSdkDependencies(
+  Directory workspace,
+  Directory project,
+  Set<String> selected,
+) async {
+  if (selected.isEmpty) return;
+  const dependencies = <String, Set<String>>{
+    'dartitect_observability': {'dartitect'},
+    'dartitect_jobs': {'dartitect'},
+    'dartitect_resilience': {'dartitect'},
+    'dartitect_transfer': {'dartitect'},
+    'dartitect_sync': {'dartitect', 'dartitect_jobs', 'dartitect_resilience'},
+    'dartitect_dio': {
+      'dartitect',
+      'dartitect_observability',
+      'dartitect_transfer',
+    },
+    'dartitect_drift': {
+      'dartitect',
+      'dartitect_observability',
+      'dartitect_sync',
+    },
+    'dartitect_sentry': {'dartitect_observability'},
+  };
+  final closure = <String>{...selected};
+  var changed = true;
+  while (changed) {
+    changed = false;
+    for (final package in closure.toList(growable: false)) {
+      for (final dependency in dependencies[package] ?? const <String>{}) {
+        changed = closure.add(dependency) || changed;
+      }
+    }
+  }
+  final direct = selected.toList()..sort();
+  final overrides = closure.difference(const <String>{'dartitect'}).toList()
+    ..sort();
+  final pubspec = File('${project.path}/pubspec.yaml');
+  var source = await pubspec.readAsString();
+  source = source.replaceFirst(
+    'dev_dependencies:\n',
+    '${direct.map((package) => '  $package:\n'
+            '    path: ${_yamlPath('${workspace.path}/packages/$package')}\n').join()}'
+        'dev_dependencies:\n',
+  );
+  source = source.replaceFirst(
+    'dependency_overrides:\n',
+    'dependency_overrides:\n'
+        '${overrides.map((package) => '  $package:\n'
+            '    path: ${_yamlPath('${workspace.path}/packages/$package')}\n').join()}',
+  );
+  await pubspec.writeAsString(source, flush: true);
 }
 
 Future<void> _verifyProviderNeutralScaffold(
@@ -184,19 +423,6 @@ Future<void> _verifyProviderNeutralScaffold(
       throw StateError('Drift leaked into provider-neutral $relative.');
     }
   }
-  if (scenario.preset != 'offline-hybrid') return;
-  final recipe = File('${project.path}/docs/drift-composition-root.md');
-  if (!await recipe.exists()) {
-    throw StateError('Drift composition-root recipe was not generated.');
-  }
-  final managedOperationalSchema = dartFiles.any(
-    (file) =>
-        file.path.endsWith('.dartitect.g.dart') &&
-        (file.path.contains('drift') || file.path.contains('outbox')),
-  );
-  if (!managedOperationalSchema) {
-    throw StateError('Drift operational schema was not generated as managed.');
-  }
 }
 
 Future<void> _run(
@@ -204,6 +430,15 @@ Future<void> _run(
   String executable,
   List<String> arguments,
 ) async {
+  await _runTimed(workingDirectory, executable, arguments);
+}
+
+Future<int> _runTimed(
+  Directory workingDirectory,
+  String executable,
+  List<String> arguments,
+) async {
+  final timer = Stopwatch()..start();
   final result = await Process.run(
     executable,
     arguments,
@@ -215,6 +450,44 @@ Future<void> _run(
       '${result.stdout}\n${result.stderr}',
     );
   }
+  timer.stop();
+  return timer.elapsedMilliseconds;
+}
+
+Future<void> _writeConsumerTaxMetrics(
+  Directory project, {
+  required int analysisMillis,
+  required int buildMillis,
+}) async {
+  final target = File('${project.path}/.dartitect/consumer-tax-metrics.json');
+  await target.parent.create(recursive: true);
+  await target.writeAsString(
+    '${const JsonEncoder.withIndent('  ').convert(<String, Object?>{'schemaVersion': 1, 'analysisMillis': analysisMillis, 'buildMillis': buildMillis})}\n',
+    flush: true,
+  );
+}
+
+Future<void> _verifyMinimalDependencyClosure(Directory project) async {
+  final lock = await File('${project.path}/pubspec.lock').readAsString();
+  const forbidden = <String>{
+    'dio',
+    'dartitect_dio',
+    'drift',
+    'dartitect_drift',
+    'dartitect_sync',
+    'workmanager',
+    'dartitect_workmanager',
+  };
+  final resolved = RegExp(
+    r'^  ([a-zA-Z][a-zA-Z0-9_]*):$',
+    multiLine: true,
+  ).allMatches(lock).map((match) => match.group(1)!).toSet();
+  final leaked = forbidden.intersection(resolved).toList()..sort();
+  if (leaked.isNotEmpty) {
+    throw StateError(
+      'Minimal generated project resolved unselected capabilities: $leaked.',
+    );
+  }
 }
 
 String _yamlPath(String path) => path.contains(' ') ? "'$path'" : path;
@@ -222,16 +495,16 @@ String _yamlPath(String path) => path.contains(' ') ? "'$path'" : path;
 final class _Scenario {
   const _Scenario(
     this.label, {
-    required this.preset,
     required this.observability,
     this.background = false,
+    this.extensions = false,
     this.feature,
   });
 
   final String label;
-  final String preset;
   final String observability;
   final bool background;
+  final bool extensions;
   final _FeatureScenario? feature;
 }
 
@@ -240,19 +513,17 @@ final class _FeatureScenario {
     this.name, {
     required this.profile,
     this.scope = 'application',
-    this.persistenceNative = 'none',
-    this.persistenceWeb = 'none',
+    this.storage = false,
+    this.transport = false,
     this.pagination = false,
-    this.headless = false,
     this.capabilities = '',
   });
 
   final String name;
   final String profile;
   final String scope;
-  final String persistenceNative;
-  final String persistenceWeb;
+  final bool storage;
+  final bool transport;
   final bool pagination;
-  final bool headless;
   final String capabilities;
 }

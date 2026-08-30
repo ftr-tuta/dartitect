@@ -1,17 +1,21 @@
 # CLI, scan, and lints
 
 Keep `inspect`, `scan`, and ordinary `doctor` read-only. Deep doctor is explicit
-and bounded. Accept exactly stable config v1 with `native_strict`; reject
-experimental versions, preserve unknown v1 extension keys without interpreting
-them, never store credentials, and provide no compatibility migrator.
-The additive `features` section declares `online`, `cache`, `replica`, or
-`offline-full` plus consumer provider identifiers. `verify` checks declarative
+and bounded. Accept exactly stable config v2 with `native_strict`; reject
+experimental versions, unknown keys, credentials, and opaque plugin data.
+The target-aware `features` section declares `local`, `online`, `cache`,
+`replica`, or `offline-full` and refers to named provider blocks. `verify` checks declarative
 compatibility; behavioral guarantees remain contract-matrix evidence.
 
+`dartitect contracts check|sync` accepts only confined local OpenAPI 3.1 JSON
+or YAML and local refs. Keep network access, streaming, multipart, callbacks,
+webhooks, automatic security execution, and inferred domain mapping outside the
+generator. Preview before apply and classify additive versus breaking changes.
+
 Scan only declared roots using real path segments; ignore nested caches and
-generated code. A baseline fingerprints code, path, and evidence without line
-number. New findings fail, obsolete entries warn, and local suppressions require
-a reason. Keep CLI and official analyzer-plugin diagnostics semantically aligned
+generated code. Every finding fails strict scan. Local suppressions require an
+owner, reason, and expiry, and release doctor rejects all suppressions. Keep CLI
+and official analyzer-plugin diagnostics semantically aligned
 through the versioned true/false-positive corpus while respecting their
 different hosts and entrypoints. Prefer element/library identity when resolved.
 Sensitive metadata needs a recognized telemetry sink. Generated fallback needs

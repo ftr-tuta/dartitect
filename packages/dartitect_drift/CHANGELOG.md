@@ -1,3 +1,9 @@
+## 1.0.0-rc.8
+
+- Prepare the package for the RC8 greenfield platform baseline and compatible post-1.0 publication cohorts.
+- Add one managed operational fragment per durable storage context while
+  leaving domain tables, migrations, and database construction consumer-owned.
+
 ## 1.0.0-rc.6
 
 - Complete this package's lockstep RC6 vertical-platform contracts.

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "namespace": "contracts",
+  "protocolVersion": 1,
+  "outputs": [
+    {
+      "path": "lib/contracts/tasks.contracts.dartitect.g.dart",
+      "source": "contracts/tasks.yaml",
+      "rendererVersion": 3,
+      "semanticSchemaVersion": 1,
+      "inputDigest": "c8c5efedaf7e2611c760af9a62d9ca84c23f81e2313435f48d9e4e55f4abb475",
+      "outputDigest": "3293b9f99c9e0b5c69030a8c5ff722fd786d06ecefd2bb505874beee2fab2487"
+    }
+  ]
+}

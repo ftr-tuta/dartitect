@@ -1,6 +1,7 @@
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
 
+/// Deterministic checkpoint double confined to test support.
 final class FakeTasksCheckpoints implements SyncCheckpointStore<String, int> {
   final Map<String, int> values = <String, int>{};
 

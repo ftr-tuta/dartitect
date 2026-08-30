@@ -57,23 +57,33 @@ dependencies:
       final app = await _project(fleet, 'app', '^1.0.0-rc.4');
       await File('${app.path}/dartitect.json').writeAsString(
         DartitectConfig(
-          scheduler: 'workmanager',
+          storageContexts: <String, DartitectStorageContextConfig>{
+            'primary': DartitectStorageContextConfig(
+              provider: 'drift',
+              mode: DartitectStorageMode.durable,
+              targets: const <DartitectPlatform>[DartitectPlatform.android],
+            ),
+          },
+          transports: <String, DartitectTransportConfig>{
+            'api': DartitectTransportConfig(
+              provider: 'dio',
+              targets: const <DartitectPlatform>[DartitectPlatform.android],
+            ),
+          },
+          scheduler: DartitectSchedulerConfig(provider: 'workmanager'),
           features: DartitectFeaturesConfig(
             declarations: <String, DartitectFeatureDeclaration>{
               'orders': DartitectFeatureDeclaration(
                 profile: FeatureProfile.offlineFull,
                 scope: FeatureScope.application,
-                persistence: FeaturePersistenceMatrix(
-                  native: 'drift',
-                  web: 'drift',
-                ),
-                transport: 'dio',
+                storageContext: 'primary',
+                dataset: DartitectStorageDatasetConfig.forFeature('orders'),
+                transport: 'api',
                 pagination: FeaturePagination.cursor,
                 diagnostics: FeatureDiagnosticsLevel.full,
-                headless: <DartitectPlatform, bool>{
-                  for (final platform in DartitectPlatform.values)
-                    platform: platform != DartitectPlatform.windows,
-                },
+                headlessTargets: const <DartitectPlatform>[
+                  DartitectPlatform.android,
+                ],
               ),
             },
           ),
@@ -167,10 +177,10 @@ void registerMatrix() {
   });
 
   test(
-    'fleet CLI previews RC6 upgrade and writes nothing by default',
+    'fleet CLI previews RC8 upgrade and writes nothing by default',
     () async {
       final fleet = await _fleet();
-      final app = await _project(fleet, 'app', '^1.0.0-rc.5');
+      final app = await _project(fleet, 'app', '^1.0.0-rc.6');
       final before = await File('${app.path}/pubspec.yaml').readAsString();
       final output = StringBuffer();
       final errors = StringBuffer();
@@ -186,7 +196,7 @@ void registerMatrix() {
           'upgrade',
           'app',
           '--dry-run',
-          '--to=1.0.0-rc.6',
+          '--to=1.0.0-rc.8',
           '--json',
         ]),
         0,
@@ -206,7 +216,7 @@ void registerMatrix() {
           'fleet',
           'upgrade',
           'app',
-          '--to=1.0.0-rc.6',
+          '--to=1.0.0-rc.8',
         ]),
         0,
       );
@@ -216,7 +226,7 @@ void registerMatrix() {
 
   test('fleet apply commits only after allowlisted gates pass', () async {
     final fleet = await _fleet();
-    final app = await _project(fleet, 'app', '^1.0.0-rc.5');
+    final app = await _project(fleet, 'app', '^1.0.0-rc.6');
     final commands = <String>[];
     final service = DartitectFleetService(
       fleet,
@@ -228,12 +238,12 @@ void registerMatrix() {
 
     final report = await service.applyUpgrade(<String>[
       'app',
-    ], targetCohort: '1.0.0-rc.6');
+    ], targetCohort: '1.0.0-rc.8');
 
     expect(report.exitCode, 0);
     expect(
       await File('${app.path}/pubspec.yaml').readAsString(),
-      contains('^1.0.0-rc.6'),
+      contains('^1.0.0-rc.8'),
     );
     expect(commands, <String>['dart pub get', 'dart analyze', 'dart test']);
     expect(
@@ -244,8 +254,8 @@ void registerMatrix() {
 
   test('fleet failure restores every project and validates digests', () async {
     final fleet = await _fleet();
-    final alpha = await _project(fleet, 'alpha', '^1.0.0-rc.5');
-    final beta = await _project(fleet, 'beta', '^1.0.0-rc.5');
+    final alpha = await _project(fleet, 'alpha', '^1.0.0-rc.6');
+    final beta = await _project(fleet, 'beta', '^1.0.0-rc.6');
     final beforeAlpha = await File('${alpha.path}/pubspec.yaml').readAsBytes();
     final beforeBeta = await File('${beta.path}/pubspec.yaml').readAsBytes();
     final service = DartitectFleetService(
@@ -262,7 +272,7 @@ void registerMatrix() {
       service.applyUpgrade(<String>[
         'beta',
         'alpha',
-      ], targetCohort: '1.0.0-rc.6'),
+      ], targetCohort: '1.0.0-rc.8'),
       throwsFormatException,
     );
     expect(await File('${alpha.path}/pubspec.yaml').readAsBytes(), beforeAlpha);

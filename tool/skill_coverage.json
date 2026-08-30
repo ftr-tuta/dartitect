@@ -115,6 +115,7 @@
     ],
     "dartitect-tooling": [
       "packages/dartitect_cli/lib/dartitect_cli.dart",
+      "packages/dartitect_cli/lib/dartitect_contracts.dart",
       "packages/dartitect_lints/lib/main.dart",
       "packages/dartitect_devtools/lib/dartitect_devtools.dart",
       "packages/dartitect_modeling_analyzer/lib/dartitect_modeling_analyzer.dart",

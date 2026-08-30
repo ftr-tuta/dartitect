@@ -257,6 +257,5 @@ The complete provider-free workload is
 For every recipe, test success, typed failure, unexpected rethrow, cancellation
 or concurrency, disposal order, and zero residual subscriptions/timers/queries/
 isolates. Use deterministic fakes for policy and a real generated/provider
-fixture for SDK compatibility. Run analyzer, focused tests, `dartitect scan
---no-baseline`, and `dartitect doctor`; use a reviewed baseline only for existing
-debt.
+fixture for SDK compatibility. Run analyzer, focused tests, `dartitect scan`,
+and `dartitect doctor`; resolve every strict finding.

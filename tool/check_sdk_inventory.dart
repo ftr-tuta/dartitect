@@ -11,10 +11,19 @@ Future<void> main(List<String> arguments) async {
     throw const FormatException('Invalid package release cohort.');
   }
   final cohort = release['cohortVersion']! as String;
+  final releasePackages = release['packages'];
+  final decisions = release['inventoryDecisions'];
+  if (releasePackages is! Map<String, Object?> ||
+      decisions is! Map<String, Object?>) {
+    throw const FormatException('Release inventory metadata is missing.');
+  }
   final api = jsonDecode(
     File('${root.path}/tool/api_surface.snapshot.json').readAsStringSync(),
   ) as Map<String, Object?>;
   final surfaces = api['entrypoints']! as Map<String, Object?>;
+  if (api['schemaVersion'] != 2) {
+    throw const FormatException('Unsupported semantic API snapshot schema.');
+  }
   final packages = <Map<String, Object?>>[];
   for (final entity in Directory(
     '${root.path}/packages',
@@ -28,19 +37,28 @@ Future<void> main(List<String> arguments) async {
       multiLine: true,
     ).firstMatch(source)!.group(1)!;
     final name = field('name');
+    final releasePackage = releasePackages[name];
+    if (releasePackage is! Map<String, Object?> ||
+        releasePackage['version'] != field('version')) {
+      throw FormatException('$name differs from release package metadata.');
+    }
     final entrypoints =
         surfaces.entries
             .where((entry) => entry.key.startsWith('packages/$name/lib/'))
             .toList()
           ..sort((left, right) => left.key.compareTo(right.key));
-    final symbolCount = entrypoints.fold<int>(
-      0,
-      (total, entry) => total + (entry.value! as List<Object?>).length,
-    );
+    final symbolCount = entrypoints.fold<int>(0, (total, entry) {
+      final surface = entry.value;
+      if (surface is! Map<String, Object?> ||
+          surface['symbols'] is! List<Object?>) {
+        throw FormatException('Invalid API entrypoint ${entry.key}.');
+      }
+      return total + (surface['symbols']! as List<Object?>).length;
+    });
     packages.add(<String, Object?>{
       'name': name,
-      'version': field('version'),
-      'decision': _decisions[name],
+      'version': releasePackage['version'],
+      'decision': decisions[name],
       'runtimeDependencies': _dependencies(source),
       'entrypoints': <String>[
         for (final entry in entrypoints) entry.key.split('/').last,
@@ -100,30 +118,3 @@ List<String> _dependencies(String pubspec) {
   output.sort();
   return output;
 }
-
-const Map<String, String> _decisions = <String, String>{
-  'dartitect': 'keep-minimal-core',
-  'dartitect_cli': 'keep-host-tooling',
-  'dartitect_devtools': 'add-read-only-development-inspector',
-  'dartitect_dio': 'keep-optional-adapter',
-  'dartitect_drift': 'add-consumer-owned-drift-sync-adapter',
-  'dartitect_flutter': 'keep-headless-and-widgets-no-material-entrypoint',
-  'dartitect_isolates': 'add-pure-dart-worker-lifecycle',
-  'dartitect_jobs': 'add-bounded-headless-job-runtime',
-  'dartitect_lints': 'keep-analyzer-host',
-  'dartitect_locale_br': 'add-pure-dart-brazilian-values',
-  'dartitect_mcp': 'keep-local-reviewed-tooling',
-  'dartitect_media': 'add-explicit-gallery-boundary',
-  'dartitect_modeling': 'add-opt-in-modeling-runtime',
-  'dartitect_modeling_analyzer': 'add-shared-read-only-semantic-compiler',
-  'dartitect_objectbox': 'keep-optional-native-adapter',
-  'dartitect_observability': 'keep-provider-neutral-core',
-  'dartitect_privacy': 'add-explicit-tracking-authorization-boundary',
-  'dartitect_resilience': 'add-bounded-resilience-primitives',
-  'dartitect_geometry': 'add-attributed-pure-dart-geometry',
-  'dartitect_sentry': 'keep-optional-borrowed-hub-adapter',
-  'dartitect_sync': 'keep-offline-and-sync-owner',
-  'dartitect_testing': 'keep-dev-only-contract-sdk',
-  'dartitect_transfer': 'add-provider-neutral-transfer-runtime',
-  'dartitect_workmanager': 'add-stable-workmanager-adapter',
-};

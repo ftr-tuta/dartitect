@@ -1,17 +1,20 @@
 import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:flutter/widgets.dart';
 
-import '../domain/tasks_repository.dart';
 import '../composition/tasks_composition.dart';
+import '../domain/tasks_model.dart';
+import '../domain/tasks_repository.dart';
 import 'tasks_view_model.dart';
 
 /// Composition boundary for the Tasks feature.
 final class TasksPage extends StatelessWidget {
-  const TasksPage({super.key});
+  const TasksPage({required this.repository, super.key});
+
+  final TasksRepository repository;
 
   @override
   Widget build(BuildContext context) => ViewModelHost<TasksViewModel>.create(
-    create: TasksComposition.createViewModel,
+    create: () => TasksComposition.createViewModel(repository),
     start: (viewModel) => viewModel.start(),
     builder: (context, viewModel) => TasksView(viewModel: viewModel),
   );
@@ -26,20 +29,20 @@ final class TasksView extends StatelessWidget {
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: viewModel,
     builder: (context, child) => switch (viewModel.loadCommand.state) {
-      CommandIdleState<List<String>, TasksFailure>() ||
-      CommandRunningState<List<String>, TasksFailure>() => const Text(
+      CommandIdleState<List<Task>, TasksFailure>() ||
+      CommandRunningState<List<Task>, TasksFailure>() => const Text(
         'Loading Tasks',
       ),
-      CommandSuccessState<List<String>, TasksFailure>(:final value) => Text(
-        value.isEmpty ? 'No Tasks' : value.join(', '),
+      CommandSuccessState<List<Task>, TasksFailure>(:final value) => Text(
+        value.isEmpty ? 'No Tasks' : value.map((task) => task.title).join(', '),
       ),
-      CommandFailureState<List<String>, TasksFailure>() => const Text(
+      CommandFailureState<List<Task>, TasksFailure>() => const Text(
         'Tasks unavailable',
       ),
-      CommandCrashState<List<String>, TasksFailure>() => const Text(
+      CommandCrashState<List<Task>, TasksFailure>() => const Text(
         'Unexpected Tasks failure',
       ),
-      CommandCancelledState<List<String>, TasksFailure>() => const Text(
+      CommandCancelledState<List<Task>, TasksFailure>() => const Text(
         'Tasks cancelled',
       ),
     },

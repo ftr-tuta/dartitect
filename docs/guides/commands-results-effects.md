@@ -51,6 +51,27 @@ initialized scheduler entry, so cancelling or disposing the unkeyed or keyed
 lane from that callback is supported and drains without a late-initialization
 failure.
 
+## ViewModel ownership
+
+Extend `DartitectViewModel` when presentation state owns commands or other
+feature-local resources. `ownCommand` forwards command notifications and
+guarantees cancellation plus draining. `own` accepts any explicit cleanup and
+may forward a separate `Listenable`; `forward` attaches to a borrowed
+`Listenable` without taking ownership.
+
+Shutdown detaches every forwarding listener synchronously, then releases owned
+resources sequentially in reverse acquisition order. It is idempotent and
+continues after independent cleanup crashes, reporting them and finally
+throwing `ResourceCleanupException`. `ownedResourceCount`,
+`forwardedListenerCount`, owner diagnostics, and disposal state expose
+payload-free lifecycle evidence. Use `runReportingCrashes` only for unexpected
+ViewModel-specific async boundaries; expected application failures stay in
+`Result<T, F>` and command state.
+
+Generated ViewModels use a primary constructor and declare only their commands
+and presentation-specific state. They do not repeat listeners, cancellation,
+or disposal plumbing.
+
 ## 1.0 reactive resource matrix
 
 Resource data (`waiting`, `ready`, expected `failed`, or unexpected `crashed`)

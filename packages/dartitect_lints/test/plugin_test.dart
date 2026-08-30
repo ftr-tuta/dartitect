@@ -286,7 +286,7 @@ Map<String, Object?> _config({
   List<String> presentation = const <String>['**/presentation/**'],
   required List<String> compositionRoots,
 }) => <String, Object?>{
-  'configVersion': 1,
+  'configVersion': 2,
   'profile': 'native_strict',
   'layers': <String, Object?>{
     'domain': <String>['**/domain/**'],

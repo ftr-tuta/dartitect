@@ -3,12 +3,12 @@
 part of 'fixture_database.dart';
 
 // ignore_for_file: type=lint
-class $FixtureItemsTable extends FixtureItems
-    with TableInfo<$FixtureItemsTable, FixtureItem> {
+class $FixtureTasksTable extends FixtureTasks
+    with TableInfo<$FixtureTasksTable, FixtureTask> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $FixtureItemsTable(this.attachedDatabase, [this._alias]);
+  $FixtureTasksTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -18,37 +18,47 @@ class $FixtureItemsTable extends FixtureItems
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
-  late final GeneratedColumn<String> value = GeneratedColumn<String>(
-    'value',
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _revisionMeta = const VerificationMeta(
-    'revision',
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
   );
   @override
-  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
-    'revision',
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
     aliasedName,
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultValue: const Constant<int>(0),
+    defaultValue: const Constant<int>(1),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant<String>('open'),
   );
   @override
-  List<GeneratedColumn> get $columns => [id, value, revision];
+  List<GeneratedColumn> get $columns => [id, title, version, status];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'fixture_items';
+  static const String $name = 'fixture_tasks';
   @override
   VerificationContext validateIntegrity(
-    Insertable<FixtureItem> instance, {
+    Insertable<FixtureTask> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -58,18 +68,24 @@ class $FixtureItemsTable extends FixtureItems
     } else if (isInserting) {
       context.missing(_idMeta);
     }
-    if (data.containsKey('value')) {
+    if (data.containsKey('title')) {
       context.handle(
-        _valueMeta,
-        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
       );
     } else if (isInserting) {
-      context.missing(_valueMeta);
+      context.missing(_titleMeta);
     }
-    if (data.containsKey('revision')) {
+    if (data.containsKey('version')) {
       context.handle(
-        _revisionMeta,
-        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
       );
     }
     return context;
@@ -78,65 +94,74 @@ class $FixtureItemsTable extends FixtureItems
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  FixtureItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+  FixtureTask map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return FixtureItem(
+    return FixtureTask(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
-      value: attachedDatabase.typeMapping.read(
+      title: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}value'],
+        data['${effectivePrefix}title'],
       )!,
-      revision: attachedDatabase.typeMapping.read(
+      version: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}revision'],
+        data['${effectivePrefix}version'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
       )!,
     );
   }
 
   @override
-  $FixtureItemsTable createAlias(String alias) {
-    return $FixtureItemsTable(attachedDatabase, alias);
+  $FixtureTasksTable createAlias(String alias) {
+    return $FixtureTasksTable(attachedDatabase, alias);
   }
 }
 
-class FixtureItem extends DataClass implements Insertable<FixtureItem> {
+class FixtureTask extends DataClass implements Insertable<FixtureTask> {
   final String id;
-  final String value;
-  final int revision;
-  const FixtureItem({
+  final String title;
+  final int version;
+  final String status;
+  const FixtureTask({
     required this.id,
-    required this.value,
-    required this.revision,
+    required this.title,
+    required this.version,
+    required this.status,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    map['value'] = Variable<String>(value);
-    map['revision'] = Variable<int>(revision);
+    map['title'] = Variable<String>(title);
+    map['version'] = Variable<int>(version);
+    map['status'] = Variable<String>(status);
     return map;
   }
 
-  FixtureItemsCompanion toCompanion(bool nullToAbsent) {
-    return FixtureItemsCompanion(
+  FixtureTasksCompanion toCompanion(bool nullToAbsent) {
+    return FixtureTasksCompanion(
       id: Value(id),
-      value: Value(value),
-      revision: Value(revision),
+      title: Value(title),
+      version: Value(version),
+      status: Value(status),
     );
   }
 
-  factory FixtureItem.fromJson(
+  factory FixtureTask.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return FixtureItem(
+    return FixtureTask(
       id: serializer.fromJson<String>(json['id']),
-      value: serializer.fromJson<String>(json['value']),
-      revision: serializer.fromJson<int>(json['revision']),
+      title: serializer.fromJson<String>(json['title']),
+      version: serializer.fromJson<int>(json['version']),
+      status: serializer.fromJson<String>(json['status']),
     );
   }
   @override
@@ -144,88 +169,104 @@ class FixtureItem extends DataClass implements Insertable<FixtureItem> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'value': serializer.toJson<String>(value),
-      'revision': serializer.toJson<int>(revision),
+      'title': serializer.toJson<String>(title),
+      'version': serializer.toJson<int>(version),
+      'status': serializer.toJson<String>(status),
     };
   }
 
-  FixtureItem copyWith({String? id, String? value, int? revision}) =>
-      FixtureItem(
-        id: id ?? this.id,
-        value: value ?? this.value,
-        revision: revision ?? this.revision,
-      );
-  FixtureItem copyWithCompanion(FixtureItemsCompanion data) {
-    return FixtureItem(
+  FixtureTask copyWith({
+    String? id,
+    String? title,
+    int? version,
+    String? status,
+  }) => FixtureTask(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    version: version ?? this.version,
+    status: status ?? this.status,
+  );
+  FixtureTask copyWithCompanion(FixtureTasksCompanion data) {
+    return FixtureTask(
       id: data.id.present ? data.id.value : this.id,
-      value: data.value.present ? data.value.value : this.value,
-      revision: data.revision.present ? data.revision.value : this.revision,
+      title: data.title.present ? data.title.value : this.title,
+      version: data.version.present ? data.version.value : this.version,
+      status: data.status.present ? data.status.value : this.status,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('FixtureItem(')
+    return (StringBuffer('FixtureTask(')
           ..write('id: $id, ')
-          ..write('value: $value, ')
-          ..write('revision: $revision')
+          ..write('title: $title, ')
+          ..write('version: $version, ')
+          ..write('status: $status')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, value, revision);
+  int get hashCode => Object.hash(id, title, version, status);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is FixtureItem &&
+      (other is FixtureTask &&
           other.id == this.id &&
-          other.value == this.value &&
-          other.revision == this.revision);
+          other.title == this.title &&
+          other.version == this.version &&
+          other.status == this.status);
 }
 
-class FixtureItemsCompanion extends UpdateCompanion<FixtureItem> {
+class FixtureTasksCompanion extends UpdateCompanion<FixtureTask> {
   final Value<String> id;
-  final Value<String> value;
-  final Value<int> revision;
+  final Value<String> title;
+  final Value<int> version;
+  final Value<String> status;
   final Value<int> rowid;
-  const FixtureItemsCompanion({
+  const FixtureTasksCompanion({
     this.id = const Value.absent(),
-    this.value = const Value.absent(),
-    this.revision = const Value.absent(),
+    this.title = const Value.absent(),
+    this.version = const Value.absent(),
+    this.status = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  FixtureItemsCompanion.insert({
+  FixtureTasksCompanion.insert({
     required String id,
-    required String value,
-    this.revision = const Value.absent(),
+    required String title,
+    this.version = const Value.absent(),
+    this.status = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
-       value = Value(value);
-  static Insertable<FixtureItem> custom({
+       title = Value(title);
+  static Insertable<FixtureTask> custom({
     Expression<String>? id,
-    Expression<String>? value,
-    Expression<int>? revision,
+    Expression<String>? title,
+    Expression<int>? version,
+    Expression<String>? status,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (value != null) 'value': value,
-      if (revision != null) 'revision': revision,
+      if (title != null) 'title': title,
+      if (version != null) 'version': version,
+      if (status != null) 'status': status,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  FixtureItemsCompanion copyWith({
+  FixtureTasksCompanion copyWith({
     Value<String>? id,
-    Value<String>? value,
-    Value<int>? revision,
+    Value<String>? title,
+    Value<int>? version,
+    Value<String>? status,
     Value<int>? rowid,
   }) {
-    return FixtureItemsCompanion(
+    return FixtureTasksCompanion(
       id: id ?? this.id,
-      value: value ?? this.value,
-      revision: revision ?? this.revision,
+      title: title ?? this.title,
+      version: version ?? this.version,
+      status: status ?? this.status,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -236,11 +277,14 @@ class FixtureItemsCompanion extends UpdateCompanion<FixtureItem> {
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
-    if (value.present) {
-      map['value'] = Variable<String>(value.value);
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
     }
-    if (revision.present) {
-      map['revision'] = Variable<int>(revision.value);
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -250,10 +294,11 @@ class FixtureItemsCompanion extends UpdateCompanion<FixtureItem> {
 
   @override
   String toString() {
-    return (StringBuffer('FixtureItemsCompanion(')
+    return (StringBuffer('FixtureTasksCompanion(')
           ..write('id: $id, ')
-          ..write('value: $value, ')
-          ..write('revision: $revision, ')
+          ..write('title: $title, ')
+          ..write('version: $version, ')
+          ..write('status: $status, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -279,19 +324,65 @@ class $FixtureOutboxTable extends FixtureOutbox
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _payloadMeta = const VerificationMeta(
-    'payload',
-  );
+  static const VerificationMeta _taskIdMeta = const VerificationMeta('taskId');
   @override
-  late final GeneratedColumn<String> payload = GeneratedColumn<String>(
-    'payload',
+  late final GeneratedColumn<String> taskId = GeneratedColumn<String>(
+    'task_id',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
-  List<GeneratedColumn> get $columns => [id, payload];
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _expectedVersionMeta = const VerificationMeta(
+    'expectedVersion',
+  );
+  @override
+  late final GeneratedColumn<int> expectedVersion = GeneratedColumn<int>(
+    'expected_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _idempotencyKeyMeta = const VerificationMeta(
+    'idempotencyKey',
+  );
+  @override
+  late final GeneratedColumn<String> idempotencyKey = GeneratedColumn<String>(
+    'idempotency_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    taskId,
+    title,
+    expectedVersion,
+    status,
+    idempotencyKey,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -307,13 +398,51 @@ class $FixtureOutboxTable extends FixtureOutbox
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('payload')) {
+    if (data.containsKey('task_id')) {
       context.handle(
-        _payloadMeta,
-        payload.isAcceptableOrUnknown(data['payload']!, _payloadMeta),
+        _taskIdMeta,
+        taskId.isAcceptableOrUnknown(data['task_id']!, _taskIdMeta),
       );
     } else if (isInserting) {
-      context.missing(_payloadMeta);
+      context.missing(_taskIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('expected_version')) {
+      context.handle(
+        _expectedVersionMeta,
+        expectedVersion.isAcceptableOrUnknown(
+          data['expected_version']!,
+          _expectedVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_expectedVersionMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('idempotency_key')) {
+      context.handle(
+        _idempotencyKeyMeta,
+        idempotencyKey.isAcceptableOrUnknown(
+          data['idempotency_key']!,
+          _idempotencyKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_idempotencyKeyMeta);
     }
     return context;
   }
@@ -328,9 +457,25 @@ class $FixtureOutboxTable extends FixtureOutbox
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      payload: attachedDatabase.typeMapping.read(
+      taskId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}payload'],
+        data['${effectivePrefix}task_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      expectedVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}expected_version'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      idempotencyKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}idempotency_key'],
       )!,
     );
   }
@@ -344,18 +489,40 @@ class $FixtureOutboxTable extends FixtureOutbox
 class FixtureOutboxData extends DataClass
     implements Insertable<FixtureOutboxData> {
   final int id;
-  final String payload;
-  const FixtureOutboxData({required this.id, required this.payload});
+  final String taskId;
+  final String title;
+  final int expectedVersion;
+  final String status;
+  final String idempotencyKey;
+  const FixtureOutboxData({
+    required this.id,
+    required this.taskId,
+    required this.title,
+    required this.expectedVersion,
+    required this.status,
+    required this.idempotencyKey,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['payload'] = Variable<String>(payload);
+    map['task_id'] = Variable<String>(taskId);
+    map['title'] = Variable<String>(title);
+    map['expected_version'] = Variable<int>(expectedVersion);
+    map['status'] = Variable<String>(status);
+    map['idempotency_key'] = Variable<String>(idempotencyKey);
     return map;
   }
 
   FixtureOutboxCompanion toCompanion(bool nullToAbsent) {
-    return FixtureOutboxCompanion(id: Value(id), payload: Value(payload));
+    return FixtureOutboxCompanion(
+      id: Value(id),
+      taskId: Value(taskId),
+      title: Value(title),
+      expectedVersion: Value(expectedVersion),
+      status: Value(status),
+      idempotencyKey: Value(idempotencyKey),
+    );
   }
 
   factory FixtureOutboxData.fromJson(
@@ -365,7 +532,11 @@ class FixtureOutboxData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return FixtureOutboxData(
       id: serializer.fromJson<int>(json['id']),
-      payload: serializer.fromJson<String>(json['payload']),
+      taskId: serializer.fromJson<String>(json['taskId']),
+      title: serializer.fromJson<String>(json['title']),
+      expectedVersion: serializer.fromJson<int>(json['expectedVersion']),
+      status: serializer.fromJson<String>(json['status']),
+      idempotencyKey: serializer.fromJson<String>(json['idempotencyKey']),
     );
   }
   @override
@@ -373,16 +544,41 @@ class FixtureOutboxData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'payload': serializer.toJson<String>(payload),
+      'taskId': serializer.toJson<String>(taskId),
+      'title': serializer.toJson<String>(title),
+      'expectedVersion': serializer.toJson<int>(expectedVersion),
+      'status': serializer.toJson<String>(status),
+      'idempotencyKey': serializer.toJson<String>(idempotencyKey),
     };
   }
 
-  FixtureOutboxData copyWith({int? id, String? payload}) =>
-      FixtureOutboxData(id: id ?? this.id, payload: payload ?? this.payload);
+  FixtureOutboxData copyWith({
+    int? id,
+    String? taskId,
+    String? title,
+    int? expectedVersion,
+    String? status,
+    String? idempotencyKey,
+  }) => FixtureOutboxData(
+    id: id ?? this.id,
+    taskId: taskId ?? this.taskId,
+    title: title ?? this.title,
+    expectedVersion: expectedVersion ?? this.expectedVersion,
+    status: status ?? this.status,
+    idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+  );
   FixtureOutboxData copyWithCompanion(FixtureOutboxCompanion data) {
     return FixtureOutboxData(
       id: data.id.present ? data.id.value : this.id,
-      payload: data.payload.present ? data.payload.value : this.payload,
+      taskId: data.taskId.present ? data.taskId.value : this.taskId,
+      title: data.title.present ? data.title.value : this.title,
+      expectedVersion: data.expectedVersion.present
+          ? data.expectedVersion.value
+          : this.expectedVersion,
+      status: data.status.present ? data.status.value : this.status,
+      idempotencyKey: data.idempotencyKey.present
+          ? data.idempotencyKey.value
+          : this.idempotencyKey,
     );
   }
 
@@ -390,46 +586,90 @@ class FixtureOutboxData extends DataClass
   String toString() {
     return (StringBuffer('FixtureOutboxData(')
           ..write('id: $id, ')
-          ..write('payload: $payload')
+          ..write('taskId: $taskId, ')
+          ..write('title: $title, ')
+          ..write('expectedVersion: $expectedVersion, ')
+          ..write('status: $status, ')
+          ..write('idempotencyKey: $idempotencyKey')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, payload);
+  int get hashCode =>
+      Object.hash(id, taskId, title, expectedVersion, status, idempotencyKey);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is FixtureOutboxData &&
           other.id == this.id &&
-          other.payload == this.payload);
+          other.taskId == this.taskId &&
+          other.title == this.title &&
+          other.expectedVersion == this.expectedVersion &&
+          other.status == this.status &&
+          other.idempotencyKey == this.idempotencyKey);
 }
 
 class FixtureOutboxCompanion extends UpdateCompanion<FixtureOutboxData> {
   final Value<int> id;
-  final Value<String> payload;
+  final Value<String> taskId;
+  final Value<String> title;
+  final Value<int> expectedVersion;
+  final Value<String> status;
+  final Value<String> idempotencyKey;
   const FixtureOutboxCompanion({
     this.id = const Value.absent(),
-    this.payload = const Value.absent(),
+    this.taskId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.expectedVersion = const Value.absent(),
+    this.status = const Value.absent(),
+    this.idempotencyKey = const Value.absent(),
   });
   FixtureOutboxCompanion.insert({
     this.id = const Value.absent(),
-    required String payload,
-  }) : payload = Value(payload);
+    required String taskId,
+    required String title,
+    required int expectedVersion,
+    required String status,
+    required String idempotencyKey,
+  }) : taskId = Value(taskId),
+       title = Value(title),
+       expectedVersion = Value(expectedVersion),
+       status = Value(status),
+       idempotencyKey = Value(idempotencyKey);
   static Insertable<FixtureOutboxData> custom({
     Expression<int>? id,
-    Expression<String>? payload,
+    Expression<String>? taskId,
+    Expression<String>? title,
+    Expression<int>? expectedVersion,
+    Expression<String>? status,
+    Expression<String>? idempotencyKey,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (payload != null) 'payload': payload,
+      if (taskId != null) 'task_id': taskId,
+      if (title != null) 'title': title,
+      if (expectedVersion != null) 'expected_version': expectedVersion,
+      if (status != null) 'status': status,
+      if (idempotencyKey != null) 'idempotency_key': idempotencyKey,
     });
   }
 
-  FixtureOutboxCompanion copyWith({Value<int>? id, Value<String>? payload}) {
+  FixtureOutboxCompanion copyWith({
+    Value<int>? id,
+    Value<String>? taskId,
+    Value<String>? title,
+    Value<int>? expectedVersion,
+    Value<String>? status,
+    Value<String>? idempotencyKey,
+  }) {
     return FixtureOutboxCompanion(
       id: id ?? this.id,
-      payload: payload ?? this.payload,
+      taskId: taskId ?? this.taskId,
+      title: title ?? this.title,
+      expectedVersion: expectedVersion ?? this.expectedVersion,
+      status: status ?? this.status,
+      idempotencyKey: idempotencyKey ?? this.idempotencyKey,
     );
   }
 
@@ -439,8 +679,20 @@ class FixtureOutboxCompanion extends UpdateCompanion<FixtureOutboxData> {
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
-    if (payload.present) {
-      map['payload'] = Variable<String>(payload.value);
+    if (taskId.present) {
+      map['task_id'] = Variable<String>(taskId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (expectedVersion.present) {
+      map['expected_version'] = Variable<int>(expectedVersion.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (idempotencyKey.present) {
+      map['idempotency_key'] = Variable<String>(idempotencyKey.value);
     }
     return map;
   }
@@ -449,7 +701,11 @@ class FixtureOutboxCompanion extends UpdateCompanion<FixtureOutboxData> {
   String toString() {
     return (StringBuffer('FixtureOutboxCompanion(')
           ..write('id: $id, ')
-          ..write('payload: $payload')
+          ..write('taskId: $taskId, ')
+          ..write('title: $title, ')
+          ..write('expectedVersion: $expectedVersion, ')
+          ..write('status: $status, ')
+          ..write('idempotencyKey: $idempotencyKey')
           ..write(')'))
         .toString();
   }
@@ -1162,45 +1418,553 @@ class FixtureJournalCompanion extends UpdateCompanion<FixtureJournalData> {
   }
 }
 
+class $FixtureLeasesTable extends FixtureLeases
+    with TableInfo<$FixtureLeasesTable, FixtureLease> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FixtureLeasesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _datasetMeta = const VerificationMeta(
+    'dataset',
+  );
+  @override
+  late final GeneratedColumn<String> dataset = GeneratedColumn<String>(
+    'dataset',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerMeta = const VerificationMeta('owner');
+  @override
+  late final GeneratedColumn<String> owner = GeneratedColumn<String>(
+    'owner',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fencingTokenMeta = const VerificationMeta(
+    'fencingToken',
+  );
+  @override
+  late final GeneratedColumn<int> fencingToken = GeneratedColumn<int>(
+    'fencing_token',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [dataset, owner, fencingToken];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fixture_leases';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FixtureLease> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('dataset')) {
+      context.handle(
+        _datasetMeta,
+        dataset.isAcceptableOrUnknown(data['dataset']!, _datasetMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_datasetMeta);
+    }
+    if (data.containsKey('owner')) {
+      context.handle(
+        _ownerMeta,
+        owner.isAcceptableOrUnknown(data['owner']!, _ownerMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerMeta);
+    }
+    if (data.containsKey('fencing_token')) {
+      context.handle(
+        _fencingTokenMeta,
+        fencingToken.isAcceptableOrUnknown(
+          data['fencing_token']!,
+          _fencingTokenMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_fencingTokenMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {dataset};
+  @override
+  FixtureLease map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FixtureLease(
+      dataset: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dataset'],
+      )!,
+      owner: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner'],
+      )!,
+      fencingToken: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}fencing_token'],
+      )!,
+    );
+  }
+
+  @override
+  $FixtureLeasesTable createAlias(String alias) {
+    return $FixtureLeasesTable(attachedDatabase, alias);
+  }
+}
+
+class FixtureLease extends DataClass implements Insertable<FixtureLease> {
+  final String dataset;
+  final String owner;
+  final int fencingToken;
+  const FixtureLease({
+    required this.dataset,
+    required this.owner,
+    required this.fencingToken,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['dataset'] = Variable<String>(dataset);
+    map['owner'] = Variable<String>(owner);
+    map['fencing_token'] = Variable<int>(fencingToken);
+    return map;
+  }
+
+  FixtureLeasesCompanion toCompanion(bool nullToAbsent) {
+    return FixtureLeasesCompanion(
+      dataset: Value(dataset),
+      owner: Value(owner),
+      fencingToken: Value(fencingToken),
+    );
+  }
+
+  factory FixtureLease.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FixtureLease(
+      dataset: serializer.fromJson<String>(json['dataset']),
+      owner: serializer.fromJson<String>(json['owner']),
+      fencingToken: serializer.fromJson<int>(json['fencingToken']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'dataset': serializer.toJson<String>(dataset),
+      'owner': serializer.toJson<String>(owner),
+      'fencingToken': serializer.toJson<int>(fencingToken),
+    };
+  }
+
+  FixtureLease copyWith({String? dataset, String? owner, int? fencingToken}) =>
+      FixtureLease(
+        dataset: dataset ?? this.dataset,
+        owner: owner ?? this.owner,
+        fencingToken: fencingToken ?? this.fencingToken,
+      );
+  FixtureLease copyWithCompanion(FixtureLeasesCompanion data) {
+    return FixtureLease(
+      dataset: data.dataset.present ? data.dataset.value : this.dataset,
+      owner: data.owner.present ? data.owner.value : this.owner,
+      fencingToken: data.fencingToken.present
+          ? data.fencingToken.value
+          : this.fencingToken,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FixtureLease(')
+          ..write('dataset: $dataset, ')
+          ..write('owner: $owner, ')
+          ..write('fencingToken: $fencingToken')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(dataset, owner, fencingToken);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FixtureLease &&
+          other.dataset == this.dataset &&
+          other.owner == this.owner &&
+          other.fencingToken == this.fencingToken);
+}
+
+class FixtureLeasesCompanion extends UpdateCompanion<FixtureLease> {
+  final Value<String> dataset;
+  final Value<String> owner;
+  final Value<int> fencingToken;
+  final Value<int> rowid;
+  const FixtureLeasesCompanion({
+    this.dataset = const Value.absent(),
+    this.owner = const Value.absent(),
+    this.fencingToken = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FixtureLeasesCompanion.insert({
+    required String dataset,
+    required String owner,
+    required int fencingToken,
+    this.rowid = const Value.absent(),
+  }) : dataset = Value(dataset),
+       owner = Value(owner),
+       fencingToken = Value(fencingToken);
+  static Insertable<FixtureLease> custom({
+    Expression<String>? dataset,
+    Expression<String>? owner,
+    Expression<int>? fencingToken,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (dataset != null) 'dataset': dataset,
+      if (owner != null) 'owner': owner,
+      if (fencingToken != null) 'fencing_token': fencingToken,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FixtureLeasesCompanion copyWith({
+    Value<String>? dataset,
+    Value<String>? owner,
+    Value<int>? fencingToken,
+    Value<int>? rowid,
+  }) {
+    return FixtureLeasesCompanion(
+      dataset: dataset ?? this.dataset,
+      owner: owner ?? this.owner,
+      fencingToken: fencingToken ?? this.fencingToken,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (dataset.present) {
+      map['dataset'] = Variable<String>(dataset.value);
+    }
+    if (owner.present) {
+      map['owner'] = Variable<String>(owner.value);
+    }
+    if (fencingToken.present) {
+      map['fencing_token'] = Variable<int>(fencingToken.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FixtureLeasesCompanion(')
+          ..write('dataset: $dataset, ')
+          ..write('owner: $owner, ')
+          ..write('fencingToken: $fencingToken, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FixtureReceiptsTable extends FixtureReceipts
+    with TableInfo<$FixtureReceiptsTable, FixtureReceipt> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FixtureReceiptsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idempotencyKeyMeta = const VerificationMeta(
+    'idempotencyKey',
+  );
+  @override
+  late final GeneratedColumn<String> idempotencyKey = GeneratedColumn<String>(
+    'idempotency_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dispositionMeta = const VerificationMeta(
+    'disposition',
+  );
+  @override
+  late final GeneratedColumn<String> disposition = GeneratedColumn<String>(
+    'disposition',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [idempotencyKey, disposition];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'fixture_receipts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FixtureReceipt> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('idempotency_key')) {
+      context.handle(
+        _idempotencyKeyMeta,
+        idempotencyKey.isAcceptableOrUnknown(
+          data['idempotency_key']!,
+          _idempotencyKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_idempotencyKeyMeta);
+    }
+    if (data.containsKey('disposition')) {
+      context.handle(
+        _dispositionMeta,
+        disposition.isAcceptableOrUnknown(
+          data['disposition']!,
+          _dispositionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_dispositionMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {idempotencyKey};
+  @override
+  FixtureReceipt map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FixtureReceipt(
+      idempotencyKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}idempotency_key'],
+      )!,
+      disposition: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}disposition'],
+      )!,
+    );
+  }
+
+  @override
+  $FixtureReceiptsTable createAlias(String alias) {
+    return $FixtureReceiptsTable(attachedDatabase, alias);
+  }
+}
+
+class FixtureReceipt extends DataClass implements Insertable<FixtureReceipt> {
+  final String idempotencyKey;
+  final String disposition;
+  const FixtureReceipt({
+    required this.idempotencyKey,
+    required this.disposition,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['idempotency_key'] = Variable<String>(idempotencyKey);
+    map['disposition'] = Variable<String>(disposition);
+    return map;
+  }
+
+  FixtureReceiptsCompanion toCompanion(bool nullToAbsent) {
+    return FixtureReceiptsCompanion(
+      idempotencyKey: Value(idempotencyKey),
+      disposition: Value(disposition),
+    );
+  }
+
+  factory FixtureReceipt.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FixtureReceipt(
+      idempotencyKey: serializer.fromJson<String>(json['idempotencyKey']),
+      disposition: serializer.fromJson<String>(json['disposition']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'idempotencyKey': serializer.toJson<String>(idempotencyKey),
+      'disposition': serializer.toJson<String>(disposition),
+    };
+  }
+
+  FixtureReceipt copyWith({String? idempotencyKey, String? disposition}) =>
+      FixtureReceipt(
+        idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+        disposition: disposition ?? this.disposition,
+      );
+  FixtureReceipt copyWithCompanion(FixtureReceiptsCompanion data) {
+    return FixtureReceipt(
+      idempotencyKey: data.idempotencyKey.present
+          ? data.idempotencyKey.value
+          : this.idempotencyKey,
+      disposition: data.disposition.present
+          ? data.disposition.value
+          : this.disposition,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FixtureReceipt(')
+          ..write('idempotencyKey: $idempotencyKey, ')
+          ..write('disposition: $disposition')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(idempotencyKey, disposition);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FixtureReceipt &&
+          other.idempotencyKey == this.idempotencyKey &&
+          other.disposition == this.disposition);
+}
+
+class FixtureReceiptsCompanion extends UpdateCompanion<FixtureReceipt> {
+  final Value<String> idempotencyKey;
+  final Value<String> disposition;
+  final Value<int> rowid;
+  const FixtureReceiptsCompanion({
+    this.idempotencyKey = const Value.absent(),
+    this.disposition = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FixtureReceiptsCompanion.insert({
+    required String idempotencyKey,
+    required String disposition,
+    this.rowid = const Value.absent(),
+  }) : idempotencyKey = Value(idempotencyKey),
+       disposition = Value(disposition);
+  static Insertable<FixtureReceipt> custom({
+    Expression<String>? idempotencyKey,
+    Expression<String>? disposition,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (idempotencyKey != null) 'idempotency_key': idempotencyKey,
+      if (disposition != null) 'disposition': disposition,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FixtureReceiptsCompanion copyWith({
+    Value<String>? idempotencyKey,
+    Value<String>? disposition,
+    Value<int>? rowid,
+  }) {
+    return FixtureReceiptsCompanion(
+      idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+      disposition: disposition ?? this.disposition,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (idempotencyKey.present) {
+      map['idempotency_key'] = Variable<String>(idempotencyKey.value);
+    }
+    if (disposition.present) {
+      map['disposition'] = Variable<String>(disposition.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FixtureReceiptsCompanion(')
+          ..write('idempotencyKey: $idempotencyKey, ')
+          ..write('disposition: $disposition, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$DriftFixtureDatabase extends GeneratedDatabase {
   _$DriftFixtureDatabase(QueryExecutor e) : super(e);
   $DriftFixtureDatabaseManager get managers =>
       $DriftFixtureDatabaseManager(this);
-  late final $FixtureItemsTable fixtureItems = $FixtureItemsTable(this);
+  late final $FixtureTasksTable fixtureTasks = $FixtureTasksTable(this);
   late final $FixtureOutboxTable fixtureOutbox = $FixtureOutboxTable(this);
   late final $FixtureCheckpointsTable fixtureCheckpoints =
       $FixtureCheckpointsTable(this);
   late final $FixtureJournalTable fixtureJournal = $FixtureJournalTable(this);
+  late final $FixtureLeasesTable fixtureLeases = $FixtureLeasesTable(this);
+  late final $FixtureReceiptsTable fixtureReceipts = $FixtureReceiptsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-    fixtureItems,
+    fixtureTasks,
     fixtureOutbox,
     fixtureCheckpoints,
     fixtureJournal,
+    fixtureLeases,
+    fixtureReceipts,
   ];
 }
 
-typedef $$FixtureItemsTableCreateCompanionBuilder =
-    FixtureItemsCompanion Function({
+typedef $$FixtureTasksTableCreateCompanionBuilder =
+    FixtureTasksCompanion Function({
       required String id,
-      required String value,
-      Value<int> revision,
+      required String title,
+      Value<int> version,
+      Value<String> status,
       Value<int> rowid,
     });
-typedef $$FixtureItemsTableUpdateCompanionBuilder =
-    FixtureItemsCompanion Function({
+typedef $$FixtureTasksTableUpdateCompanionBuilder =
+    FixtureTasksCompanion Function({
       Value<String> id,
-      Value<String> value,
-      Value<int> revision,
+      Value<String> title,
+      Value<int> version,
+      Value<String> status,
       Value<int> rowid,
     });
 
-class $$FixtureItemsTableFilterComposer
-    extends Composer<_$DriftFixtureDatabase, $FixtureItemsTable> {
-  $$FixtureItemsTableFilterComposer({
+class $$FixtureTasksTableFilterComposer
+    extends Composer<_$DriftFixtureDatabase, $FixtureTasksTable> {
+  $$FixtureTasksTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -1212,20 +1976,25 @@ class $$FixtureItemsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get value => $composableBuilder(
-    column: $table.value,
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get revision => $composableBuilder(
-    column: $table.revision,
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
     builder: (column) => ColumnFilters(column),
   );
 }
 
-class $$FixtureItemsTableOrderingComposer
-    extends Composer<_$DriftFixtureDatabase, $FixtureItemsTable> {
-  $$FixtureItemsTableOrderingComposer({
+class $$FixtureTasksTableOrderingComposer
+    extends Composer<_$DriftFixtureDatabase, $FixtureTasksTable> {
+  $$FixtureTasksTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -1237,20 +2006,25 @@ class $$FixtureItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get value => $composableBuilder(
-    column: $table.value,
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get revision => $composableBuilder(
-    column: $table.revision,
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
     builder: (column) => ColumnOrderings(column),
   );
 }
 
-class $$FixtureItemsTableAnnotationComposer
-    extends Composer<_$DriftFixtureDatabase, $FixtureItemsTable> {
-  $$FixtureItemsTableAnnotationComposer({
+class $$FixtureTasksTableAnnotationComposer
+    extends Composer<_$DriftFixtureDatabase, $FixtureTasksTable> {
+  $$FixtureTasksTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -1260,70 +2034,77 @@ class $$FixtureItemsTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get value =>
-      $composableBuilder(column: $table.value, builder: (column) => column);
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
 
-  GeneratedColumn<int> get revision =>
-      $composableBuilder(column: $table.revision, builder: (column) => column);
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
 }
 
-class $$FixtureItemsTableTableManager
+class $$FixtureTasksTableTableManager
     extends
         RootTableManager<
           _$DriftFixtureDatabase,
-          $FixtureItemsTable,
-          FixtureItem,
-          $$FixtureItemsTableFilterComposer,
-          $$FixtureItemsTableOrderingComposer,
-          $$FixtureItemsTableAnnotationComposer,
-          $$FixtureItemsTableCreateCompanionBuilder,
-          $$FixtureItemsTableUpdateCompanionBuilder,
+          $FixtureTasksTable,
+          FixtureTask,
+          $$FixtureTasksTableFilterComposer,
+          $$FixtureTasksTableOrderingComposer,
+          $$FixtureTasksTableAnnotationComposer,
+          $$FixtureTasksTableCreateCompanionBuilder,
+          $$FixtureTasksTableUpdateCompanionBuilder,
           (
-            FixtureItem,
+            FixtureTask,
             BaseReferences<
               _$DriftFixtureDatabase,
-              $FixtureItemsTable,
-              FixtureItem
+              $FixtureTasksTable,
+              FixtureTask
             >,
           ),
-          FixtureItem,
+          FixtureTask,
           PrefetchHooks Function()
         > {
-  $$FixtureItemsTableTableManager(
+  $$FixtureTasksTableTableManager(
     _$DriftFixtureDatabase db,
-    $FixtureItemsTable table,
+    $FixtureTasksTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$FixtureItemsTableFilterComposer($db: db, $table: table),
+              $$FixtureTasksTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$FixtureItemsTableOrderingComposer($db: db, $table: table),
+              $$FixtureTasksTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$FixtureItemsTableAnnotationComposer($db: db, $table: table),
+              $$FixtureTasksTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
-                Value<String> value = const Value.absent(),
-                Value<int> revision = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<String> status = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => FixtureItemsCompanion(
+              }) => FixtureTasksCompanion(
                 id: id,
-                value: value,
-                revision: revision,
+                title: title,
+                version: version,
+                status: status,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String id,
-                required String value,
-                Value<int> revision = const Value.absent(),
+                required String title,
+                Value<int> version = const Value.absent(),
+                Value<String> status = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => FixtureItemsCompanion.insert(
+              }) => FixtureTasksCompanion.insert(
                 id: id,
-                value: value,
-                revision: revision,
+                title: title,
+                version: version,
+                status: status,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -1334,27 +2115,41 @@ class $$FixtureItemsTableTableManager
       );
 }
 
-typedef $$FixtureItemsTableProcessedTableManager =
+typedef $$FixtureTasksTableProcessedTableManager =
     ProcessedTableManager<
       _$DriftFixtureDatabase,
-      $FixtureItemsTable,
-      FixtureItem,
-      $$FixtureItemsTableFilterComposer,
-      $$FixtureItemsTableOrderingComposer,
-      $$FixtureItemsTableAnnotationComposer,
-      $$FixtureItemsTableCreateCompanionBuilder,
-      $$FixtureItemsTableUpdateCompanionBuilder,
+      $FixtureTasksTable,
+      FixtureTask,
+      $$FixtureTasksTableFilterComposer,
+      $$FixtureTasksTableOrderingComposer,
+      $$FixtureTasksTableAnnotationComposer,
+      $$FixtureTasksTableCreateCompanionBuilder,
+      $$FixtureTasksTableUpdateCompanionBuilder,
       (
-        FixtureItem,
-        BaseReferences<_$DriftFixtureDatabase, $FixtureItemsTable, FixtureItem>,
+        FixtureTask,
+        BaseReferences<_$DriftFixtureDatabase, $FixtureTasksTable, FixtureTask>,
       ),
-      FixtureItem,
+      FixtureTask,
       PrefetchHooks Function()
     >;
 typedef $$FixtureOutboxTableCreateCompanionBuilder =
-    FixtureOutboxCompanion Function({Value<int> id, required String payload});
+    FixtureOutboxCompanion Function({
+      Value<int> id,
+      required String taskId,
+      required String title,
+      required int expectedVersion,
+      required String status,
+      required String idempotencyKey,
+    });
 typedef $$FixtureOutboxTableUpdateCompanionBuilder =
-    FixtureOutboxCompanion Function({Value<int> id, Value<String> payload});
+    FixtureOutboxCompanion Function({
+      Value<int> id,
+      Value<String> taskId,
+      Value<String> title,
+      Value<int> expectedVersion,
+      Value<String> status,
+      Value<String> idempotencyKey,
+    });
 
 class $$FixtureOutboxTableFilterComposer
     extends Composer<_$DriftFixtureDatabase, $FixtureOutboxTable> {
@@ -1370,8 +2165,28 @@ class $$FixtureOutboxTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get payload => $composableBuilder(
-    column: $table.payload,
+  ColumnFilters<String> get taskId => $composableBuilder(
+    column: $table.taskId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get expectedVersion => $composableBuilder(
+    column: $table.expectedVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get idempotencyKey => $composableBuilder(
+    column: $table.idempotencyKey,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1390,8 +2205,28 @@ class $$FixtureOutboxTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get payload => $composableBuilder(
-    column: $table.payload,
+  ColumnOrderings<String> get taskId => $composableBuilder(
+    column: $table.taskId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get expectedVersion => $composableBuilder(
+    column: $table.expectedVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get idempotencyKey => $composableBuilder(
+    column: $table.idempotencyKey,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -1408,8 +2243,24 @@ class $$FixtureOutboxTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get payload =>
-      $composableBuilder(column: $table.payload, builder: (column) => column);
+  GeneratedColumn<String> get taskId =>
+      $composableBuilder(column: $table.taskId, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<int> get expectedVersion => $composableBuilder(
+    column: $table.expectedVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get idempotencyKey => $composableBuilder(
+    column: $table.idempotencyKey,
+    builder: (column) => column,
+  );
 }
 
 class $$FixtureOutboxTableTableManager
@@ -1447,14 +2298,38 @@ class $$FixtureOutboxTableTableManager
               $$FixtureOutboxTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$FixtureOutboxTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> payload = const Value.absent(),
-          }) => FixtureOutboxCompanion(id: id, payload: payload),
-          createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String payload,
-          }) => FixtureOutboxCompanion.insert(id: id, payload: payload),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> taskId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<int> expectedVersion = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> idempotencyKey = const Value.absent(),
+              }) => FixtureOutboxCompanion(
+                id: id,
+                taskId: taskId,
+                title: title,
+                expectedVersion: expectedVersion,
+                status: status,
+                idempotencyKey: idempotencyKey,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String taskId,
+                required String title,
+                required int expectedVersion,
+                required String status,
+                required String idempotencyKey,
+              }) => FixtureOutboxCompanion.insert(
+                id: id,
+                taskId: taskId,
+                title: title,
+                expectedVersion: expectedVersion,
+                status: status,
+                idempotencyKey: idempotencyKey,
+              ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
@@ -1896,16 +2771,351 @@ typedef $$FixtureJournalTableProcessedTableManager =
       FixtureJournalData,
       PrefetchHooks Function()
     >;
+typedef $$FixtureLeasesTableCreateCompanionBuilder =
+    FixtureLeasesCompanion Function({
+      required String dataset,
+      required String owner,
+      required int fencingToken,
+      Value<int> rowid,
+    });
+typedef $$FixtureLeasesTableUpdateCompanionBuilder =
+    FixtureLeasesCompanion Function({
+      Value<String> dataset,
+      Value<String> owner,
+      Value<int> fencingToken,
+      Value<int> rowid,
+    });
+
+class $$FixtureLeasesTableFilterComposer
+    extends Composer<_$DriftFixtureDatabase, $FixtureLeasesTable> {
+  $$FixtureLeasesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get dataset => $composableBuilder(
+    column: $table.dataset,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get owner => $composableBuilder(
+    column: $table.owner,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get fencingToken => $composableBuilder(
+    column: $table.fencingToken,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FixtureLeasesTableOrderingComposer
+    extends Composer<_$DriftFixtureDatabase, $FixtureLeasesTable> {
+  $$FixtureLeasesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get dataset => $composableBuilder(
+    column: $table.dataset,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get owner => $composableBuilder(
+    column: $table.owner,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get fencingToken => $composableBuilder(
+    column: $table.fencingToken,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FixtureLeasesTableAnnotationComposer
+    extends Composer<_$DriftFixtureDatabase, $FixtureLeasesTable> {
+  $$FixtureLeasesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get dataset =>
+      $composableBuilder(column: $table.dataset, builder: (column) => column);
+
+  GeneratedColumn<String> get owner =>
+      $composableBuilder(column: $table.owner, builder: (column) => column);
+
+  GeneratedColumn<int> get fencingToken => $composableBuilder(
+    column: $table.fencingToken,
+    builder: (column) => column,
+  );
+}
+
+class $$FixtureLeasesTableTableManager
+    extends
+        RootTableManager<
+          _$DriftFixtureDatabase,
+          $FixtureLeasesTable,
+          FixtureLease,
+          $$FixtureLeasesTableFilterComposer,
+          $$FixtureLeasesTableOrderingComposer,
+          $$FixtureLeasesTableAnnotationComposer,
+          $$FixtureLeasesTableCreateCompanionBuilder,
+          $$FixtureLeasesTableUpdateCompanionBuilder,
+          (
+            FixtureLease,
+            BaseReferences<
+              _$DriftFixtureDatabase,
+              $FixtureLeasesTable,
+              FixtureLease
+            >,
+          ),
+          FixtureLease,
+          PrefetchHooks Function()
+        > {
+  $$FixtureLeasesTableTableManager(
+    _$DriftFixtureDatabase db,
+    $FixtureLeasesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FixtureLeasesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FixtureLeasesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FixtureLeasesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> dataset = const Value.absent(),
+                Value<String> owner = const Value.absent(),
+                Value<int> fencingToken = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FixtureLeasesCompanion(
+                dataset: dataset,
+                owner: owner,
+                fencingToken: fencingToken,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String dataset,
+                required String owner,
+                required int fencingToken,
+                Value<int> rowid = const Value.absent(),
+              }) => FixtureLeasesCompanion.insert(
+                dataset: dataset,
+                owner: owner,
+                fencingToken: fencingToken,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FixtureLeasesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$DriftFixtureDatabase,
+      $FixtureLeasesTable,
+      FixtureLease,
+      $$FixtureLeasesTableFilterComposer,
+      $$FixtureLeasesTableOrderingComposer,
+      $$FixtureLeasesTableAnnotationComposer,
+      $$FixtureLeasesTableCreateCompanionBuilder,
+      $$FixtureLeasesTableUpdateCompanionBuilder,
+      (
+        FixtureLease,
+        BaseReferences<
+          _$DriftFixtureDatabase,
+          $FixtureLeasesTable,
+          FixtureLease
+        >,
+      ),
+      FixtureLease,
+      PrefetchHooks Function()
+    >;
+typedef $$FixtureReceiptsTableCreateCompanionBuilder =
+    FixtureReceiptsCompanion Function({
+      required String idempotencyKey,
+      required String disposition,
+      Value<int> rowid,
+    });
+typedef $$FixtureReceiptsTableUpdateCompanionBuilder =
+    FixtureReceiptsCompanion Function({
+      Value<String> idempotencyKey,
+      Value<String> disposition,
+      Value<int> rowid,
+    });
+
+class $$FixtureReceiptsTableFilterComposer
+    extends Composer<_$DriftFixtureDatabase, $FixtureReceiptsTable> {
+  $$FixtureReceiptsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get idempotencyKey => $composableBuilder(
+    column: $table.idempotencyKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get disposition => $composableBuilder(
+    column: $table.disposition,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FixtureReceiptsTableOrderingComposer
+    extends Composer<_$DriftFixtureDatabase, $FixtureReceiptsTable> {
+  $$FixtureReceiptsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get idempotencyKey => $composableBuilder(
+    column: $table.idempotencyKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get disposition => $composableBuilder(
+    column: $table.disposition,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FixtureReceiptsTableAnnotationComposer
+    extends Composer<_$DriftFixtureDatabase, $FixtureReceiptsTable> {
+  $$FixtureReceiptsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get idempotencyKey => $composableBuilder(
+    column: $table.idempotencyKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get disposition => $composableBuilder(
+    column: $table.disposition,
+    builder: (column) => column,
+  );
+}
+
+class $$FixtureReceiptsTableTableManager
+    extends
+        RootTableManager<
+          _$DriftFixtureDatabase,
+          $FixtureReceiptsTable,
+          FixtureReceipt,
+          $$FixtureReceiptsTableFilterComposer,
+          $$FixtureReceiptsTableOrderingComposer,
+          $$FixtureReceiptsTableAnnotationComposer,
+          $$FixtureReceiptsTableCreateCompanionBuilder,
+          $$FixtureReceiptsTableUpdateCompanionBuilder,
+          (
+            FixtureReceipt,
+            BaseReferences<
+              _$DriftFixtureDatabase,
+              $FixtureReceiptsTable,
+              FixtureReceipt
+            >,
+          ),
+          FixtureReceipt,
+          PrefetchHooks Function()
+        > {
+  $$FixtureReceiptsTableTableManager(
+    _$DriftFixtureDatabase db,
+    $FixtureReceiptsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FixtureReceiptsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FixtureReceiptsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FixtureReceiptsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> idempotencyKey = const Value.absent(),
+                Value<String> disposition = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FixtureReceiptsCompanion(
+                idempotencyKey: idempotencyKey,
+                disposition: disposition,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String idempotencyKey,
+                required String disposition,
+                Value<int> rowid = const Value.absent(),
+              }) => FixtureReceiptsCompanion.insert(
+                idempotencyKey: idempotencyKey,
+                disposition: disposition,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FixtureReceiptsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$DriftFixtureDatabase,
+      $FixtureReceiptsTable,
+      FixtureReceipt,
+      $$FixtureReceiptsTableFilterComposer,
+      $$FixtureReceiptsTableOrderingComposer,
+      $$FixtureReceiptsTableAnnotationComposer,
+      $$FixtureReceiptsTableCreateCompanionBuilder,
+      $$FixtureReceiptsTableUpdateCompanionBuilder,
+      (
+        FixtureReceipt,
+        BaseReferences<
+          _$DriftFixtureDatabase,
+          $FixtureReceiptsTable,
+          FixtureReceipt
+        >,
+      ),
+      FixtureReceipt,
+      PrefetchHooks Function()
+    >;
 
 class $DriftFixtureDatabaseManager {
   final _$DriftFixtureDatabase _db;
   $DriftFixtureDatabaseManager(this._db);
-  $$FixtureItemsTableTableManager get fixtureItems =>
-      $$FixtureItemsTableTableManager(_db, _db.fixtureItems);
+  $$FixtureTasksTableTableManager get fixtureTasks =>
+      $$FixtureTasksTableTableManager(_db, _db.fixtureTasks);
   $$FixtureOutboxTableTableManager get fixtureOutbox =>
       $$FixtureOutboxTableTableManager(_db, _db.fixtureOutbox);
   $$FixtureCheckpointsTableTableManager get fixtureCheckpoints =>
       $$FixtureCheckpointsTableTableManager(_db, _db.fixtureCheckpoints);
   $$FixtureJournalTableTableManager get fixtureJournal =>
       $$FixtureJournalTableTableManager(_db, _db.fixtureJournal);
+  $$FixtureLeasesTableTableManager get fixtureLeases =>
+      $$FixtureLeasesTableTableManager(_db, _db.fixtureLeases);
+  $$FixtureReceiptsTableTableManager get fixtureReceipts =>
+      $$FixtureReceiptsTableTableManager(_db, _db.fixtureReceipts);
 }

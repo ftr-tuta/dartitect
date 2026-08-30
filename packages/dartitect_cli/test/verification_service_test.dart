@@ -88,23 +88,33 @@ dependencies:
     await File('${root.path}/pubspec.yaml').writeAsString('name: fixture\n');
     await File('${root.path}/dartitect.json').writeAsString(
       DartitectConfig(
-        scheduler: 'workmanager',
+        storageContexts: <String, DartitectStorageContextConfig>{
+          'primary': DartitectStorageContextConfig(
+            provider: 'drift',
+            mode: DartitectStorageMode.durable,
+            targets: const <DartitectPlatform>[DartitectPlatform.android],
+          ),
+        },
+        transports: <String, DartitectTransportConfig>{
+          'api': DartitectTransportConfig(
+            provider: 'dio',
+            targets: const <DartitectPlatform>[DartitectPlatform.android],
+          ),
+        },
+        scheduler: DartitectSchedulerConfig(provider: 'workmanager'),
         features: DartitectFeaturesConfig(
           declarations: <String, DartitectFeatureDeclaration>{
             'orders': DartitectFeatureDeclaration(
               profile: FeatureProfile.replica,
               scope: FeatureScope.session,
-              persistence: FeaturePersistenceMatrix(
-                native: 'drift',
-                web: 'drift',
-              ),
-              transport: 'dio',
+              storageContext: 'primary',
+              dataset: DartitectStorageDatasetConfig.forFeature('orders'),
+              transport: 'api',
               pagination: FeaturePagination.cursor,
               diagnostics: FeatureDiagnosticsLevel.full,
-              headless: <DartitectPlatform, bool>{
-                for (final platform in DartitectPlatform.values)
-                  platform: platform == DartitectPlatform.android,
-              },
+              headlessTargets: const <DartitectPlatform>[
+                DartitectPlatform.android,
+              ],
             ),
           },
         ),

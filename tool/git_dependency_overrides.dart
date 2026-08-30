@@ -6,7 +6,7 @@ import 'dart:io';
 void main(List<String> arguments) {
   final root = File.fromUri(Platform.script).parent.parent.absolute;
   var repository = 'https://github.com/ftr-tuta/dartitect.git';
-  var ref = 'v1.0.0-rc.6';
+  var ref = 'v1.0.0-rc.8';
   final packages = <String>[];
   for (final argument in arguments) {
     if (argument.startsWith('--repository=')) {

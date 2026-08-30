@@ -30,7 +30,7 @@ base class DartitectMcpServer extends MCPServer
        super.fromStreamChannel(
          implementation: Implementation(
            name: 'dartitect_mcp',
-           version: '1.0.0-rc.6',
+           version: '1.0.0-rc.8',
          ),
          instructions: _instructions,
        ) {
@@ -70,21 +70,16 @@ base class DartitectMcpServer extends MCPServer
     );
     _registerReadTool(
       name: 'dartitect_scan_architecture',
-      description: 'Scan architecture rules with optional baseline and bounded pagination.',
+      description: 'Scan strict architecture rules with bounded pagination.',
       schema: _projectSchema(
         extra: <String, Schema>{
-          'baseline': Schema.bool(
-            description: 'Apply the reviewed baseline; defaults to true.',
-          ),
           'offset': Schema.int(minimum: 0),
           'limit': Schema.int(minimum: 1, maximum: policy.maxResultLimit),
         },
       ),
       handler: (arguments) async {
         final root = await _resolveProject(arguments);
-        final report = await DartitectProjectService(
-          root,
-        ).scanArchitecture(useBaseline: arguments['baseline'] as bool? ?? true);
+        final report = await DartitectProjectService(root).scanArchitecture();
         return _ok(_paginateReport(report, arguments));
       },
     );
@@ -165,11 +160,6 @@ base class DartitectMcpServer extends MCPServer
       kind: DartitectChangeKind.init,
     );
     _registerPreviewTool(
-      name: 'dartitect_preview_baseline',
-      description: 'Preview a transactional architecture baseline replacement.',
-      kind: DartitectChangeKind.baseline,
-    );
-    _registerPreviewTool(
       name: 'dartitect_preview_codex_sync',
       description: 'Preview synchronization of managed Dartitect Codex skills.',
       kind: DartitectChangeKind.codexSync,
@@ -180,11 +170,6 @@ base class DartitectMcpServer extends MCPServer
       description:
           'Preview deterministic model output and ownership convergence.',
       kind: DartitectChangeKind.modelSync,
-    );
-    _registerPreviewTool(
-      name: 'dartitect_preview_model_primary_migration',
-      description: 'Preview semantic primary-constructor source edits and recovery state.',
-      kind: DartitectChangeKind.modelPrimaryMigration,
     );
     _registerCreateFeaturePreview();
     _registerWiringPreview();
@@ -296,6 +281,7 @@ base class DartitectMcpServer extends MCPServer
         'name': Schema.string(pattern: r'^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$'),
         'profile': Schema.string(
           enumValues: const <String>[
+            'local',
             'online',
             'cache',
             'replica',
@@ -305,20 +291,15 @@ base class DartitectMcpServer extends MCPServer
         'scope': Schema.string(
           enumValues: const <String>['application', 'session'],
         ),
-        'persistenceNative': Schema.string(
-          pattern: r'^(?:none|memory|drift|objectbox|custom:[a-z][a-z0-9]*(?:-[a-z0-9]+)*)$',
+        'storageContext': Schema.string(
+          pattern: r'^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$',
         ),
-        'persistenceWeb': Schema.string(
-          pattern:
-              r'^(?:none|memory|drift|custom:[a-z][a-z0-9]*(?:-[a-z0-9]+)*)$',
-        ),
-        'transport': Schema.string(
-          pattern: r'^(?:dio|custom:[a-z][a-z0-9]*(?:-[a-z0-9]+)*)$',
-        ),
+        'transport': Schema.string(pattern: r'^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$'),
+        'targets': Schema.string(),
         'pagination': Schema.string(
           enumValues: const <String>['none', 'cursor'],
         ),
-        'headlessSync': Schema.bool(),
+        'headlessTargets': Schema.string(),
         'diagnostics': Schema.string(
           enumValues: const <String>['off', 'basic', 'full'],
         ),
@@ -429,27 +410,18 @@ base class DartitectMcpServer extends MCPServer
   ) async {
     final root = await _resolveProject(arguments);
     final name = arguments['name']! as String;
-    final headless = arguments['headlessSync'] as bool? ?? false;
     final options = FeatureScaffoldOptions(
       profile: FeatureProfile.parse(arguments['profile']! as String),
       scope: FeatureScope.parse(
         arguments['scope'] as String? ?? FeatureScope.application.wireName,
       ),
-      persistenceNative: arguments['persistenceNative'] as String?,
-      persistenceWeb: arguments['persistenceWeb'] as String?,
-      transport: arguments['transport'] as String? ?? 'dio',
+      storageContext: arguments['storageContext'] as String?,
+      transport: arguments['transport'] as String?,
+      targets: _parseTargets(arguments['targets'] as String?),
       pagination: FeaturePagination.parse(
         arguments['pagination'] as String? ?? FeaturePagination.none.wireName,
       ),
-      headlessPlatforms: headless
-          ? const <DartitectPlatform>{
-              DartitectPlatform.android,
-              DartitectPlatform.ios,
-              DartitectPlatform.macos,
-              DartitectPlatform.web,
-              DartitectPlatform.linux,
-            }
-          : const <DartitectPlatform>{},
+      headlessTargets: _parseTargets(arguments['headlessTargets'] as String?),
       diagnostics: FeatureDiagnosticsLevel.parse(
         arguments['diagnostics'] as String? ??
             FeatureDiagnosticsLevel.basic.wireName,
@@ -460,7 +432,7 @@ base class DartitectMcpServer extends MCPServer
     final prior = await configFile.exists()
         ? await DartitectConfig.load(configFile)
         : DartitectConfig();
-    final declaration = _featureDeclaration(options);
+    final declaration = _featureDeclaration(name, options);
     final existing = prior.features.declarations[name];
     if (existing != null &&
         jsonEncode(existing.toJson()) != jsonEncode(declaration.toJson())) {
@@ -483,7 +455,7 @@ base class DartitectMcpServer extends MCPServer
         'Consumer-owned seams or managed wiring conflict with the preview.',
       );
     }
-    final cliArguments = _createFeatureArguments(name, options, headless);
+    final cliArguments = _createFeatureArguments(name, options);
     final token = await _projectStateToken(root);
     final preview = <String, Object?>{
       'command': 'create feature',
@@ -692,7 +664,7 @@ base class DartitectMcpServer extends MCPServer
     if (declaration == null) {
       throw const DartitectMcpException(
         'feature_not_found',
-        'The requested feature is not declared in strict config v1.',
+        'The requested feature is not declared in strict config v2.',
       );
     }
     final wiring = await DartitectWiringService(root).inspect(config: config);
@@ -700,7 +672,7 @@ base class DartitectMcpServer extends MCPServer
     return _ok(<String, Object?>{
       'feature': name,
       'declaration': declaration.toJson(),
-      'scheduler': config.scheduler,
+      'scheduler': config.scheduler.toJson(),
       'managedGraph': <Object?>[
         for (final operation in wiring.plan.operations)
           if (operation.operation.relativePath.startsWith(prefix))
@@ -727,7 +699,7 @@ base class DartitectMcpServer extends MCPServer
     if (declaration == null) {
       throw const DartitectMcpException(
         'feature_not_found',
-        'The requested feature is not declared in strict config v1.',
+        'The requested feature is not declared in strict config v2.',
       );
     }
     final packageName =
@@ -735,14 +707,12 @@ base class DartitectMcpServer extends MCPServer
     final options = FeatureScaffoldOptions(
       profile: declaration.profile,
       scope: declaration.scope,
-      persistenceNative: declaration.persistence.native,
-      persistenceWeb: declaration.persistence.web,
+      storageContext: declaration.storageContext,
+      dataset: declaration.dataset,
       transport: declaration.transport,
+      targets: declaration.targets.toSet(),
       pagination: declaration.pagination,
-      headlessPlatforms: <DartitectPlatform>{
-        for (final entry in declaration.headless.entries)
-          if (entry.value) entry.key,
-      },
+      headlessTargets: declaration.headlessTargets.toSet(),
       diagnostics: declaration.diagnostics,
       capabilities: declaration.capabilities.toSet(),
     );
@@ -775,17 +745,15 @@ base class DartitectMcpServer extends MCPServer
     Map<String, Object?> arguments,
   ) async {
     final root = await _resolveProject(arguments);
-    final report = await PrimaryConstructorMigration(root).inspect();
+    final report = await DartitectModelGenerator(root).inspect();
     final results = <Map<String, Object?>>[
-      for (final diagnostic in report.diagnostics)
+      for (final diagnostic in report.findings)
         <String, Object?>{'category': 'diagnostic', ...diagnostic.toJson()},
-      for (final operation in report.operations)
-        <String, Object?>{'category': 'migration', ...operation.toJson()},
     ];
     return _ok(<String, Object?>{
       'command': 'verify primary constructor policy',
-      'pendingRecovery': report.pendingRecovery,
-      'modelCount': report.modelCount,
+      'pendingRecovery': report.plan?.pendingRecovery ?? false,
+      'modelCount': report.operations.length,
       ..._paginateValues(results, arguments),
     });
   }
@@ -876,22 +844,26 @@ base class DartitectMcpServer extends MCPServer
       ? const <DartitectCapability>{}
       : value.split(',').map(DartitectCapability.parse).toSet();
 
+  static Set<DartitectPlatform> _parseTargets(String? value) =>
+      value == null || value.isEmpty
+      ? const <DartitectPlatform>{}
+      : value.split(',').map(DartitectPlatform.parse).toSet();
+
   static DartitectFeatureDeclaration _featureDeclaration(
+    String name,
     FeatureScaffoldOptions options,
   ) => DartitectFeatureDeclaration(
     profile: options.profile,
     scope: options.scope,
-    persistence: FeaturePersistenceMatrix(
-      native: options.persistenceNative,
-      web: options.persistenceWeb,
-    ),
+    storageContext: options.storageContext,
+    dataset: options.storageContext == null
+        ? null
+        : options.dataset ?? DartitectStorageDatasetConfig.forFeature(name),
     transport: options.transport,
+    targets: options.targets,
     pagination: options.pagination,
     diagnostics: options.diagnostics,
-    headless: <DartitectPlatform, bool>{
-      for (final platform in DartitectPlatform.values)
-        platform: options.headlessPlatforms.contains(platform),
-    },
+    headlessTargets: options.headlessTargets,
     capabilities: options.capabilities,
   );
 
@@ -914,27 +886,32 @@ base class DartitectMcpServer extends MCPServer
         name: declaration,
       },
     ),
-    platforms: prior.platforms,
+    targets: prior.targets,
+    storageContexts: prior.storageContexts,
+    transports: prior.transports,
+    observability: prior.observability,
     scheduler: prior.scheduler,
-    extensions: prior.extensions,
+    extensionSources: prior.extensionSources,
   );
 
   static List<String> _createFeatureArguments(
     String name,
     FeatureScaffoldOptions options,
-    bool headless,
   ) => <String>[
     'create',
     'feature',
     name,
     '--profile=${options.profile.wireName}',
     '--scope=${options.scope.wireName}',
-    '--persistence-native=${options.persistenceNative}',
-    '--persistence-web=${options.persistenceWeb}',
-    '--transport=${options.transport}',
+    if (options.storageContext != null)
+      '--storage-context=${options.storageContext}',
+    if (options.transport != null) '--transport=${options.transport}',
+    if (options.targets.isNotEmpty)
+      '--targets=${options.targets.map((target) => target.wireName).join(',')}',
     '--pagination=${options.pagination.wireName}',
     '--diagnostics=${options.diagnostics.wireName}',
-    if (headless) '--headless-sync',
+    if (options.headlessTargets.isNotEmpty)
+      '--headless-targets=${options.headlessTargets.map((target) => target.wireName).join(',')}',
     if (options.capabilities.isNotEmpty)
       '--capabilities=${(options.capabilities.map((value) => value.wireName).toList()..sort()).join(',')}',
   ];
@@ -1036,13 +1013,13 @@ base class DartitectMcpServer extends MCPServer
     );
     addResource(
       Resource(
-        uri: 'dartitect://config/v1',
-        name: 'Dartitect config v1',
+        uri: 'dartitect://config/v2',
+        name: 'Dartitect config v2',
         description: 'Credential-free canonical configuration shape.',
         mimeType: 'application/json',
       ),
       (request) =>
-          _jsonResource(request.uri, DartitectGeneratedCatalog.configV1),
+          _jsonResource(request.uri, DartitectGeneratedCatalog.configV2),
     );
     addResourceTemplate(
       ResourceTemplate(

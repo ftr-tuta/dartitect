@@ -51,9 +51,28 @@ Future<void> main() async {
         rethrow;
       }
     }
-    stdout.writeln('Drift web fixture passed: portable, isolated.');
+    stdout.writeln(
+      'Task vertical Drift web canary passed: portable, isolated.',
+    );
   } finally {
-    if (await temporary.exists()) await temporary.delete(recursive: true);
+    await _deleteTemporaryDirectory(temporary);
+  }
+}
+
+Future<void> _deleteTemporaryDirectory(Directory directory) async {
+  const attempts = 20;
+  for (var attempt = 1; attempt <= attempts; attempt += 1) {
+    if (!await directory.exists()) return;
+    try {
+      await directory.delete(recursive: true);
+      return;
+    } on FileSystemException {
+      if (attempt == attempts) rethrow;
+      // Chrome child processes can briefly recreate profile files after the
+      // browser process exits. Retry the bounded, idempotent cleanup until the
+      // user-data directory settles.
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
   }
 }
 
@@ -172,7 +191,7 @@ Future<void> _runProfile({
     final websocket = await _waitForDevTools(profileDirectory, chrome);
     cdp = await _CdpClient.connect(websocket, diagnostics);
 
-    final databaseName = 'dartitect-${profile.name}-rc3';
+    final databaseName = 'dartitect-${profile.name}-rc8';
     final primary = await _openPage(
       cdp,
       server.port,

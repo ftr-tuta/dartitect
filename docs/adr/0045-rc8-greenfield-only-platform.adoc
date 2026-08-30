@@ -1,0 +1,37 @@
+= ADR 0045: RC8 greenfield-only platform boundary
+:status: accepted
+:date: 2026-08-29
+
+== Context
+
+Earlier candidates described a complete vertical platform before its generated
+closure, operational storage, credential races, and public API contract were
+fully evidenced. They also retained language for adoption, legacy debt, and
+organization-specific extension destinations that conflicted with Native
+Strict ownership.
+
+== Decision
+
+Dartitect is only for new projects. It has no incremental adoption, legacy
+zone, competing-runtime coexistence, application conversion, global plugin
+registry, preset marketplace, or organization/product extension. A project
+created with Dartitect may upgrade its SDK-owned config, manifests, generated
+wiring, and operational schema through explicit versioned migrations.
+
+Reusable behavior that is not neutral enough for the SDK may be implemented as
+a typed extension whose source and concrete bindings remain inside the
+consumer project. Business rules, domain models and schema, semantic mappings,
+conflict policy, repositories, provider configuration, credentials, and UI stay
+consumer-owned.
+
+RC8 is the first candidate that may claim the greenfield vertical platform
+after the config-v2, typed-extension, operational-storage, credential, sync,
+OpenAPI, semantic-API, consumer-tax, and observed-evidence gates all pass. This
+delivery creates no tag, GitHub Release, or package publication.
+
+== Consequences
+
+Public docs and tools describe creation and Dartitect-to-Dartitect upgrades
+only. Strict scan has no debt baseline. Concrete local extensions are statically
+analyzed without executing consumer code, loading plugins, or using global or
+string-keyed lookup.

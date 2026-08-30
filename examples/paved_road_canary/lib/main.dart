@@ -6,31 +6,61 @@ import 'package:flutter/material.dart';
 import 'features/paved_road/composition/paved_road.wiring.dartitect.g.dart';
 
 void main() => runDartitectApplication<CanaryRuntime>(
-  create: PavedRoadFeatureWiring.application(
-    createModule: createCanaryFeatureModule,
-  ),
+  create: createCanaryApplication(),
   loading: const MaterialApp(home: _Status('Bootstrapping')),
   application: (runtime) => CanaryApp(runtime: runtime),
 );
 
-/// Materializes the consumer seams through the generated direct module.
-Future<PavedRoadFeatureModule<CanaryRuntime, CanaryRuntime>>
-createCanaryFeatureModule() async {
+typedef _CanaryFeatureAssembly =
+    PavedRoadFeatureAssembly<
+      CanaryRuntime,
+      _CanaryPersistence,
+      _CanaryTransportProvider,
+      ReactiveLazyComputed<int>,
+      BoundedLocalHistory<int>,
+      _CanaryDiagnostics,
+      CanaryRuntime
+    >;
+
+/// Creates the fully typed generated application factory.
+BootstrapCoordinator<CanaryRuntime> Function() createCanaryApplication() =>
+    PavedRoadFeatureWiring.application(
+      createAssembly: _createCanaryFeatureAssembly,
+    );
+
+Future<_CanaryFeatureAssembly> _createCanaryFeatureAssembly() async {
   final runtime = CanaryRuntime.create();
-  return PavedRoadFeatureModule<CanaryRuntime, CanaryRuntime>(
-    repository: runtime,
-    persistenceProvider: const _CanaryPersistence(),
-    transportProvider: const _CanaryTransportProvider(),
-    resource: runtime.doubled,
-    command: null,
-    pagination: runtime.history,
-    outbox: null,
-    syncDataset: null,
-    job: null,
-    diagnostics: null,
-    contractFixture: const _CanaryContractFixture(),
-    createViewModel: (repository) => repository,
-    dispose: runtime.disposeAsync,
+  return PavedRoadFeatureAssembly.create<
+    CanaryRuntime,
+    _CanaryPersistence,
+    _CanaryTransportProvider,
+    ReactiveLazyComputed<int>,
+    BoundedLocalHistory<int>,
+    _CanaryDiagnostics,
+    CanaryRuntime
+  >(
+    repository: DartitectAssemblyBinding<CanaryRuntime>.owned(
+      runtime,
+      release: (value) => value.disposeAsync(),
+      label: 'canary.runtime',
+    ),
+    storage: DartitectAssemblyBinding<_CanaryPersistence>.borrowed(
+      const _CanaryPersistence(),
+    ),
+    transport: DartitectAssemblyBinding<_CanaryTransportProvider>.borrowed(
+      const _CanaryTransportProvider(),
+    ),
+    localAuthority:
+        DartitectAssemblyBinding<ReactiveLazyComputed<int>>.borrowed(
+          runtime.doubled,
+        ),
+    pagination: DartitectAssemblyBinding<BoundedLocalHistory<int>>.borrowed(
+      runtime.history,
+    ),
+    diagnostics: DartitectAssemblyBinding<_CanaryDiagnostics>.borrowed(
+      const _CanaryDiagnostics(),
+    ),
+    createViewModel: (assembly) => assembly.repository,
   );
 }
 
@@ -125,6 +155,6 @@ final class _CanaryTransportProvider {
   const _CanaryTransportProvider();
 }
 
-final class _CanaryContractFixture {
-  const _CanaryContractFixture();
+final class _CanaryDiagnostics {
+  const _CanaryDiagnostics();
 }

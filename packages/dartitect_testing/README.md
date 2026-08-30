@@ -27,10 +27,12 @@ the production contract under test.
 ## Mental model and data flow
 
 Tests own every fake and harness. Manual time/IDs remove ambient nondeterminism;
-recording observers make sanitized events inspectable; contract harnesses accept
-consumer implementations and return immutable evidence. Provider-neutral policy
-uses deterministic helpers, while provider integration uses an appropriate real
-or provider-approved fixture.
+recording observers make sanitized events inspectable. Feature matrices own the
+fault controller, observed store, event journal, acknowledgements, graph
+registrations, and `ResourceCensus`; fixture drivers can stimulate those
+instruments but cannot return self-reported facts or a census map.
+Provider-neutral policy uses deterministic helpers, while provider integration
+uses an appropriate real or provider-approved fixture.
 
 ## Minimal workflow
 
@@ -56,10 +58,13 @@ Future<void> main() async {
 - `CommandContractHarness` and `EffectContractHarness` exercise terminal command
   and bounded effect contracts.
 - `FeatureContractMatrix.online`, `.cache`, `.replica`, and `.offlineFull`
-  require profile-specific typed fixtures and return test-framework-neutral row
-  results.
+  require profile-specific runtime-driver factories. Every row gets a new
+  graph; restart gets a second graph over the same observed durable store.
+  Success, expected failure, crash identity, cancellation, concurrency,
+  restart, and teardown facts are derived from actual events, revisions,
+  acknowledgements, store counters, and the matrix-owned census.
 - Host, resilience, jobs, transfer, local-history, restoration, and read-only
-  DevTools harnesses cover the RC6 paved road without provider substitution.
+  DevTools harnesses cover the RC8 paved road without provider substitution.
 - `RepositoryContractHarness` runs consumer-supplied repository cases.
 - `ProjectionContractHarness` and `MapperContractHarness` record selector,
   expected-failure, and bidirectional round-trip evidence.
@@ -76,9 +81,10 @@ Future<void> main() async {
 ## Ownership and lifecycle
 
 Each test creates and disposes its own helpers, subscriptions, workers, and
-fixtures. Share a manual clock/log only within an explicit test scope. Contract
-harnesses borrow the implementation being tested unless their API documents
-otherwise. Never turn a fake into global application state.
+fixtures. Share a manual clock/log only within an explicit test scope. Feature
+drivers borrow the matrix-owned harness and must dispose every census lease
+they acquire. Contract harnesses borrow the implementation being tested unless
+their API documents otherwise. Never turn a fake into global application state.
 
 ## Failure, cancellation, and concurrency
 
@@ -118,7 +124,7 @@ the provider integration. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.6` source candidate. Add it only from a
+The workspace contains the `1.0.0-rc.8` source candidate. Add it only from a
 matching tagged GitHub Release and compatible cohort coordinates in that
 Release's notes. If no compatible Release exists, there is no supported
 consumption path. See the

@@ -1,12 +1,12 @@
 = Public API review for the 1.0 release candidate
 
 Review date:: 2026-08-28
-Reviewed version:: lockstep `1.0.0-rc.6` candidate cohort
+Reviewed version:: `1.0.0-rc.8` baseline across independent publication cohorts
 Snapshot gate:: `dart run tool/check_api_snapshot.dart`
 
 == Result
 
-The checked API snapshot covers all 29 public entrypoints and matches their
+The checked API snapshot covers all 30 public entrypoints and matches their
 source declarations. New ecosystem entrypoints are deliberately narrow;
 pre-1.0 aliases and architecture overlap controls are intentionally absent.
 
@@ -44,10 +44,16 @@ background upload, retry/resume, and consumer-owned picker/share/gallery ports.
 service extensions. It exposes no retry, cancel, clear, or mutation command.
 
 | `package:dartitect_cli/dartitect_cli.dart`
-| Stable bounded CLI surface; no implicit application container. SARIF is a
-separate sanitized projection. Fleet preview and apply use explicit roots,
-ordered locks, full byte journals, allowlisted validation, digest-checked
-rollback, recovery, and sanitized receipts.
+| Stable bounded CLI surface; no implicit application container. Config v2,
+typed local-extension analysis, consumer-tax, SARIF, and generated capability
+assemblies are explicit. Fleet upgrade supports only Dartitect RC6/config-v1
+projects and converges them transactionally to RC8/config-v2.
+
+| `package:dartitect_cli/dartitect_contracts.dart`
+| Tooling-only OpenAPI 3.1 entrypoint for confined local JSON/YAML and local
+refs. It classifies additive/breaking changes and generates DTOs, bounded
+codecs, routes, endpoint descriptors, status mappings, and fixtures without
+network access, security execution, or inferred domain mapping.
 
 | `package:dartitect_modeling/dartitect_modeling.dart`
 | Pure-Dart/Web-compatible opt-in value, immutable collection, JSON codec,
@@ -110,7 +116,7 @@ returns typed not-supported outside iOS.
 access, cancellation, failure outcomes, and cleanup for its sole owned metadata.
 
 | `package:dartitect_mcp/dartitect_mcp.dart`
-| Local STDIO tooling on the lockstep release-candidate line; no HTTP/OAuth, app
+| Local STDIO tooling on the RC8 release-candidate baseline; no HTTP/OAuth, app
 runtime, arbitrary filesystem, or private-plan access.
 
 | `package:dartitect_objectbox/dartitect_objectbox.dart`
@@ -127,8 +133,8 @@ global ownership.
 
 | `package:dartitect_sync/dartitect_sync.dart`
 | Pure-Dart mutation/outbox and DAG execution, journal, checkpoint/lease/
-progress, and a jobs-backed headless adapter with no hidden retry; no Flutter
-or provider SDK.
+progress, explicit trigger coordination, and a jobs-backed headless adapter
+with no hidden retry; no Flutter or provider SDK.
 
 | `package:dartitect_testing/dartitect_testing.dart`
 | Test helpers and runner-independent profile contract matrices only; no test
@@ -144,20 +150,27 @@ Linux capability maturity is preview; Windows returns typed unsupported.
 == Editorial and compatibility checks
 
 All publishable packages retain English READMEs, changelogs,
-licenses, examples, repository metadata, and lockstep versions checked by
+licenses, examples, repository metadata, and authority-declared compatible
+versions checked by
 `tool/check_public_docs.dart`. API declarations, generated MCP catalog, and
 documentation examples are checked in the release audit. The compatibility
 entrypoint remains thin; advanced reactive APIs require a deliberate import and
 Material remains consumer-owned. No public Dartitect API retains an
 experimental marker.
 
-The RC6 diff completes the vertical platform before 1.0: direct generated
-composition, strict config v1, session transition recovery, typed contract
-fixtures, credentials, attachments, forms, queries, Workmanager, provider kits,
-MCP previews, and transactional fleet upgrades. Pre-1.0 blueprint aliases and
-overlap configuration are deliberately removed; only the exact transactional
-RC5-to-RC6 fleet codemod migrates them. These changes require complete same-SHA
-canaries rather than a patch claim.
+The RC8 diff completes the greenfield vertical platform before 1.0: direct
+capability-specific composition, strict config v2, target-aware storage,
+credential generation fencing, project-local typed extensions, observed
+contract fixtures, OpenAPI tooling, semantic API snapshots, consumer-tax, sync
+triggers, and transactional Dartitect RC6/v1-to-RC8/v2 upgrades. No general
+application conversion or debt-baseline path exists. These changes require
+complete same-SHA canaries rather than a patch claim.
+
+The semantic snapshot schema records constructors, members, parameters,
+generic bounds, defaults, modifiers, annotations, and return types. Every
+symbol is assigned to application-facing, extension-author, generated-code,
+adapter-author, or tooling/test audience; diffs are classified as additive,
+deprecated, or breaking and checked against the declared version.
 
 == Decision
 

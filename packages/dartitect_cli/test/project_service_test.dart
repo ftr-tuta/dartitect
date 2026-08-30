@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dartitect_cli/dartitect_cli.dart';
+import 'package:dartitect_cli/src/scan/baseline.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -242,7 +243,7 @@ void main() {
     final audit = await DartitectProjectService(root).auditConformance();
 
     expect(audit['command'], 'conformance audit');
-    expect(audit['canonicalGate'], 'dartitect scan --no-baseline');
+    expect(audit['canonicalGate'], 'dartitect scan');
     expect(audit, isNot(contains('steps')));
     expect(audit['support'], <String, Object?>{
       'target': 'greenfield_only',

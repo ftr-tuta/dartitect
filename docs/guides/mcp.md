@@ -2,7 +2,7 @@
 
 ## Scope
 
-`dartitect_mcp 1.0.0-rc.6` is local and STDIO-only. It uses
+`dartitect_mcp 1.0.0-rc.8` is local and STDIO-only. It uses
 `dart_mcp 0.5.2`. Streamable HTTP, OAuth/authorization, remote ChatGPT plugins,
 MCP UI, arbitrary shell/files, scaffolding `create`, and access to running
 applications are out of scope. The bounded `dartitect_preview_create_feature`
@@ -11,7 +11,7 @@ tool is the only create workflow exposed.
 ## Read-only setup
 
 The candidate is not on pub.dev. Declare
-`dartitect_mcp: 1.0.0-rc.6` under `dev_dependencies`, apply the complete Git
+`dartitect_mcp: 1.0.0-rc.8` under `dev_dependencies`, apply the complete Git
 override closure from the [candidate consumption guide](git-candidate-consumption.md),
 then run `dart run dartitect_mcp:dartitect_mcp --root .`.
 
@@ -59,10 +59,11 @@ all previews are read-only. Scan and verify accept bounded `offset`/`limit`;
 verify combines architecture, modeling freshness, native-strict ecosystem, and
 provider status. Deep doctor is opt-in and time-bounded.
 
-`dartitect_audit_conformance` declares existing projects `audit_only`, uses the
-unbaselined scan as evidence, and never returns an architecture conversion.
+`dartitect_audit_conformance` audits a project created with Dartitect after
+development or a supported SDK upgrade. It uses the strict scan as evidence
+and never returns an application-conversion plan.
 
-RC6 adds confined, closed-schema tools:
+RC8 adds confined, closed-schema tools:
 
 - `dartitect_preview_create_feature`;
 - `dartitect_preview_wiring_sync`;
@@ -77,7 +78,7 @@ Resources are generated from maintained project sources:
 - `dartitect://packages` and `dartitect://packages/{name}`;
 - `dartitect://diagnostics/{code}`;
 - `dartitect://guides/{slug}`;
-- `dartitect://config/v1`.
+- `dartitect://config/v2`.
 
 There is no free-form file resource.
 The guide catalog includes the ecosystem selection matrix and implementation
@@ -89,9 +90,9 @@ protocol work; use `$dartitect-tooling` and the CLI directly for scripts or CI.
 Add `--allow-writes` to the server arguments only when reviewed local writes
 are required. This flag alone is insufficient.
 
-Model sync and primary-constructor migration use the same preview/apply gate as
-init, feature creation, wiring sync, baseline, and managed skill
-synchronization. Preview payloads contain
+Model sync and primary-constructor quick fixes use the same preview/apply gate
+as init, feature creation, wiring sync, and managed skill synchronization.
+Preview payloads contain
 operations and semantic manifests, never consumer source bodies.
 
 Apply requires all of:
@@ -112,8 +113,8 @@ Before exposing another MCP operation, ask:
 
 > É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
 
-All three answers must be yes; company/product actions remain in `softgran_*`,
-`agrox_*`, or the application.
+All three answers must be yes; non-neutral reusable infrastructure belongs in a
+typed project-local extension and business actions remain in the application.
 
 ## Root and data security
 

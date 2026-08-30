@@ -5,7 +5,7 @@ import '../domain/tasks_repository.dart';
 
 abstract interface class TasksLocalStore {
   Stream<void> watch();
-  Future<Result<List<TasksModel>, TasksFailure>> read(
+  Future<Result<List<Task>, TasksFailure>> read(
     CancellationSignal cancellation,
   );
 }

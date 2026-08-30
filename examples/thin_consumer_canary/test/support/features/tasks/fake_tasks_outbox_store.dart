@@ -1,8 +1,7 @@
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
-
-import '../application/tasks_mutation.dart';
-import '../domain/tasks_repository.dart';
+import 'package:thin_consumer_canary/features/tasks/application/tasks_mutation.dart';
+import 'package:thin_consumer_canary/features/tasks/domain/tasks_repository.dart';
 
 final class FakeTasksOutboxStore
     implements MutationOutboxStore<String, TasksMutation, TasksFailure> {

@@ -4,14 +4,15 @@ import 'dart:io';
 import 'package:dartitect/dartitect.dart' show FeatureProfile;
 
 import '../config/dartitect_config.dart';
+import '../contracts/openapi_contract_service.dart';
 import '../diagnostics/models.dart';
 import '../diagnostics/sarif.dart';
 import '../fleet/fleet_service.dart';
 import '../generation/generation_engine.dart';
 import '../generation/scaffolds.dart';
 import '../generation/wiring_service.dart';
+import '../inspect/consumer_tax.dart';
 import '../model/model_generator.dart';
-import '../model/primary_constructor_migration.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
 import '../scan/project_scanner.dart';
@@ -82,8 +83,8 @@ final class DartitectCliRunner {
         'verify' => await _readOnly('verify', root, parsed),
         'init' => await _init(root, parsed),
         'create' => await _create(root, parsed),
-        'baseline' => await _baseline(root, parsed),
         'codex' => await _codex(root, parsed),
+        'contracts' => await _contracts(root, parsed),
         'model' => await _model(root, parsed),
         'wiring' => await _wiring(root, parsed),
         'dependencies' => await _dependencies(root, parsed),
@@ -114,9 +115,6 @@ final class DartitectCliRunner {
     } on DartitectChangeException catch (error) {
       _stderr.writeln('${error.code}: ${error.message}');
       return DartitectExitCode.findings.code;
-    } on PrimaryConstructorMigrationException catch (error) {
-      _stderr.writeln(error.message);
-      return DartitectExitCode.internal.code;
     } on FileSystemException catch (error) {
       _stderr.writeln('IO failure: ${error.message}');
       return DartitectExitCode.internal.code;
@@ -139,19 +137,36 @@ final class DartitectCliRunner {
       'json',
       if (command == 'scan' || command == 'verify') 'sarif',
       'deep',
+      if (command == 'doctor') 'release',
+      if (command == 'inspect') 'consumer-tax',
       'verbose',
-      if (command == 'scan') 'no-baseline',
     });
     if (arguments.flags.contains('json') && arguments.flags.contains('sarif')) {
       throw const _UsageException('--json and --sarif are mutually exclusive.');
     }
+    if (command == 'inspect' && arguments.flags.contains('consumer-tax')) {
+      final report = await ConsumerTaxInspector(root).inspect();
+      if (arguments.flags.contains('json')) {
+        _stdout.writeln(jsonEncode(report.toJson()));
+      } else {
+        _stdout.writeln(
+          'CONSUMER-TAX ${report.profile} '
+          '${report.isCompliant ? 'PASS' : 'FAIL'}',
+        );
+        for (final finding in report.findings) {
+          _stdout.writeln(
+            '${finding.code} ${finding.path ?? '.'} ${finding.message}',
+          );
+        }
+      }
+      return report.exitCode;
+    }
     final service = DartitectProjectService(root);
     final envelope = switch (command) {
-      'scan' => await service.scanArchitecture(
-        useBaseline: !arguments.flags.contains('no-baseline'),
-      ),
+      'scan' => await service.scanArchitecture(),
       'doctor' => await service.doctorProject(
         deep: arguments.flags.contains('deep'),
+        release: arguments.flags.contains('release'),
       ),
       'verify' => await DartitectVerificationService(root).verify(),
       _ => await service.inspectProject(),
@@ -194,16 +209,14 @@ final class DartitectCliRunner {
     arguments.requireOnlyFlags(<String>{
       'dry-run',
       'verbose',
-      'observability',
-      'preset',
-      'scheduler',
+      'targets',
+      'example',
       'profile',
       'scope',
-      'persistence-native',
-      'persistence-web',
+      'storage-context',
       'transport',
       'pagination',
-      'headless-sync',
+      'headless-targets',
       'diagnostics',
       'capabilities',
     });
@@ -213,11 +226,16 @@ final class DartitectCliRunner {
         root,
         name,
         dryRun: arguments.flags.contains('dry-run'),
-        preset: arguments.options['preset'] ?? 'minimal',
-        transport: arguments.options['transport'] ?? 'dio',
-        observability: arguments.options['observability'] ?? 'developer',
-        scheduler: arguments.options['scheduler'] ?? 'workmanager',
+        targets: _parsePlatformsOption(
+          arguments.options['targets'],
+          option: '--targets',
+          required: true,
+        ),
+        example: arguments.options['example'],
       );
+    }
+    if (arguments.options['example'] != null) {
+      throw const _UsageException('--example is valid only for create app.');
     }
 
     final scan = await ProjectScanner(root).scan();
@@ -228,13 +246,13 @@ final class DartitectCliRunner {
     final hasFeatureOptions =
         profileName != null ||
         arguments.options['scope'] != null ||
-        arguments.options['persistence-native'] != null ||
-        arguments.options['persistence-web'] != null ||
+        arguments.options['storage-context'] != null ||
         arguments.options['transport'] != null ||
+        arguments.options['targets'] != null ||
         arguments.options['pagination'] != null ||
         arguments.options['diagnostics'] != null ||
         arguments.options['capabilities'] != null ||
-        arguments.flags.contains('headless-sync');
+        arguments.options['headless-targets'] != null;
     if (kind != 'feature' && hasFeatureOptions) {
       throw const _UsageException(
         'Feature profile options are valid only for create feature.',
@@ -253,19 +271,13 @@ final class DartitectCliRunner {
             scope: FeatureScope.parse(
               arguments.options['scope'] ?? 'application',
             ),
-            persistenceNative: arguments.options['persistence-native'],
-            persistenceWeb: arguments.options['persistence-web'],
-            transport: arguments.options['transport'] ?? 'dio',
+            storageContext: arguments.options['storage-context'],
+            transport: arguments.options['transport'],
+            targets: _parsePlatformsOption(arguments.options['targets']),
             pagination: FeaturePagination.parse(pagination),
-            headlessPlatforms: arguments.flags.contains('headless-sync')
-                ? const <DartitectPlatform>{
-                    DartitectPlatform.android,
-                    DartitectPlatform.ios,
-                    DartitectPlatform.macos,
-                    DartitectPlatform.web,
-                    DartitectPlatform.linux,
-                  }
-                : const <DartitectPlatform>{},
+            headlessTargets: _parsePlatformsOption(
+              arguments.options['headless-targets'],
+            ),
             diagnostics: FeatureDiagnosticsLevel.parse(
               arguments.options['diagnostics'] ?? 'basic',
             ),
@@ -314,17 +326,16 @@ final class DartitectCliRunner {
     final declaration = DartitectFeatureDeclaration(
       profile: options.profile,
       scope: options.scope,
-      persistence: FeaturePersistenceMatrix(
-        native: options.persistenceNative,
-        web: options.persistenceWeb,
-      ),
+      storageContext: options.storageContext,
+      dataset: options.storageContext == null
+          ? null
+          : options.dataset ??
+                DartitectStorageDatasetConfig.forFeature(name.snake),
       transport: options.transport,
+      targets: options.targets,
       pagination: options.pagination,
       diagnostics: options.diagnostics,
-      headless: <DartitectPlatform, bool>{
-        for (final platform in DartitectPlatform.values)
-          platform: options.headlessPlatforms.contains(platform),
-      },
+      headlessTargets: options.headlessTargets,
       capabilities: options.capabilities,
     );
     final existing = prior.features.declarations[name.snake];
@@ -349,9 +360,12 @@ final class DartitectCliRunner {
       suppressions: prior.suppressions,
       modeling: prior.modeling,
       features: DartitectFeaturesConfig(declarations: declarations),
-      platforms: prior.platforms,
+      targets: prior.targets,
+      storageContexts: prior.storageContexts,
+      transports: prior.transports,
+      observability: prior.observability,
       scheduler: prior.scheduler,
-      extensions: prior.extensions,
+      extensionSources: prior.extensionSources,
     );
     final seamEngine = GenerationEngine(
       root,
@@ -437,30 +451,11 @@ final class DartitectCliRunner {
     Directory parent,
     String input, {
     required bool dryRun,
-    required String preset,
-    required String transport,
-    required String observability,
-    required String scheduler,
+    required Set<DartitectPlatform> targets,
+    required String? example,
   }) async {
-    if (!const <String>{'minimal', 'offline-hybrid'}.contains(preset)) {
-      throw _UsageException('Unsupported app preset "$preset".');
-    }
-    if (transport != 'dio' &&
-        !RegExp(r'^custom:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$')
-            .hasMatch(transport)) {
-      throw _UsageException('Unsupported transport "$transport".');
-    }
-    if (!const <String>{
-      'none',
-      'developer',
-      'sentry',
-    }.contains(observability)) {
-      throw _UsageException('Unsupported observability mode "$observability".');
-    }
-    if (scheduler != 'workmanager' &&
-        !RegExp(r'^custom:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$')
-            .hasMatch(scheduler)) {
-      throw _UsageException('Unsupported scheduler "$scheduler".');
+    if (example != null && example != 'tasks') {
+      throw _UsageException('Unsupported example "$example".');
     }
     final name = ScaffoldName(input);
     final target = Directory(_join(parent.path, name.snake));
@@ -473,7 +468,10 @@ final class DartitectCliRunner {
       _stdout.writeln('CREATE ${name.snake}/ (via flutter create)');
       _stdout.writeln('CREATE ${name.snake}/dartitect.json');
       _stdout.writeln('CREATE ${name.snake}/AGENTS.md');
-      _stdout.writeln('APPLY $preset application/session graphs');
+      _stdout.writeln(
+        'TARGETS ${targets.map((target) => target.wireName).join(',')}',
+      );
+      if (example != null) _stdout.writeln('EXAMPLE $example');
       return DartitectExitCode.success.code;
     }
 
@@ -490,7 +488,7 @@ final class DartitectCliRunner {
         '--project-name',
         name.snake,
         '--platforms',
-        'android,ios,web,windows,linux,macos',
+        targets.map((target) => target.wireName).join(','),
         temporary.path,
       ], workingDirectory: parent.path);
       if (result.exitCode != 0) {
@@ -502,10 +500,8 @@ final class DartitectCliRunner {
       await _customizeFlutterApp(
         temporary,
         name,
-        preset: preset,
-        transport: transport,
-        observability: observability,
-        scheduler: scheduler,
+        targets: targets,
+        example: example,
         workspaceMember: workspaceMember,
       );
       await temporary.rename(target.path);
@@ -522,31 +518,18 @@ final class DartitectCliRunner {
   Future<void> _customizeFlutterApp(
     Directory project,
     ScaffoldName name, {
-    required String preset,
-    required String transport,
-    required String observability,
-    required String scheduler,
+    required Set<DartitectPlatform> targets,
+    required String? example,
     required bool workspaceMember,
   }) async {
     final pubspec = File(_join(project.path, 'pubspec.yaml'));
     var source = await pubspec.readAsString();
     final localSdk = _findLocalSdkRoot();
-    final sdkPackages = <String>{
-      'dartitect',
-      'dartitect_flutter',
-      if (observability != 'none') 'dartitect_observability',
-      if (transport == 'dio') 'dartitect_dio',
-      if (observability == 'sentry') 'dartitect_sentry',
-      if (preset == 'offline-hybrid') ...<String>{
-        'dartitect_drift',
-        'dartitect_sync',
-        'dartitect_transfer',
-      },
-      if (scheduler == 'workmanager') 'dartitect_workmanager',
-    }.toList()..sort();
+    final sdkPackages = <String>{'dartitect', 'dartitect_flutter'}.toList()
+      ..sort();
     final localOverridePackages = _localSdkPackageClosure(sdkPackages);
     final dependencyBlock = localSdk == null || workspaceMember
-        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.6\n').join()
+        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.8\n').join()
         : sdkPackages
               .map(
                 (package) =>
@@ -574,82 +557,59 @@ final class DartitectCliRunner {
     if (await widgetTest.exists()) await widgetTest.delete();
     final mainFile = File(_join(project.path, 'lib/main.dart'));
     await mainFile.writeAsString(
-      '''import 'package:dartitect_flutter/dartitect_flutter.dart';
+      '''${example == 'tasks' ? "import 'package:dartitect/dartitect.dart';\n" : ''}import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'composition/application_module.wiring.dartitect.g.dart';
-import 'features/tasks/presentation/tasks_view.dart';
+${example == 'tasks' ? "import 'features/tasks/domain/tasks_repository.dart';\nimport 'features/tasks/presentation/tasks_view.dart';" : ''}
 
-void main() => runDartitectApplication<ApplicationGraph>(
-  create: ApplicationModule.create,
+void main() => runDartitectApplication<ApplicationGraph<Never, Never>>(
+  create: ApplicationModule.create<Never, Never>,
   application: (_) => const MaterialApp(
     title: '${name.pascal}',
-    home: Scaffold(body: Center(child: TasksPage())),
+    home: ${example == 'tasks' ? 'TasksPage(repository: _ExampleTasksRepository())' : 'SizedBox.shrink()'},
   ),
 );
+${example == 'tasks' ? '''
+final class _ExampleTasksRepository implements TasksRepository {
+  const _ExampleTasksRepository();
+
+  @override
+  Future<Result<List<String>, TasksFailure>> load() async =>
+      const Ok<List<String>>(<String>['Example task']);
+}
+''' : ''}
 ''',
       flush: true,
     );
 
     final scaffold = ScaffoldFactory(packageName: name.snake);
-    final headlessPlatforms = preset == 'offline-hybrid'
-        ? const <DartitectPlatform>{
-            DartitectPlatform.android,
-            DartitectPlatform.ios,
-            DartitectPlatform.macos,
-            DartitectPlatform.web,
-            DartitectPlatform.linux,
-          }
-        : const <DartitectPlatform>{};
     final featureOptions = FeatureScaffoldOptions(
-      profile: preset == 'offline-hybrid'
-          ? FeatureProfile.offlineFull
-          : FeatureProfile.online,
+      profile: FeatureProfile.local,
       scope: FeatureScope.application,
-      persistenceNative: preset == 'offline-hybrid' ? 'drift' : 'none',
-      persistenceWeb: preset == 'offline-hybrid' ? 'drift' : 'none',
-      transport: transport,
-      pagination: preset == 'offline-hybrid'
-          ? FeaturePagination.cursor
-          : FeaturePagination.none,
-      headlessPlatforms: headlessPlatforms,
     );
+    final declarations = example == 'tasks'
+        ? <String, DartitectFeatureDeclaration>{
+            'tasks': DartitectFeatureDeclaration(
+              profile: FeatureProfile.local,
+              scope: FeatureScope.application,
+              pagination: FeaturePagination.none,
+              diagnostics: FeatureDiagnosticsLevel.basic,
+            ),
+          }
+        : const <String, DartitectFeatureDeclaration>{};
     await GenerationEngine(
       project,
       namespace: GenerationNamespace.scaffolding,
     ).apply(<FileGenerationOperation>[
       ...scaffold.init(
         config: DartitectConfig(
-          scheduler: scheduler,
-          features: DartitectFeaturesConfig(
-            declarations: <String, DartitectFeatureDeclaration>{
-              'tasks': DartitectFeatureDeclaration(
-                profile: featureOptions.profile,
-                scope: featureOptions.scope,
-                persistence: FeaturePersistenceMatrix(
-                  native: featureOptions.persistenceNative,
-                  web: featureOptions.persistenceWeb,
-                ),
-                transport: featureOptions.transport,
-                pagination: featureOptions.pagination,
-                diagnostics: featureOptions.diagnostics,
-                headless: <DartitectPlatform, bool>{
-                  for (final platform in DartitectPlatform.values)
-                    platform: headlessPlatforms.contains(platform),
-                },
-                capabilities: featureOptions.capabilities,
-              ),
-            },
-          ),
-          extensions: <String, Object?>{
-            'dartitect.observability': <String, Object?>{
-              'provider': observability,
-            },
-          },
+          targets: DartitectTargetsConfig(targets),
+          features: DartitectFeaturesConfig(declarations: declarations),
         ),
       ),
       ...scaffold.agents(),
-      ...scaffold.profile(featureOptions, 'tasks'),
+      if (example == 'tasks') ...scaffold.profile(featureOptions, 'tasks'),
     ]);
     final format = await Process.run('dart', <String>[
       'format',
@@ -660,33 +620,6 @@ void main() => runDartitectApplication<ApplicationGraph>(
       throw GenerationException('Generated app formatting failed.');
     }
     await DartitectWiringService(project).apply();
-    if (preset == 'offline-hybrid') {
-      final recipe = File(
-        _join(project.path, 'docs/drift-composition-root.md'),
-      );
-      await recipe.parent.create(recursive: true);
-      await recipe.writeAsString(_driftCompositionRootRecipe, flush: true);
-    }
-  }
-
-  Future<int> _baseline(Directory root, _CliArguments arguments) async {
-    if (arguments.positionals.length != 1 ||
-        arguments.positionals.single != 'create') {
-      throw const _UsageException(
-        'Usage: dartitect baseline create [--dry-run].',
-      );
-    }
-    arguments.requireOnlyFlags(<String>{'dry-run', 'verbose'});
-    final service = DartitectProjectService(root);
-    final plan = await service.previewChange(DartitectChangeKind.baseline);
-    if (arguments.flags.contains('dry-run')) {
-      _stdout.writeln('DRY-RUN ${plan.operations.single}');
-      _stdout.write(plan.preview);
-      return DartitectExitCode.success.code;
-    }
-    await service.applyChange(plan);
-    _stdout.writeln(plan.operations.single);
-    return DartitectExitCode.success.code;
   }
 
   Future<int> _codex(Directory root, _CliArguments arguments) async {
@@ -718,11 +651,6 @@ void main() => runDartitectApplication<ApplicationGraph>(
   }
 
   Future<int> _model(Directory root, _CliArguments arguments) async {
-    if (arguments.positionals.length == 2 &&
-        arguments.positionals[0] == 'migrate' &&
-        arguments.positionals[1] == 'primary') {
-      return _modelMigratePrimary(root, arguments);
-    }
     if (arguments.positionals.length != 1 ||
         !const <String>{
           'check',
@@ -793,6 +721,88 @@ void main() => runDartitectApplication<ApplicationGraph>(
     }
   }
 
+  Future<int> _contracts(Directory root, _CliArguments arguments) async {
+    if (arguments.positionals.length != 2 ||
+        !const <String>{
+          'check',
+          'sync',
+        }.contains(arguments.positionals.first)) {
+      throw const _UsageException(
+        'Usage: dartitect contracts <check|sync> <spec.json|yaml> '
+        '[--baseline=PATH] [--output=PATH] [--json] [--apply].',
+      );
+    }
+    final command = arguments.positionals.first;
+    arguments.requireOnlyFlags(<String>{
+      'json',
+      'verbose',
+      'baseline',
+      'output',
+      if (command == 'sync') 'dry-run',
+      if (command == 'sync') 'apply',
+    });
+    if (arguments.flags.contains('dry-run') &&
+        arguments.flags.contains('apply')) {
+      throw const _UsageException(
+        '--dry-run and --apply are mutually exclusive.',
+      );
+    }
+    final service = OpenApiContractService(root);
+    final spec = arguments.positionals[1];
+    final baseline = arguments.options['baseline'];
+    final output = arguments.options['output'];
+    final OpenApiContractReport report;
+    if (command == 'check') {
+      report = await service.inspect(
+        specPath: spec,
+        baselinePath: baseline,
+        outputPath: output,
+      );
+    } else if (arguments.flags.contains('apply')) {
+      report = await service.apply(
+        specPath: spec,
+        baselinePath: baseline,
+        outputPath: output,
+      );
+    } else {
+      report = await service.preview(
+        specPath: spec,
+        baselinePath: baseline,
+        outputPath: output,
+      );
+    }
+    if (arguments.flags.contains('json')) {
+      _stdout.writeln(jsonEncode(report.toJson()));
+    } else {
+      for (final finding in report.findings) {
+        _stdout.writeln(
+          '${finding.code} ${finding.kind.name} ${finding.path} '
+          '${finding.message}',
+        );
+      }
+      for (final operation
+          in report.plan?.operations ?? const <PlannedFileOperation>[]) {
+        _stdout.writeln(
+          '${operation.disposition.name.toUpperCase()} '
+          '${operation.operation.relativePath}',
+        );
+      }
+      if (report.applied) {
+        _stdout.writeln('APPLIED ${report.writes} contract write(s).');
+      } else if (command == 'sync') {
+        _stdout.writeln(
+          'PREVIEW no files written. Use --apply to synchronize.',
+        );
+      }
+    }
+    final succeeded =
+        report.isFresh ||
+        report.applied && report.isValid && report.isCompatible;
+    return succeeded
+        ? DartitectExitCode.success.code
+        : DartitectExitCode.findings.code;
+  }
+
   Future<int> _wiring(Directory root, _CliArguments arguments) async {
     if (arguments.positionals.length != 1 ||
         arguments.positionals.single != 'sync') {
@@ -831,70 +841,6 @@ void main() => runDartitectApplication<ApplicationGraph>(
     return report.isFresh
         ? DartitectExitCode.success.code
         : DartitectExitCode.findings.code;
-  }
-
-  Future<int> _modelMigratePrimary(
-    Directory root,
-    _CliArguments arguments,
-  ) async {
-    arguments.requireOnlyFlags(<String>{'json', 'verbose', 'dry-run', 'apply'});
-    if (arguments.flags.contains('dry-run') &&
-        arguments.flags.contains('apply')) {
-      throw const _UsageException(
-        '--dry-run and --apply are mutually exclusive.',
-      );
-    }
-    final migration = PrimaryConstructorMigration(root);
-    final preview = await migration.inspect();
-    if (!arguments.flags.contains('apply') || preview.diagnostics.isNotEmpty) {
-      _writePrimaryMigrationReport(
-        preview,
-        json: arguments.flags.contains('json'),
-      );
-      return preview.diagnostics.isEmpty &&
-              preview.operations.isEmpty &&
-              !preview.pendingRecovery
-          ? DartitectExitCode.success.code
-          : DartitectExitCode.findings.code;
-    }
-    final applied = await migration.apply();
-    _writePrimaryMigrationReport(
-      applied,
-      json: arguments.flags.contains('json'),
-    );
-    return DartitectExitCode.success.code;
-  }
-
-  void _writePrimaryMigrationReport(
-    PrimaryConstructorMigrationReport report, {
-    required bool json,
-  }) {
-    if (json) {
-      _stdout.writeln(jsonEncode(report.toJson()));
-      return;
-    }
-    for (final diagnostic in report.diagnostics) {
-      final line = diagnostic.line == null ? '' : ':${diagnostic.line}';
-      _stdout.writeln(
-        '${diagnostic.rule} ${diagnostic.path}$line ${diagnostic.message}',
-      );
-    }
-    for (final operation in report.operations) {
-      _stdout.writeln('MIGRATE ${operation.path} (${operation.modelCount})');
-    }
-    if (report.pendingRecovery) {
-      _stdout.writeln(
-        'RECOVERY .dartitect/generation/model-primary-migration/source-journal.json',
-      );
-    }
-    if (report.applied) {
-      _stdout.writeln('APPLIED ${report.modelCount} model(s).');
-    } else {
-      _stdout.writeln(
-        'PREVIEW no files written. Use --apply to migrate primary '
-        'constructors.',
-      );
-    }
   }
 
   void _writeModelReport(
@@ -1048,7 +994,7 @@ void main() => runDartitectApplication<ApplicationGraph>(
         }
         if (arguments.options['to'] == null) {
           throw const _UsageException(
-            'fleet upgrade requires --to=1.0.0-rc.6.',
+            'fleet upgrade requires --to=1.0.0-rc.8.',
           );
         }
         report = arguments.flags.contains('apply')
@@ -1118,14 +1064,31 @@ void main() => runDartitectApplication<ApplicationGraph>(
         .toSet();
   }
 
+  static Set<DartitectPlatform> _parsePlatformsOption(
+    String? value, {
+    String option = '--targets',
+    bool required = false,
+  }) {
+    if (value == null || value.trim().isEmpty) {
+      if (required) throw _UsageException('$option is required.');
+      return const <DartitectPlatform>{};
+    }
+    return value
+        .split(',')
+        .map((target) => target.trim())
+        .where((target) => target.isNotEmpty)
+        .map(DartitectPlatform.parse)
+        .toSet();
+  }
+
   static void _rejectFeatureOptions(_CliArguments arguments) {
     const optionNames = <String>{
       'profile',
       'scope',
-      'persistence-native',
-      'persistence-web',
+      'storage-context',
+      'transport',
       'pagination',
-      'headless-sync',
+      'headless-targets',
       'diagnostics',
       'capabilities',
     };
@@ -1267,31 +1230,6 @@ void main() => runDartitectApplication<ApplicationGraph>(
   static String _join(String left, String right) =>
       '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
 
-  static const _driftCompositionRootRecipe = '''# Drift composition-root recipe
-
-`dartitect create app --adapters=drift` adds only the `dartitect_drift`
-dependency and this recipe. The application owns its Drift schema, migrations,
-executor, codecs, database file or web assets, and generated code.
-
-1. Put the consumer `GeneratedDatabase`, tables, and DAOs under the feature's
-   `infrastructure/` directory. Keep them out of domain, application, and
-   presentation.
-2. Select the executor in consumer code with conditional exports: a stub, then
-   `dart.library.ffi` for native and `dart.library.js_interop` for web. Configure
-   `NativeDatabase.createInBackground` or `WasmDatabase.open` there.
-3. At an app, session, route, or isolate composition root, open the database
-   through `DriftDatabaseOwner.create(openDatabase: ...)`. Inject repositories,
-   `DriftMutationTransaction`, `DriftSyncCheckpointStore`, and
-   `DriftSyncRunJournal`; do not expose Drift types through feature contracts.
-4. Adapt a consumer `Selectable.watch()` stream through Dartitect's existing
-   `StreamReactiveSource`. Dispose observations, sync, and repositories before
-   the database owner.
-
-When Drift and ObjectBox coexist, assign different bounded contexts and a
-single writer per dataset or partition. Do not dual-write, bridge schemas, or
-attempt a transaction across engines.
-''';
-
   static const _help = '''Dartitect ${CommandEnvelope.sdkVersion}
 
 Usage: dartitect <command> [arguments]
@@ -1299,22 +1237,23 @@ Usage: dartitect <command> [arguments]
 Read-only commands:
   scan [--json|--sarif] [--root PATH]
                                     Scan files and architecture boundaries.
-  baseline create [--dry-run]      Record existing violations by fingerprint.
   codex sync [--dry-run] [--overwrite-managed]
                                     Install managed, focused Codex skills.
-  doctor [--json] [--deep]         Validate toolchain, config, and project.
+  doctor [--json] [--deep] [--release]
+                                    Validate toolchain, config, and project.
   inspect [--json]                  Emit consolidated architecture metadata.
+  inspect --consumer-tax [--json]   Measure consumer plumbing and capability closure.
   verify [--json|--sarif]           Verify architecture, models, and providers.
   model check [--json]              Validate generated model freshness.
-  model migrate primary [--dry-run|--apply] [--json]
-                                    Preview or apply semantic constructor edits.
+  contracts check <spec> [--baseline=PATH] [--json]
+                                    Validate local OpenAPI 3.1 and generated freshness.
   dependencies audit [--json]      Audit direct/transitive packages offline.
   dependencies explain <package>   Explain the ledger decision/replacement.
   fleet versions <root...>         Report declared and locked SDK versions.
   fleet check <root...>            Scan explicit fleet roots without writes.
   fleet policy <root...> --bundle=PATH --sha256=DIGEST
                                     Audit with a pinned local policy bundle.
-  fleet upgrade <root...> --to=1.0.0-rc.6 --apply [--json]
+  fleet upgrade <root...> --to=1.0.0-rc.8 --apply [--json]
                                     Upgrade a cohort transactionally.
 
 Convergent synchronizers (preview by default):
@@ -1322,19 +1261,21 @@ Convergent synchronizers (preview by default):
                                     Preview or converge generated models.
   wiring sync [--dry-run|--apply] [--json]
                                     Preview or converge direct feature wiring.
+  contracts sync <spec> [--baseline=PATH] [--dry-run|--apply] [--json]
+                                    Preview or generate bounded DTOs and Dio clients.
 
 Mutating commands (all accept --dry-run):
   init                              Create dartitect.json without overwrite.
-  create app <name> [--preset=minimal|offline-hybrid] [--transport=dio]
-                    [--observability=MODE] [--scheduler=workmanager]
-                                    Create a six-platform Flutter app.
+  create app <name> --targets=android,web [--example=tasks]
+                                    Create an empty target-aware Flutter shell.
   create feature <name> --profile=PROFILE [--scope=application|session]
-                       [--persistence-native=PROVIDER]
-                       [--persistence-web=PROVIDER] [--transport=PROVIDER]
+                       [--targets=android,web]
+                       [--storage-context=NAME] [--transport=NAME]
                        [--pagination=cursor]
-                       [--headless-sync] [--diagnostics=off|basic|full]
+                       [--headless-targets=android,ios]
+                       [--diagnostics=off|basic|full]
                        [--capabilities=credentials,attachments,forms,queries]
-                                    Create online/cache/replica/offline-full wiring.
+                                    Create local/online/cache/replica/offline-full wiring.
   create viewmodel <name>           Create a native ViewModel and test.
   create repository <name>          Create a contract and fake.
   create service <name>             Create a constructor-injected service.

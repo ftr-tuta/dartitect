@@ -1,9 +1,10 @@
 import 'package:dartitect_cli/dartitect_cli.dart';
+import 'package:dartitect_cli/src/fleet/v1_config_migration.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('exact RC5 aliases and coexistence config become strict RC6', () {
-    final result = migrateExactRc5Config('''{
+  test('exact RC6 aliases become closed target-aware config v2', () {
+    final result = migrateDartitectV1Config('''{
   "configVersion": 1,
   "profile": "native_strict",
   "layers": {
@@ -33,20 +34,28 @@ void main() {
 
     expect(result.changed, isTrue);
     expect(result.config.profile, nativeStrictProfile);
-    expect(result.config.scheduler, 'workmanager');
+    expect(result.config.configVersion, 2);
+    expect(result.config.scheduler.provider, 'workmanager');
     final orders = result.config.features.declarations['orders']!;
     expect(orders.scope, FeatureScope.application);
-    expect(orders.persistence.native, 'objectbox');
-    expect(orders.persistence.web, 'memory');
+    expect(orders.storageContext, 'orders_storage');
+    expect(orders.dataset!.dataset, 'orders');
+    expect(orders.dataset!.codec, 'orders_v1');
+    expect(orders.dataset!.transactionBoundary, 'orders_transaction');
+    expect(
+      result.config.storageContexts['orders_storage']!.provider,
+      'objectbox',
+    );
+    expect(orders.targets, isNot(contains(DartitectPlatform.web)));
     expect(orders.pagination, FeaturePagination.cursor);
-    expect(orders.headless[DartitectPlatform.windows], isFalse);
+    expect(orders.headlessTargets, isNot(contains(DartitectPlatform.windows)));
     expect(result.config.encode(), isNot(contains('scaffolds')));
     expect(result.config.encode(), isNot(contains('ecosystem')));
   });
 
-  test('non-RC5 aliases and feature extensions are rejected with pointers', () {
+  test('non-RC6 aliases and feature extensions are rejected with pointers', () {
     expect(
-      () => migrateExactRc5Config('''{
+      () => migrateDartitectV1Config('''{
         "configVersion": 1,
         "profile": "native_strict",
         "scaffolds": {"layout": "feature_first", "blueprints": ["other"]}

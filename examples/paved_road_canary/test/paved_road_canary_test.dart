@@ -17,9 +17,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: ApplicationHost<CanaryRuntime>.create(
-          create: PavedRoadFeatureWiring.application(
-            createModule: createCanaryFeatureModule,
-          ),
+          create: createCanaryApplication(),
           loading: (_) => const Text('loading'),
           failure: (_, _, retry) =>
               TextButton(onPressed: retry, child: const Text('retry')),
@@ -53,13 +51,11 @@ void main() {
     final features = config['features']! as Map<String, Object?>;
     final declarations = features['declarations']! as Map<String, Object?>;
     final pavedRoad = declarations['paved_road']! as Map<String, Object?>;
-    expect(pavedRoad['profile'], 'offline-full');
-    expect(
-      (pavedRoad['headless']! as Map<String, Object?>).values,
-      everyElement(isFalse),
-    );
-    expect(PavedRoadFeatureWiring.profile, 'offline-full');
+    expect(pavedRoad['profile'], 'cache');
+    expect(pavedRoad['headlessTargets'], isEmpty);
+    expect(PavedRoadFeatureWiring.profile, 'cache');
     expect(PavedRoadFeatureWiring.pagination, 'cursor');
+    expect(PavedRoadFeatureWiring.headlessTargets, isEmpty);
 
     final source = CancellationSource();
     final progress = BoundedProgressReporter<String>(capacity: 2);

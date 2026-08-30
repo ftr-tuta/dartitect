@@ -2,6 +2,11 @@
 
 ## Choose the boundary
 
+Start only in a new Dart or Flutter project. Dartitect does not provide an
+incremental adoption path, legacy zone, competing-runtime bridge, or general
+application conversion. The supported continuity path is an SDK-owned upgrade
+for a project that was created with Dartitect.
+
 Start with `dartitect` for `Result` and ownership. Add
 `dartitect_sync` only for dataset orchestration, `dartitect_flutter` only at
 Flutter UI composition, observability only where telemetry is needed, and
@@ -36,22 +41,21 @@ owned by the consumer close afterward.
 
 ```console
 dart run dartitect_cli:dartitect inspect --json
-dart run dartitect_cli:dartitect scan --no-baseline
+dart run dartitect_cli:dartitect scan
 dart run dartitect_cli:dartitect doctor
 dart test
 ```
 
-Resolve new violations. Create a baseline only for reviewed existing debt, and
-remove obsolete entries over time.
+Resolve every violation. Greenfield projects cannot suppress architecture debt
+through a baseline.
 
 ## Agent guidance
 
 `dartitect codex sync --dry-run` previews eleven managed, implicitly invocable
-skills. New work starts with `$dartitect-design`; an existing codebase may be
-inspected read-only with `$dartitect-audit` and then adopt one explicitly owned
-feature boundary at a time. Existing runtimes may remain outside that boundary,
-but provider leakage, service location, and duplicate ownership remain
-prohibited. Focused implementation routes to runtime, reactive, offline-first,
+skills. New work starts with `$dartitect-design`; `$dartitect-audit` validates
+that a Dartitect-created project still conforms after development or an SDK
+upgrade. It does not produce an adoption or conversion plan. Focused
+implementation routes to runtime, reactive, offline-first,
 observability, adapters, testing, tooling, or MCP. The sync never
 manages the repository-local `repository-contribution` skill.
 

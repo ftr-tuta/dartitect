@@ -6,6 +6,7 @@ export 'src/binding_diagnostics.dart';
 export 'src/command/command.dart';
 export 'src/command/progress_command.dart';
 export 'src/dartitect_scope.dart';
+export 'src/dartitect_view_model.dart';
 export 'src/effect_channel.dart';
 export 'src/first_frame_gate.dart';
 export 'src/flutter_error_binding.dart';

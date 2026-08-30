@@ -60,10 +60,8 @@ void main() {
             'dartitect_audit_conformance',
             'dartitect_verify_project',
             'dartitect_preview_init',
-            'dartitect_preview_baseline',
             'dartitect_preview_codex_sync',
             'dartitect_preview_model_sync',
-            'dartitect_preview_model_primary_migration',
             'dartitect_preview_create_feature',
             'dartitect_preview_wiring_sync',
             'dartitect_explain_feature_graph',
@@ -72,7 +70,7 @@ void main() {
             'dartitect_apply_change',
           ]),
         );
-        expect(tools, hasLength(17));
+        expect(tools, hasLength(15));
         expect(
           tools.map((tool) => tool.name).join(' '),
           isNot(anyOf(contains('shell'), contains('execute'))),
@@ -117,10 +115,10 @@ void main() {
         'ok': true,
         ...(await service.doctorProject()).toJson(),
       });
-      final report = await service.scanArchitecture(useBaseline: false);
+      final report = await service.scanArchitecture();
       final scan = await environment.call(
         'dartitect_scan_architecture',
-        <String, Object?>{'baseline': false, 'limit': 500},
+        <String, Object?>{'limit': 500},
       );
       expect(scan.structuredContent?['project'], report.project);
       expect(scan.structuredContent?['capabilities'], report.capabilities);
@@ -134,10 +132,7 @@ void main() {
 
       final conformance = await environment.call('dartitect_audit_conformance');
       expect(conformance.structuredContent?['command'], 'conformance audit');
-      expect(
-        conformance.structuredContent?['canonicalGate'],
-        'dartitect scan --no-baseline',
-      );
+      expect(conformance.structuredContent?['canonicalGate'], 'dartitect scan');
       expect(
         conformance.structuredContent?['support'],
         containsPair('migration', false),
@@ -189,7 +184,7 @@ void main() {
 
       final first = await environment.call(
         'dartitect_scan_architecture',
-        <String, Object?>{'baseline': false, 'limit': 1},
+        <String, Object?>{'limit': 1},
       );
       final page = first.structuredContent?['page'] as Map<String, Object?>;
       expect(page['returned'], 1);
@@ -298,7 +293,7 @@ environment:
           resources.resources.map((resource) => resource.uri),
           containsAll(<String>[
             'dartitect://packages',
-            'dartitect://config/v1',
+            'dartitect://config/v2',
           ]),
         );
         final templates = await environment.connection.listResourceTemplates();
@@ -308,7 +303,7 @@ environment:
         );
         final packageText =
             (package.contents.single as TextResourceContents).text;
-        expect(packageText, contains('development'));
+        expect(packageText, contains('release candidate'));
         final diagnostic = await environment.connection.readResource(
           ReadResourceRequest(uri: 'dartitect://diagnostics/DT1001'),
         );
@@ -393,7 +388,7 @@ environment:
           'dartitect_preview_create_feature',
           <String, Object?>{
             'name': 'accounts',
-            'profile': 'online',
+            'profile': 'local',
             'scope': 'session',
             'capabilities': 'credentials,forms',
           },
@@ -453,22 +448,20 @@ environment:
       final project = await _project();
       await File('${project.path}/dartitect.json').writeAsString(
         DartitectConfig(
+          transports: <String, DartitectTransportConfig>{
+            'api': DartitectTransportConfig(
+              provider: 'dio',
+              targets: const <DartitectPlatform>[DartitectPlatform.android],
+            ),
+          },
           features: DartitectFeaturesConfig(
             declarations: <String, DartitectFeatureDeclaration>{
               'notes': DartitectFeatureDeclaration(
                 profile: FeatureProfile.online,
                 scope: FeatureScope.application,
-                persistence: FeaturePersistenceMatrix(
-                  native: 'none',
-                  web: 'none',
-                ),
-                transport: 'dio',
+                transport: 'api',
                 pagination: FeaturePagination.none,
                 diagnostics: FeatureDiagnosticsLevel.basic,
-                headless: <DartitectPlatform, bool>{
-                  for (final platform in DartitectPlatform.values)
-                    platform: false,
-                },
               ),
             },
           ),
@@ -558,57 +551,6 @@ final class const User({required final String id})
       },
     );
 
-    test(
-      'primary migration preview is payload-free before reviewed apply',
-      () async {
-        final project = await _modelProject('''
-import 'package:dartitect_modeling/dartitect_modeling.dart';
-
-part 'user.dartitect.g.dart';
-
-@DartitectValue()
-final class User extends ValueEquality with _\$UserDartitect {
-  const User({required this.id});
-
-  final String id;
-}
-''');
-        final source = File('${project.path}/lib/user.dart');
-        final before = await source.readAsString();
-        final environment = _Environment(
-          DartitectMcpPolicy(
-            allowedRoots: <Directory>[project],
-            allowWrites: true,
-            createPlanId: () => 'model-primary-plan-0001',
-          ),
-        );
-        addTearDown(environment.close);
-        await environment.initialize();
-
-        final preview = await environment.call(
-          'dartitect_preview_model_primary_migration',
-        );
-
-        expect(preview.isError, isNot(true));
-        final encoded = jsonEncode(preview.structuredContent);
-        expect(encoded, contains('lib/user.dart'));
-        expect(encoded, isNot(contains('List<Object?> get equalityProps')));
-        expect(await source.readAsString(), before);
-        final applied = await environment.call(
-          'dartitect_apply_change',
-          <String, Object?>{
-            'planId': preview.structuredContent?['planId']! as String,
-            'confirmed': true,
-          },
-        );
-        expect(applied.structuredContent?['ok'], isTrue);
-        expect(
-          await source.readAsString(),
-          contains('final class const User({'),
-        );
-      },
-    );
-
     test('rejects expired and stale plans without writing', () async {
       var now = DateTime.utc(2026, 1, 1);
       var sequence = 0;
@@ -629,9 +571,7 @@ final class User extends ValueEquality with _\$UserDartitect {
       addTearDown(environment.close);
       await environment.initialize();
 
-      final expiredPreview = await environment.call(
-        'dartitect_preview_baseline',
-      );
+      final expiredPreview = await environment.call('dartitect_preview_init');
       now = now.add(const Duration(minutes: 11));
       final expired = await environment.call(
         'dartitect_apply_change',
@@ -642,9 +582,9 @@ final class User extends ValueEquality with _\$UserDartitect {
       );
       expect(_errorCode(expired), 'plan_expired');
 
-      final stalePreview = await environment.call('dartitect_preview_baseline');
-      await File('${project.path}/lib/features/example/domain/model.dart')
-          .writeAsString('BuildContext? context;\n');
+      final stalePreview = await environment.call('dartitect_preview_init');
+      await File('${project.path}/pubspec.yaml')
+          .writeAsString('name: changed_after_preview\n');
       final stale = await environment.call(
         'dartitect_apply_change',
         <String, Object?>{
@@ -653,10 +593,7 @@ final class User extends ValueEquality with _\$UserDartitect {
         },
       );
       expect(_errorCode(stale), 'stale_plan');
-      expect(
-        File('${project.path}/.dartitect/baseline.json').existsSync(),
-        isFalse,
-      );
+      expect(File('${project.path}/dartitect.json').existsSync(), isFalse);
     });
 
     test(
