@@ -111,16 +111,20 @@ Future<void> main(List<String> arguments) async {
   final sbomFile = File('${output.path}/sbom.spdx.json');
   final licenseFile = File('${output.path}/dependency-licenses.json');
   if (arguments.contains('--check')) {
-    final matches =
-        await sbomFile.exists() &&
-        await sbomFile.readAsString() == sbom &&
-        await licenseFile.exists() &&
-        await licenseFile.readAsString() == licenses;
-    if (!matches) {
+    final mismatches = <String>[
+      if (await _artifactMismatch(sbomFile, sbom) case final mismatch?)
+        mismatch,
+      if (await _artifactMismatch(licenseFile, licenses) case final mismatch?)
+        mismatch,
+    ];
+    if (mismatches.isNotEmpty) {
       stderr.writeln(
         'Supply-chain artifacts are stale; run '
         'dart run tool/generate_supply_chain.dart.',
       );
+      for (final mismatch in mismatches) {
+        stderr.writeln(mismatch);
+      }
       exitCode = 1;
       return;
     }
@@ -169,3 +173,57 @@ String _safeId(String value) =>
     value.replaceAll(RegExp(r'[^A-Za-z0-9.-]'), '-');
 
 String _fileName(File file) => file.uri.pathSegments.last;
+
+Future<String?> _artifactMismatch(File file, String expected) async {
+  if (!await file.exists()) return '${file.path}: missing';
+  final actual = await file.readAsString();
+  if (actual == expected) return null;
+  try {
+    final difference = _firstJsonDifference(
+      jsonDecode(actual),
+      jsonDecode(expected),
+      r'$',
+    );
+    return difference == null
+        ? '${file.path}: JSON matches but serialization differs'
+        : '${file.path}: $difference';
+  } on FormatException catch (error) {
+    return '${file.path}: invalid tracked JSON: $error';
+  }
+}
+
+String? _firstJsonDifference(Object? actual, Object? expected, String path) {
+  if (actual is Map && expected is Map) {
+    final keys = <Object?>{...actual.keys, ...expected.keys}.toList()
+      ..sort((left, right) => '$left'.compareTo('$right'));
+    for (final key in keys) {
+      if (!actual.containsKey(key)) return '$path.$key is missing in tracked';
+      if (!expected.containsKey(key)) {
+        return '$path.$key exists only in tracked';
+      }
+      final difference = _firstJsonDifference(
+        actual[key],
+        expected[key],
+        '$path.$key',
+      );
+      if (difference != null) return difference;
+    }
+    return null;
+  }
+  if (actual is List && expected is List) {
+    if (actual.length != expected.length) {
+      return '$path length is ${actual.length}; expected ${expected.length}';
+    }
+    for (var index = 0; index < actual.length; index += 1) {
+      final difference = _firstJsonDifference(
+        actual[index],
+        expected[index],
+        '$path[$index]',
+      );
+      if (difference != null) return difference;
+    }
+    return null;
+  }
+  if (actual == expected) return null;
+  return '$path is ${jsonEncode(actual)}; expected ${jsonEncode(expected)}';
+}
