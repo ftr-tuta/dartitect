@@ -466,15 +466,16 @@ final class SyncTriggerCoordinator<K> implements AsyncDisposable {
     Object? cancellationReason;
     try {
       disposition = await _run(batch, cancellation.signal);
-    } on CancellationException {
+    } on CancellationException catch (error) {
       // Expected session/offline/deadline/disposal control flow.
+      cancellationReason = error.reason;
     } on Object catch (error, stackTrace) {
       crash = error;
       crashStack = stackTrace;
     } finally {
-      cancellationReason = cancellation.signal.isCancelled
-          ? cancellation.signal.reason
-          : null;
+      if (cancellation.signal.isCancelled) {
+        cancellationReason = cancellation.signal.reason;
+      }
       _deadlineTimer?.cancel();
       _deadlineTimer = null;
       if (identical(_activeCancellation, cancellation)) {
