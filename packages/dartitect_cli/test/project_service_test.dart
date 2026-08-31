@@ -225,7 +225,22 @@ void main() {
 
       expect(holder.kill(), isTrue);
       await holder.exitCode.timeout(const Duration(seconds: 20));
-      final receipt = await service.applyChange(plan);
+      final releaseDeadline = DateTime.now().add(const Duration(seconds: 5));
+      late DartitectChangeReceipt receipt;
+      while (true) {
+        try {
+          receipt = await service.applyChange(plan);
+          break;
+        } on DartitectChangeException catch (error) {
+          if (error.code != 'change_locked' ||
+              DateTime.now().isAfter(releaseDeadline)) {
+            rethrow;
+          }
+          // Windows may report process exit just before it releases the
+          // terminated process's file handles. Wait only for that OS cleanup.
+          await Future<void>.delayed(const Duration(milliseconds: 25));
+        }
+      }
 
       expect(receipt.changed, isTrue);
       expect(
