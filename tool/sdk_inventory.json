@@ -4,7 +4,7 @@
   "packages": [
     {
       "name": "dartitect",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "keep-minimal-core",
       "runtimeDependencies": [],
       "entrypoints": [
@@ -15,7 +15,7 @@
     },
     {
       "name": "dartitect_cli",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "keep-host-tooling",
       "runtimeDependencies": [
         "analyzer",
@@ -29,11 +29,11 @@
         "dartitect_cli.dart",
         "dartitect_contracts.dart"
       ],
-      "publicSymbolCount": 110
+      "publicSymbolCount": 112
     },
     {
       "name": "dartitect_devtools",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "add-read-only-development-inspector",
       "runtimeDependencies": [
         "dartitect"
@@ -45,7 +45,7 @@
     },
     {
       "name": "dartitect_dio",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "keep-optional-adapter",
       "runtimeDependencies": [
         "dartitect",
@@ -60,7 +60,7 @@
     },
     {
       "name": "dartitect_drift",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "add-consumer-owned-drift-sync-adapter",
       "runtimeDependencies": [
         "dartitect",
@@ -75,8 +75,8 @@
     },
     {
       "name": "dartitect_flutter",
-      "version": "1.0.0-rc.9",
-      "decision": "keep-headless-and-widgets-no-material-entrypoint",
+      "version": "1.0.0-rc.10",
+      "decision": "add-business-neutral-responsive-ui-entrypoint",
       "runtimeDependencies": [
         "dartitect",
         "flutter"
@@ -85,13 +85,28 @@
         "dartitect_flutter.dart",
         "dartitect_flutter_forms.dart",
         "dartitect_flutter_queries.dart",
-        "dartitect_flutter_reactive.dart"
+        "dartitect_flutter_reactive.dart",
+        "dartitect_flutter_ui.dart"
       ],
-      "publicSymbolCount": 231
+      "publicSymbolCount": 241
+    },
+    {
+      "name": "dartitect_flutter_testing",
+      "version": "1.0.0-rc.10",
+      "decision": "add-dev-only-paired-ui-matrix",
+      "runtimeDependencies": [
+        "dartitect_flutter",
+        "flutter",
+        "flutter_test"
+      ],
+      "entrypoints": [
+        "dartitect_flutter_testing.dart"
+      ],
+      "publicSymbolCount": 7
     },
     {
       "name": "dartitect_geometry",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "add-attributed-pure-dart-geometry",
       "runtimeDependencies": [],
       "entrypoints": [
@@ -101,7 +116,7 @@
     },
     {
       "name": "dartitect_isolates",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "add-pure-dart-worker-lifecycle",
       "runtimeDependencies": [
         "dartitect"
@@ -113,7 +128,7 @@
     },
     {
       "name": "dartitect_jobs",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "add-bounded-headless-job-runtime",
       "runtimeDependencies": [
         "dartitect"
@@ -125,7 +140,7 @@
     },
     {
       "name": "dartitect_lints",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "keep-analyzer-host",
       "runtimeDependencies": [
         "analysis_server_plugin",
@@ -140,7 +155,7 @@
     },
     {
       "name": "dartitect_locale_br",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "add-pure-dart-brazilian-values",
       "runtimeDependencies": [],
       "entrypoints": [
@@ -150,7 +165,7 @@
     },
     {
       "name": "dartitect_mcp",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "keep-local-reviewed-tooling",
       "runtimeDependencies": [
         "crypto",
@@ -164,7 +179,7 @@
     },
     {
       "name": "dartitect_media",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "add-explicit-gallery-boundary",
       "runtimeDependencies": [
         "dartitect",
@@ -177,7 +192,7 @@
     },
     {
       "name": "dartitect_modeling",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "add-opt-in-modeling-runtime",
       "runtimeDependencies": [
         "dartitect"
@@ -189,7 +204,7 @@
     },
     {
       "name": "dartitect_modeling_analyzer",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "add-shared-read-only-semantic-compiler",
       "runtimeDependencies": [
         "analyzer",
@@ -202,7 +217,7 @@
     },
     {
       "name": "dartitect_objectbox",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "keep-optional-native-adapter",
       "runtimeDependencies": [
         "dartitect",
@@ -220,7 +235,7 @@
     },
     {
       "name": "dartitect_observability",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "keep-provider-neutral-core",
       "runtimeDependencies": [
         "dartitect"
@@ -232,7 +247,7 @@
     },
     {
       "name": "dartitect_privacy",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "add-explicit-tracking-authorization-boundary",
       "runtimeDependencies": [
         "flutter"
@@ -244,7 +259,7 @@
     },
     {
       "name": "dartitect_resilience",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "add-bounded-resilience-primitives",
       "runtimeDependencies": [
         "dartitect"
@@ -256,7 +271,7 @@
     },
     {
       "name": "dartitect_sentry",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "keep-optional-borrowed-hub-adapter",
       "runtimeDependencies": [
         "dartitect_observability",
@@ -269,7 +284,7 @@
     },
     {
       "name": "dartitect_sync",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "keep-offline-and-sync-owner",
       "runtimeDependencies": [
         "dartitect",
@@ -283,7 +298,7 @@
     },
     {
       "name": "dartitect_testing",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "keep-dev-only-contract-sdk",
       "runtimeDependencies": [
         "dartitect",
@@ -302,7 +317,7 @@
     },
     {
       "name": "dartitect_transfer",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "add-provider-neutral-transfer-runtime",
       "runtimeDependencies": [
         "dartitect"
@@ -315,7 +330,7 @@
     },
     {
       "name": "dartitect_workmanager",
-      "version": "1.0.0-rc.9",
+      "version": "1.0.0-rc.10",
       "decision": "add-stable-workmanager-adapter",
       "runtimeDependencies": [
         "dartitect",

@@ -13,6 +13,7 @@ const _expectedSkills = <String>{
   'dartitect-runtime',
   'dartitect-testing',
   'dartitect-tooling',
+  'dartitect-ui',
 };
 
 const _expectedRouting = <String, String>{
@@ -27,6 +28,7 @@ const _expectedRouting = <String, String>{
   'cliAndLints': 'dartitect-tooling',
   'localMcp': 'dartitect-mcp',
   'immutableModels': 'dartitect-modeling',
+  'flutterPresentation': 'dartitect-ui',
 };
 
 Future<void> main() async {
@@ -66,7 +68,7 @@ Future<void> main() async {
   if (routing is! Map<String, Object?> ||
       !_sameStrings(routing.keys.toSet(), _expectedRouting.keys.toSet())) {
     stderr.writeln(
-      'Routing scenarios must cover the eleven supported workflows.',
+      'Routing scenarios must cover the twelve supported workflows.',
     );
     exitCode = 1;
   } else {

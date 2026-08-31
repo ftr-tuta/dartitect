@@ -1,3 +1,7 @@
+## 1.0.0-rc.10
+
+- Join the RC10 business-neutral UI quality and evidence cohort.
+
 ## 1.0.0-rc.9
 
 - Join the RC9 source cohort and mandatory package/entrypoint canary catalog.

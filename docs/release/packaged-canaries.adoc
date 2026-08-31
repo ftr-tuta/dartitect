@@ -1,12 +1,12 @@
 = Packaged and Git candidate canary contract
 
-Status:: Implemented for the RC9 candidate; final tag/publication are outside this delivery
+Status:: Implemented for the RC10 candidate; final tag/publication are outside this delivery
 Machine authority:: `tool/canaries/canary_contract.json`
 Development gate:: `dart run tool/check_canaries.dart --allow-dirty`
 
 == Candidate source and isolation
 
-The packaged gate creates archives for all twenty-four packages from one exact
+The packaged gate creates archives for all twenty-five packages from one exact
 candidate tree, serves them through an ephemeral hosted repository, and copies
 each consumer outside the checkout. It rejects local path resolution,
 dependency overrides, missing/transitive cohort members, mixed versions,
@@ -15,7 +15,7 @@ cache is only transport; each requested archive digest remains authoritative.
 
 The Git variant requires one annotated tag and resolves the complete transitive
 Dartitect closure from one URL/ref. It remains release infrastructure, but this
-RC9 delivery creates no tag, GitHub Release, or publication. Both runners use
+RC10 delivery creates no tag, GitHub Release, or publication. Both runners use
 the same nine-canary machine contract and command order.
 
 == Modeling and thin consumer

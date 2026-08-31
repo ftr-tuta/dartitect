@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.10
+
+- Join the RC10 business-neutral UI quality and evidence cohort.
+
 ## 1.0.0-rc.9
 
 - Publish the RC9 config-v3, fleet, blueprint, concrete-graph, and canary catalog metadata through the local read-only server.

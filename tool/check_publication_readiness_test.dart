@@ -69,14 +69,29 @@ void main() {
     expect(result.stderr, contains('does not match source_sha and ci_run_id'));
   });
 
-  test('rejects stable publication while the UI/UX gate is pending', () async {
+  test(
+    'accepts stable publication after the UI quality gate is evidenced',
+    () async {
+      final fixture = await _Fixture.create();
+      addTearDown(fixture.dispose);
+
+      final result = await fixture.check(channel: 'pub-dev-stable');
+
+      expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
+      expect(result.stdout, contains('pub-dev-stable'));
+    },
+  );
+
+  test('rejects stable publication when UI quality evidence fails', () async {
     final fixture = await _Fixture.create();
     addTearDown(fixture.dispose);
+    await File('${fixture.root.path}/tool/check_ui_quality.dart')
+        .writeAsString('void main() => throw StateError("stale evidence");\n');
 
     final result = await fixture.check(channel: 'pub-dev-stable');
 
     expect(result.exitCode, 1);
-    expect(result.stderr, contains('ui-ux-business-neutral'));
+    expect(result.stderr, contains('rejected ui-quality-v1 evidence'));
   });
 }
 
@@ -99,6 +114,11 @@ final class _Fixture {
         .copy(policyFile.path);
     await File('${sourceRoot.path}/tool/stable_candidate_contract.json')
         .copy('${root.path}/tool/stable_candidate_contract.json');
+    await File('${sourceRoot.path}/tool/check_stable_candidate.dart')
+        .copy('${root.path}/tool/check_stable_candidate.dart');
+    await File(
+      '${root.path}/tool/check_ui_quality.dart',
+    ).writeAsString("void main() => print('ui-quality-v1 fixture passed');\n");
     await File('${root.path}/README.md').writeAsString('fixture\n');
     await _run(root, 'git', const <String>['init', '-q']);
     await _run(root, 'git', const <String>['config', 'user.name', 'fixture']);

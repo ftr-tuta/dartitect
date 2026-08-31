@@ -35,7 +35,7 @@ void main() {
   });
 
   test(
-    'supports any combination of the complete twenty-four-package cohort',
+    'supports any combination of the complete twenty-five-package cohort',
     () {
       final contract = jsonDecode(
         File('${root.path}/tool/package_release_contract.json')
@@ -49,7 +49,7 @@ void main() {
         repository: 'https://example.invalid/dartitect.git',
         ref: 'v1.0.0-rc.8',
       );
-      expect(_packages(output).toSet(), hasLength(24));
+      expect(_packages(output).toSet(), hasLength(25));
     },
   );
 

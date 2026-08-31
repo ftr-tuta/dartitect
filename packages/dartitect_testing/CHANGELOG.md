@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.10
+
+- Join the RC10 business-neutral UI quality and evidence cohort.
+
 ## 1.0.0-rc.9
 
 - Extend typed feature matrices and generated harness support for deterministic fault, restart, conflict, uncertainty, and zero-resource-census testing.

@@ -1,3 +1,6 @@
+@TestOn('vm')
+library;
+
 import 'dart:convert';
 
 import 'package:dartitect/dartitect.dart';

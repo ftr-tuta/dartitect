@@ -223,7 +223,7 @@ Future<Map<String, Object?>> _runCanary({
         'fleet',
         'upgrade',
         '.',
-        '--to=1.0.0-rc.9',
+        '--to=1.0.0-rc.10',
         '--apply',
         '--json',
       ]);
@@ -622,7 +622,7 @@ final class _Options {
 
   factory _Options.parse(List<String> arguments) {
     String? repository;
-    var ref = 'v1.0.0-rc.9';
+    var ref = 'v1.0.0-rc.10';
     var keepArtifacts = false;
     for (final argument in arguments) {
       if (argument.startsWith('--repository=')) {

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "sdkVersion": "1.0.0-rc.9",
+  "sdkVersion": "1.0.0-rc.10",
   "entrypoints": {
     "packages/dartitect/lib/dartitect.dart": {
       "defaultAudience": "application-facing",
@@ -18884,6 +18884,211 @@
               "typeParameters": [],
               "returnType": "Map<String, Object?>",
               "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "DartitectUiAuditCodes",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "abstract final class DartitectUiAuditCodes",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectUiAuditCodes()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectUiAuditCodes",
+              "parameters": []
+            },
+            {
+              "name": "broadMediaQuery",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String broadMediaQuery",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "devicePlatformSizing",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String devicePlatformSizing",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "gestureWithoutSemantics",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String gestureWithoutSemantics",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "lowLevelMaterialControl",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String lowLevelMaterialControl",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "orientationBuilder",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String orientationBuilder",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "orientationLock",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String orientationLock",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "unlabeledIconAction",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String unlabeledIconAction",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "visualLiteral",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String visualLiteral",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            }
+          ]
+        },
+        {
+          "name": "DartitectUiAuditor",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectUiAuditor",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectUiAuditor(Directory root)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectUiAuditor",
+              "parameters": [
+                {
+                  "name": "root",
+                  "declaration": "Directory root",
+                  "type": "Directory",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "root",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Directory root",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Directory"
+            },
+            {
+              "name": "audit",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Future<CommandEnvelope> audit({bool strict = false})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<CommandEnvelope>",
+              "parameters": [
+                {
+                  "name": "strict",
+                  "declaration": "{bool strict = false}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "false",
+                  "annotations": []
+                }
+              ]
             }
           ]
         },
@@ -45395,6 +45600,133 @@
           ]
         },
         {
+          "name": "DartitectFormSnapshotBuilder",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class DartitectFormSnapshotBuilder<T, F extends Object> extends StatefulWidget",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "StatefulWidget",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectFormSnapshotBuilder<T, F>({required DartitectFormController<T, F> controller, required Widget Function(BuildContext, DartitectFormSnapshot<T, F>, Widget?) builder, Widget? child, Key? key})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectFormSnapshotBuilder<T, F>",
+              "parameters": [
+                {
+                  "name": "controller",
+                  "declaration": "{required DartitectFormController<T, F> controller}",
+                  "type": "DartitectFormController<T, F>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "builder",
+                  "declaration": "{required Widget Function(BuildContext, DartitectFormSnapshot<T, F>, Widget?) builder}",
+                  "type": "Widget Function(BuildContext, DartitectFormSnapshot<T, F>, Widget?)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "child",
+                  "declaration": "{Widget? child}",
+                  "type": "Widget?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "key",
+                  "declaration": "{Key? key}",
+                  "type": "Key?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "builder",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, DartitectFormSnapshot<T, F>, Widget?) builder",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, DartitectFormSnapshot<T, F>, Widget?)"
+            },
+            {
+              "name": "child",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget? child",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget?"
+            },
+            {
+              "name": "controller",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DartitectFormController<T, F> controller",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectFormController<T, F>"
+            },
+            {
+              "name": "createState",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "State<DartitectFormSnapshotBuilder<T, F>> createState()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "State<DartitectFormSnapshotBuilder<T, F>>",
+              "parameters": []
+            }
+          ]
+        },
+        {
           "name": "Err",
           "kind": "class",
           "audience": "application-facing",
@@ -45740,6 +46072,30 @@
             }
           ],
           "aliasedType": "Future<Result<void, F>> Function(T, CancellationSignal)"
+        },
+        {
+          "name": "DartitectFormSnapshotWidgetBuilder",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef DartitectFormSnapshotWidgetBuilder<in T, in F extends Object> = Widget Function(BuildContext, DartitectFormSnapshot<T, F>, Widget?)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "in T",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "in F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "aliasedType": "Widget Function(BuildContext, DartitectFormSnapshot<T, F>, Widget?)"
         },
         {
           "name": "DartitectFormSubmitter",
@@ -46969,6 +47325,199 @@
               ],
               "typeParameters": [],
               "returnType": "DartitectQueryState<T, F>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "DartitectQueryStateBuilder",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class DartitectQueryStateBuilder<Q, T, F extends Object> extends StatefulWidget",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Q",
+              "declaration": "Q",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "StatefulWidget",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectQueryStateBuilder<Q, T, F>({required DartitectQueryController<Q, T, F> controller, required Widget Function(BuildContext, DartitectQueryInitial<T, F>) initial, required Widget Function(BuildContext, DartitectQueryLoading<T, F>) loading, required Widget Function(BuildContext, DartitectQueryEmpty<T, F>) empty, required Widget Function(BuildContext, DartitectQueryContent<T, F>) content, required Widget Function(BuildContext, DartitectQueryFailure<T, F>) failure, Key? key})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectQueryStateBuilder<Q, T, F>",
+              "parameters": [
+                {
+                  "name": "controller",
+                  "declaration": "{required DartitectQueryController<Q, T, F> controller}",
+                  "type": "DartitectQueryController<Q, T, F>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "initial",
+                  "declaration": "{required Widget Function(BuildContext, DartitectQueryInitial<T, F>) initial}",
+                  "type": "Widget Function(BuildContext, DartitectQueryInitial<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "loading",
+                  "declaration": "{required Widget Function(BuildContext, DartitectQueryLoading<T, F>) loading}",
+                  "type": "Widget Function(BuildContext, DartitectQueryLoading<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "empty",
+                  "declaration": "{required Widget Function(BuildContext, DartitectQueryEmpty<T, F>) empty}",
+                  "type": "Widget Function(BuildContext, DartitectQueryEmpty<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "content",
+                  "declaration": "{required Widget Function(BuildContext, DartitectQueryContent<T, F>) content}",
+                  "type": "Widget Function(BuildContext, DartitectQueryContent<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "failure",
+                  "declaration": "{required Widget Function(BuildContext, DartitectQueryFailure<T, F>) failure}",
+                  "type": "Widget Function(BuildContext, DartitectQueryFailure<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "key",
+                  "declaration": "{Key? key}",
+                  "type": "Key?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "content",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, DartitectQueryContent<T, F>) content",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, DartitectQueryContent<T, F>)"
+            },
+            {
+              "name": "controller",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DartitectQueryController<Q, T, F> controller",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectQueryController<Q, T, F>"
+            },
+            {
+              "name": "empty",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, DartitectQueryEmpty<T, F>) empty",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, DartitectQueryEmpty<T, F>)"
+            },
+            {
+              "name": "failure",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, DartitectQueryFailure<T, F>) failure",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, DartitectQueryFailure<T, F>)"
+            },
+            {
+              "name": "initial",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, DartitectQueryInitial<T, F>) initial",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, DartitectQueryInitial<T, F>)"
+            },
+            {
+              "name": "loading",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, DartitectQueryLoading<T, F>) loading",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, DartitectQueryLoading<T, F>)"
+            },
+            {
+              "name": "createState",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "State<DartitectQueryStateBuilder<Q, T, F>> createState()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "State<DartitectQueryStateBuilder<Q, T, F>>",
               "parameters": []
             }
           ]
@@ -56356,6 +56905,239 @@
           ]
         },
         {
+          "name": "ResourcePresentationBuilder",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class ResourcePresentationBuilder<T, F extends Object, M> extends StatefulWidget",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            },
+            {
+              "name": "M",
+              "declaration": "M",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "StatefulWidget",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "ResourcePresentationBuilder<T, F, M>({required LiveResource<ResourceSnapshot<T, M>, F> resource, required bool Function(T) isEmpty, required Widget Function(BuildContext, ResourcePresentationWaiting<T, F, M>) waiting, required Widget Function(BuildContext, ResourcePresentationContent<T, F, M>) content, required Widget Function(BuildContext, ResourcePresentationEmpty<T, F, M>) empty, required Widget Function(BuildContext, ResourcePresentationFailure<T, F, M>, ResourcePresentationExpectedFailure<F>) failure, required Widget Function(BuildContext, ResourcePresentationFailure<T, F, M>, ResourcePresentationCrash<F>) crashed, bool retainLastKnownOnFailure = true, Key? key})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ResourcePresentationBuilder<T, F, M>",
+              "parameters": [
+                {
+                  "name": "resource",
+                  "declaration": "{required LiveResource<ResourceSnapshot<T, M>, F> resource}",
+                  "type": "LiveResource<ResourceSnapshot<T, M>, F>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "isEmpty",
+                  "declaration": "{required bool Function(T) isEmpty}",
+                  "type": "bool Function(T)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "waiting",
+                  "declaration": "{required Widget Function(BuildContext, ResourcePresentationWaiting<T, F, M>) waiting}",
+                  "type": "Widget Function(BuildContext, ResourcePresentationWaiting<T, F, M>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "content",
+                  "declaration": "{required Widget Function(BuildContext, ResourcePresentationContent<T, F, M>) content}",
+                  "type": "Widget Function(BuildContext, ResourcePresentationContent<T, F, M>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "empty",
+                  "declaration": "{required Widget Function(BuildContext, ResourcePresentationEmpty<T, F, M>) empty}",
+                  "type": "Widget Function(BuildContext, ResourcePresentationEmpty<T, F, M>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "failure",
+                  "declaration": "{required Widget Function(BuildContext, ResourcePresentationFailure<T, F, M>, ResourcePresentationExpectedFailure<F>) failure}",
+                  "type": "Widget Function(BuildContext, ResourcePresentationFailure<T, F, M>, ResourcePresentationExpectedFailure<F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "crashed",
+                  "declaration": "{required Widget Function(BuildContext, ResourcePresentationFailure<T, F, M>, ResourcePresentationCrash<F>) crashed}",
+                  "type": "Widget Function(BuildContext, ResourcePresentationFailure<T, F, M>, ResourcePresentationCrash<F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "retainLastKnownOnFailure",
+                  "declaration": "{bool retainLastKnownOnFailure = true}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "true",
+                  "annotations": []
+                },
+                {
+                  "name": "key",
+                  "declaration": "{Key? key}",
+                  "type": "Key?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "content",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, ResourcePresentationContent<T, F, M>) content",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, ResourcePresentationContent<T, F, M>)"
+            },
+            {
+              "name": "crashed",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, ResourcePresentationFailure<T, F, M>, ResourcePresentationCrash<F>) crashed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, ResourcePresentationFailure<T, F, M>, ResourcePresentationCrash<F>)"
+            },
+            {
+              "name": "empty",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, ResourcePresentationEmpty<T, F, M>) empty",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, ResourcePresentationEmpty<T, F, M>)"
+            },
+            {
+              "name": "failure",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, ResourcePresentationFailure<T, F, M>, ResourcePresentationExpectedFailure<F>) failure",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, ResourcePresentationFailure<T, F, M>, ResourcePresentationExpectedFailure<F>)"
+            },
+            {
+              "name": "isEmpty",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "bool Function(T) isEmpty",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool Function(T)"
+            },
+            {
+              "name": "resource",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "LiveResource<ResourceSnapshot<T, M>, F> resource",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "LiveResource<ResourceSnapshot<T, M>, F>"
+            },
+            {
+              "name": "retainLastKnownOnFailure",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "bool retainLastKnownOnFailure",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "waiting",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, ResourcePresentationWaiting<T, F, M>) waiting",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, ResourcePresentationWaiting<T, F, M>)"
+            },
+            {
+              "name": "createState",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "State<ResourcePresentationBuilder<T, F, M>> createState()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "State<ResourcePresentationBuilder<T, F, M>>",
+              "parameters": []
+            }
+          ]
+        },
+        {
           "name": "ResourcePresentationContent",
           "kind": "class",
           "audience": "application-facing",
@@ -58960,6 +59742,1254 @@
           "modifiers": [],
           "typeParameters": [],
           "aliasedType": "FutureOr<void> Function()"
+        }
+      ]
+    },
+    "packages/dartitect_flutter/lib/dartitect_flutter_ui.dart": {
+      "defaultAudience": "application-facing",
+      "symbols": [
+        {
+          "name": "DartitectLayoutBreakpoints",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class DartitectLayoutBreakpoints",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectLayoutBreakpoints({double mediumWidth = 600, double expandedWidth = 840, double mediumHeight = 480, double expandedHeight = 900})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "factory"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectLayoutBreakpoints",
+              "parameters": [
+                {
+                  "name": "mediumWidth",
+                  "declaration": "{double mediumWidth = 600}",
+                  "type": "double",
+                  "kind": "optionalNamed",
+                  "default": "600",
+                  "annotations": []
+                },
+                {
+                  "name": "expandedWidth",
+                  "declaration": "{double expandedWidth = 840}",
+                  "type": "double",
+                  "kind": "optionalNamed",
+                  "default": "840",
+                  "annotations": []
+                },
+                {
+                  "name": "mediumHeight",
+                  "declaration": "{double mediumHeight = 480}",
+                  "type": "double",
+                  "kind": "optionalNamed",
+                  "default": "480",
+                  "annotations": []
+                },
+                {
+                  "name": "expandedHeight",
+                  "declaration": "{double expandedHeight = 900}",
+                  "type": "double",
+                  "kind": "optionalNamed",
+                  "default": "900",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "expandedHeight",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "double expandedHeight",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "double"
+            },
+            {
+              "name": "expandedWidth",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "double expandedWidth",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "double"
+            },
+            {
+              "name": "material3",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DartitectLayoutBreakpoints material3",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "DartitectLayoutBreakpoints"
+            },
+            {
+              "name": "mediumHeight",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "double mediumHeight",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "double"
+            },
+            {
+              "name": "mediumWidth",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "double mediumWidth",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "double"
+            },
+            {
+              "name": "classify",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "DartitectWindowClass classify(Size size)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectWindowClass",
+              "parameters": [
+                {
+                  "name": "size",
+                  "declaration": "Size size",
+                  "type": "Size",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "classifyHeight",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "DartitectSizeClass classifyHeight(double height)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectSizeClass",
+              "parameters": [
+                {
+                  "name": "height",
+                  "declaration": "double height",
+                  "type": "double",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "classifyWidth",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "DartitectSizeClass classifyWidth(double width)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectSizeClass",
+              "parameters": [
+                {
+                  "name": "width",
+                  "declaration": "double width",
+                  "type": "double",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "DartitectResponsiveRegionBuilder",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class DartitectResponsiveRegionBuilder extends StatelessWidget",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "StatelessWidget",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectResponsiveRegionBuilder({required Widget Function(BuildContext, DartitectWindowClass) compact, required Widget Function(BuildContext, DartitectWindowClass) medium, required Widget Function(BuildContext, DartitectWindowClass) expanded, DartitectLayoutBreakpoints breakpoints = DartitectLayoutBreakpoints.material3, Key? key})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectResponsiveRegionBuilder",
+              "parameters": [
+                {
+                  "name": "compact",
+                  "declaration": "{required Widget Function(BuildContext, DartitectWindowClass) compact}",
+                  "type": "Widget Function(BuildContext, DartitectWindowClass)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "medium",
+                  "declaration": "{required Widget Function(BuildContext, DartitectWindowClass) medium}",
+                  "type": "Widget Function(BuildContext, DartitectWindowClass)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "expanded",
+                  "declaration": "{required Widget Function(BuildContext, DartitectWindowClass) expanded}",
+                  "type": "Widget Function(BuildContext, DartitectWindowClass)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "breakpoints",
+                  "declaration": "{DartitectLayoutBreakpoints breakpoints = DartitectLayoutBreakpoints.material3}",
+                  "type": "DartitectLayoutBreakpoints",
+                  "kind": "optionalNamed",
+                  "default": "DartitectLayoutBreakpoints.material3",
+                  "annotations": []
+                },
+                {
+                  "name": "key",
+                  "declaration": "{Key? key}",
+                  "type": "Key?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "breakpoints",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DartitectLayoutBreakpoints breakpoints",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectLayoutBreakpoints"
+            },
+            {
+              "name": "compact",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, DartitectWindowClass) compact",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, DartitectWindowClass)"
+            },
+            {
+              "name": "expanded",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, DartitectWindowClass) expanded",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, DartitectWindowClass)"
+            },
+            {
+              "name": "medium",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, DartitectWindowClass) medium",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, DartitectWindowClass)"
+            },
+            {
+              "name": "build",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Widget build(BuildContext context)",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Widget",
+              "parameters": [
+                {
+                  "name": "context",
+                  "declaration": "BuildContext context",
+                  "type": "BuildContext",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "DartitectResponsiveWindowBuilder",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class DartitectResponsiveWindowBuilder extends StatelessWidget",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "StatelessWidget",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectResponsiveWindowBuilder({required Widget Function(BuildContext, DartitectWindowClass) compact, required Widget Function(BuildContext, DartitectWindowClass) medium, required Widget Function(BuildContext, DartitectWindowClass) expanded, DartitectLayoutBreakpoints breakpoints = DartitectLayoutBreakpoints.material3, Key? key})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectResponsiveWindowBuilder",
+              "parameters": [
+                {
+                  "name": "compact",
+                  "declaration": "{required Widget Function(BuildContext, DartitectWindowClass) compact}",
+                  "type": "Widget Function(BuildContext, DartitectWindowClass)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "medium",
+                  "declaration": "{required Widget Function(BuildContext, DartitectWindowClass) medium}",
+                  "type": "Widget Function(BuildContext, DartitectWindowClass)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "expanded",
+                  "declaration": "{required Widget Function(BuildContext, DartitectWindowClass) expanded}",
+                  "type": "Widget Function(BuildContext, DartitectWindowClass)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "breakpoints",
+                  "declaration": "{DartitectLayoutBreakpoints breakpoints = DartitectLayoutBreakpoints.material3}",
+                  "type": "DartitectLayoutBreakpoints",
+                  "kind": "optionalNamed",
+                  "default": "DartitectLayoutBreakpoints.material3",
+                  "annotations": []
+                },
+                {
+                  "name": "key",
+                  "declaration": "{Key? key}",
+                  "type": "Key?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "breakpoints",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DartitectLayoutBreakpoints breakpoints",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectLayoutBreakpoints"
+            },
+            {
+              "name": "compact",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, DartitectWindowClass) compact",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, DartitectWindowClass)"
+            },
+            {
+              "name": "expanded",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, DartitectWindowClass) expanded",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, DartitectWindowClass)"
+            },
+            {
+              "name": "medium",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, DartitectWindowClass) medium",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, DartitectWindowClass)"
+            },
+            {
+              "name": "build",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Widget build(BuildContext context)",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Widget",
+              "parameters": [
+                {
+                  "name": "context",
+                  "declaration": "BuildContext context",
+                  "type": "BuildContext",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "DartitectWindowClass",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class DartitectWindowClass",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectWindowClass({required DartitectSizeClass width, required DartitectSizeClass height})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectWindowClass",
+              "parameters": [
+                {
+                  "name": "width",
+                  "declaration": "{required DartitectSizeClass width}",
+                  "type": "DartitectSizeClass",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "height",
+                  "declaration": "{required DartitectSizeClass height}",
+                  "type": "DartitectSizeClass",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "height",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DartitectSizeClass height",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectSizeClass"
+            },
+            {
+              "name": "width",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DartitectSizeClass width",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectSizeClass"
+            },
+            {
+              "name": "hashCode",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "int get hashCode",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "==",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "bool ==(Object other)",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": [
+                {
+                  "name": "other",
+                  "declaration": "Object other",
+                  "type": "Object",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "toString",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "String toString()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "DartitectSizeClass",
+          "kind": "enum",
+          "audience": "application-facing",
+          "declaration": "enum DartitectSizeClass",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectSizeClass()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectSizeClass",
+              "parameters": []
+            },
+            {
+              "name": "compact",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DartitectSizeClass compact",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "DartitectSizeClass"
+            },
+            {
+              "name": "expanded",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DartitectSizeClass expanded",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "DartitectSizeClass"
+            },
+            {
+              "name": "medium",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DartitectSizeClass medium",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "DartitectSizeClass"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "List<DartitectSizeClass> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<DartitectSizeClass>"
+            }
+          ]
+        },
+        {
+          "name": "DartitectResponsiveWidgetBuilder",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef DartitectResponsiveWidgetBuilder = Widget Function(BuildContext, DartitectWindowClass)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "aliasedType": "Widget Function(BuildContext, DartitectWindowClass)"
+        }
+      ]
+    },
+    "packages/dartitect_flutter_testing/lib/dartitect_flutter_testing.dart": {
+      "defaultAudience": "tooling-test",
+      "symbols": [
+        {
+          "name": "DartitectAccessibilityPolicy",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectAccessibilityPolicy",
+          "deprecated": false,
+          "annotations": [
+            "@immutable"
+          ],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectAccessibilityPolicy({bool requireLabels = true, bool requireTextContrast = true, bool requireMinimumTapTargets = true})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectAccessibilityPolicy",
+              "parameters": [
+                {
+                  "name": "requireLabels",
+                  "declaration": "{bool requireLabels = true}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "true",
+                  "annotations": []
+                },
+                {
+                  "name": "requireTextContrast",
+                  "declaration": "{bool requireTextContrast = true}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "true",
+                  "annotations": []
+                },
+                {
+                  "name": "requireMinimumTapTargets",
+                  "declaration": "{bool requireMinimumTapTargets = true}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "true",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "requireLabels",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "bool requireLabels",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "requireMinimumTapTargets",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "bool requireMinimumTapTargets",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "requireTextContrast",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "bool requireTextContrast",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            }
+          ]
+        },
+        {
+          "name": "DartitectUiHarness",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectUiHarness",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectUiHarness({DartitectAccessibilityPolicy accessibilityPolicy = const DartitectAccessibilityPolicy()})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectUiHarness",
+              "parameters": [
+                {
+                  "name": "accessibilityPolicy",
+                  "declaration": "{DartitectAccessibilityPolicy accessibilityPolicy = const DartitectAccessibilityPolicy()}",
+                  "type": "DartitectAccessibilityPolicy",
+                  "kind": "optionalNamed",
+                  "default": "const DartitectAccessibilityPolicy()",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "accessibilityPolicy",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectAccessibilityPolicy accessibilityPolicy",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectAccessibilityPolicy"
+            },
+            {
+              "name": "run",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Future<void> run(WidgetTester tester, {required DartitectUiScenario scenario, required Widget Function(DartitectUiScenario) buildRoot, FutureOr<void> Function(WidgetTester, DartitectUiScenario)? exercise})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<void>",
+              "parameters": [
+                {
+                  "name": "tester",
+                  "declaration": "WidgetTester tester",
+                  "type": "WidgetTester",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "scenario",
+                  "declaration": "{required DartitectUiScenario scenario}",
+                  "type": "DartitectUiScenario",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "buildRoot",
+                  "declaration": "{required Widget Function(DartitectUiScenario) buildRoot}",
+                  "type": "Widget Function(DartitectUiScenario)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "exercise",
+                  "declaration": "{FutureOr<void> Function(WidgetTester, DartitectUiScenario)? exercise}",
+                  "type": "FutureOr<void> Function(WidgetTester, DartitectUiScenario)?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "DartitectUiMatrix",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectUiMatrix",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectUiMatrix(Iterable<DartitectUiScenario> scenarios)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectUiMatrix",
+              "parameters": [
+                {
+                  "name": "scenarios",
+                  "declaration": "Iterable<DartitectUiScenario> scenarios",
+                  "type": "Iterable<DartitectUiScenario>",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "scenarios",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<DartitectUiScenario> scenarios",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<DartitectUiScenario>"
+            },
+            {
+              "name": "standard",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectUiMatrix standard",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final",
+                "static"
+              ],
+              "type": "DartitectUiMatrix"
+            }
+          ]
+        },
+        {
+          "name": "DartitectUiScenario",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectUiScenario",
+          "deprecated": false,
+          "annotations": [
+            "@immutable"
+          ],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectUiScenario({required String name, required Size size, required double textScaleFactor, required TextDirection textDirection, required Brightness brightness, required bool highContrast, required bool reducedMotion, required TargetPlatform platform})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectUiScenario",
+              "parameters": [
+                {
+                  "name": "name",
+                  "declaration": "{required String name}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "size",
+                  "declaration": "{required Size size}",
+                  "type": "Size",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "textScaleFactor",
+                  "declaration": "{required double textScaleFactor}",
+                  "type": "double",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "textDirection",
+                  "declaration": "{required TextDirection textDirection}",
+                  "type": "TextDirection",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "brightness",
+                  "declaration": "{required Brightness brightness}",
+                  "type": "Brightness",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "highContrast",
+                  "declaration": "{required bool highContrast}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "reducedMotion",
+                  "declaration": "{required bool reducedMotion}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "platform",
+                  "declaration": "{required TargetPlatform platform}",
+                  "type": "TargetPlatform",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "brightness",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Brightness brightness",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Brightness"
+            },
+            {
+              "name": "highContrast",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "bool highContrast",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "name",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String name",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "platform",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "TargetPlatform platform",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "TargetPlatform"
+            },
+            {
+              "name": "reducedMotion",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "bool reducedMotion",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "size",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Size size",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Size"
+            },
+            {
+              "name": "textDirection",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "TextDirection textDirection",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "TextDirection"
+            },
+            {
+              "name": "textScaleFactor",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "double textScaleFactor",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "double"
+            },
+            {
+              "name": "windowClass",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "DartitectWindowClass windowClass({DartitectLayoutBreakpoints breakpoints = DartitectLayoutBreakpoints.material3})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectWindowClass",
+              "parameters": [
+                {
+                  "name": "breakpoints",
+                  "declaration": "{DartitectLayoutBreakpoints breakpoints = DartitectLayoutBreakpoints.material3}",
+                  "type": "DartitectLayoutBreakpoints",
+                  "kind": "optionalNamed",
+                  "default": "DartitectLayoutBreakpoints.material3",
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "testDartitectUiMatrix",
+          "kind": "function",
+          "audience": "tooling-test",
+          "declaration": "void testDartitectUiMatrix(String description, {required Widget Function(DartitectUiScenario) buildRoot, DartitectUiMatrix? matrix, DartitectUiHarness harness = const DartitectUiHarness(), FutureOr<void> Function(WidgetTester, DartitectUiScenario)? exercise})",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "static"
+          ],
+          "typeParameters": [],
+          "returnType": "void",
+          "parameters": [
+            {
+              "name": "description",
+              "declaration": "String description",
+              "type": "String",
+              "kind": "requiredPositional",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "buildRoot",
+              "declaration": "{required Widget Function(DartitectUiScenario) buildRoot}",
+              "type": "Widget Function(DartitectUiScenario)",
+              "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "matrix",
+              "declaration": "{DartitectUiMatrix? matrix}",
+              "type": "DartitectUiMatrix?",
+              "kind": "optionalNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "harness",
+              "declaration": "{DartitectUiHarness harness = const DartitectUiHarness()}",
+              "type": "DartitectUiHarness",
+              "kind": "optionalNamed",
+              "default": "const DartitectUiHarness()",
+              "annotations": []
+            },
+            {
+              "name": "exercise",
+              "declaration": "{FutureOr<void> Function(WidgetTester, DartitectUiScenario)? exercise}",
+              "type": "FutureOr<void> Function(WidgetTester, DartitectUiScenario)?",
+              "kind": "optionalNamed",
+              "default": null,
+              "annotations": []
+            }
+          ]
+        },
+        {
+          "name": "DartitectUiExercise",
+          "kind": "type_alias",
+          "audience": "tooling-test",
+          "declaration": "typedef DartitectUiExercise = FutureOr<void> Function(WidgetTester, DartitectUiScenario)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "aliasedType": "FutureOr<void> Function(WidgetTester, DartitectUiScenario)"
+        },
+        {
+          "name": "DartitectUiRootBuilder",
+          "kind": "type_alias",
+          "audience": "tooling-test",
+          "declaration": "typedef DartitectUiRootBuilder = Widget Function(DartitectUiScenario)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "aliasedType": "Widget Function(DartitectUiScenario)"
         }
       ]
     },

@@ -9,7 +9,7 @@ dartitect fleet check apps/a apps/b --root . --json
 dartitect fleet inventory apps/a apps/b --root . --json
 dartitect fleet impact --from=before.json --to=after.json --root . --json
 dartitect fleet upgrade apps/a apps/b \
-  --root . --to=1.0.0-rc.9 --apply --json
+  --root . --to=1.0.0-rc.10 --apply --json
 ```
 
 Upgrade preview is deterministic across the complete cohort. Apply acquires a
@@ -34,7 +34,7 @@ dartitect create feature orders --blueprint=./blueprints/mobile
 ```
 
 Blueprint manifests are closed, templates contain no executable code, and
-preview/apply uses a digest lock. RC9 blueprints cover architecture and tests,
+preview/apply uses a digest lock. RC10 blueprints cover architecture and tests,
 not product UI/UX.
 
 No project commits until every project passes. Failure restores every codebase

@@ -383,7 +383,7 @@ dev_dependencies:
   dartitect:
     git:
       url: /tmp/dartitect-candidate
-      ref: v1.0.0-rc.9
+      ref: v1.0.0-rc.10
       path: packages/dartitect
 ''';
     await pubspec.writeAsString('''name: fixture
@@ -392,11 +392,11 @@ dependencies:
 $override''');
     final service = DartitectProjectService(root);
 
-    final plan = await service.previewDependencyUpgrade('1.0.0-rc.9');
+    final plan = await service.previewDependencyUpgrade('1.0.0-rc.10');
     await service.applyChange(plan);
     final result = await pubspec.readAsString();
 
-    expect(result, contains('dartitect: ^1.0.0-rc.9'));
+    expect(result, contains('dartitect: ^1.0.0-rc.10'));
     expect(result, endsWith(override));
   });
 

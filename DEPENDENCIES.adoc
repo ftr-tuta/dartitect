@@ -71,6 +71,13 @@ host compiler.
 | Widget lifecycle and listenables are native platform primitives.
 | Core remains usable without Flutter.
 
+| dartitect_flutter_testing
+| Flutter SDK, flutter_test, dartitect_flutter
+| SDK DEV-ONLY
+| Reuses Flutter's official widget-test and accessibility primitives for a
+paired scenario harness without entering application runtime dependencies.
+| Consumer can configure `flutter_test` directly.
+
 | dartitect_sync
 | dartitect, dartitect_jobs, dartitect_resilience
 | SDK

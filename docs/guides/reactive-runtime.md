@@ -322,4 +322,4 @@ live regions, keyboard-focusable controls, text scaling, and route-owned
 retry/refresh/load-more callbacks. The reference workloads demonstrate this
 consumer boundary while disposing the paged resource before its local source.
 
-The advanced entrypoints are stable in `1.0.0-rc.9` and remain explicit opt-ins.
+The advanced entrypoints are stable in `1.0.0-rc.10` and remain explicit opt-ins.

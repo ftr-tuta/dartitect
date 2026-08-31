@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.10
+
+- Join the RC10 business-neutral UI quality and evidence cohort.
+
 ## 1.0.0-rc.9
 
 - Add config v3, semantic factory compilation, concrete graphs and feature harnesses, typed OpenAPI operation selection, schema-2 consumer tax, fleet inventory/impact, versioned migrations, and confined blueprints.

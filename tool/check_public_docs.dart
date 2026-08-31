@@ -140,8 +140,8 @@ Future<void> main() async {
       .cast<File>()
       .toList();
   guides.sort((left, right) => left.path.compareTo(right.path));
-  if (guides.length != 24) {
-    errors.add('Expected 24 English guides; found ${guides.length}.');
+  if (guides.length != 25) {
+    errors.add('Expected 25 English guides; found ${guides.length}.');
   }
 
   final markdown = await root

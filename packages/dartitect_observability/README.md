@@ -121,7 +121,7 @@ borrowed Sentry Hub, and `dartitect_testing` for recording destinations. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.9` source candidate. Use only coordinates
+The workspace contains the `1.0.0-rc.10` source candidate. Use only coordinates
 from a matching tag with a published GitHub Release and one compatible cohort.
 If no compatible Release exists, there is no supported consumption path. See
 the [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

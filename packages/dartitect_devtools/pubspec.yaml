@@ -1,6 +1,6 @@
 name: dartitect_devtools
 description: Optional read-only DevTools service extensions for Dartitect diagnostics.
-version: 1.0.0-rc.9
+version: 1.0.0-rc.10
 repository: https://github.com/ftr-tuta/dartitect
 issue_tracker: https://github.com/ftr-tuta/dartitect/issues
 topics: [devtools, diagnostics, observability, dart]
@@ -10,7 +10,7 @@ environment:
   sdk: ^3.13.0
 
 dependencies:
-  dartitect: '>=1.0.0-rc.9 <1.0.0'
+  dartitect: '>=1.0.0-rc.10 <1.0.0'
 
 dev_dependencies:
   test: ^1.26.3

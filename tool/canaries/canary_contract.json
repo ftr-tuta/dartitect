@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "cohortVersion": "1.0.0-rc.9",
+  "cohortVersion": "1.0.0-rc.10",
   "artifactSource": "git-archive-exact-head",
   "digestAlgorithm": "sha256",
   "installation": {
@@ -12,7 +12,7 @@
   },
   "gitInstallation": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "ref": "v1.0.0-rc.9",
+    "ref": "v1.0.0-rc.10",
     "annotatedTagRequired": true,
     "dependencyOverrides": true,
     "transitiveClosureRequired": true,
@@ -33,6 +33,7 @@
       "forbiddenPackages": [
         "dartitect_drift",
         "dartitect_flutter",
+        "dartitect_flutter_testing",
         "dartitect_objectbox"
       ],
       "commands": [
@@ -64,6 +65,7 @@
         "dartitect_dio",
         "dartitect_drift",
         "dartitect_flutter",
+        "dartitect_flutter_testing",
         "dartitect_jobs",
         "dartitect_observability",
         "dartitect_resilience",
@@ -127,7 +129,7 @@
         "flutter build web --release",
         "flutter build web --release",
         "flutter build linux --release",
-        "dart run dartitect_cli:dartitect fleet upgrade . --to=1.0.0-rc.9 --apply --json"
+        "dart run dartitect_cli:dartitect fleet upgrade . --to=1.0.0-rc.10 --apply --json"
       ],
       "coverage": [
         "large_30_feature_matrix",
@@ -330,6 +332,7 @@
       "dartitect_dio": ["thin_consumer", "adapters"],
       "dartitect_drift": ["drift_provider"],
       "dartitect_flutter": ["minimal", "thin_consumer"],
+      "dartitect_flutter_testing": ["thin_consumer"],
       "dartitect_geometry": ["native_capabilities"],
       "dartitect_isolates": ["offline_first"],
       "dartitect_jobs": ["thin_consumer"],
@@ -361,6 +364,8 @@
       "package:dartitect_flutter/dartitect_flutter_forms.dart": ["thin_consumer"],
       "package:dartitect_flutter/dartitect_flutter_queries.dart": ["thin_consumer"],
       "package:dartitect_flutter/dartitect_flutter_reactive.dart": ["thin_consumer"],
+      "package:dartitect_flutter/dartitect_flutter_ui.dart": ["thin_consumer"],
+      "package:dartitect_flutter_testing/dartitect_flutter_testing.dart": ["thin_consumer"],
       "package:dartitect_geometry/dartitect_geometry.dart": ["native_capabilities"],
       "package:dartitect_isolates/dartitect_isolates.dart": ["offline_first"],
       "package:dartitect_jobs/dartitect_jobs.dart": ["thin_consumer"],

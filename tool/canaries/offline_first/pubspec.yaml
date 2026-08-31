@@ -8,14 +8,14 @@ environment:
   flutter: '>=3.47.1'
 
 dependencies:
-  dartitect: 1.0.0-rc.9
-  dartitect_dio: 1.0.0-rc.9
-  dartitect_drift: 1.0.0-rc.9
-  dartitect_flutter: 1.0.0-rc.9
-  dartitect_isolates: 1.0.0-rc.9
-  dartitect_objectbox: 1.0.0-rc.9
-  dartitect_observability: 1.0.0-rc.9
-  dartitect_sync: 1.0.0-rc.9
+  dartitect: 1.0.0-rc.10
+  dartitect_dio: 1.0.0-rc.10
+  dartitect_drift: 1.0.0-rc.10
+  dartitect_flutter: 1.0.0-rc.10
+  dartitect_isolates: 1.0.0-rc.10
+  dartitect_objectbox: 1.0.0-rc.10
+  dartitect_observability: 1.0.0-rc.10
+  dartitect_sync: 1.0.0-rc.10
   dio: 5.11.0
   drift: 2.34.3
   flutter:
@@ -25,7 +25,7 @@ dependencies:
 
 dev_dependencies:
   build_runner: 2.16.0
-  dartitect_testing: 1.0.0-rc.9
+  dartitect_testing: 1.0.0-rc.10
   drift_dev: 2.34.3
   flutter_test:
     sdk: flutter

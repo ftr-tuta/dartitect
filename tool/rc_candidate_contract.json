@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "cohortVersion": "1.0.0-rc.9",
+  "cohortVersion": "1.0.0-rc.10",
   "candidateState": "SOURCE_CANDIDATE_ASSEMBLED",
   "targetChannel": "UNMATERIALIZED",
-  "packageCount": 24,
-  "publicEntrypointCount": 30,
+  "packageCount": 25,
+  "publicEntrypointCount": 32,
   "nameRegistryObservation": {
     "registry": "https://pub.dev",
-    "observedAt": "2026-08-28T00:00:00Z",
+    "observedAt": "2026-08-31T00:00:00Z",
     "requestPattern": "GET /api/packages/{name}",
     "expectedStatus": 404,
     "packages": [
@@ -24,6 +24,7 @@
       "dartitect_observability",
       "dartitect_resilience",
       "dartitect_transfer",
+      "dartitect_flutter_testing",
       "dartitect_modeling_analyzer",
       "dartitect_sentry",
       "dartitect_sync",
@@ -44,7 +45,7 @@
   },
   "gitConsumption": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "tag": "v1.0.0-rc.9",
+    "tag": "v1.0.0-rc.10",
     "materialized": false,
     "annotated": true,
     "signed": false,
@@ -63,7 +64,7 @@
     "tool/sdk_inventory.json",
     "tool/generate_release_artifacts.dart",
     "docs/release/package-cohorts.adoc",
-    "docs/release/rc9-handoff.adoc",
+    "docs/release/rc10-handoff.adoc",
     "docs/guides/openapi-contracts.md",
     "packages/dartitect_cli/lib/src/release/generated_release_manifest.dart",
     "packages/dartitect_mcp/lib/src/catalog/generated_catalog.dart",
@@ -79,6 +80,10 @@
     "tool/check_publication_readiness.dart",
     "tool/rc_validation_contract.json",
     "tool/stable_candidate_contract.json",
+    "tool/ui_quality_contract.json",
+    "tool/check_ui_quality.dart",
+    "docs/guides/ui-quality.md",
+    ".agents/skills/dartitect-ui/SKILL.md",
     ".github/workflows/publish.yaml"
   ]
 }

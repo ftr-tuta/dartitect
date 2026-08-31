@@ -54,6 +54,7 @@ independently documented and exports only public entrypoints under `lib/`.
 | --- | --- | --- |
 | Pure Dart results, cancellation, ownership, or bounded work | [`dartitect`](packages/dartitect/) | [`dartitect_isolates`](packages/dartitect_isolates/) for a typed native worker |
 | Flutter MVVM with native listenables | [`dartitect_flutter`](packages/dartitect_flutter/) | Import `dartitect_flutter_reactive.dart` only for the owned reactive runtime |
+| Adaptive, accessible Flutter presentation | `package:dartitect_flutter/dartitect_flutter_ui.dart` | Consumer-owned Material/Cupertino controls, themes, localization, navigation, focus, and restoration |
 | Credentials and authenticated-session rebuild | [`dartitect`](packages/dartitect/) | Import `dartitect_credentials.dart`; storage and credential values stay consumer-owned |
 | Restorable forms and local-authority queries | [`dartitect_flutter`](packages/dartitect_flutter/) | Import `dartitect_flutter_forms.dart` or `dartitect_flutter_queries.dart` explicitly |
 | Immutable values, bounded JSON, projections, or boundary mapping | [`dartitect_modeling`](packages/dartitect_modeling/) | [`dartitect_modeling_analyzer`](packages/dartitect_modeling_analyzer/) is for tooling authors, not applications |
@@ -71,6 +72,7 @@ independently documented and exports only public entrypoints under `lib/`.
 | Logs, errors, tracing, and redaction | [`dartitect_observability`](packages/dartitect_observability/) | [`dartitect_sentry`](packages/dartitect_sentry/) for a borrowed consumer-initialized Hub |
 | Platform or domain leaves | [`dartitect_privacy`](packages/dartitect_privacy/), [`dartitect_media`](packages/dartitect_media/), [`dartitect_locale_br`](packages/dartitect_locale_br/), [`dartitect_geometry`](packages/dartitect_geometry/) | Add only the capability the application actually uses |
 | Deterministic contract tests | [`dartitect_testing`](packages/dartitect_testing/) | Real provider fixtures when generated/native behavior is under test |
+| Paired Flutter UI tests | [`dartitect_flutter_testing`](packages/dartitect_flutter_testing/) as a dev dependency | Consumer root, themes, locales, keyboard, focus, navigation, and action assertions |
 | Read-only local diagnostics inspection | [`dartitect_devtools`](packages/dartitect_devtools/) | Explicit development-entrypoint registration only; never product activation |
 | Inspection, generation, editor diagnostics, or agent context | [`dartitect_cli`](packages/dartitect_cli/), [`dartitect_lints`](packages/dartitect_lints/), [`dartitect_mcp`](packages/dartitect_mcp/) | Managed Codex skills synchronized by the CLI |
 | OpenAPI 3.1 JSON contracts | `dartitect contracts check|sync` | Local specs/refs only; generated DTOs and endpoint descriptors never infer domain mappings or execute security schemes |
@@ -80,7 +82,10 @@ The [ecosystem selection guide](docs/guides/ecosystem-selection.md) gives the
 detailed decision matrix. The [implementation recipes](docs/guides/implementation-recipes.md)
 show complete boundary-oriented flows. The [greenfield platform guide](docs/guides/paved-road-platform.md)
 connects feature profiles, hosts, resilience, jobs, transfer, diagnostics, and
-contract matrices without turning them into a framework.
+contract matrices without turning them into a framework. The
+[business-neutral UI quality guide](docs/guides/ui-quality.md) covers responsive
+layout, exhaustive presentation, localization, accessibility, and the paired UI
+matrix.
 
 ## Core workflow
 
@@ -255,7 +260,7 @@ The workspace requires Dart `^3.13.0`; Flutter packages require Flutter
 READMEs. Drift accepts consumer-owned native and web executors. ObjectBox has no
 web support. The CLI, modeling analyzer, and MCP server run on the Dart VM.
 
-All packages currently share the `1.0.0-rc.9` source cohort. Do not copy Git
+All packages currently share the `1.0.0-rc.10` source cohort. Do not copy Git
 coordinates from this README. Experimental Git consumption is supported only
 for a tag that has a corresponding published GitHub Release, using the complete
 compatible cohort and dependency coordinates from that Release's notes. If no

@@ -33,16 +33,19 @@ Future<void> main(List<String> arguments) async {
       throw FormatException('Unsupported publication channel.');
     }
     if (options.channel == 'pub-dev-stable') {
-      final stable = _object(
-        jsonDecode(
-          File('${root.path}/tool/stable_candidate_contract.json')
-              .readAsStringSync(),
-        ),
+      final stableValidation = await Process.run(
+        Platform.resolvedExecutable,
+        <String>[
+          '${root.path}/tool/check_stable_candidate.dart',
+          '--root=${root.path}',
+          '--contract-only',
+        ],
+        workingDirectory: root.path,
       );
-      final blockers = _strings(stable['promotionBlockers']);
-      if (blockers.isNotEmpty) {
+      if (stableValidation.exitCode != 0) {
         throw StateError(
-          'Stable promotion is blocked by ${blockers.join(', ')}.',
+          'Stable promotion rejected ui-quality-v1 evidence: '
+          '${stableValidation.stderr}',
         );
       }
     }

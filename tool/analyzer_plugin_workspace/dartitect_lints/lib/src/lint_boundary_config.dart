@@ -22,6 +22,7 @@ final class DartitectLintBoundaryResolver {
     String? source,
   }) {
     final resolved = _resolve(sourcePath);
+    final relativePath = _relativePath(resolved.rootPath, sourcePath);
     if (source == null) {
       try {
         source = File(sourcePath).readAsStringSync();
@@ -31,10 +32,14 @@ final class DartitectLintBoundaryResolver {
     }
     return DartitectLintBoundaryResolution(
       classification: resolved.classifier.classify(
-        _relativePath(resolved.rootPath, sourcePath),
+        relativePath,
         source: source,
       ),
       configurationError: resolved.configurationError,
+      suppressedCodes: resolved.suppressions
+          .where((suppression) => suppression.matches(relativePath))
+          .map((suppression) => suppression.code)
+          .toSet(),
     );
   }
 
@@ -48,10 +53,18 @@ final class DartitectLintBoundaryResolver {
         DartitectBoundaryClassifier? classifier;
         String? configurationError;
         try {
-          classifier = _parse(config.readAsStringSync());
-          if (classifier == null) {
+          final parsed = _parse(config.readAsStringSync());
+          classifier = parsed?.classifier;
+          if (parsed == null) {
             configurationError =
                 'Invalid dartitect.json; fix stable-v3 boundary configuration.';
+          } else {
+            return _ResolvedBoundaryPolicy(
+              rootPath: directory.absolute.path,
+              classifier: parsed.classifier,
+              suppressions: parsed.suppressions,
+              configurationError: null,
+            );
           }
         } on FileSystemException {
           classifier = null;
@@ -61,6 +74,7 @@ final class DartitectLintBoundaryResolver {
         return _ResolvedBoundaryPolicy(
           rootPath: directory.absolute.path,
           classifier: classifier ?? DartitectBoundaryClassifier.defaults(),
+          suppressions: const <_LintSuppression>[],
           configurationError: configurationError,
         );
       }
@@ -72,11 +86,12 @@ final class DartitectLintBoundaryResolver {
     return _ResolvedBoundaryPolicy(
       rootPath: _defaultPackageRoot(sourcePath),
       classifier: DartitectBoundaryClassifier.defaults(),
+      suppressions: const <_LintSuppression>[],
       configurationError: null,
     );
   }
 
-  static DartitectBoundaryClassifier? _parse(String source) {
+  static _ParsedBoundaryConfig? _parse(String source) {
     try {
       final decoded = jsonDecode(source);
       if (decoded is! Map<String, Object?> ||
@@ -88,9 +103,11 @@ final class DartitectLintBoundaryResolver {
       final rawRoots = decoded['compositionRoots'];
       final rawGenerated = decoded['generatedInfrastructure'];
       final rawSuffixes = decoded['generatedSuffixes'];
+      final rawSuppressions = decoded['suppressions'] ?? const <Object?>[];
       if (rawLayers is! Map<String, Object?> ||
           rawRoots is! List<Object?> ||
           rawGenerated is! List<Object?> ||
+          rawSuppressions is! List<Object?> ||
           rawLayers.isEmpty ||
           rawRoots.isEmpty ||
           rawGenerated.isEmpty) {
@@ -118,11 +135,53 @@ final class DartitectLintBoundaryResolver {
           ? DartitectArchitectureRules.defaultGeneratedSuffixes
           : _parseSuffixes(rawSuffixes);
       if (roots == null || generated == null || suffixes == null) return null;
-      return DartitectBoundaryClassifier(
-        layers: Map<String, List<String>>.unmodifiable(layers),
-        compositionRoots: List<String>.unmodifiable(roots),
-        generatedInfrastructure: List<String>.unmodifiable(generated),
-        generatedSuffixes: List<String>.unmodifiable(suffixes),
+      final suppressions = <_LintSuppression>[];
+      for (final value in rawSuppressions) {
+        if (value is! Map<String, Object?>) return null;
+        if (value.keys.toSet().difference(const <String>{
+          'code',
+          'path',
+          'reason',
+          'owner',
+          'expiresAt',
+        }).isNotEmpty) {
+          return null;
+        }
+        final code = value['code'];
+        final path = value['path'];
+        final reason = value['reason'];
+        final owner = value['owner'];
+        final expires = value['expiresAt'];
+        if (code is! String ||
+            !RegExp(r'^DT\d{4}$').hasMatch(code) ||
+            path is! String ||
+            _parseGlobs(<Object?>[path]) == null ||
+            reason is! String ||
+            reason.trim().isEmpty ||
+            owner is! String ||
+            owner.trim().isEmpty ||
+            expires is! String ||
+            !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(expires)) {
+          return null;
+        }
+        final expiresAt = DateTime.tryParse('${expires}T00:00:00Z');
+        if (expiresAt == null) return null;
+        suppressions.add(
+          _LintSuppression(
+            code: code,
+            path: path.replaceAll('\\', '/'),
+            expiresAt: expiresAt,
+          ),
+        );
+      }
+      return _ParsedBoundaryConfig(
+        classifier: DartitectBoundaryClassifier(
+          layers: Map<String, List<String>>.unmodifiable(layers),
+          compositionRoots: List<String>.unmodifiable(roots),
+          generatedInfrastructure: List<String>.unmodifiable(generated),
+          generatedSuffixes: List<String>.unmodifiable(suffixes),
+        ),
+        suppressions: List<_LintSuppression>.unmodifiable(suppressions),
       );
     } on FormatException {
       return null;
@@ -190,12 +249,40 @@ final class _ResolvedBoundaryPolicy {
   const _ResolvedBoundaryPolicy({
     required this.rootPath,
     required this.classifier,
+    required this.suppressions,
     required this.configurationError,
   });
 
   final String rootPath;
   final DartitectBoundaryClassifier classifier;
+  final List<_LintSuppression> suppressions;
   final String? configurationError;
+}
+
+final class _ParsedBoundaryConfig {
+  const _ParsedBoundaryConfig({
+    required this.classifier,
+    required this.suppressions,
+  });
+
+  final DartitectBoundaryClassifier classifier;
+  final List<_LintSuppression> suppressions;
+}
+
+final class _LintSuppression {
+  const _LintSuppression({
+    required this.code,
+    required this.path,
+    required this.expiresAt,
+  });
+
+  final String code;
+  final String path;
+  final DateTime expiresAt;
+
+  bool matches(String sourcePath) =>
+      DateTime.now().toUtc().isBefore(expiresAt) &&
+      dartitectGlobMatches(path, sourcePath);
 }
 
 /// Analyzer-side boundary resolution with a fail-visible config outcome.
@@ -204,6 +291,7 @@ final class DartitectLintBoundaryResolution {
   const DartitectLintBoundaryResolution({
     required this.classification,
     required this.configurationError,
+    required this.suppressedCodes,
   });
 
   /// Source classification used by rule evaluation.
@@ -211,4 +299,7 @@ final class DartitectLintBoundaryResolution {
 
   /// Sanitized explicit diagnostic when defaults replaced invalid config.
   final String? configurationError;
+
+  /// Active reviewed `dartitect.json` suppressions matching this source.
+  final Set<String> suppressedCodes;
 }

@@ -2,7 +2,7 @@
 
 ## Scope
 
-`dartitect_mcp 1.0.0-rc.9` is local and STDIO-only. It uses
+`dartitect_mcp 1.0.0-rc.10` is local and STDIO-only. It uses
 `dart_mcp 0.5.2`. Streamable HTTP, OAuth/authorization, remote ChatGPT plugins,
 MCP UI, arbitrary shell/files, scaffolding `create`, and access to running
 applications are out of scope. The bounded `dartitect_preview_create_feature`
@@ -11,7 +11,7 @@ tool is the only create workflow exposed.
 ## Read-only setup
 
 The candidate is not on pub.dev. Declare
-`dartitect_mcp: 1.0.0-rc.9` under `dev_dependencies`, apply the complete Git
+`dartitect_mcp: 1.0.0-rc.10` under `dev_dependencies`, apply the complete Git
 override closure from the [candidate consumption guide](git-candidate-consumption.md),
 then run `dart run dartitect_mcp:dartitect_mcp --root .`.
 
@@ -63,7 +63,7 @@ provider status. Deep doctor is opt-in and time-bounded.
 development or a supported SDK upgrade. It uses the strict scan as evidence
 and never returns an application-conversion plan.
 
-RC9 retains the confined, closed-schema tools and adds config-v3/fleet
+RC10 retains the confined, closed-schema tools and adds config-v3/fleet
 metadata:
 
 - `dartitect_preview_create_feature`;

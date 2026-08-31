@@ -33,7 +33,8 @@
     "docs/release/sbom.spdx.json",
     "docs/release/dependency-licenses.json",
     "tool/api_surface.snapshot.json",
-    "tool/package_release_contract.json"
+    "tool/package_release_contract.json",
+    "tool/ui_quality_contract.json"
   ],
   "publication": {
     "workflowPath": ".github/workflows/publish.yaml",

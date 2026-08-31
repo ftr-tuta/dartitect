@@ -32,6 +32,7 @@ Future<void> _check(Directory root, Directory fixture) async {
   final budget = _object(corpus['performanceBudget']);
   final scannerWatch = Stopwatch()..start();
   final scan = await ProjectScanner(fixture).scan();
+  final uiAudit = await DartitectUiAuditor(fixture).audit();
   scannerWatch.stop();
   final scanner = <String, List<String>>{};
   final sharedCodes = mapping.values.toSet();
@@ -39,6 +40,13 @@ Future<void> _check(Directory root, Directory fixture) async {
     if (!sharedCodes.contains(violation.code) || violation.path == null)
       continue;
     scanner.putIfAbsent(violation.path!, () => <String>[]).add(violation.code);
+  }
+  for (final finding in <DartitectFinding>[
+    ...uiAudit.violations,
+    ...uiAudit.findings,
+  ]) {
+    if (!sharedCodes.contains(finding.code) || finding.path == null) continue;
+    scanner.putIfAbsent(finding.path!, () => <String>[]).add(finding.code);
   }
 
   final analyzerWatch = Stopwatch()..start();
@@ -48,25 +56,35 @@ Future<void> _check(Directory root, Directory fixture) async {
     workingDirectory: fixture.path,
   );
   analyzerWatch.stop();
-  if (analyzed.exitCode != 0) {
-    stderr
-      ..write(analyzed.stdout)
-      ..write(analyzed.stderr);
-    throw StateError('Analyzer parity fixture did not complete cleanly.');
-  }
   final plugin = <String, List<String>>{};
   var modelingRuleObserved = false;
+  final analyzerErrors = <String>[];
   for (final line in '${analyzed.stdout}'.split(RegExp(r'\r?\n'))) {
     final fields = line.split('|');
     if (fields.length < 8) continue;
     if (fields[2] == 'DARTITECT_DT1032') modelingRuleObserved = true;
     final code = mapping[fields[2]];
-    if (code == null) continue;
+    if (code == null) {
+      if (fields[0] == 'ERROR' && !fields[2].startsWith('DARTITECT_')) {
+        analyzerErrors.add(line);
+      }
+      continue;
+    }
     final path = boundaryParityRelativePath(fixture, fields[3]);
+    if (!path.startsWith('lib/')) continue;
     plugin.putIfAbsent(path, () => <String>[]).add(code);
   }
 
   final errors = <String>[];
+  if (analyzerErrors.isNotEmpty) {
+    errors.add('Analyzer fixture has unrelated errors: $analyzerErrors.');
+  }
+  if (analyzed.exitCode != 0 && plugin.isEmpty) {
+    errors.add(
+      'Analyzer exited ${analyzed.exitCode} without shared diagnostics: '
+      '${analyzed.stderr}',
+    );
+  }
   if (!modelingRuleObserved) {
     errors.add('Analyzer plugin did not emit the shared DT1032 probe.');
   }

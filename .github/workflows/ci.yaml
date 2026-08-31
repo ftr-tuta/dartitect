@@ -108,6 +108,9 @@ jobs:
       - name: Validate generated projects and builds
         if: matrix.flutter == '3.47.1'
         run: dart run tool/generated_project_matrix.dart --builds
+      - name: Verify pinned shared UI goldens
+        if: matrix.flutter == '3.47.1'
+        run: flutter test examples/paved_road_canary/test/shared_layout_golden_test.dart
       - name: Build reference app for Web
         run: flutter build web
         working-directory: examples/reference_app
@@ -126,6 +129,15 @@ jobs:
       - name: Build adapters app APK
         run: flutter build apk --debug
         working-directory: examples/adapters_app
+      - name: Build UI canary for Web
+        run: flutter build web --release
+        working-directory: examples/paved_road_canary
+      - name: Build UI canary for Linux
+        run: flutter build linux --release
+        working-directory: examples/paved_road_canary
+      - name: Build UI canary APK
+        run: flutter build apk --debug
+        working-directory: examples/paved_road_canary
       - name: Produce Android API 24 build evidence without an emulator
         if: matrix.flutter == '3.47.1'
         run: >-
@@ -182,6 +194,9 @@ jobs:
       - name: Build adapters app for Windows
         run: flutter build windows
         working-directory: examples/adapters_app
+      - name: Build UI canary for Windows
+        run: flutter build windows --release
+        working-directory: examples/paved_road_canary
       - name: Confirm tracked files are unchanged
         if: always()
         run: git diff --exit-code -- .
@@ -479,6 +494,12 @@ jobs:
       - name: Compile and link adapters app for iOS without signing
         run: flutter build ios --no-codesign
         working-directory: examples/adapters_app
+      - name: Build UI canary for macOS
+        run: flutter build macos --release
+        working-directory: examples/paved_road_canary
+      - name: Compile and link UI canary for iOS without signing
+        run: flutter build ios --release --no-codesign
+        working-directory: examples/paved_road_canary
       - name: Confirm tracked files are unchanged
         if: always()
         run: git diff --exit-code -- .
@@ -510,6 +531,12 @@ jobs:
       - name: Exercise modeling and JSON in hosted Chrome
         run: dart test --platform chrome
         working-directory: packages/dartitect_modeling
+      - name: Exercise Flutter UI runtime in hosted Chrome
+        run: flutter test --platform chrome
+        working-directory: packages/dartitect_flutter
+      - name: Exercise Flutter UI matrix package in hosted Chrome
+        run: flutter test --platform chrome
+        working-directory: packages/dartitect_flutter_testing
       - name: Upload Drift Web diagnostics on failure
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -547,7 +574,7 @@ jobs:
         run: git diff --exit-code -- .
 
   git-consumption:
-    name: Git consumption / v1.0.0-rc.9
+    name: Git consumption / v1.0.0-rc.10
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
@@ -574,14 +601,14 @@ jobs:
         run: |
           git config user.name ftr
           git config user.email ftr@tuta.com
-          git tag --delete v1.0.0-rc.9 2>/dev/null || true
-          git tag --annotate v1.0.0-rc.9 --message "Dartitect 1.0.0-rc.9 Git candidate"
+          git tag --delete v1.0.0-rc.10 2>/dev/null || true
+          git tag --annotate v1.0.0-rc.10 --message "Dartitect 1.0.0-rc.10 Git candidate"
           git clone --bare . "${RUNNER_TEMP:?}/dartitect.git"
       - name: Validate all consumers through Git only
         run: >-
           dart run tool/run_git_canaries.dart
           --repository=file://${RUNNER_TEMP:?}/dartitect.git
-          --ref=v1.0.0-rc.9
+          --ref=v1.0.0-rc.10
       - name: Confirm tracked files are unchanged
         if: always()
         run: git diff --exit-code -- .

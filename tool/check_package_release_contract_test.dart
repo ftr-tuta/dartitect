@@ -34,7 +34,7 @@ void main() {
     'rejects workspace version that differs from package metadata',
     () async {
       final fixture = await _Fixture.create(
-        syncVersion: '1.0.0-rc.9',
+        syncVersion: '1.0.0-rc.10',
         manifestSyncVersion: '1.0.0-rc.8',
       );
       addTearDown(fixture.dispose);

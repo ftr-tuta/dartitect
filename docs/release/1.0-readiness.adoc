@@ -1,7 +1,7 @@
 = Dartitect 1.0 Actions readiness
 
-The currently assembled RC9 baseline across five publication cohorts is
-`1.0.0-rc.9`. This policy must
+The currently assembled RC10 baseline across five publication cohorts is
+`1.0.0-rc.10`. This policy must
 authorize that exact source before the publication workflow can act on it.
 
 Status:: ACTIONS READINESS PENDING
@@ -54,14 +54,15 @@ The nominal matrix is identical for RC and stable validation:
 No technical evidence uses consumer hardware or a privately managed runner.
 Local runs are optional development feedback only.
 
-== Stable promotion blocker
+== Stable UI-quality evidence
 
-RC9 intentionally includes only the mechanical, business-neutral
-`FeatureHost` and `CommandStateBuilder` widgets. The machine-readable stable
-candidate contract retains the pending `ui-ux-business-neutral` gate. It blocks
-the `pub-dev-stable` channel and any `1.0.0` promotion until the next plan
-reviews the remaining reusable UI/UX boundary under the same package,
-entrypoint, renderer, and canary-coverage rules.
+RC10 includes the business-neutral responsive entrypoint, exhaustive borrowed
+builders, and the dev-only paired UI matrix without owning product controls,
+themes, strings, locales, navigation, or visual identity. The machine-readable
+`ui-quality-v1` contract verifies API and inventory freshness, CLI/analyzer
+diagnostic parity, the managed skill, generated scaffold, accessibility canary,
+shared-layout goldens, and all six hosted platform build definitions. Stable
+promotion accepts an empty blocker list only while that evidence passes.
 
 == Drift storage matrix
 

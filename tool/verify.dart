@@ -148,6 +148,7 @@ Future<void> main(List<String> arguments) async {
         'tool/check_rc_validation.dart',
         '--contract-only',
       ]),
+    const _Command('dart', <String>['run', 'tool/check_ui_quality.dart']),
     const _Command('dart', <String>[
       'run',
       'tool/check_stable_candidate.dart',
@@ -183,6 +184,7 @@ Future<void> main(List<String> arguments) async {
       'test',
       'tool/check_stable_candidate_test.dart',
     ]),
+    const _Command('dart', <String>['test', 'tool/check_ui_quality_test.dart']),
     const _Command('dart', <String>[
       'test',
       'tool/check_rc_readiness_test.dart',
@@ -235,6 +237,7 @@ Future<void> main(List<String> arguments) async {
       _Command('dart', <String>['test', 'packages/$package']),
     for (final package in <String>[
       'dartitect_flutter',
+      'dartitect_flutter_testing',
       'dartitect_objectbox',
       'dartitect_privacy',
       'dartitect_media',
@@ -242,7 +245,11 @@ Future<void> main(List<String> arguments) async {
     ])
       _Command('flutter', <String>['test', 'packages/$package']),
     const _Command('flutter', <String>['test', 'examples/reference_app']),
-    const _Command('flutter', <String>['test', 'examples/paved_road_canary']),
+    const _Command('flutter', <String>[
+      'test',
+      '--exclude-tags=golden',
+      'examples/paved_road_canary',
+    ]),
     const _Command('flutter', <String>[
       'test',
       'examples/thin_consumer_canary',

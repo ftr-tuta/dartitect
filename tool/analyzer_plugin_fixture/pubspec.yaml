@@ -9,4 +9,6 @@ dependencies:
     path: dependencies/dartitect
   dartitect_flutter:
     path: dependencies/dartitect_flutter
+  flutter:
+    path: dependencies/flutter
   sentry: ^9.27.0

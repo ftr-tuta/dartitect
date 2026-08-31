@@ -44,6 +44,13 @@
       ],
       "stability": "release candidate"
     },
+    "dartitect_flutter_testing": {
+      "platforms": [
+        "Flutter test VM",
+        "Chrome"
+      ],
+      "stability": "release candidate dev-only"
+    },
     "dartitect_geometry": {
       "platforms": [
         "Dart",
