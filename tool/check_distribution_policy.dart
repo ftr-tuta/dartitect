@@ -181,13 +181,13 @@ void _checkWorkflows(
       )
       .toList();
   final expected = <String>{'ci.yaml', 'security.yaml', 'release.yaml'};
-  final actual = workflows.map((file) => _basename(file.path)).toSet();
+  final actual = workflows.map((file) => portableBasename(file.path)).toSet();
   if (actual.difference(expected).isNotEmpty ||
       expected.difference(actual).isNotEmpty) {
     errors.add('Workflows must be exactly CI, Security, and Release.');
   }
   for (final workflow in workflows) {
-    final name = _basename(workflow.path);
+    final name = portableBasename(workflow.path);
     final source = workflow.readAsStringSync();
     final write = RegExp(
       r'^\s*contents:\s*write\s*$',
@@ -197,7 +197,7 @@ void _checkWorkflows(
       r'^\s*contents:\s*read\s*$',
       multiLine: true,
     ).hasMatch(source);
-    if (name == _basename(releaseWorkflow)) {
+    if (name == portableBasename(releaseWorkflow)) {
       if (!write || !source.startsWith('name: Release\n')) {
         errors.add('Release must be the sole contents: write workflow.');
       }
@@ -346,5 +346,6 @@ String _relative(Directory root, File file) => file.path
     .substring(root.path.length + 1)
     .replaceAll(Platform.pathSeparator, '/');
 
-String _basename(String path) =>
-    path.split(Platform.pathSeparator).where((part) => part.isNotEmpty).last;
+/// Returns the final path component for either POSIX or Windows input.
+String portableBasename(String path) =>
+    path.replaceAll('\\', '/').split('/').where((part) => part.isNotEmpty).last;

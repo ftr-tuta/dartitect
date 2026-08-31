@@ -3,7 +3,22 @@ import 'dart:io';
 
 import 'package:test/test.dart';
 
+import 'check_distribution_policy.dart' as distribution_policy;
+
 void main() {
+  test('normalizes workflow basenames across platforms', () {
+    expect(
+      distribution_policy.portableBasename(
+        r'D:\a\dartitect\.github\workflows\release.yaml',
+      ),
+      'release.yaml',
+    );
+    expect(
+      distribution_policy.portableBasename('.github/workflows/release.yaml'),
+      'release.yaml',
+    );
+  });
+
   test('accepts the complete GitHub-only fixture', () async {
     final fixture = await _Fixture.create();
     addTearDown(fixture.dispose);
