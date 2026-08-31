@@ -9,14 +9,14 @@ environment:
   flutter: '>=3.47.1'
 
 dependencies:
-  dartitect: ^1.0.0-rc.8
-  dartitect_dio: ^1.0.0-rc.8
-  dartitect_flutter: ^1.0.0-rc.8
-  dartitect_media: ^1.0.0-rc.8
-  dartitect_objectbox: ^1.0.0-rc.8
-  dartitect_observability: ^1.0.0-rc.8
-  dartitect_privacy: ^1.0.0-rc.8
-  dartitect_sentry: ^1.0.0-rc.8
+  dartitect: ^1.0.0-rc.9
+  dartitect_dio: ^1.0.0-rc.9
+  dartitect_flutter: ^1.0.0-rc.9
+  dartitect_media: ^1.0.0-rc.9
+  dartitect_objectbox: ^1.0.0-rc.9
+  dartitect_observability: ^1.0.0-rc.9
+  dartitect_privacy: ^1.0.0-rc.9
+  dartitect_sentry: ^1.0.0-rc.9
   dio: ^5.11.0
   flutter:
     sdk: flutter

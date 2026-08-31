@@ -1,249 +1,181 @@
 // GENERATED CODE - DO NOT EDIT BY HAND.
-// Managed by `dartitect wiring sync` from strict config v2.
+// Managed by `dartitect wiring sync` from strict config v3.
+// ignore_for_file: public_member_api_docs, directives_ordering
 
 import 'dart:async';
 
 import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_flutter/dartitect_flutter.dart';
+import 'package:flutter/widgets.dart';
 
-/// Capability-closed typed assembly for the Tasks feature graph.
-final class TasksFeatureAssembly<
-  Repository extends Object,
-  Storage extends Object,
-  Transport extends Object,
-  LocalAuthority extends Object,
-  Pagination extends Object,
-  Outbox extends Object,
-  SyncDataset extends Object,
-  HeadlessJob extends Object,
-  Diagnostics extends Object,
-  Attachments extends Object,
-  Credentials extends Object,
-  Forms extends Object,
-  Queries extends Object,
-  ViewModel extends Object
->
-    implements AsyncDisposable {
-  TasksFeatureAssembly._(this._graph, this.createViewModel);
+import '../../../composition/application_module.wiring.dartitect.g.dart';
 
-  /// Acquires exactly the owned or borrowed bindings selected by config v2.
-  static Future<
-    TasksFeatureAssembly<
-      Repository,
-      Storage,
-      Transport,
-      LocalAuthority,
-      Pagination,
-      Outbox,
-      SyncDataset,
-      HeadlessJob,
-      Diagnostics,
-      Attachments,
-      Credentials,
-      Forms,
-      Queries,
-      ViewModel
-    >
-  >
-  create<
-    Repository extends Object,
-    Storage extends Object,
-    Transport extends Object,
-    LocalAuthority extends Object,
-    Pagination extends Object,
-    Outbox extends Object,
-    SyncDataset extends Object,
-    HeadlessJob extends Object,
-    Diagnostics extends Object,
-    Attachments extends Object,
-    Credentials extends Object,
-    Forms extends Object,
-    Queries extends Object,
-    ViewModel extends Object
-  >({
-    required DartitectAssemblyBinding<Repository> repository,
-    required DartitectAssemblyBinding<Storage> storage,
-    required DartitectAssemblyBinding<Transport> transport,
-    required DartitectAssemblyBinding<LocalAuthority> localAuthority,
-    required DartitectAssemblyBinding<Pagination> pagination,
-    required DartitectAssemblyBinding<Outbox> outbox,
-    required DartitectAssemblyBinding<SyncDataset> syncDataset,
-    required DartitectAssemblyBinding<HeadlessJob> headlessJob,
-    required DartitectAssemblyBinding<Diagnostics> diagnostics,
-    required DartitectAssemblyBinding<Attachments> attachments,
-    required DartitectAssemblyBinding<Credentials> credentials,
-    required DartitectAssemblyBinding<Forms> forms,
-    required DartitectAssemblyBinding<Queries> queries,
-    required ViewModel Function(
-      TasksFeatureAssembly<
-        Repository,
-        Storage,
-        Transport,
-        LocalAuthority,
-        Pagination,
-        Outbox,
-        SyncDataset,
-        HeadlessJob,
-        Diagnostics,
-        Attachments,
-        Credentials,
-        Forms,
-        Queries,
-        ViewModel
-      >
-      assembly,
-    )
-    createViewModel,
-  }) async {
-    final graph = await ResourceTransaction.create(
-      (transaction) =>
-          _TasksFeatureBindings<
-            Repository,
-            Storage,
-            Transport,
-            LocalAuthority,
-            Pagination,
-            Outbox,
-            SyncDataset,
-            HeadlessJob,
-            Diagnostics,
-            Attachments,
-            Credentials,
-            Forms,
-            Queries
-          >(
-            repository: repository.bind(transaction),
-            storage: storage.bind(transaction),
-            transport: transport.bind(transaction),
-            localAuthority: localAuthority.bind(transaction),
-            pagination: pagination.bind(transaction),
-            outbox: outbox.bind(transaction),
-            syncDataset: syncDataset.bind(transaction),
-            headlessJob: headlessJob.bind(transaction),
-            diagnostics: diagnostics.bind(transaction),
-            attachments: attachments.bind(transaction),
-            credentials: credentials.bind(transaction),
-            forms: forms.bind(transaction),
-            queries: queries.bind(transaction),
-          ),
-      label: 'tasks-feature-assembly',
-    );
-    return TasksFeatureAssembly<
-      Repository,
-      Storage,
-      Transport,
-      LocalAuthority,
-      Pagination,
-      Outbox,
-      SyncDataset,
-      HeadlessJob,
-      Diagnostics,
-      Attachments,
-      Credentials,
-      Forms,
-      Queries,
-      ViewModel
-    >._(graph, createViewModel);
-  }
+import 'package:dartitect_flutter/dartitect_flutter_reactive.dart';
+import 'package:dartitect_sync/dartitect_sync.dart';
+import 'package:thin_consumer_canary/composition/context_factories.dart';
+import 'package:thin_consumer_canary/features/tasks/application/tasks_local_store.dart';
+import 'package:thin_consumer_canary/features/tasks/application/tasks_mutation.dart';
+import 'package:thin_consumer_canary/features/tasks/application/tasks_remote_port.dart';
+import 'package:thin_consumer_canary/features/tasks/composition/tasks_factory.dart';
+import 'package:thin_consumer_canary/features/tasks/domain/tasks_model.dart';
+import 'package:thin_consumer_canary/features/tasks/domain/tasks_repository.dart';
+import 'package:thin_consumer_canary/features/tasks/infrastructure/tasks_dio.wiring.dartitect.g.dart';
+import 'package:thin_consumer_canary/features/tasks/infrastructure/tasks_mapper.dart';
+import 'package:thin_consumer_canary/features/tasks/presentation/tasks_view_model.dart';
 
-  final OwnedGraph<
-    _TasksFeatureBindings<
-      Repository,
-      Storage,
-      Transport,
-      LocalAuthority,
-      Pagination,
-      Outbox,
-      SyncDataset,
-      HeadlessJob,
-      Diagnostics,
-      Attachments,
-      Credentials,
-      Forms,
-      Queries
-    >
-  >
-  _graph;
+/// Exact contexts selected by the Tasks feature profile.
+final class TasksInfrastructure {
+  const TasksInfrastructure({required this.primary, required this.api});
 
-  Repository get repository => _graph.root.repository;
-  Storage get storage => _graph.root.storage;
-  Transport get transport => _graph.root.transport;
-  LocalAuthority get localAuthority => _graph.root.localAuthority;
-  Pagination get pagination => _graph.root.pagination;
-  Outbox get outbox => _graph.root.outbox;
-  SyncDataset get syncDataset => _graph.root.syncDataset;
-  HeadlessJob get headlessJob => _graph.root.headlessJob;
-  Diagnostics get diagnostics => _graph.root.diagnostics;
-  Attachments get attachments => _graph.root.attachments;
-  Credentials get credentials => _graph.root.credentials;
-  Forms get forms => _graph.root.forms;
-  Queries get queries => _graph.root.queries;
-
-  /// Constructs presentation state from this exact typed assembly.
-  final ViewModel Function(
-    TasksFeatureAssembly<
-      Repository,
-      Storage,
-      Transport,
-      LocalAuthority,
-      Pagination,
-      Outbox,
-      SyncDataset,
-      HeadlessJob,
-      Diagnostics,
-      Attachments,
-      Credentials,
-      Forms,
-      Queries,
-      ViewModel
-    >
-    assembly,
-  )
-  createViewModel;
-
-  /// Whether every owned binding has completed teardown.
-  bool get isDisposed => _graph.isDisposed;
-
-  /// Creates the ViewModel while the assembly remains live.
-  ViewModel buildViewModel() {
-    if (!_graph.isAccepting) {
-      throw StateError('Tasks feature assembly is disposed.');
-    }
-    return createViewModel(this);
-  }
-
-  @override
-  Future<void> disposeAsync() => _graph.disposeAsync();
+  final PrimaryStorage primary;
+  final TasksDioModule api;
 }
 
-final class _TasksFeatureBindings<
-  Repository extends Object,
-  Storage extends Object,
-  Transport extends Object,
-  LocalAuthority extends Object,
-  Pagination extends Object,
-  Outbox extends Object,
-  SyncDataset extends Object,
-  HeadlessJob extends Object,
-  Diagnostics extends Object,
-  Attachments extends Object,
-  Credentials extends Object,
-  Forms extends Object,
-  Queries extends Object
->({
-  required final Repository repository,
-  required final Storage storage,
-  required final Transport transport,
-  required final LocalAuthority localAuthority,
-  required final Pagination pagination,
-  required final Outbox outbox,
-  required final SyncDataset syncDataset,
-  required final HeadlessJob headlessJob,
-  required final Diagnostics diagnostics,
-  required final Attachments attachments,
-  required final Credentials credentials,
-  required final Forms forms,
-  required final Queries queries,
-});
+/// Concrete feature runtime with no public generic capability slots.
+final class TasksRuntime {
+  const TasksRuntime({
+    required this.factory,
+    required this.infrastructure,
+    required this.repository,
+    required this.localPort,
+    required this.remotePort,
+    required this.mapper,
+    required this.outboxStore,
+    required this.idempotencyPolicy,
+    required this.conflictPolicy,
+    required this.dataset,
+    required this.checkpointStore,
+    required this.localAuthority,
+    required this.syncEngine,
+    required this.mutationCommand,
+  });
+
+  final TasksFactory factory;
+  final TasksInfrastructure infrastructure;
+  final OfflineTasksRepository repository;
+  final TasksLocalStore localPort;
+  final TasksRemotePort remotePort;
+  final TasksMapper mapper;
+  final MutationOutboxStore<String, TasksMutation, TasksFailure> outboxStore;
+  final MutationIdempotencyPolicy<String, TasksMutation> idempotencyPolicy;
+  final MutationConflictPolicy<Task> conflictPolicy;
+  final SyncDataset<String, int, TasksFailure> dataset;
+  final PrimaryCheckpointStore checkpointStore;
+  final PullReactiveSource<List<Task>, TasksFailure> localAuthority;
+  final SyncEngine<String, int, TasksFailure> syncEngine;
+  final MutationCommand<TasksMutation, String, void, TasksFailure>
+  mutationCommand;
+
+  /// Creates consumer-owned presentation state from the typed runtime.
+  TasksViewModel createViewModel() => factory.createViewModel(repository);
+
+  /// Constructs the exact profile closure inside the host transaction.
+  static Future<TasksRuntime> create(
+    ApplicationGraph graph,
+    TasksFactory factory,
+    ResourceTransaction transaction,
+  ) async {
+    final infrastructure = TasksInfrastructure(
+      primary: graph.primary,
+      api: graph.api,
+    );
+    final localPort = factory.createLocalPort(infrastructure.primary);
+    final remotePort = factory.createRemotePort(infrastructure.api);
+    final mapper = factory.createMapper();
+    final outboxStore = factory.createOutboxStore(infrastructure.primary);
+    final idempotencyPolicy = factory.createIdempotencyPolicy();
+    final conflictPolicy = factory.createConflictPolicy();
+    final dataset = factory.createDataset();
+    final checkpointStore = factory.createCheckpointStore(
+      infrastructure.primary,
+    );
+    final localAuthority = PullReactiveSource<List<Task>, TasksFailure>(
+      triggers: <PullInvalidationTrigger>[() => factory.watch(localPort)],
+      pull: (cancellation) => factory.read(localPort, cancellation),
+    );
+    final syncEngine = transaction.own<SyncEngine<String, int, TasksFailure>>(
+      SyncEngine<String, int, TasksFailure>(
+        datasets: <SyncDataset<String, int, TasksFailure>>[dataset],
+        graph: SyncDependencyGraph<String>(keys: <String>[dataset.key]),
+        checkpoints: checkpointStore,
+      ),
+      (value) => value.disposeAsync(),
+      label: 'feature.tasks.sync',
+    );
+    final mutationCommand = transaction
+        .own<MutationCommand<TasksMutation, String, void, TasksFailure>>(
+          MutationCommand<TasksMutation, String, void, TasksFailure>(
+            store: outboxStore,
+            synchronize: (operation, cancellation) => factory
+                .synchronizeMutation(remotePort, operation, cancellation),
+            createIdempotencyKey: (key, argument) =>
+                idempotencyPolicy.create(key, argument),
+            classifyFailure: (failure) =>
+                factory.classifyMutationFailure(failure),
+          ),
+          (value) => value.disposeAsync(),
+          label: 'feature.tasks.mutations',
+        );
+    final repository = transaction.own<OfflineTasksRepository>(
+      factory.createRepository(localPort, remotePort, mapper),
+      (value) => value.disposeAsync(),
+      label: 'feature.tasks.repository',
+    );
+    return TasksRuntime(
+      factory: factory,
+      infrastructure: infrastructure,
+      repository: repository,
+      localPort: localPort,
+      remotePort: remotePort,
+      mapper: mapper,
+      outboxStore: outboxStore,
+      idempotencyPolicy: idempotencyPolicy,
+      conflictPolicy: conflictPolicy,
+      dataset: dataset,
+      checkpointStore: checkpointStore,
+      localAuthority: localAuthority,
+      syncEngine: syncEngine,
+      mutationCommand: mutationCommand,
+    );
+  }
+}
+
+/// Material-neutral generated owner for the Tasks feature.
+final class TasksFeatureHost extends StatelessWidget {
+  const TasksFeatureHost({
+    required this.graph,
+    required this.factory,
+    required this.loading,
+    required this.failure,
+    required this.ready,
+    this.start,
+    this.onDisposed,
+    super.key,
+  });
+
+  final ApplicationGraph graph;
+  final TasksFactory factory;
+  final WidgetBuilder loading;
+  final FeatureFailureBuilder failure;
+  final FeatureReadyBuilder<TasksRuntime, TasksViewModel> ready;
+  final FeatureViewModelStarter<TasksViewModel>? start;
+  final FutureOr<void> Function()? onDisposed;
+
+  @override
+  Widget build(BuildContext context) =>
+      FeatureHost<ApplicationGraph, TasksRuntime, TasksViewModel>(
+        parent: graph,
+        generationKey: factory,
+        createGraph: (parent, transaction) =>
+            TasksRuntime.create(parent, factory, transaction),
+        createViewModel: (runtime) => runtime.createViewModel(),
+        start: start,
+        onDisposed: onDisposed,
+        loading: loading,
+        failure: failure,
+        ready: ready,
+      );
+}
 
 /// Closed generated facts used by composition and capability reporting.
 abstract final class TasksFeatureWiring {
@@ -268,75 +200,5 @@ abstract final class TasksFeatureWiring {
     'forms',
     'queries',
   ];
-
-  /// Creates the public application-host factory while keeping graph ownership
-  /// and atomic publication inside generated code.
-  static BootstrapCoordinator<ViewModel> Function() application<
-    Repository extends Object,
-    Storage extends Object,
-    Transport extends Object,
-    LocalAuthority extends Object,
-    Pagination extends Object,
-    Outbox extends Object,
-    SyncDataset extends Object,
-    HeadlessJob extends Object,
-    Diagnostics extends Object,
-    Attachments extends Object,
-    Credentials extends Object,
-    Forms extends Object,
-    Queries extends Object,
-    ViewModel extends Object
-  >({
-    required FutureOr<
-      TasksFeatureAssembly<
-        Repository,
-        Storage,
-        Transport,
-        LocalAuthority,
-        Pagination,
-        Outbox,
-        SyncDataset,
-        HeadlessJob,
-        Diagnostics,
-        Attachments,
-        Credentials,
-        Forms,
-        Queries,
-        ViewModel
-      >
-    >
-    Function()
-    createAssembly,
-  }) =>
-      () => BootstrapCoordinator<ViewModel>(
-        stages: const <BootstrapStage>[],
-        buildRoot: (transaction, context) async {
-          context.throwIfUnavailable();
-          final assembly = transaction
-              .own<
-                TasksFeatureAssembly<
-                  Repository,
-                  Storage,
-                  Transport,
-                  LocalAuthority,
-                  Pagination,
-                  Outbox,
-                  SyncDataset,
-                  HeadlessJob,
-                  Diagnostics,
-                  Attachments,
-                  Credentials,
-                  Forms,
-                  Queries,
-                  ViewModel
-                >
-              >(
-                await createAssembly(),
-                (value) => value.disposeAsync(),
-                label: 'tasks-feature-assembly',
-              );
-          context.throwIfUnavailable();
-          return assembly.buildViewModel();
-        },
-      );
+  static const List<String> openApiOperations = <String>[];
 }

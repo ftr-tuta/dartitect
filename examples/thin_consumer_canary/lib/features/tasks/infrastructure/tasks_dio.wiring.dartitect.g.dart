@@ -1,4 +1,5 @@
 // GENERATED CODE - DO NOT EDIT BY HAND.
+// ignore_for_file: public_member_api_docs
 
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_dio/dartitect_dio.dart';

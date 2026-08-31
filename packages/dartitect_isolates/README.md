@@ -111,7 +111,7 @@ and [offline-first recipes](../../docs/guides/implementation-recipes.md).
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.8` source candidate. Use only coordinates
+The workspace contains the `1.0.0-rc.9` source candidate. Use only coordinates
 from a corresponding tagged GitHub Release; if none exists, there is no
 supported consumption path. See the
 [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).

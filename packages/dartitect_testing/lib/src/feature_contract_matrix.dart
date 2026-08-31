@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:dartitect/dartitect.dart';
 
+import 'deterministic_id_generator.dart';
+import 'manual_clock.dart';
+import 'manual_scheduler.dart';
 import 'resource_census.dart';
 
 /// Stable behavioral cases required by one or more feature profiles.
@@ -308,6 +311,76 @@ final class FeatureFaultController {
     final crash = _crash;
     _crash = null;
     if (crash != null) throw crash;
+  }
+}
+
+/// Deterministic instance-owned pseudo-random source for feature fixtures.
+final class FeatureDeterministicRandom {
+  /// Creates a reproducible source with a non-negative [seed].
+  FeatureDeterministicRandom({int seed = 1}) : _state = seed {
+    if (seed < 0) {
+      throw ArgumentError.value(seed, 'seed', 'Must not be negative.');
+    }
+  }
+
+  int _state;
+
+  /// Produces the next value without consulting global randomness.
+  int nextInt(int maximum) {
+    if (maximum <= 0) {
+      throw ArgumentError.value(maximum, 'maximum', 'Must be positive.');
+    }
+    _state = (1103515245 * _state + 12345) & 0x7fffffff;
+    return _state % maximum;
+  }
+}
+
+/// Mutable, deterministic connectivity generation for contract fixtures.
+final class FeatureConnectivityHarness {
+  bool _online = true;
+  int _generation = 0;
+
+  /// Current connectivity state.
+  bool get isOnline => _online;
+
+  /// Monotonic generation incremented only when state changes.
+  int get generation => _generation;
+
+  /// Publishes a deterministic connectivity transition.
+  void setOnline(bool value) {
+    if (_online == value) return;
+    _online = value;
+    _generation += 1;
+  }
+}
+
+/// Transport-attempt harness backed by the matrix-owned resource census.
+final class FeatureTransportHarness {
+  /// Creates a transport harness registered in [resources].
+  FeatureTransportHarness(ResourceCensus resources) : _resources = resources;
+
+  final ResourceCensus _resources;
+
+  var _attempts = 0;
+
+  /// Number of attempts admitted through this harness.
+  int get attempts => _attempts;
+
+  /// Runs one cancellable attempt and proves its transport lease drains.
+  Future<T> execute<T>(
+    CancellationSignal cancellation,
+    FutureOr<T> Function() action,
+  ) async {
+    cancellation.throwIfCancelled();
+    final lease = _resources.acquire('transportRequests');
+    _attempts += 1;
+    try {
+      final value = await action();
+      cancellation.throwIfCancelled();
+      return value;
+    } finally {
+      lease.dispose();
+    }
   }
 }
 
@@ -620,8 +693,14 @@ final class FeatureContractHarness {
   /// Creates an empty row harness.
   FeatureContractHarness()
     : resources = ResourceCensus(),
-      faults = FeatureFaultController() {
+      faults = FeatureFaultController(),
+      clock = ManualClock(DateTime.utc(2026)),
+      ids = DeterministicIdGenerator(prefix: 'feature'),
+      randomness = FeatureDeterministicRandom(),
+      connectivity = FeatureConnectivityHarness(),
+      scheduler = ManualScheduler() {
     store = FeatureObservedStore._(_record);
+    transport = FeatureTransportHarness(resources);
   }
 
   /// Real resource census owned by the matrix, never supplied by a fixture.
@@ -629,6 +708,24 @@ final class FeatureContractHarness {
 
   /// Deterministic matrix-owned fault controller.
   final FeatureFaultController faults;
+
+  /// Manually advanced UTC clock.
+  final ManualClock clock;
+
+  /// Deterministic IDs for operations, graphs, and fixtures.
+  final DeterministicIdGenerator ids;
+
+  /// Deterministic instance-owned randomness.
+  final FeatureDeterministicRandom randomness;
+
+  /// Controllable connectivity generation.
+  final FeatureConnectivityHarness connectivity;
+
+  /// Manually advanced delay scheduler.
+  final ManualScheduler scheduler;
+
+  /// Cancellable transport attempts registered in [resources].
+  late final FeatureTransportHarness transport;
 
   /// Observed store whose writes are inspected after the stimulus.
   late final FeatureObservedStore store;
@@ -870,6 +967,10 @@ final class FeatureContractResult {
 
 /// Required behavioral matrix for one paved-road feature profile.
 final class FeatureContractMatrix<T extends OnlineFeatureContractDriver> {
+  /// Creates the local-profile matrix.
+  FeatureContractMatrix.local({required FeatureContractFixtures<T> fixtures})
+    : this._(FeatureProfile.local, fixtures);
+
   /// Creates the online-profile matrix.
   FeatureContractMatrix.online({required FeatureContractFixtures<T> fixtures})
     : this._(FeatureProfile.online, fixtures);
@@ -1205,6 +1306,7 @@ final class _StimulusOutcome {
 const Map<FeatureProfile, Map<FeatureContract, Set<FeatureContractFact>>>
 _requirements =
     <FeatureProfile, Map<FeatureContract, Set<FeatureContractFact>>>{
+      FeatureProfile.local: _onlineRequirements,
       FeatureProfile.online: <FeatureContract, Set<FeatureContractFact>>{
         FeatureContract.onlineRead: <FeatureContractFact>{
           FeatureContractFact.typedSuccess,

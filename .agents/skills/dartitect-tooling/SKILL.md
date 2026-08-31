@@ -7,9 +7,10 @@ description: Operate or extend the Dartitect CLI, config, verify, scan, doctor, 
 
 ## When to use
 
-Use this skill for CLI commands/services, stable config v2, verify/scanner/doctor policy,
-bounded local OpenAPI contracts, analyzer diagnostics, generators, Codex sync, native fixture setup,
-or repository release gates.
+Use this skill for CLI commands/services, config v3 and migrations,
+verify/scanner/doctor policy, bounded local OpenAPI contracts, analyzer
+diagnostics, generators, Codex sync, native fixture setup, or repository
+release gates.
 
 ## When not to use
 
@@ -28,6 +29,9 @@ SHA-256 manifest. Partition generated ownership, reports, and journals by
 `GenerationNamespace`. Acquire the cross-process project lock before
 revalidation and hold it through commit, rollback, or recovery. Migrate RC3
 ownership only when manifest metadata, recorded digest, and current bytes match.
+Every generated file operation has a stable `rendererId`; the formal canary
+catalog must cover every package, public entrypoint, renderer, profile,
+capability, provider, scope, and target.
 
 ## Workflow
 

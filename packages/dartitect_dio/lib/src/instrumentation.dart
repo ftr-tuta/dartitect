@@ -61,6 +61,10 @@ final class DioInstrumentation extends Interceptor implements Disposable {
     return instrumentation;
   }
 
+  /// Request extra key carrying a validated parent trace context.
+  static const String parentTraceContextExtraKey =
+      'dartitect.observability.parentTraceContext';
+
   final Tracer _tracer;
   final RouteTemplateResolver _routeTemplate;
   final TracePropagator? _propagator;
@@ -120,6 +124,9 @@ final class DioInstrumentation extends Interceptor implements Disposable {
     try {
       return _tracer.startSpan(
         'HTTP ${options.method.toUpperCase()} ${route.value}',
+        parent: options.extra[parentTraceContextExtraKey] is TraceContext
+            ? options.extra[parentTraceContextExtraKey]! as TraceContext
+            : null,
         kind: SpanKind.client,
         attributes: <String, Object?>{
           'http.request.method': options.method.toUpperCase(),

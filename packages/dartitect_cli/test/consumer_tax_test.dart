@@ -64,7 +64,9 @@ Object? use(Result<int, StateError> result, ObservabilityRuntime runtime,
     final report = await ConsumerTaxInspector(root).inspect();
 
     expect(report.isCompliant, isTrue);
-    expect(report.budgets['directDependencyCount'], 7);
+    final axes = report.generatedTax['axes']! as Map<String, int>;
+    expect(axes['observability'], greaterThan(0));
+    expect(report.productCode['blocking'], isFalse);
     expect(report.capabilityOptIns['observability'], isTrue);
   });
 
@@ -104,8 +106,10 @@ final engine = SyncEngine(null);
       expect(report.isCompliant, isFalse);
       expect(
         codes,
-        containsAll(<String>['DT4000', 'DT4002', 'DT4003', 'DT4006', 'DT4008']),
+        containsAll(<String>['DT4000', 'DT4002', 'DT4003', 'DT4006']),
       );
+      expect(codes, isNot(contains('DT4008')));
+      expect(report.diagnostics, contains(contains('legacy schema 1')));
     },
   );
 
@@ -125,10 +129,74 @@ final engine = SyncEngine(null);
     final report = jsonDecode(output.toString()) as Map<String, Object?>;
 
     expect(exitCode, 0);
-    expect(report['schemaVersion'], 1);
+    expect(report['schemaVersion'], 2);
     expect(report['command'], 'inspect consumer-tax');
     expect(report['compliant'], isTrue);
     expect(File('${root.path}/.dartitect').existsSync(), isFalse);
+  });
+
+  test(
+    'typed context factories may construct their selected provider owner',
+    () async {
+      final root = await _project(
+        dependencies: const <String>['dartitect', 'dartitect_dio'],
+        source: '''
+import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_dio/dartitect_dio.dart';
+
+@DartitectTransportContextFactory('api')
+final class ApiFactory {
+  DioOwner open() => DioOwner.create();
+
+  void dispose(DioOwner owner) => owner.dispose();
+}
+''',
+        config: DartitectConfig(
+          features: DartitectFeaturesConfig(),
+          targets: DartitectTargetsConfig(const <DartitectPlatform>[
+            DartitectPlatform.linux,
+          ]),
+          transports: <String, DartitectTransportConfig>{
+            'api': DartitectTransportConfig(
+              provider: 'dio',
+              targets: const <DartitectPlatform>[DartitectPlatform.linux],
+            ),
+          },
+        ),
+      );
+      addTearDown(() => root.delete(recursive: true));
+
+      final report = await ConsumerTaxInspector(root).inspect();
+
+      expect(report.architectureTax['observed'], 0);
+      expect(
+        report.findings.map((finding) => finding.code),
+        isNot(contains('DT4002')),
+      );
+    },
+  );
+
+  test('test-tax blocks source-string architecture tests', () async {
+    final root = await _project(
+      dependencies: const <String>['dartitect'],
+      source: "import 'package:dartitect/dartitect.dart';\n",
+    );
+    addTearDown(() => root.delete(recursive: true));
+    final testFile = File('${root.path}/test/architecture_test.dart');
+    await testFile.parent.create(recursive: true);
+    await testFile.writeAsString('''
+import 'dart:io';
+
+void inspectArchitecture() {
+  File('lib/main.dart').readAsStringSync();
+}
+''');
+
+    final report = await ConsumerTaxInspector(root).inspect();
+
+    expect(report.isCompliant, isFalse);
+    expect(report.testTax['observed'], 1);
+    expect(report.findings.map((finding) => finding.code), contains('DT4010'));
   });
 }
 

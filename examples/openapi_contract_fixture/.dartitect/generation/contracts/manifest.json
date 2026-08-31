@@ -1,15 +1,16 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "namespace": "contracts",
   "protocolVersion": 1,
   "outputs": [
     {
       "path": "lib/contracts/tasks.contracts.dartitect.g.dart",
       "source": "contracts/tasks.yaml",
-      "rendererVersion": 3,
+      "rendererId": "contracts.openapi",
+      "rendererVersion": 4,
       "semanticSchemaVersion": 1,
       "inputDigest": "c8c5efedaf7e2611c760af9a62d9ca84c23f81e2313435f48d9e4e55f4abb475",
-      "outputDigest": "3293b9f99c9e0b5c69030a8c5ff722fd786d06ecefd2bb505874beee2fab2487"
+      "outputDigest": "3d18e01a3f135244e6adb0f8c43d2db6b9045c02924b440400b119ade5f86bc4"
     }
   ]
 }

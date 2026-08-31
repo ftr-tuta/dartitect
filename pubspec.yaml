@@ -1,6 +1,6 @@
 name: dartitect_workspace
 description: Native-first architecture SDK workspace for Dart and Flutter.
-version: 1.0.0-rc.8
+version: 1.0.0-rc.9
 publish_to: none
 
 environment:
@@ -9,6 +9,7 @@ environment:
 workspace:
   - packages/*
   - examples/*
+  - tool/canaries/large_consumer_source
 
 dev_dependencies:
   analyzer: 13.3.0

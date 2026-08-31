@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.9
+
+- Publish the RC9 config-v3, fleet, blueprint, concrete-graph, and canary catalog metadata through the local read-only server.
+
 ## 1.0.0-rc.8
 
 - Prepare the package for the RC8 greenfield platform baseline and compatible post-1.0 publication cohorts.

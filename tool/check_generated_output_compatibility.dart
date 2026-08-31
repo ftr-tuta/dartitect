@@ -18,7 +18,7 @@ Future<void> main() async {
     );
     final decoded = jsonDecode(await manifest.readAsString());
     if (decoded is! Map<String, Object?> ||
-        decoded['schemaVersion'] != 2 ||
+        decoded['schemaVersion'] != 3 ||
         decoded['protocolVersion'] != 1 ||
         decoded['namespace'] != fixture.value) {
       throw StateError(
@@ -35,9 +35,12 @@ Future<void> main() async {
       }
       final path = raw['path'];
       final source = raw['source'];
+      final rendererId = raw['rendererId'];
       final digest = raw['outputDigest'];
       if (path is! String ||
           source is! String ||
+          rendererId is! String ||
+          rendererId.isEmpty ||
           digest is! String ||
           raw['rendererVersion'] is! int ||
           raw['semanticSchemaVersion'] is! int ||

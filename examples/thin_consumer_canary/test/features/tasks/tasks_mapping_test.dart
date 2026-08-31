@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('maps infrastructure DTO into immutable domain value', () {
-    final value = mapTasksRemoteDto(
+    final value = const TasksMapper().fromRemote(
       const TasksRemoteDto(
         id: '1',
         title: 'A',

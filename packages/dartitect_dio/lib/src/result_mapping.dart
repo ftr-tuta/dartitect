@@ -22,6 +22,16 @@ final class DioCancelledFailure extends DioFailure {
     : super('Request cancelled.', DioExceptionType.cancel);
 }
 
+/// Absolute request deadline elapsed before a terminal response.
+final class DioDeadlineExceededFailure extends DioFailure {
+  /// Creates a payload-free failure retaining only the configured UTC bound.
+  const DioDeadlineExceededFailure({required this.deadline})
+    : super('HTTP request deadline exceeded.', DioExceptionType.receiveTimeout);
+
+  /// Configured UTC deadline.
+  final DateTime deadline;
+}
+
 /// DNS, socket, certificate, or timeout failure.
 final class DioTransportFailure extends DioFailure {
   /// Creates a transport failure with a safe [message] and Dio [type].

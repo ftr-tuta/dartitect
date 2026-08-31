@@ -1,38 +1,46 @@
 // GENERATED CODE - DO NOT EDIT BY HAND.
-// Managed by `dartitect wiring sync` from strict config v2.
+// Managed by `dartitect wiring sync` from strict config v3.
+// ignore_for_file: public_member_api_docs, directives_ordering
 
 import 'package:dartitect/dartitect.dart';
-import 'package:dartitect_flutter/dartitect_flutter.dart';
+
 import 'package:dartitect_observability/dartitect_observability.dart';
 import 'package:dartitect_workmanager/dartitect_workmanager.dart';
+import 'package:thin_consumer_canary/composition/context_factories.dart';
+import 'package:thin_consumer_canary/features/tasks/infrastructure/tasks_dio.wiring.dartitect.g.dart';
 
 /// Directly constructed application graph; it is not a service locator.
-final class ApplicationGraph<
-  Session extends Object,
-  SessionFailure extends Object
-> {
+final class ApplicationGraph {
   const ApplicationGraph({
-    required this.sessions,
+    required this.primary,
+    required this.api,
     required this.scheduler,
     required this.observability,
   });
 
-  final SessionRuntimeController<Session, SessionFailure> sessions;
+  final PrimaryStorage primary;
+  final TasksDioModule api;
   final DartitectWorkmanagerScheduler scheduler;
   final ObservabilityRuntime observability;
 }
 
 /// Tooling-materialized application composition module.
 abstract final class ApplicationModule {
-  static BootstrapCoordinator<ApplicationGraph<Session, SessionFailure>>
-  create<Session extends Object, SessionFailure extends Object>() =>
-      BootstrapCoordinator<ApplicationGraph<Session, SessionFailure>>(
+  static BootstrapCoordinator<ApplicationGraph> create() =>
+      BootstrapCoordinator<ApplicationGraph>(
         stages: const <BootstrapStage>[],
         buildRoot: (transaction, _) async {
-          final sessions = transaction.own(
-            SessionRuntimeController<Session, SessionFailure>(),
-            (controller) => controller.disposeAsync(),
-            label: 'application.sessions',
+          final primaryFactory = PrimaryStorageFactory();
+          final primary = transaction.own<PrimaryStorage>(
+            await primaryFactory.open(),
+            primaryFactory.dispose,
+            label: 'application.primary',
+          );
+          final apiFactory = ApiTransportFactory();
+          final api = transaction.own<TasksDioModule>(
+            apiFactory.open(),
+            apiFactory.dispose,
+            label: 'application.api',
           );
           final scheduler = DartitectWorkmanagerScheduler();
           final observability = transaction.own(
@@ -40,8 +48,9 @@ abstract final class ApplicationModule {
             (runtime) => runtime.disposeAsync(),
             label: 'application.observability',
           );
-          return ApplicationGraph<Session, SessionFailure>(
-            sessions: sessions,
+          return ApplicationGraph(
+            primary: primary,
+            api: api,
             scheduler: scheduler,
             observability: observability,
           );

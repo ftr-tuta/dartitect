@@ -6,10 +6,12 @@ import 'package:crypto/crypto.dart';
 
 import 'project_lock.dart';
 
+final RegExp _rendererId = RegExp(r'^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$');
+
 /// Independent compatibility versions used by generation and reporting.
 abstract final class DartitectGenerationVersions {
   /// Package release version; never used as generated ownership identity.
-  static const String release = '1.0.0-rc.8';
+  static const String release = '1.0.0-rc.9';
 
   /// Cross-component generation protocol version.
   static const int protocol = 1;
@@ -21,7 +23,7 @@ abstract final class DartitectGenerationVersions {
   static const int modelRenderer = 1;
 
   /// Namespaced ownership manifest schema.
-  static const int manifest = 2;
+  static const int manifest = 3;
 
   /// Stable generation command report schema.
   static const int report = 1;
@@ -84,6 +86,7 @@ final class FileGenerationOperation {
   const FileGenerationOperation({
     required this.relativePath,
     required this.content,
+    required this.rendererId,
     this.ownership = GeneratedOwnership.generatedOnce,
     this.sourcePath,
     this.rendererVersion = 1,
@@ -96,6 +99,9 @@ final class FileGenerationOperation {
 
   /// Fully rendered content.
   final String content;
+
+  /// Stable renderer identity required by canary coverage contracts.
+  final String rendererId;
 
   /// Who owns subsequent changes.
   final GeneratedOwnership ownership;
@@ -402,6 +408,12 @@ final class GenerationEngine {
     final byPath = <String, FileGenerationOperation>{};
     for (final operation in requested) {
       _validatePath(operation.relativePath);
+      if (!_rendererId.hasMatch(operation.rendererId)) {
+        throw GenerationException(
+          'Renderer identity is invalid for ${operation.relativePath}.',
+          kind: GenerationFailureKind.invalidConfiguration,
+        );
+      }
       if (operation.relativePath.contains('\\')) {
         throw const GenerationException(
           'Output paths must use normalized forward slashes.',
@@ -422,6 +434,7 @@ final class GenerationEngine {
           (prior.content != operation.content ||
               prior.ownership != operation.ownership ||
               prior.sourcePath != operation.sourcePath ||
+              prior.rendererId != operation.rendererId ||
               prior.rendererVersion != operation.rendererVersion ||
               prior.semanticSchemaVersion != operation.semanticSchemaVersion ||
               prior.inputSignature != operation.inputSignature)) {
@@ -470,6 +483,7 @@ final class GenerationEngine {
               FileGenerationOperation(
                 relativePath: path,
                 content: '',
+                rendererId: 'generation.unmanaged-output',
                 ownership: GeneratedOwnership.fullyGenerated,
                 sourcePath: path,
                 inputSignature: path,
@@ -581,6 +595,7 @@ final class GenerationEngine {
               content: '',
               ownership: GeneratedOwnership.fullyGenerated,
               sourcePath: prior.source,
+              rendererId: prior.rendererId,
               rendererVersion: prior.rendererVersion,
               semanticSchemaVersion: prior.semanticSchemaVersion,
               inputSignature: prior.inputDigest,
@@ -1145,14 +1160,18 @@ final class GenerationEngine {
         kind: GenerationFailureKind.invalidConfiguration,
       );
     }
+    final currentManifestSchema = decoded is Map<String, Object?>
+        ? decoded['schemaVersion']
+        : null;
     final validEnvelope =
         decoded is Map<String, Object?> &&
         decoded['outputs'] is List<Object?> &&
         (legacy
             ? decoded['schemaVersion'] == 1 &&
                   decoded['generator'] == 'dartitect model'
-            : decoded['schemaVersion'] ==
-                      DartitectGenerationVersions.manifest &&
+            : (currentManifestSchema == 2 ||
+                      currentManifestSchema ==
+                          DartitectGenerationVersions.manifest) &&
                   decoded['namespace'] == namespace.name &&
                   decoded['protocolVersion'] ==
                       DartitectGenerationVersions.protocol);
@@ -1175,7 +1194,12 @@ final class GenerationEngine {
       try {
         entry = legacy
             ? _ManifestEntry.fromLegacyJson(raw)
-            : _ManifestEntry.fromJson(raw);
+            : _ManifestEntry.fromJson(
+                raw,
+                missingRendererId: currentManifestSchema == 2
+                    ? '${namespace.name}.legacy-v2'
+                    : null,
+              );
       } on Object {
         throw const GenerationException(
           'Generation ownership manifest contains invalid metadata.',
@@ -1268,6 +1292,7 @@ final class GenerationEngine {
   Future<List<String>> _findUnmanagedOutputs() async {
     if (!await root.exists()) return <String>[];
     final suffix = namespace.fullyGeneratedSuffix!;
+    final claimedByOtherNamespaces = await _outputsClaimedByOtherNamespaces();
     final outputs = <String>[];
     await for (final entity in root.list(recursive: true, followLinks: false)) {
       if (entity is! File || !entity.path.endsWith(suffix)) continue;
@@ -1278,15 +1303,75 @@ final class GenerationEngine {
       )) {
         continue;
       }
+      if (claimedByOtherNamespaces.contains(relative)) continue;
       outputs.add(relative);
     }
     outputs.sort();
     return outputs;
   }
 
+  Future<Set<String>> _outputsClaimedByOtherNamespaces() async {
+    final generationRoot = Directory(_resolve('.dartitect/generation'));
+    if (!await generationRoot.exists()) return <String>{};
+    final claimed = <String>{};
+    await for (final entity in generationRoot.list(
+      recursive: true,
+      followLinks: false,
+    )) {
+      if (entity is! File) continue;
+      final manifestPath = _relative(entity.path).split('/');
+      if (manifestPath.length != 4 ||
+          manifestPath[0] != '.dartitect' ||
+          manifestPath[1] != 'generation' ||
+          manifestPath[3] != 'manifest.json') {
+        continue;
+      }
+      Object? decoded;
+      try {
+        decoded = jsonDecode(await entity.readAsString());
+      } on Object {
+        continue;
+      }
+      if (decoded is! Map<String, Object?> ||
+          decoded['schemaVersion'] != DartitectGenerationVersions.manifest ||
+          decoded['protocolVersion'] != DartitectGenerationVersions.protocol ||
+          decoded['namespace'] != manifestPath[2] ||
+          decoded['namespace'] == namespace.name ||
+          decoded['outputs'] is! List<Object?>) {
+        continue;
+      }
+      for (final value in decoded['outputs']! as List<Object?>) {
+        if (value is! Map<String, Object?> ||
+            value['path'] is! String ||
+            value['outputDigest'] is! String) {
+          continue;
+        }
+        final path = value['path']! as String;
+        final digest = value['outputDigest']! as String;
+        if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(digest)) continue;
+        try {
+          _validatePath(path);
+          await _validateNoSymlinkPath(path);
+          final output = File(_resolve(path));
+          if (await FileSystemEntity.type(output.path, followLinks: false) ==
+              FileSystemEntityType.file) {
+            if (await _canonicalFileDigest(output) == digest) {
+              claimed.add(path);
+            }
+          }
+        } on Object {
+          // A malformed or stale sibling manifest cannot claim an output.
+          continue;
+        }
+      }
+    }
+    return claimed;
+  }
+
   void _validateFullyGenerated(FileGenerationOperation operation) {
     if (!operation.relativePath.endsWith(namespace.fullyGeneratedSuffix!) ||
         operation.sourcePath == null ||
+        !_rendererId.hasMatch(operation.rendererId) ||
         operation.inputSignature == null ||
         operation.inputSignature!.isEmpty ||
         operation.rendererVersion <= 0 ||
@@ -1353,6 +1438,7 @@ final class GenerationEngine {
   _ManifestEntry _entryFor(FileGenerationOperation operation) => _ManifestEntry(
     path: operation.relativePath,
     source: operation.sourcePath!,
+    rendererId: operation.rendererId,
     rendererVersion: operation.rendererVersion,
     semanticSchemaVersion: operation.semanticSchemaVersion,
     inputDigest: _textDigest(_canonicalText(operation.inputSignature!)),
@@ -1434,15 +1520,20 @@ final class _ManifestEntry {
   const _ManifestEntry({
     required this.path,
     required this.source,
+    required this.rendererId,
     required this.rendererVersion,
     required this.semanticSchemaVersion,
     required this.inputDigest,
     required this.outputDigest,
   });
 
-  factory _ManifestEntry.fromJson(Map<String, Object?> json) {
+  factory _ManifestEntry.fromJson(
+    Map<String, Object?> json, {
+    String? missingRendererId,
+  }) {
     final path = json['path'];
     final source = json['source'];
+    final rendererId = json['rendererId'] ?? missingRendererId;
     final rendererVersion = json['rendererVersion'];
     final semanticSchemaVersion = json['semanticSchemaVersion'];
     final inputDigest = json['inputDigest'];
@@ -1450,6 +1541,8 @@ final class _ManifestEntry {
     final digest = RegExp(r'^[0-9a-f]{64}$');
     if (path is! String ||
         source is! String ||
+        rendererId is! String ||
+        !_rendererId.hasMatch(rendererId) ||
         rendererVersion is! int ||
         rendererVersion <= 0 ||
         semanticSchemaVersion is! int ||
@@ -1463,6 +1556,7 @@ final class _ManifestEntry {
     return _ManifestEntry(
       path: path,
       source: source,
+      rendererId: rendererId,
       rendererVersion: rendererVersion,
       semanticSchemaVersion: semanticSchemaVersion,
       inputDigest: inputDigest,
@@ -1478,6 +1572,7 @@ final class _ManifestEntry {
     return _ManifestEntry.fromJson(<String, Object?>{
       'path': json['path'],
       'source': json['source'],
+      'rendererId': 'model.value',
       'rendererVersion': 1,
       'semanticSchemaVersion': 4,
       'inputDigest': json['inputDigest'],
@@ -1487,6 +1582,7 @@ final class _ManifestEntry {
 
   final String path;
   final String source;
+  final String rendererId;
   final int rendererVersion;
   final int semanticSchemaVersion;
   final String inputDigest;
@@ -1495,6 +1591,7 @@ final class _ManifestEntry {
   Map<String, Object?> toJson() => <String, Object?>{
     'path': path,
     'source': source,
+    'rendererId': rendererId,
     'rendererVersion': rendererVersion,
     'semanticSchemaVersion': semanticSchemaVersion,
     'inputDigest': inputDigest,
@@ -1506,6 +1603,7 @@ final class _ManifestEntry {
       other is _ManifestEntry &&
       path == other.path &&
       source == other.source &&
+      rendererId == other.rendererId &&
       rendererVersion == other.rendererVersion &&
       semanticSchemaVersion == other.semanticSchemaVersion &&
       inputDigest == other.inputDigest &&
@@ -1515,6 +1613,7 @@ final class _ManifestEntry {
   int get hashCode => Object.hash(
     path,
     source,
+    rendererId,
     rendererVersion,
     semanticSchemaVersion,
     inputDigest,

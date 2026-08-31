@@ -102,6 +102,12 @@ dependencies:
           ),
         },
         scheduler: DartitectSchedulerConfig(provider: 'workmanager'),
+        session: DartitectSessionConfig(
+          factorySource: DartitectFactorySourceConfig(
+            source: 'lib/composition/session_factory.dart',
+            declaration: 'SessionFactory',
+          ),
+        ),
         features: DartitectFeaturesConfig(
           declarations: <String, DartitectFeatureDeclaration>{
             'orders': DartitectFeatureDeclaration(

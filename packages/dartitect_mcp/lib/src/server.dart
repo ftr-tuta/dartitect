@@ -30,7 +30,7 @@ base class DartitectMcpServer extends MCPServer
        super.fromStreamChannel(
          implementation: Implementation(
            name: 'dartitect_mcp',
-           version: '1.0.0-rc.8',
+           version: '1.0.0-rc.9',
          ),
          instructions: _instructions,
        ) {
@@ -448,7 +448,12 @@ base class DartitectMcpServer extends MCPServer
       root,
       namespace: GenerationNamespace.scaffolding,
     ).plan(ScaffoldFactory(packageName: packageName).profile(options, name));
-    final wiring = await DartitectWiringService(root).inspect(config: next);
+    final wiring = await DartitectWiringService(root).inspectStagedFeature(
+      config: next,
+      seams: seamPlan.operations
+          .map((operation) => operation.operation)
+          .toList(growable: false),
+    );
     if (seamPlan.hasConflicts || wiring.plan.hasConflicts) {
       throw const DartitectMcpException(
         'generation_conflict',
@@ -664,7 +669,7 @@ base class DartitectMcpServer extends MCPServer
     if (declaration == null) {
       throw const DartitectMcpException(
         'feature_not_found',
-        'The requested feature is not declared in strict config v2.',
+        'The requested feature is not declared in strict config v3.',
       );
     }
     final wiring = await DartitectWiringService(root).inspect(config: config);
@@ -699,7 +704,7 @@ base class DartitectMcpServer extends MCPServer
     if (declaration == null) {
       throw const DartitectMcpException(
         'feature_not_found',
-        'The requested feature is not declared in strict config v2.',
+        'The requested feature is not declared in strict config v3.',
       );
     }
     final packageName =
@@ -855,6 +860,11 @@ base class DartitectMcpServer extends MCPServer
   ) => DartitectFeatureDeclaration(
     profile: options.profile,
     scope: options.scope,
+    factorySource: DartitectFactorySourceConfig(
+      source: 'lib/features/$name/composition/${name}_factory.dart',
+      declaration: '${_pascal(name)}Factory',
+    ),
+    localAuthority: options.localAuthority,
     storageContext: options.storageContext,
     dataset: options.storageContext == null
         ? null
@@ -889,10 +899,18 @@ base class DartitectMcpServer extends MCPServer
     targets: prior.targets,
     storageContexts: prior.storageContexts,
     transports: prior.transports,
+    contracts: prior.contracts,
+    session: prior.session,
     observability: prior.observability,
     scheduler: prior.scheduler,
     extensionSources: prior.extensionSources,
   );
+
+  static String _pascal(String value) => value
+      .split('_')
+      .where((part) => part.isNotEmpty)
+      .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
+      .join();
 
   static List<String> _createFeatureArguments(
     String name,
@@ -1013,13 +1031,13 @@ base class DartitectMcpServer extends MCPServer
     );
     addResource(
       Resource(
-        uri: 'dartitect://config/v2',
-        name: 'Dartitect config v2',
+        uri: 'dartitect://config/v3',
+        name: 'Dartitect config v3',
         description: 'Credential-free canonical configuration shape.',
         mimeType: 'application/json',
       ),
       (request) =>
-          _jsonResource(request.uri, DartitectGeneratedCatalog.configV2),
+          _jsonResource(request.uri, DartitectGeneratedCatalog.configV3),
     );
     addResourceTemplate(
       ResourceTemplate(

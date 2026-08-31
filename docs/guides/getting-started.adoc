@@ -4,36 +4,28 @@ Start with a new Dartitect project. There is no conversion, gradual adoption,
 legacy zone, or competing-runtime mode. Keep domain contracts free of
 Dartitect types when ordinary Dart types suffice.
 
+The normal application entrypoint delegates ownership to the generated graph:
+
 [source,dart]
 ----
-final class AppRuntime implements AsyncDisposable {
-  AppRuntime(this.repository, this._owner);
-
-  final OrdersRepository repository;
-  final ResourceOwner _owner;
-
-  static AppRuntime create() {
-    final owner = ResourceOwner(label: 'AppRuntime');
-    try {
-      final client = owner.own(createClient(), (value) => value.close());
-      return AppRuntime(HttpOrdersRepository(client), owner);
-    } catch (_) {
-      unawaited(owner.disposeAsync());
-      rethrow;
-    }
-  }
-
-  @override
-  Future<void> disposeAsync() => _owner.disposeAsync();
-}
+void main() => runDartitectApplication<ApplicationGraph>(
+  create: ApplicationModule.create,
+  application: (graph) => OrdersApp(graph: graph),
+);
 ----
 
-At a route boundary, use `ViewModelHost.create` for an owned ViewModel and
-`.value` for a borrowed one. The host does not listen to the ViewModel; place a
-`ListenableBuilder`, `ValueListenableBuilder`, or `ListenableSelector` at the
-smallest rebuilding fragment.
+At a route boundary, render the generated `<Feature>FeatureHost`. Supply the
+typed factory and exhaustive loading/failure/ready builders; the host creates
+and starts the ViewModel, fences late work, and closes the ViewModel before the
+feature graph. Use `CommandStateBuilder` inside product UI when all six command
+states need exhaustive rendering. Neither widget chooses Material, text,
+layout, navigation, colors, or style.
 
-Create only the requested platforms, review config v2, and preview every
+Manual `ResourceOwner`, `OwnedGraph`, `DartitectAssemblyBinding`,
+`BootstrapCoordinator`, and `ViewModelHost` composition remains documented in
+link:composition-lifecycle-isolates.md[the advanced lifecycle guide].
+
+Create only the requested platforms, review config v3, and preview every
 generated change:
 
 [source,shell]

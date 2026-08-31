@@ -1,0 +1,52 @@
+= RC9 concrete-graph source-candidate handoff
+:toc:
+
+Candidate:: `1.0.0-rc.9`
+State:: SOURCE CANDIDATE ONLY
+Topology:: 24 packages / 30 public entrypoints
+
+This branch assembles RC9 without creating a tag, GitHub Release, or pub.dev
+publication. Those actions require separate authorization and successful
+`CI / Required` evidence for the exact source.
+
+== Vertical closure
+
+* config v3 declares scoped contexts, semantic factory sources, feature local
+  authority, selected OpenAPI operations, and local contract outputs;
+* the v1→v2→v3 fleet chain and each changed renderer have stable migration IDs,
+  deterministic preview/apply, transaction recovery, and rollback;
+* generated `ApplicationGraph`, `SessionGraph`, feature infrastructure/runtime,
+  factory invocation, `FeatureHost`, and test harness types replace everyday
+  high-arity assemblies;
+* `DartitectCommand`, exhaustive `CommandState.match`,
+  `CommandStateBuilder`, and `FeatureHost` close mechanical Flutter ownership
+  without selecting product visuals;
+* generated OpenAPI operation wrappers use `DioJsonClient` and preserve typed
+  status responses, cancellation, deadlines, credentials, and observation;
+* consumer-tax schema 2 requires zero semantic architecture plumbing while
+  separating generated scale, structural tests, and non-blocking product code;
+* fleet inventory/impact and confined digest-locked blueprints are available;
+* the formal catalog maps all 24 packages, 30 entrypoints, production
+  renderers, profiles, capabilities, providers, scopes, and targets to one or
+  more executable canaries; and
+* the thin vertical, 30-feature large consumer, reference workload, providers,
+  tooling, contracts, adapters/Sentry, and native capabilities retain a zero
+  residual resource census.
+
+== Evidence and non-goals
+
+`tool/change_tax.dart` reproduces 12 changes in disposable copies and records
+manual/generated diffs plus generation, analyzer, and build timings. CI compares
+timings only on the same pinned runner and fails architecture-tax deltas above
+zero.
+
+Router selection, universal repository/database abstractions, service location,
+dual-write, implicit retry, automatic domain mapping, product design systems,
+colors, catalog widgets, dropdowns, and text fields remain outside RC9.
+
+== Stable blocker
+
+The `ui-ux-business-neutral` gate remains pending in
+`tool/stable_candidate_contract.json`. It prevents `1.0.0` and
+`pub-dev-stable` promotion. The next UI/UX plan must clear that gate while
+preserving the mandatory canary catalog.

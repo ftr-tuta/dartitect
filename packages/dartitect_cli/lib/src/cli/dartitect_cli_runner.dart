@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dartitect/dartitect.dart' show FeatureProfile;
 
+import '../blueprints/blueprint_service.dart';
 import '../config/dartitect_config.dart';
 import '../contracts/openapi_contract_service.dart';
 import '../diagnostics/models.dart';
@@ -83,6 +84,7 @@ final class DartitectCliRunner {
         'verify' => await _readOnly('verify', root, parsed),
         'init' => await _init(root, parsed),
         'create' => await _create(root, parsed),
+        'blueprint' => await _blueprint(root, parsed),
         'codex' => await _codex(root, parsed),
         'contracts' => await _contracts(root, parsed),
         'model' => await _model(root, parsed),
@@ -215,10 +217,12 @@ final class DartitectCliRunner {
       'scope',
       'storage-context',
       'transport',
+      'local-authority',
       'pagination',
       'headless-targets',
       'diagnostics',
       'capabilities',
+      'blueprint',
     });
     if (kind == 'app') {
       _rejectFeatureOptions(arguments);
@@ -232,6 +236,7 @@ final class DartitectCliRunner {
           required: true,
         ),
         example: arguments.options['example'],
+        blueprintPath: arguments.options['blueprint'],
       );
     }
     if (arguments.options['example'] != null) {
@@ -248,11 +253,17 @@ final class DartitectCliRunner {
         arguments.options['scope'] != null ||
         arguments.options['storage-context'] != null ||
         arguments.options['transport'] != null ||
+        arguments.options['local-authority'] != null ||
         arguments.options['targets'] != null ||
         arguments.options['pagination'] != null ||
         arguments.options['diagnostics'] != null ||
         arguments.options['capabilities'] != null ||
         arguments.options['headless-targets'] != null;
+    if (kind != 'feature' && arguments.options['blueprint'] != null) {
+      throw const _UsageException(
+        '--blueprint is valid only for create app or create feature.',
+      );
+    }
     if (kind != 'feature' && hasFeatureOptions) {
       throw const _UsageException(
         'Feature profile options are valid only for create feature.',
@@ -273,6 +284,10 @@ final class DartitectCliRunner {
             ),
             storageContext: arguments.options['storage-context'],
             transport: arguments.options['transport'],
+            localAuthority: switch (arguments.options['local-authority']) {
+              null => null,
+              final value => FeatureLocalAuthorityStrategy.parse(value),
+            },
             targets: _parsePlatformsOption(arguments.options['targets']),
             pagination: FeaturePagination.parse(pagination),
             headlessTargets: _parsePlatformsOption(
@@ -284,13 +299,20 @@ final class DartitectCliRunner {
             capabilities: _parseCapabilities(arguments.options['capabilities']),
           )
         : null;
-    final operations = switch (kind) {
-      'feature' => scaffold.profile(featureOptions!, name),
-      'viewmodel' => scaffold.viewModel(name),
-      'repository' => scaffold.repository(name),
-      'service' => scaffold.service(name),
-      _ => throw _UsageException('Unknown create target "$kind".'),
-    };
+    final blueprint = arguments.options['blueprint'] == null
+        ? null
+        : await DartitectBlueprintService(root)
+              .inspect(arguments.options['blueprint']!);
+    final operations = <FileGenerationOperation>[
+      ...switch (kind) {
+        'feature' => scaffold.profile(featureOptions!, name),
+        'viewmodel' => scaffold.viewModel(name),
+        'repository' => scaffold.repository(name),
+        'service' => scaffold.service(name),
+        _ => throw _UsageException('Unknown create target "$kind".'),
+      },
+      ...?blueprint?.operations,
+    ];
     if (featureOptions != null) {
       return _createFeature(
         root,
@@ -305,6 +327,29 @@ final class DartitectCliRunner {
       namespace: GenerationNamespace.scaffolding,
     ).apply(operations, dryRun: arguments.flags.contains('dry-run'));
     _writeGeneration(result);
+    return DartitectExitCode.success.code;
+  }
+
+  Future<int> _blueprint(Directory root, _CliArguments arguments) async {
+    arguments.requireOnlyFlags(<String>{'json', 'verbose'});
+    if (arguments.positionals.length != 2 ||
+        arguments.positionals.first != 'check') {
+      throw const _UsageException(
+        'Usage: dartitect blueprint check <path> [--json].',
+      );
+    }
+    final report = await DartitectBlueprintService(root)
+        .inspect(arguments.positionals[1]);
+    if (arguments.flags.contains('json')) {
+      _stdout.writeln(jsonEncode(report.toJson()));
+    } else {
+      _stdout.writeln(
+        'BLUEPRINT ${report.id}@${report.version} ${report.manifestSha256}',
+      );
+      for (final operation in report.operations) {
+        _stdout.writeln('CREATE ${operation.relativePath}');
+      }
+    }
     return DartitectExitCode.success.code;
   }
 
@@ -326,6 +371,12 @@ final class DartitectCliRunner {
     final declaration = DartitectFeatureDeclaration(
       profile: options.profile,
       scope: options.scope,
+      factorySource: DartitectFactorySourceConfig(
+        source:
+            'lib/features/${name.snake}/composition/${name.snake}_factory.dart',
+        declaration: '${name.pascal}Factory',
+      ),
+      localAuthority: options.localAuthority,
       storageContext: options.storageContext,
       dataset: options.storageContext == null
           ? null
@@ -363,6 +414,8 @@ final class DartitectCliRunner {
       targets: prior.targets,
       storageContexts: prior.storageContexts,
       transports: prior.transports,
+      contracts: prior.contracts,
+      session: prior.session,
       observability: prior.observability,
       scheduler: prior.scheduler,
       extensionSources: prior.extensionSources,
@@ -377,8 +430,8 @@ final class DartitectCliRunner {
         'Consumer-owned feature seams conflict with existing files.',
       );
     }
-    final wiring = DartitectWiringService(root);
-    final wiringPreview = await wiring.inspect(config: next);
+    final wiringPreview = await DartitectWiringService(root)
+        .inspectStagedFeature(config: next, seams: seams);
     if (wiringPreview.plan.hasConflicts) {
       throw GenerationException(
         'Managed feature wiring conflicts with consumer bytes.',
@@ -406,7 +459,8 @@ final class DartitectCliRunner {
     try {
       seamResult = await seamEngine.apply(seams);
       await _replaceConfig(configFile, next.encode());
-      final wiringResult = await wiring.apply(config: next);
+      final wiringResult = await DartitectWiringService(root)
+          .apply(config: next);
       _writeGeneration(seamResult);
       for (final operation in wiringResult.plan.operations) {
         _stdout.writeln(
@@ -421,12 +475,38 @@ final class DartitectCliRunner {
       } else {
         await _replaceConfig(configFile, priorSource);
       }
-      for (final path
-          in seamResult?.createdPaths.reversed ?? const <String>[]) {
-        final created = File(_join(root.path, path));
-        if (await created.exists()) await created.delete();
-      }
+      await _rollbackCreatedSeams(root, seams, seamResult?.createdPaths);
       rethrow;
+    }
+  }
+
+  Future<void> _rollbackCreatedSeams(
+    Directory root,
+    List<FileGenerationOperation> seams,
+    List<String>? createdPaths,
+  ) async {
+    if (createdPaths == null) return;
+    final expected = <String, String>{
+      for (final operation in seams) operation.relativePath: operation.content,
+    };
+    for (final path in createdPaths.reversed) {
+      final created = File(_join(root.path, path));
+      if (!await created.exists()) continue;
+      if (await created.readAsString() != expected[path]) {
+        _stderr.writeln(
+          'MANUAL-RECOVERY $path changed after creation and was preserved.',
+        );
+        continue;
+      }
+      await created.delete();
+      var parent = created.parent;
+      while (parent.absolute.path != root.absolute.path &&
+          await parent.exists() &&
+          await parent.list().isEmpty) {
+        final next = parent.parent;
+        await parent.delete();
+        parent = next;
+      }
     }
   }
 
@@ -453,11 +533,15 @@ final class DartitectCliRunner {
     required bool dryRun,
     required Set<DartitectPlatform> targets,
     required String? example,
+    required String? blueprintPath,
   }) async {
     if (example != null && example != 'tasks') {
       throw _UsageException('Unsupported example "$example".');
     }
     final name = ScaffoldName(input);
+    final blueprint = blueprintPath == null
+        ? null
+        : await DartitectBlueprintService(parent).inspect(blueprintPath);
     final target = Directory(_join(parent.path, name.snake));
     if (await target.exists()) {
       throw GenerationException(
@@ -472,6 +556,10 @@ final class DartitectCliRunner {
         'TARGETS ${targets.map((target) => target.wireName).join(',')}',
       );
       if (example != null) _stdout.writeln('EXAMPLE $example');
+      for (final operation
+          in blueprint?.operations ?? const <FileGenerationOperation>[]) {
+        _stdout.writeln('CREATE ${name.snake}/${operation.relativePath}');
+      }
       return DartitectExitCode.success.code;
     }
 
@@ -504,6 +592,12 @@ final class DartitectCliRunner {
         example: example,
         workspaceMember: workspaceMember,
       );
+      if (blueprint != null) {
+        await GenerationEngine(
+          temporary,
+          namespace: GenerationNamespace('blueprint-${blueprint.id}'),
+        ).apply(blueprint.operations);
+      }
       await temporary.rename(target.path);
       moved = true;
       _stdout.writeln('CREATE ${name.snake}/');
@@ -527,9 +621,15 @@ final class DartitectCliRunner {
     final localSdk = _findLocalSdkRoot();
     final sdkPackages = <String>{'dartitect', 'dartitect_flutter'}.toList()
       ..sort();
-    final localOverridePackages = _localSdkPackageClosure(sdkPackages);
+    final devSdkPackages = example == 'tasks'
+        ? <String>['dartitect_testing']
+        : const <String>[];
+    final localOverridePackages = _localSdkPackageClosure(<String>[
+      ...sdkPackages,
+      ...devSdkPackages,
+    ]);
     final dependencyBlock = localSdk == null || workspaceMember
-        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.8\n').join()
+        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.9\n').join()
         : sdkPackages
               .map(
                 (package) =>
@@ -539,7 +639,8 @@ final class DartitectCliRunner {
               .join();
     source = source.replaceFirst(
       'dev_dependencies:\n',
-      '${dependencyBlock}dev_dependencies:\n',
+      '${dependencyBlock}dev_dependencies:\n'
+          '${localSdk == null || workspaceMember ? devSdkPackages.map((package) => '  $package: ^1.0.0-rc.9\n').join() : devSdkPackages.map((package) => '  $package:\n    path: ${_yamlQuote(_join(localSdk.path, 'packages/$package'))}\n').join()}',
     );
     if (workspaceMember) {
       source = source.replaceFirst(
@@ -557,28 +658,26 @@ final class DartitectCliRunner {
     if (await widgetTest.exists()) await widgetTest.delete();
     final mainFile = File(_join(project.path, 'lib/main.dart'));
     await mainFile.writeAsString(
-      '''${example == 'tasks' ? "import 'package:dartitect/dartitect.dart';\n" : ''}import 'package:dartitect_flutter/dartitect_flutter.dart';
+      '''import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'composition/application_module.wiring.dartitect.g.dart';
-${example == 'tasks' ? "import 'features/tasks/domain/tasks_repository.dart';\nimport 'features/tasks/presentation/tasks_view.dart';" : ''}
+${example == 'tasks' ? "import 'features/tasks/composition/tasks.wiring.dartitect.g.dart';\nimport 'features/tasks/composition/tasks_factory.dart';\nimport 'features/tasks/presentation/tasks_view.dart';" : ''}
 
-void main() => runDartitectApplication<ApplicationGraph<Never, Never>>(
-  create: ApplicationModule.create<Never, Never>,
-  application: (_) => const MaterialApp(
+void main() => runDartitectApplication<ApplicationGraph>(
+  create: ApplicationModule.create,
+  application: (graph) => MaterialApp(
     title: '${name.pascal}',
-    home: ${example == 'tasks' ? 'TasksPage(repository: _ExampleTasksRepository())' : 'SizedBox.shrink()'},
+    home: ${example == 'tasks' ? '''TasksFeatureHost(
+      graph: graph,
+      factory: const TasksFactory(),
+      start: (viewModel) => viewModel.start(),
+      loading: (_) => const Text('Loading Tasks'),
+      failure: (_, failure, retry) => const Text('Tasks unavailable'),
+      ready: (_, runtime, viewModel) => TasksView(viewModel: viewModel),
+    )''' : 'const SizedBox.shrink()'},
   ),
 );
-${example == 'tasks' ? '''
-final class _ExampleTasksRepository implements TasksRepository {
-  const _ExampleTasksRepository();
-
-  @override
-  Future<Result<List<String>, TasksFailure>> load() async =>
-      const Ok<List<String>>(<String>['Example task']);
-}
-''' : ''}
 ''',
       flush: true,
     );
@@ -593,11 +692,33 @@ final class _ExampleTasksRepository implements TasksRepository {
             'tasks': DartitectFeatureDeclaration(
               profile: FeatureProfile.local,
               scope: FeatureScope.application,
+              factorySource: DartitectFactorySourceConfig(
+                source: 'lib/features/tasks/composition/tasks_factory.dart',
+                declaration: 'TasksFactory',
+              ),
+              localAuthority: FeatureLocalAuthorityStrategy.custom,
               pagination: FeaturePagination.none,
               diagnostics: FeatureDiagnosticsLevel.basic,
             ),
           }
         : const <String, DartitectFeatureDeclaration>{};
+    final featureScaffold = example == 'tasks'
+        ? scaffold.profile(featureOptions, 'tasks').map((operation) {
+            if (!operation.relativePath.endsWith('/tasks_factory.dart')) {
+              return operation;
+            }
+            return FileGenerationOperation(
+              relativePath: operation.relativePath,
+              content: _exampleTasksFactory,
+              rendererId: operation.rendererId,
+              ownership: operation.ownership,
+              sourcePath: operation.sourcePath,
+              rendererVersion: operation.rendererVersion,
+              semanticSchemaVersion: operation.semanticSchemaVersion,
+              inputSignature: operation.inputSignature,
+            );
+          })
+        : const <FileGenerationOperation>[];
     await GenerationEngine(
       project,
       namespace: GenerationNamespace.scaffolding,
@@ -609,7 +730,7 @@ final class _ExampleTasksRepository implements TasksRepository {
         ),
       ),
       ...scaffold.agents(),
-      if (example == 'tasks') ...scaffold.profile(featureOptions, 'tasks'),
+      ...featureScaffold,
     ]);
     final format = await Process.run('dart', <String>[
       'format',
@@ -939,14 +1060,19 @@ final class _ExampleTasksRepository implements TasksRepository {
   }
 
   Future<int> _fleet(Directory root, _CliArguments arguments) async {
-    if (arguments.positionals.length < 2) {
+    if (arguments.positionals.isEmpty) {
       throw const _UsageException(
-        'Usage: dartitect fleet <report|versions|check|policy|upgrade> '
+        'Usage: dartitect fleet <report|versions|inventory|impact|check|policy|upgrade> '
         '<project-root...>.',
       );
     }
     final command = arguments.positionals.first;
     final roots = arguments.positionals.skip(1).toList();
+    if (command != 'impact' && roots.isEmpty) {
+      throw const _UsageException(
+        'Fleet commands require at least one project root.',
+      );
+    }
     final service = DartitectFleetService(root);
     late final DartitectFleetReport report;
     switch (command) {
@@ -956,6 +1082,22 @@ final class _ExampleTasksRepository implements TasksRepository {
       case 'versions':
         arguments.requireOnlyFlags(<String>{'json', 'verbose'});
         report = await service.versions(roots);
+      case 'inventory':
+        arguments.requireOnlyFlags(<String>{'json', 'verbose'});
+        report = await service.inventory(roots);
+      case 'impact':
+        arguments.requireOnlyFlags(<String>{'json', 'verbose', 'from', 'to'});
+        if (roots.isNotEmpty ||
+            arguments.options['from'] == null ||
+            arguments.options['to'] == null) {
+          throw const _UsageException(
+            'fleet impact requires --from=SNAPSHOT and --to=SNAPSHOT.',
+          );
+        }
+        report = await service.impact(
+          fromSnapshot: arguments.options['from']!,
+          toSnapshot: arguments.options['to']!,
+        );
       case 'check':
         arguments.requireOnlyFlags(<String>{'json', 'verbose'});
         report = await service.check(roots);
@@ -994,7 +1136,7 @@ final class _ExampleTasksRepository implements TasksRepository {
         }
         if (arguments.options['to'] == null) {
           throw const _UsageException(
-            'fleet upgrade requires --to=1.0.0-rc.8.',
+            'fleet upgrade requires --to=1.0.0-rc.9.',
           );
         }
         report = arguments.flags.contains('apply')
@@ -1087,6 +1229,7 @@ final class _ExampleTasksRepository implements TasksRepository {
       'scope',
       'storage-context',
       'transport',
+      'local-authority',
       'pagination',
       'headless-targets',
       'diagnostics',
@@ -1227,6 +1370,31 @@ final class _ExampleTasksRepository implements TasksRepository {
         : '${sanitized.substring(0, 300)}…';
   }
 
+  static const String _exampleTasksFactory = '''
+import 'package:dartitect/dartitect.dart';
+
+import '../domain/tasks_repository.dart';
+import '../presentation/tasks_view_model.dart';
+
+@DartitectFeatureFactory('tasks')
+final class TasksFactory {
+  const TasksFactory();
+
+  TasksRepository createRepository() => const _ExampleTasksRepository();
+
+  TasksViewModel createViewModel(TasksRepository repository) =>
+      TasksViewModel(repository);
+}
+
+final class _ExampleTasksRepository implements TasksRepository {
+  const _ExampleTasksRepository();
+
+  @override
+  Future<Result<List<String>, TasksFailure>> load() async =>
+      const Ok<List<String>>(<String>['Example task']);
+}
+''';
+
   static String _join(String left, String right) =>
       '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
 
@@ -1253,7 +1421,7 @@ Read-only commands:
   fleet check <root...>            Scan explicit fleet roots without writes.
   fleet policy <root...> --bundle=PATH --sha256=DIGEST
                                     Audit with a pinned local policy bundle.
-  fleet upgrade <root...> --to=1.0.0-rc.8 --apply [--json]
+  fleet upgrade <root...> --to=1.0.0-rc.9 --apply [--json]
                                     Upgrade a cohort transactionally.
 
 Convergent synchronizers (preview by default):
@@ -1271,6 +1439,7 @@ Mutating commands (all accept --dry-run):
   create feature <name> --profile=PROFILE [--scope=application|session]
                        [--targets=android,web]
                        [--storage-context=NAME] [--transport=NAME]
+                       [--local-authority=generated_pull|custom]
                        [--pagination=cursor]
                        [--headless-targets=android,ios]
                        [--diagnostics=off|basic|full]

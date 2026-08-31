@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:dartitect/dartitect.dart';
 import 'package:flutter/foundation.dart';
 
+import 'command/command.dart';
+
 /// Reports an unexpected ViewModel crash without changing its control flow.
 abstract interface class DartitectViewModelCrashReporter {
   /// Reports [error] with its original [stackTrace] and non-secret [operation].
@@ -101,21 +103,15 @@ abstract class DartitectViewModel extends ChangeNotifier
 
   /// Owns a command and forwards its state notifications to this ViewModel.
   ///
-  /// [command] must also implement [Listenable]. The static [AsyncDisposable]
-  /// bound guarantees that command cancellation and draining are available.
-  T ownCommand<T extends AsyncDisposable>(T command, {String? label}) {
-    if (command is! Listenable) {
-      throw ArgumentError.value(
-        command,
-        'command',
-        'An owned command must implement Listenable.',
-      );
-    }
-    final listenable = command as Listenable;
+  /// The static bound guarantees both listenability and asynchronous draining.
+  T ownCommand<T extends DartitectObservableResource>(
+    T command, {
+    String? label,
+  }) {
     return own<T>(
       command,
       (value) => value.disposeAsync(),
-      listenable: listenable,
+      listenable: command,
       label: label ?? 'command#${_resources.length + 1}',
     );
   }

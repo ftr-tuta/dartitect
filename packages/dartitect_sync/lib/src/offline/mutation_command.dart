@@ -245,6 +245,21 @@ abstract interface class MutationOutboxStore<K, A, F extends Object> {
   );
 }
 
+/// Consumer-owned stable idempotency semantics for generated mutation graphs.
+abstract interface class MutationIdempotencyPolicy<K, A> {
+  /// Returns the durable key for one aggregate mutation.
+  String create(K key, A argument);
+}
+
+/// Consumer-owned conflict semantics retained by generated mutation graphs.
+///
+/// Dartitect owns conflict orchestration, while the application remains the
+/// authority for choosing the domain value that wins a known conflict.
+abstract interface class MutationConflictPolicy<T> {
+  /// Resolves one known local/remote conflict into a domain value.
+  T resolve(T local, T remote);
+}
+
 /// Local-first execution result returned as a successful command outcome.
 final class MutationExecution<A, K, T, F extends Object> {
   /// Creates an immutable mutation result.

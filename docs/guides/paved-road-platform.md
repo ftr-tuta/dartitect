@@ -1,9 +1,11 @@
 # Greenfield vertical platform
 
-RC8 completes the generated closure, operational storage, race safety,
-semantic API, consumer-tax, OpenAPI, and observed-evidence requirements before
-1.0. This source delivery does not create a tag, release, or stable `1.0.0`;
-promotion is release-only.
+RC9 makes concrete generated application, session, and feature graphs the
+normal route. Config v3 factories are checked semantically, contexts are opened
+once by their declared owner, and generated `FeatureHost` widgets own feature
+runtime/ViewModel startup and teardown. This source delivery does not create a
+tag, release, or stable `1.0.0`; promotion is release-only and remains blocked
+on the separate business-neutral UI/UX gate.
 
 ## Canonical creation
 
@@ -11,8 +13,8 @@ promotion is release-only.
 dartitect create app shop \
   --targets=android,ios,web
 
-# Declare named storage, transport, observability, and scheduler blocks in
-# shop/dartitect.json before creating a feature that refers to them.
+# Declare scoped storage/transport factories, contracts, observability, and
+# scheduler blocks in config v3 before creating a feature that refers to them.
 dartitect create feature orders \
   --profile=offline-full --scope=session \
   --targets=android,ios,web \
@@ -34,10 +36,16 @@ overwritten.
 `create app` generates an empty shell for exactly the requested targets. It
 does not select transport, storage, scheduler, or observability providers and
 does not generate an example unless `--example=tasks` is requested.
-`create feature` records the strict declaration, creates consumer seams once,
-and materializes executable
-repository/provider/resource/command/pagination/outbox/sync/job/diagnostic/
-ViewModel wiring.
+`create feature` records the strict declaration and creates consumer seams
+once. `wiring sync` validates their resolved annotations and types, then emits
+concrete application/session graphs, the exact feature runtime closure, a typed
+factory invocation, a feature host, and a managed test harness. The app keeps
+domain behavior, schema/query code, mappings, retry/auth/idempotency/conflict
+policy, ViewModel behavior, and UI.
+
+`FeatureHost` and `CommandStateBuilder` are mechanical, Material-neutral
+widgets. They select no text, color, layout, route, style, or design-system
+component. Those UI/UX decisions remain consumer-owned in RC9.
 
 ## Stable opt-in workflows
 
@@ -75,7 +83,10 @@ atomic domain/outbox writes, restart, checkpoint, fencing, uncertainty,
 conflict, migrations, UID persistence, and cleanup. `paved_road_canary` and
 `thin_consumer_canary` ensure the generated road does not leak coordinators,
 provider owners, sync engines, mutation commands, job dispatchers, or manual
-diagnostics into consumer-owned Dart files.
+diagnostics into consumer-owned Dart files. The `large_consumer_canary` adds 30
+features—six per profile—across application and session scopes, two Drift
+contexts, two Dio transports, OpenAPI, headless work, all four opt-in
+capabilities, Web/Linux builds, fleet migration, and zero residual resources.
 
 Before extending the platform, ask:
 

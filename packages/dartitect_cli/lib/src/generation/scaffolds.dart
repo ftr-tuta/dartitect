@@ -12,17 +12,28 @@ final class FeatureScaffoldOptions {
     this.storageContext,
     this.dataset,
     this.transport,
+    FeatureLocalAuthorityStrategy? localAuthority,
     Set<DartitectPlatform> targets = const <DartitectPlatform>{},
     this.pagination = FeaturePagination.none,
     Set<DartitectPlatform> headlessTargets = const <DartitectPlatform>{},
     this.diagnostics = FeatureDiagnosticsLevel.basic,
     Set<DartitectCapability> capabilities = const <DartitectCapability>{},
-  }) : targets = Set<DartitectPlatform>.unmodifiable(targets),
+  }) : localAuthority =
+           localAuthority ??
+           (storageContext == null
+               ? FeatureLocalAuthorityStrategy.custom
+               : FeatureLocalAuthorityStrategy.generatedPull),
+       targets = Set<DartitectPlatform>.unmodifiable(targets),
        headlessTargets = Set<DartitectPlatform>.unmodifiable(headlessTargets),
        capabilities = Set<DartitectCapability>.unmodifiable(capabilities) {
     DartitectFeatureDeclaration(
       profile: profile,
       scope: scope,
+      factorySource: DartitectFactorySourceConfig(
+        source: 'lib/features/feature/composition/feature_factory.dart',
+        declaration: 'FeatureFactory',
+      ),
+      localAuthority: this.localAuthority,
       storageContext: storageContext,
       dataset: storageContext == null
           ? null
@@ -50,6 +61,9 @@ final class FeatureScaffoldOptions {
 
   /// Consumer-selected named transport.
   final String? transport;
+
+  /// Generated-pull or consumer-custom local authority.
+  final FeatureLocalAuthorityStrategy localAuthority;
 
   /// Feature target restriction; empty inherits application targets.
   final Set<DartitectPlatform> targets;
@@ -110,13 +124,15 @@ final class ScaffoldFactory {
       ...feature(input, includeDomain: true),
       FileGenerationOperation(
         relativePath:
-            'lib/features/${name.snake}/domain/${name.snake}_model.dart',
-        content: _immutableModel(name),
+            'lib/features/${name.snake}/composition/${name.snake}_factory.dart',
+        content: _featureFactory(name, options),
+        rendererId: 'scaffold.feature-factory',
       ),
       FileGenerationOperation(
         relativePath:
-            'test/features/${name.snake}/${name.snake}_architecture_test.dart',
-        content: _architectureTest(name),
+            'lib/features/${name.snake}/domain/${name.snake}_model.dart',
+        content: _immutableModel(name),
+        rendererId: 'scaffold.feature-model',
       ),
     ];
     final operations = switch (options.profile) {
@@ -151,12 +167,14 @@ final class ScaffoldFactory {
           relativePath:
               'lib/features/${name.snake}/application/${name.snake}_cursor_page.dart',
           content: _cursorPage(name),
+          rendererId: 'scaffold.cursor-page',
         ),
       if (options.headlessTargets.isNotEmpty)
         FileGenerationOperation(
           relativePath:
               'lib/features/${name.snake}/composition/${name.snake}_headless_sync.dart',
           content: _headlessSync(name),
+          rendererId: 'scaffold.headless-sync',
         ),
     ];
   }
@@ -169,6 +187,7 @@ final class ScaffoldFactory {
       relativePath: 'dartitect.json',
       content: (config ?? DartitectConfig(features: DartitectFeaturesConfig()))
           .encode(),
+      rendererId: 'scaffold.config',
     ),
   ];
 
@@ -188,6 +207,7 @@ final class ScaffoldFactory {
 - Before adding infrastructure, ask: É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
 - It belongs in Dartitect only when all three answers are yes; otherwise use a typed project-local extension or keep business behavior in the application.
 ''',
+      rendererId: 'scaffold.agents',
     ),
   ];
 
@@ -203,38 +223,41 @@ final class ScaffoldFactory {
       FileGenerationOperation(
         relativePath: '$root/$contractLayer/${name.snake}_repository.dart',
         content: _repositoryContract(name),
+        rendererId: 'scaffold.repository-contract',
       ),
       FileGenerationOperation(
         relativePath:
             'test/support/features/${name.snake}/memory_${name.snake}_repository.dart',
         content: _memoryRepository(name, contractLayer: contractLayer),
-      ),
-      FileGenerationOperation(
-        relativePath: '$root/composition/${name.snake}_composition.dart',
-        content: _composition(name, contractLayer: contractLayer),
+        rendererId: 'scaffold.memory-repository',
       ),
       FileGenerationOperation(
         relativePath: '$root/presentation/${name.snake}_view_model.dart',
         content: _featureViewModel(name, contractLayer: contractLayer),
+        rendererId: 'scaffold.view-model',
       ),
       FileGenerationOperation(
         relativePath: '$root/presentation/${name.snake}_view.dart',
         content: _view(name, contractLayer: contractLayer),
+        rendererId: 'scaffold.view',
       ),
       FileGenerationOperation(
         relativePath:
             'test/features/${name.snake}/${name.snake}_view_model_test.dart',
         content: _featureViewModelTest(name, contractLayer: contractLayer),
+        rendererId: 'scaffold.view-model-test',
       ),
       FileGenerationOperation(
         relativePath:
             'test/features/${name.snake}/${name.snake}_repository_contract_test.dart',
         content: _repositoryContractTest(name),
+        rendererId: 'scaffold.repository-contract-test',
       ),
       FileGenerationOperation(
         relativePath:
             'test/features/${name.snake}/${name.snake}_view_test.dart',
         content: _viewTest(name),
+        rendererId: 'scaffold.view-test',
       ),
     ];
   }
@@ -247,11 +270,13 @@ final class ScaffoldFactory {
         relativePath:
             'lib/features/${name.snake}/presentation/${name.snake}_view_model.dart',
         content: _standaloneViewModel(name),
+        rendererId: 'scaffold.standalone-view-model',
       ),
       FileGenerationOperation(
         relativePath:
             'test/features/${name.snake}/${name.snake}_view_model_test.dart',
         content: _standaloneViewModelTest(name),
+        rendererId: 'scaffold.standalone-view-model-test',
       ),
     ];
   }
@@ -264,16 +289,19 @@ final class ScaffoldFactory {
       FileGenerationOperation(
         relativePath: '$root/domain/${name.snake}_repository.dart',
         content: _repositoryContract(name),
+        rendererId: 'scaffold.repository-contract',
       ),
       FileGenerationOperation(
         relativePath:
             'test/support/features/${name.snake}/memory_${name.snake}_repository.dart',
         content: _memoryRepository(name, contractLayer: 'domain'),
+        rendererId: 'scaffold.memory-repository',
       ),
       FileGenerationOperation(
         relativePath:
             'test/features/${name.snake}/${name.snake}_repository_contract_test.dart',
         content: _repositoryContractTest(name),
+        rendererId: 'scaffold.repository-contract-test',
       ),
     ];
   }
@@ -293,6 +321,7 @@ final class ${name.pascal}Service {
   Future<void> execute() async {}
 }
 ''',
+        rendererId: 'scaffold.service',
       ),
     ];
   }
@@ -303,24 +332,23 @@ final class ${name.pascal}Service {
       FileGenerationOperation(
         relativePath: '$root/application/${name.snake}_remote_port.dart',
         content: _remotePort(name),
+        rendererId: 'scaffold.remote-port',
       ),
       FileGenerationOperation(
         relativePath: '$root/infrastructure/${name.snake}_remote_dto.dart',
         content: _remoteDto(name),
+        rendererId: 'scaffold.remote-dto',
       ),
       FileGenerationOperation(
         relativePath: '$root/infrastructure/${name.snake}_mapper.dart',
         content: _remoteMapper(name),
-      ),
-      FileGenerationOperation(
-        relativePath:
-            'test/support/features/${name.snake}/fake_${name.snake}_remote.dart',
-        content: _fakeRemote(name),
+        rendererId: 'scaffold.mapper',
       ),
       FileGenerationOperation(
         relativePath:
             'test/features/${name.snake}/${name.snake}_mapping_test.dart',
         content: _mappingTest(name),
+        rendererId: 'scaffold.mapping-test',
       ),
     ];
   }
@@ -331,15 +359,7 @@ final class ${name.pascal}Service {
       FileGenerationOperation(
         relativePath: '$root/application/${name.snake}_local_store.dart',
         content: _localStorePort(name),
-      ),
-      FileGenerationOperation(
-        relativePath:
-            'test/support/features/${name.snake}/fake_${name.snake}_local_store.dart',
-        content: _fakeLocalStore(name),
-      ),
-      FileGenerationOperation(
-        relativePath: '$root/infrastructure/${name.snake}_pull_source.dart',
-        content: _pullSource(name),
+        rendererId: 'scaffold.local-store',
       ),
     ];
   }
@@ -350,16 +370,7 @@ final class ${name.pascal}Service {
       FileGenerationOperation(
         relativePath: '$root/application/${name.snake}_mutation.dart',
         content: _mutationContract(name),
-      ),
-      FileGenerationOperation(
-        relativePath:
-            'test/support/features/${name.snake}/fake_${name.snake}_outbox_store.dart',
-        content: _fakeOutboxStore(name),
-      ),
-      FileGenerationOperation(
-        relativePath:
-            'test/features/${name.snake}/${name.snake}_outbox_contract_test.dart',
-        content: _outboxTest(name),
+        rendererId: 'scaffold.mutation',
       ),
     ];
   }
@@ -370,16 +381,7 @@ final class ${name.pascal}Service {
       FileGenerationOperation(
         relativePath: '$root/application/${name.snake}_sync_dataset.dart',
         content: _syncDataset(name),
-      ),
-      FileGenerationOperation(
-        relativePath:
-            'test/support/features/${name.snake}/fake_${name.snake}_sync_ports.dart',
-        content: _fakeSyncPorts(name),
-      ),
-      FileGenerationOperation(
-        relativePath:
-            'test/features/${name.snake}/${name.snake}_sync_contract_test.dart',
-        content: _syncTest(name),
+        rendererId: 'scaffold.sync-dataset',
       ),
     ];
   }
@@ -439,52 +441,152 @@ final class ${name.pascal}Model({
 }
 ''';
 
-  String _architectureTest(ScaffoldName name) =>
-      '''import 'dart:convert';
-import 'dart:io';
+  String _featureFactory(ScaffoldName name, FeatureScaffoldOptions options) {
+    final hasStorage = options.storageContext != null;
+    final hasTransport = options.transport != null;
+    final generatedPull =
+        hasStorage &&
+        options.localAuthority == FeatureLocalAuthorityStrategy.generatedPull;
+    final synchronized =
+        options.profile == FeatureProfile.replica ||
+        options.profile == FeatureProfile.offlineFull;
+    final offline = options.profile == FeatureProfile.offlineFull;
+    final imports = <String>[
+      "import 'package:dartitect/dartitect.dart';",
+      if (generatedPull)
+        "import 'package:dartitect_flutter/dartitect_flutter_reactive.dart';",
+      if (synchronized) "import 'package:dartitect_sync/dartitect_sync.dart';",
+      '',
+      if (generatedPull) "import '../domain/${name.snake}_model.dart';",
+      "import '../domain/${name.snake}_repository.dart';",
+      if (hasStorage) "import '../application/${name.snake}_local_store.dart';",
+      if (hasTransport)
+        "import '../application/${name.snake}_remote_port.dart';",
+      if (synchronized)
+        "import '../application/${name.snake}_sync_dataset.dart';",
+      if (offline) "import '../application/${name.snake}_mutation.dart';",
+      if (hasTransport) "import '../infrastructure/${name.snake}_mapper.dart';",
+      "import '../presentation/${name.snake}_view_model.dart';",
+    ];
+    final repositoryParameters = <String>[
+      if (hasStorage) '${name.pascal}LocalStore localPort',
+      if (hasTransport) '${name.pascal}RemotePort remotePort',
+      if (hasTransport) '${name.pascal}Mapper mapper',
+      if (generatedPull)
+        'PullReactiveSource<List<${name.pascal}Model>, ${name.pascal}Failure> localAuthority',
+    ];
+    final repositorySignature = repositoryParameters.isEmpty
+        ? '()'
+        : '(\n    ${repositoryParameters.join(',\n    ')},\n  )';
+    final localMethods = !hasStorage
+        ? ''
+        : '''
+  ${name.pascal}LocalStore createLocalPort() => throw UnimplementedError(
+    'Implement the ${name.pascal} local port with the selected storage context.',
+  );
 
-import 'package:flutter_test/flutter_test.dart';
+${generatedPull ? '''  Stream<void> watch(${name.pascal}LocalStore localPort) =>
+      localPort.watch();
 
-void main() {
-  test('generated slice keeps providers out of presentation and domain', () {
-    final feature = Directory(
-      '\${_packageRoot('$packageName').path}/lib/features/${name.snake}',
-    );
-    final files = feature
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((file) => file.path.endsWith('.dart'));
-    for (final file in files) {
-      final source = file.readAsStringSync();
-      if (file.path.contains('/presentation/') ||
-          file.path.contains('/domain/')) {
-        expect(source, isNot(contains('package:dio/')));
-        expect(source, isNot(contains('package:objectbox/')));
-      }
-      expect(source, isNot(contains('GetIt')));
-    }
-  });
+  Future<Result<List<${name.pascal}Model>, ${name.pascal}Failure>> read(
+    ${name.pascal}LocalStore localPort,
+    CancellationSignal cancellation,
+  ) => localPort.read(cancellation);
+''' : '''  ${name.pascal}LocalStore createLocalAuthority(
+    ${name.pascal}LocalStore localPort,
+  ) => localPort;
+'''}''';
+    final transportMethods = !hasTransport
+        ? ''
+        : '''
+  ${name.pascal}RemotePort createRemotePort() => throw UnimplementedError(
+    'Implement the ${name.pascal} remote port with the selected transport.',
+  );
+
+  ${name.pascal}Mapper createMapper() => const ${name.pascal}Mapper();
+''';
+    final datasetMethod = !synchronized
+        ? ''
+        : '''
+  SyncDataset<String, int, ${name.pascal}Failure> createDataset() =>
+      create${name.pascal}Dataset();
+
+  SyncCheckpointStore<String, int> createCheckpointStore() =>
+      throw UnimplementedError(
+        'Adapt the selected storage context to SyncCheckpointStore.',
+      );
+''';
+    final policyMethods = !offline
+        ? ''
+        : '''
+  MutationOutboxStore<String, ${name.pascal}Mutation, ${name.pascal}Failure>
+  createOutboxStore(${name.pascal}LocalStore localPort) =>
+      throw UnimplementedError(
+        'Adapt the selected storage context to MutationOutboxStore.',
+      );
+
+  MutationIdempotencyPolicy<String, ${name.pascal}Mutation>
+  createIdempotencyPolicy() =>
+      const ${name.pascal}IdempotencyPolicy();
+
+  MutationConflictPolicy<${name.pascal}Model> createConflictPolicy() =>
+      const ${name.pascal}ConflictPolicy();
+
+  Future<Result<void, ${name.pascal}Failure>> synchronizeMutation(
+    ${name.pascal}RemotePort remotePort,
+    OutboxOperation<String, ${name.pascal}Mutation> operation,
+    CancellationSignal cancellation,
+  ) => throw UnimplementedError(
+    'Implement remote delivery with explicit status semantics.',
+  );
+
+  MutationFailurePolicy classifyMutationFailure(
+    ${name.pascal}Failure failure,
+  ) => const MutationFailurePolicy.queued();
+''';
+    final policyTypes = !offline
+        ? ''
+        : '''
+/// Consumer-owned idempotency semantics; Dartitect owns their orchestration.
+final class ${name.pascal}IdempotencyPolicy
+    implements MutationIdempotencyPolicy<String, ${name.pascal}Mutation> {
+  const ${name.pascal}IdempotencyPolicy();
+
+  @override
+  String create(String key, ${name.pascal}Mutation argument) =>
+      '${name.snake}:\$key:\${argument.aggregateId}';
 }
 
-Directory _packageRoot(String packageName) {
-  var directory = Directory.current.absolute;
-  while (true) {
-    final config = File('\${directory.path}/.dart_tool/package_config.json');
-    if (config.existsSync()) {
-      final json = jsonDecode(config.readAsStringSync()) as Map<String, Object?>;
-      final packages = json['packages']! as List<Object?>;
-      final entry = packages.cast<Map<String, Object?>>().singleWhere(
-        (candidate) => candidate['name'] == packageName,
-      );
-      return Directory.fromUri(config.uri.resolve(entry['rootUri']! as String));
-    }
-    if (directory.parent.path == directory.path) {
-      throw StateError('Dart package configuration was not found.');
-    }
-    directory = directory.parent;
-  }
+/// Consumer-owned conflict semantics; Dartitect owns their orchestration.
+final class ${name.pascal}ConflictPolicy
+    implements MutationConflictPolicy<${name.pascal}Model> {
+  const ${name.pascal}ConflictPolicy();
+
+  @override
+  ${name.pascal}Model resolve(
+    ${name.pascal}Model local,
+    ${name.pascal}Model remote,
+  ) => local;
 }
 ''';
+    return '''${imports.join('\n')}
+
+/// Consumer-owned domain seams selected by generated graph composition.
+@DartitectFeatureFactory('${name.snake}')
+final class ${name.pascal}Factory {
+  const ${name.pascal}Factory();
+
+  ${name.pascal}Repository createRepository$repositorySignature =>
+      throw UnimplementedError(
+        'Implement ${name.pascal}Repository with the typed seams above.',
+      );
+$localMethods$transportMethods$datasetMethod$policyMethods
+  ${name.pascal}ViewModel createViewModel(
+    ${name.pascal}Repository repository,
+  ) => ${name.pascal}ViewModel(repository);
+}
+$policyTypes''';
+  }
 
   String _remotePort(ScaffoldName name) =>
       '''import 'package:dartitect/dartitect.dart';
@@ -511,28 +613,17 @@ final class const ${name.pascal}RemoteDto({
       '''import '../domain/${name.snake}_model.dart';
 import '${name.snake}_remote_dto.dart';
 
+/// Consumer-owned DTO-to-domain policy selected by the feature factory.
+final class ${name.pascal}Mapper {
+  const ${name.pascal}Mapper();
+
+  ${name.pascal}Model map(${name.pascal}RemoteDto dto) =>
+      ${name.pascal}Model(id: dto.id, labels: <String>[dto.label]);
+}
+
 ${name.pascal}Model map${name.pascal}RemoteDto(
   ${name.pascal}RemoteDto dto,
-) => ${name.pascal}Model(id: dto.id, labels: <String>[dto.label]);
-''';
-
-  String _fakeRemote(ScaffoldName name) =>
-      '''import 'package:dartitect/dartitect.dart';
-import 'package:$packageName/features/${name.snake}/application/${name.snake}_remote_port.dart';
-import 'package:$packageName/features/${name.snake}/domain/${name.snake}_model.dart';
-import 'package:$packageName/features/${name.snake}/domain/${name.snake}_repository.dart';
-
-final class Fake${name.pascal}Remote implements ${name.pascal}RemotePort {
-  @override
-  Future<Result<List<${name.pascal}Model>, ${name.pascal}Failure>> read(
-    CancellationSignal cancellation,
-  ) async {
-    cancellation.throwIfCancelled();
-    return Ok<List<${name.pascal}Model>>(
-      <${name.pascal}Model>[${name.pascal}Model(id: 'fixture')],
-    );
-  }
-}
+) => const ${name.pascal}Mapper().map(dto);
 ''';
 
   String _mappingTest(ScaffoldName name) =>
@@ -565,48 +656,6 @@ abstract interface class ${name.pascal}LocalStore {
 }
 ''';
 
-  String _fakeLocalStore(ScaffoldName name) =>
-      '''import 'dart:async';
-
-import 'package:dartitect/dartitect.dart';
-import 'package:$packageName/features/${name.snake}/application/${name.snake}_local_store.dart';
-import 'package:$packageName/features/${name.snake}/domain/${name.snake}_model.dart';
-import 'package:$packageName/features/${name.snake}/domain/${name.snake}_repository.dart';
-
-final class Fake${name.pascal}LocalStore implements ${name.pascal}LocalStore {
-  final StreamController<void> changes = StreamController<void>.broadcast();
-  final List<${name.pascal}Model> values = <${name.pascal}Model>[];
-
-  @override
-  Stream<void> watch() => changes.stream;
-
-  @override
-  Future<Result<List<${name.pascal}Model>, ${name.pascal}Failure>> read(
-    CancellationSignal cancellation,
-  ) async {
-    cancellation.throwIfCancelled();
-    return Ok<List<${name.pascal}Model>>(List.unmodifiable(values));
-  }
-
-  Future<void> dispose() => changes.close();
-}
-''';
-
-  String _pullSource(ScaffoldName name) =>
-      '''import 'package:dartitect_flutter/dartitect_flutter_reactive.dart';
-
-import '../application/${name.snake}_local_store.dart';
-import '../domain/${name.snake}_model.dart';
-import '../domain/${name.snake}_repository.dart';
-
-PullReactiveSource<List<${name.pascal}Model>, ${name.pascal}Failure>
-create${name.pascal}PullSource(${name.pascal}LocalStore store) =>
-    PullReactiveSource(
-      triggers: <PullInvalidationTrigger>[store.watch],
-      pull: store.read,
-    );
-''';
-
   String _mutationContract(ScaffoldName name) =>
       '''import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
@@ -628,83 +677,6 @@ typedef ${name.pascal}MutationLane =
     MutationLane<String, ${name.pascal}Mutation, void, ${name.pascal}Failure>;
 ''';
 
-  String _fakeOutboxStore(ScaffoldName name) =>
-      '''import 'package:dartitect/dartitect.dart';
-import 'package:dartitect_sync/dartitect_sync.dart';
-import 'package:$packageName/features/${name.snake}/application/${name.snake}_mutation.dart';
-import 'package:$packageName/features/${name.snake}/domain/${name.snake}_repository.dart';
-
-final class Fake${name.pascal}OutboxStore
-    implements MutationOutboxStore<String, ${name.pascal}Mutation, ${name.pascal}Failure> {
-  final Map<String, OutboxOperation<String, ${name.pascal}Mutation>> rows =
-      <String, OutboxOperation<String, ${name.pascal}Mutation>>{};
-
-  @override
-  Future<Result<void, ${name.pascal}Failure>> applyLocalAndEnqueue(
-    OutboxOperation<String, ${name.pascal}Mutation> operation,
-    CancellationSignal signal,
-  ) async {
-    signal.throwIfCancelled();
-    rows[operation.idempotencyKey] = operation;
-    return const Ok<void>(null);
-  }
-
-  @override
-  Future<Result<void, ${name.pascal}Failure>> markState(
-    OutboxOperation<String, ${name.pascal}Mutation> operation,
-    CancellationSignal signal,
-  ) async {
-    signal.throwIfCancelled();
-    rows[operation.idempotencyKey] = operation;
-    return const Ok<void>(null);
-  }
-
-  @override
-  Future<Result<List<OutboxOperation<String, ${name.pascal}Mutation>>, ${name.pascal}Failure>>
-  loadRecoverable(CancellationSignal signal) async {
-    signal.throwIfCancelled();
-    return Ok(List.unmodifiable(rows.values));
-  }
-
-  @override
-  Future<Result<void, ${name.pascal}Failure>> compensate(
-    OutboxOperation<String, ${name.pascal}Mutation> operation,
-    CancellationSignal signal,
-  ) async {
-    signal.throwIfCancelled();
-    rows.remove(operation.idempotencyKey);
-    return const Ok<void>(null);
-  }
-}
-''';
-
-  String _outboxTest(ScaffoldName name) =>
-      '''import 'package:dartitect/dartitect.dart';
-import 'package:dartitect_sync/dartitect_sync.dart';
-import 'package:$packageName/features/${name.snake}/application/${name.snake}_mutation.dart';
-import 'package:flutter_test/flutter_test.dart';
-
-import '../../support/features/${name.snake}/fake_${name.snake}_outbox_store.dart';
-
-void main() {
-  test('fake persists the exact idempotency key', () async {
-    final store = Fake${name.pascal}OutboxStore();
-    final cancellation = CancellationSource();
-    final operation = OutboxOperation<String, ${name.pascal}Mutation>(
-      idempotencyKey: 'fixture-1',
-      key: 'fixture',
-      argument: const ${name.pascal}Mutation(aggregateId: 'fixture'),
-    );
-    expect(
-      await store.applyLocalAndEnqueue(operation, cancellation.signal),
-      const Ok<void>(null),
-    );
-    expect(store.rows, contains('fixture-1'));
-    cancellation.dispose();
-  });
-}
-''';
-
   String _syncDataset(ScaffoldName name) =>
       '''import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
@@ -721,60 +693,6 @@ SyncDataset<String, int, ${name.pascal}Failure> create${name.pascal}Dataset() =>
         );
       },
     );
-''';
-
-  String _fakeSyncPorts(ScaffoldName name) =>
-      '''import 'package:dartitect/dartitect.dart';
-import 'package:dartitect_sync/dartitect_sync.dart';
-
-final class Fake${name.pascal}Checkpoints
-    implements SyncCheckpointStore<String, int> {
-  final Map<String, int> values = <String, int>{};
-
-  @override
-  Future<int?> read(String key, CancellationSignal signal) async => values[key];
-
-  @override
-  Future<void> write(
-    String key,
-    int checkpoint,
-    CancellationSignal signal, {
-    int? fencingToken,
-  }) async {
-    signal.throwIfCancelled();
-    values[key] = checkpoint;
-  }
-
-  @override
-  Future<void> remove(String key, CancellationSignal signal) async {
-    signal.throwIfCancelled();
-    values.remove(key);
-  }
-}
-''';
-
-  String _syncTest(ScaffoldName name) =>
-      '''import 'package:dartitect/dartitect.dart';
-import 'package:dartitect_sync/dartitect_sync.dart';
-import 'package:$packageName/features/${name.snake}/application/${name.snake}_sync_dataset.dart';
-import 'package:flutter_test/flutter_test.dart';
-
-void main() {
-  test('dataset advances an opaque checkpoint', () async {
-    final cancellation = CancellationSource();
-    final result = await create${name.pascal}Dataset().synchronize(
-      SyncDatasetContext(
-        key: '${name.snake}',
-        runId: 'fixture',
-        checkpoint: 1,
-        cancellation: cancellation.signal,
-        deadline: null,
-      ),
-    );
-    expect((result as Ok<SyncDatasetOutcome<int>>).value.checkpoint, 2);
-    cancellation.dispose();
-  });
-}
 ''';
 
   String _standaloneViewModel(ScaffoldName name) =>
@@ -841,7 +759,6 @@ final class ${name.pascal}ViewModel(${name.pascal}Repository repository)
 import 'package:flutter/widgets.dart';
 
 import '../$contractLayer/${name.snake}_repository.dart';
-import '../composition/${name.snake}_composition.dart';
 import '${name.snake}_view_model.dart';
 
 /// Composition boundary for the ${name.pascal} feature.
@@ -852,7 +769,7 @@ final class ${name.pascal}Page extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ViewModelHost<${name.pascal}ViewModel>.create(
-    create: () => ${name.pascal}Composition.createViewModel(repository),
+    create: () => ${name.pascal}ViewModel(repository),
     start: (viewModel) => viewModel.start(),
     builder: (context, viewModel) => ${name.pascal}View(viewModel: viewModel),
   );
@@ -967,18 +884,6 @@ final class Memory${name.pascal}Repository implements ${name.pascal}Repository {
   @override
   Future<Result<List<String>, ${name.pascal}Failure>> load() async =>
       Ok<List<String>>(List<String>.unmodifiable(_values));
-}
-''';
-
-  String _composition(ScaffoldName name, {required String contractLayer}) =>
-      '''import '../$contractLayer/${name.snake}_repository.dart';
-import '../presentation/${name.snake}_view_model.dart';
-
-/// Explicit provider-aware composition boundary for ${name.pascal}.
-abstract final class ${name.pascal}Composition {
-  static ${name.pascal}ViewModel createViewModel(
-    ${name.pascal}Repository repository,
-  ) => ${name.pascal}ViewModel(repository);
 }
 ''';
 

@@ -2,3 +2,4 @@
 library;
 
 export 'src/contracts/openapi_contract_service.dart';
+export 'src/contracts/openapi_graph_compiler.dart';

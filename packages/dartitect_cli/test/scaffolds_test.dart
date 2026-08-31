@@ -8,13 +8,12 @@ void main() {
     final withoutDomain = factory.feature('orders', includeDomain: false);
     final withDomain = factory.feature('orders', includeDomain: true);
 
-    expect(withoutDomain, hasLength(8));
+    expect(withoutDomain, hasLength(7));
     expect(
       withoutDomain.map((operation) => operation.relativePath),
       containsAll(<String>[
         'lib/features/orders/application/orders_repository.dart',
         'test/support/features/orders/memory_orders_repository.dart',
-        'lib/features/orders/composition/orders_composition.dart',
         'lib/features/orders/presentation/orders_view_model.dart',
         'lib/features/orders/presentation/orders_view.dart',
         'test/features/orders/orders_view_model_test.dart',
@@ -46,6 +45,7 @@ void main() {
         )
         .content;
     expect(view, contains('ViewModelHost<OrdersViewModel>.create'));
+    expect(view, contains('create: () => OrdersViewModel(repository)'));
     expect(view, contains('required this.repository'));
     expect(view, isNot(contains('infrastructure/')));
     expect(
@@ -90,8 +90,12 @@ void main() {
       );
       expect(paths, contains(endsWith('catalog_model.dart')));
       expect(paths, contains(endsWith('catalog_view_model.dart')));
-      expect(paths, contains(endsWith('catalog_composition.dart')));
-      expect(paths, contains(endsWith('catalog_architecture_test.dart')));
+      expect(paths, contains(endsWith('catalog_factory.dart')));
+      expect(paths, isNot(contains(endsWith('catalog_composition.dart'))));
+      expect(
+        paths,
+        isNot(contains(endsWith('catalog_architecture_test.dart'))),
+      );
       final viewModel = operations
           .singleWhere(
             (operation) =>
@@ -125,7 +129,11 @@ void main() {
       rendered[FeatureProfile.cache]!
           .map((operation) => operation.content)
           .join(),
-      contains('PullReactiveSource'),
+      allOf(
+        contains('@DartitectFeatureFactory(\'catalog\')'),
+        contains('PullReactiveSource'),
+        contains('Stream<void> watch(CatalogLocalStore localPort)'),
+      ),
     );
     expect(
       rendered[FeatureProfile.offlineFull]!
@@ -133,7 +141,7 @@ void main() {
           .join(),
       allOf(
         contains('MutationLane'),
-        contains('MutationOutboxStore'),
+        isNot(contains('FakeCatalogOutboxStore')),
         contains('final class const CatalogMutation({'),
       ),
     );

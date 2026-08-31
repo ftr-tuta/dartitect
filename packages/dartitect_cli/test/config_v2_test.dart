@@ -11,7 +11,7 @@ void main() {
     DartitectPlatform.web,
   ];
 
-  test('stable v2 round-trips closed target-aware blocks', () {
+  test('stable v3 round-trips closed target-aware blocks', () {
     final config = DartitectConfig(
       targets: DartitectTargetsConfig(const <DartitectPlatform>[
         DartitectPlatform.android,
@@ -24,7 +24,7 @@ void main() {
     );
     final parsed = DartitectConfig.parse(config.encode());
 
-    expect(parsed.configVersion, 2);
+    expect(parsed.configVersion, 3);
     expect(parsed.profile, nativeStrictProfile);
     expect(parsed.targets.platforms, <DartitectPlatform>[
       DartitectPlatform.android,
@@ -59,6 +59,12 @@ void main() {
   test('local, online, and durable profiles use named capability blocks', () {
     final config = DartitectConfig(
       targets: DartitectTargetsConfig(allTargets),
+      session: DartitectSessionConfig(
+        factorySource: DartitectFactorySourceConfig(
+          source: 'lib/composition/session_factory.dart',
+          declaration: 'SessionFactory',
+        ),
+      ),
       storageContexts: <String, DartitectStorageContextConfig>{
         'primary': DartitectStorageContextConfig(
           provider: 'drift',
@@ -259,7 +265,7 @@ void main() {
         'path': 'lib/domain/temporary.dart',
         'reason': 'Temporary compatibility investigation',
         'owner': 'architecture',
-        'permanentJustification': 'Never accepted in config v2',
+        'permanentJustification': 'Never accepted in config v3',
       },
     ];
 

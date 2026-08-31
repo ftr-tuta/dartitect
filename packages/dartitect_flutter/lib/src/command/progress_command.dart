@@ -5,10 +5,7 @@ import 'command.dart';
 
 /// No-argument command whose action receives typed progress and control.
 final class ProgressCommand0<P, T, F extends Object>
-    implements
-        ValueListenable<CommandState<T, F>>,
-        Disposable,
-        AsyncDisposable {
+    implements DartitectCommand<T, F>, Disposable {
   ProgressCommand0._(this._command, this._progress);
 
   /// Creates a typed-progress command while preserving [Command0] scheduling.
@@ -104,10 +101,7 @@ final class ProgressCommand0<P, T, F extends Object>
 
 /// One-argument command whose action receives typed progress and control.
 final class ProgressCommand1<A, P, T, F extends Object>
-    implements
-        ValueListenable<CommandState<T, F>>,
-        Disposable,
-        AsyncDisposable {
+    implements DartitectCommand<T, F>, Disposable {
   ProgressCommand1._(this._command, this._progress);
 
   /// Creates a typed-progress command while preserving [Command1] scheduling.
@@ -206,10 +200,7 @@ final class ProgressCommand1<A, P, T, F extends Object>
 
 /// Keyed command whose action receives typed progress and control.
 final class KeyedProgressCommand1<K, A, P, T, F extends Object>
-    implements
-        ValueListenable<CommandState<T, F>>,
-        Disposable,
-        AsyncDisposable {
+    implements DartitectCommand<T, F>, Disposable {
   KeyedProgressCommand1._(this._command, this._progress);
 
   /// Creates a typed-progress keyed command with bounded keys and concurrency.

@@ -1,6 +1,6 @@
 = Packaged and Git candidate canary contract
 
-Status:: Implemented for the RC8 candidate; final tag/publication are outside this delivery
+Status:: Implemented for the RC9 candidate; final tag/publication are outside this delivery
 Machine authority:: `tool/canaries/canary_contract.json`
 Development gate:: `dart run tool/check_canaries.dart --allow-dirty`
 
@@ -15,8 +15,8 @@ cache is only transport; each requested archive digest remains authoritative.
 
 The Git variant requires one annotated tag and resolves the complete transitive
 Dartitect closure from one URL/ref. It remains release infrastructure, but this
-RC8 delivery creates no tag, GitHub Release, or publication. Both runners use
-the same six-canary machine contract and command order.
+RC9 delivery creates no tag, GitHub Release, or publication. Both runners use
+the same nine-canary machine contract and command order.
 
 == Modeling and thin consumer
 
@@ -32,6 +32,14 @@ analyzes, tests, and builds Web. Its consumer-owned Dart files must contain no
 manual bootstrap coordinator, provider owner, sync engine, mutation command,
 job dispatcher, or diagnostics wiring.
 
+The +large_consumer_canary+ materializes 30 features—six for each profile and
+half in each scope—with two Drift contexts, two Dio transports, all four opt-in
+capabilities, selected OpenAPI operations, and headless work. It proves clean
+preview/apply/idempotence, semantic consumer tax, Web/Linux builds, session
+replacement, fleet upgrade, bounded induced diagnostics, and zero resource
+residuals. The change-tax companion repeats 12 architecture changes in
+disposable copies and requires a zero manual-plumbing delta.
+
 == Flutter, providers, and workspace
 
 The minimal canary covers generated consumer ownership, Flutter MVVM,
@@ -41,6 +49,11 @@ contexts, outbox sync, session replacement, and host desktop build. The Drift
 provider canary owns its schema/generator and forbids ObjectBox. The native
 capabilities canary covers privacy, media, locale BR, and geometry without
 storage providers.
+
+The adapters canary is the formal Dio/observability/Sentry provider proof. The
+tooling canary covers DevTools, lints, MCP, testing, contracts, fleet, and
+blueprints. Together with the package/entrypoint/renderer coverage catalog,
+adding an uncovered public or generated surface fails the gate.
 
 The dedicated +examples/paved_road_canary+ exercises all four feature profiles,
 application/session hosts, typed progress, lazy computed values, restoration,

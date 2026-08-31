@@ -206,6 +206,11 @@ Future<void> main(List<String> arguments) async {
       'run',
       'tool/check_generated_output_compatibility.dart',
     ]),
+    const _Command('dart', <String>[
+      'run',
+      'tool/change_tax.dart',
+      '--validate-only',
+    ]),
     for (final package in <String>[
       'dartitect',
       'dartitect_devtools',
@@ -242,6 +247,10 @@ Future<void> main(List<String> arguments) async {
       'test',
       'examples/thin_consumer_canary',
     ]),
+    const _Command('flutter', <String>[
+      'test',
+      'tool/canaries/large_consumer_source',
+    ]),
     const _Command('dart', <String>[
       'run',
       'dartitect_cli:dartitect',
@@ -268,6 +277,23 @@ Future<void> main(List<String> arguments) async {
       '--json',
       '--root',
       'examples/thin_consumer_canary',
+    ]),
+    const _Command('dart', <String>[
+      'packages/dartitect_cli/bin/dartitect.dart',
+      'wiring',
+      'sync',
+      '--dry-run',
+      '--json',
+      '--root',
+      'tool/canaries/large_consumer_source',
+    ]),
+    const _Command('dart', <String>[
+      'packages/dartitect_cli/bin/dartitect.dart',
+      'inspect',
+      '--consumer-tax',
+      '--json',
+      '--root',
+      'tool/canaries/large_consumer_source',
     ]),
     if (nativeObjectBox)
       _Command(

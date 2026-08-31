@@ -316,7 +316,8 @@ import 'package:flutter/widgets.dart';
     () async {
       final root = await Directory.systemTemp.createTemp('dartitect-profile-');
       addTearDown(() => root.delete(recursive: true));
-      await File('${root.path}/pubspec.yaml').writeAsString('name: sample\n');
+      await _prepareSemanticPackage(root);
+      await _writeCliContextFactories(root);
       await File('${root.path}/dartitect.json').writeAsString(
         DartitectConfig(
           storageContexts: <String, DartitectStorageContextConfig>{
@@ -356,7 +357,7 @@ import 'package:flutter/widgets.dart';
         '--dry-run',
       ]);
 
-      expect(exitCode, 0);
+      expect(exitCode, 0, reason: errors.toString());
       expect(output.toString(), contains('orders.wiring.dartitect.g.dart'));
       expect(output.toString(), contains('orders_cursor_page.dart'));
       expect(output.toString(), contains('orders_headless_sync.dart'));
@@ -438,6 +439,73 @@ import 'package:flutter/widgets.dart';
     expect(jsonDecode(output.toString()), containsPair('fresh', true));
     expect(errors.toString(), isEmpty);
   });
+}
+
+Future<void> _prepareSemanticPackage(Directory root) async {
+  await File('${root.path}/pubspec.yaml').writeAsString('''
+name: sample
+environment:
+  sdk: ^3.13.0
+''');
+  var packageRoot = Directory.current.absolute;
+  while (!File('${packageRoot.path}/.dart_tool/package_config.json')
+      .existsSync()) {
+    if (packageRoot.parent.path == packageRoot.path) {
+      throw StateError('Workspace package_config.json was not found.');
+    }
+    packageRoot = packageRoot.parent;
+  }
+  final source = File('${packageRoot.path}/.dart_tool/package_config.json');
+  final config =
+      jsonDecode(await source.readAsString()) as Map<String, Object?>;
+  final sourcePackages = config['packages']! as List<Object?>;
+  final packages = <Object?>[
+    <String, Object?>{
+      'name': 'sample',
+      'rootUri': '../',
+      'packageUri': 'lib/',
+      'languageVersion': '3.13',
+    },
+    for (final value in sourcePackages)
+      if ((value! as Map<String, Object?>)['name'] != 'sample')
+        <String, Object?>{
+          ...(value as Map<String, Object?>),
+          'rootUri': source.uri.resolve(value['rootUri']! as String).toString(),
+        },
+  ];
+  final target = File('${root.path}/.dart_tool/package_config.json');
+  await target.parent.create(recursive: true);
+  await target.writeAsString(
+    jsonEncode(<String, Object?>{...config, 'packages': packages}),
+  );
+}
+
+Future<void> _writeCliContextFactories(Directory root) async {
+  final directory = Directory('${root.path}/lib/composition');
+  await directory.create(recursive: true);
+  await File('${directory.path}/storage_context_factory.dart').writeAsString('''
+import 'package:dartitect/dartitect.dart';
+
+final class StorageContext {}
+
+@DartitectApplicationContextFactory('primary')
+final class StorageContextFactory {
+  Future<StorageContext> open() async => StorageContext();
+  Future<void> dispose(StorageContext context) async {}
+}
+''');
+  await File('${directory.path}/transport_context_factory.dart')
+      .writeAsString('''
+import 'package:dartitect/dartitect.dart';
+
+final class TransportContext {}
+
+@DartitectTransportContextFactory('api')
+final class TransportContextFactory {
+  Future<TransportContext> open() async => TransportContext();
+  Future<void> dispose(TransportContext context) async {}
+}
+''');
 }
 
 const _cliContract = <String, Object?>{

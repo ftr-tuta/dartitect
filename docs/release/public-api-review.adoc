@@ -1,7 +1,7 @@
 = Public API review for the 1.0 release candidate
 
-Review date:: 2026-08-28
-Reviewed version:: `1.0.0-rc.8` baseline across independent publication cohorts
+Review date:: 2026-08-30
+Reviewed version:: `1.0.0-rc.9` baseline across independent publication cohorts
 Snapshot gate:: `dart run tool/check_api_snapshot.dart`
 
 == Result
@@ -44,16 +44,17 @@ background upload, retry/resume, and consumer-owned picker/share/gallery ports.
 service extensions. It exposes no retry, cancel, clear, or mutation command.
 
 | `package:dartitect_cli/dartitect_cli.dart`
-| Stable bounded CLI surface; no implicit application container. Config v2,
-typed local-extension analysis, consumer-tax, SARIF, and generated capability
-assemblies are explicit. Fleet upgrade supports only Dartitect RC6/config-v1
-projects and converges them transactionally to RC8/config-v2.
+| Stable bounded CLI surface; no implicit application container. Config v3,
+semantic factory/local-extension analysis, schema-2 consumer tax, fleet
+inventory/impact, blueprints, SARIF, and generated concrete graphs are
+explicit. Fleet upgrade owns the versioned v1→v2→v3 and renderer migrations.
 
 | `package:dartitect_cli/dartitect_contracts.dart`
 | Tooling-only OpenAPI 3.1 entrypoint for confined local JSON/YAML and local
 refs. It classifies additive/breaking changes and generates DTOs, bounded
-codecs, routes, endpoint descriptors, status mappings, and fixtures without
-network access, security execution, or inferred domain mapping.
+codecs, routes, endpoint descriptors, typed status mappings, narrow operation
+wrappers, and fixtures without network access, security execution, or inferred
+domain mapping.
 
 | `package:dartitect_modeling/dartitect_modeling.dart`
 | Pure-Dart/Web-compatible opt-in value, immutable collection, JSON codec,
@@ -76,8 +77,9 @@ fixed sanitized spans. Schema, migrations, executor, SQL, codecs, and assets
 remain consumer-owned.
 
 | `package:dartitect_flutter/dartitect_flutter.dart`
-| Stable thin ViewModel, Command0/Command1, selector, scope, error binding, and
-`runDartitectApplication` paved-road entrypoint.
+| Stable observable command/resource contracts, exhaustive state matching,
+material-neutral command/feature builders, thin ViewModel, selector, scope,
+error binding, and `runDartitectApplication` paved-road entrypoint.
 
 | `package:dartitect_flutter/dartitect_flutter_forms.dart`
 | Stable original/current form state, dirty/touched tracking, sync and
@@ -116,7 +118,7 @@ returns typed not-supported outside iOS.
 access, cancellation, failure outcomes, and cleanup for its sole owned metadata.
 
 | `package:dartitect_mcp/dartitect_mcp.dart`
-| Local STDIO tooling on the RC8 release-candidate baseline; no HTTP/OAuth, app
+| Local STDIO tooling on the RC9 release-candidate baseline; no HTTP/OAuth, app
 runtime, arbitrary filesystem, or private-plan access.
 
 | `package:dartitect_objectbox/dartitect_objectbox.dart`
@@ -158,13 +160,15 @@ entrypoint remains thin; advanced reactive APIs require a deliberate import and
 Material remains consumer-owned. No public Dartitect API retains an
 experimental marker.
 
-The RC8 diff completes the greenfield vertical platform before 1.0: direct
-capability-specific composition, strict config v2, target-aware storage,
-credential generation fencing, project-local typed extensions, observed
-contract fixtures, OpenAPI tooling, semantic API snapshots, consumer-tax, sync
-triggers, and transactional Dartitect RC6/v1-to-RC8/v2 upgrades. No general
-application conversion or debt-baseline path exists. These changes require
-complete same-SHA canaries rather than a patch claim.
+The RC9 diff makes config-v3 semantic factories and concrete application,
+session, feature runtime/host, and harness outputs the paved road. It adds
+typed OpenAPI operation selection, schema-2 consumer tax, fleet
+inventory/impact, confined blueprints, 12-scenario change tax, and a mandatory
+canary catalog for all packages, entrypoints, renderers, profiles,
+capabilities, providers, scopes, and targets. No general application conversion
+or debt-baseline path exists. `FeatureHost` and `CommandStateBuilder` are
+mechanical only; stable promotion remains blocked on the separate
+business-neutral UI/UX gate.
 
 The semantic snapshot schema records constructors, members, parameters,
 generic bounds, defaults, modifiers, annotations, and return types. Every

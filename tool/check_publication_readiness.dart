@@ -32,6 +32,20 @@ Future<void> main(List<String> arguments) async {
     if (!channels.contains(options.channel)) {
       throw FormatException('Unsupported publication channel.');
     }
+    if (options.channel == 'pub-dev-stable') {
+      final stable = _object(
+        jsonDecode(
+          File('${root.path}/tool/stable_candidate_contract.json')
+              .readAsStringSync(),
+        ),
+      );
+      final blockers = _strings(stable['promotionBlockers']);
+      if (blockers.isNotEmpty) {
+        throw StateError(
+          'Stable promotion is blocked by ${blockers.join(', ')}.',
+        );
+      }
+    }
     final head = (await _git(root, const <String>['rev-parse', 'HEAD'])).trim();
     final tree = (await _git(root, const <String>[
       'show',

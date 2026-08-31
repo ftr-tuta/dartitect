@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.9
+
+- Extend typed feature matrices and generated harness support for deterministic fault, restart, conflict, uncertainty, and zero-resource-census testing.
+
 ## 1.0.0-rc.8
 
 - Prepare the package for the RC8 greenfield platform baseline and compatible post-1.0 publication cohorts.

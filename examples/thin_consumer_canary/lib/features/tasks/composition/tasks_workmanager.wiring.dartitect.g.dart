@@ -1,4 +1,5 @@
 // GENERATED CODE - DO NOT EDIT BY HAND.
+// ignore_for_file: public_member_api_docs
 
 import 'package:dartitect_workmanager/dartitect_workmanager.dart';
 

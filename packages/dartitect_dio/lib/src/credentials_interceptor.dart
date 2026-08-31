@@ -18,6 +18,15 @@ final class DioCredentialsUnavailable<F extends Object> implements Exception {
   String toString() => 'DioCredentialsUnavailable<$F>()';
 }
 
+/// Request context expected a credential generation that is no longer current.
+final class DioCredentialGenerationMismatch implements Exception {
+  /// Creates a payload-free fencing failure.
+  const DioCredentialGenerationMismatch();
+
+  @override
+  String toString() => 'DioCredentialGenerationMismatch()';
+}
+
 /// Explicit consumer policy for replaying one authenticated request.
 abstract interface class DioCredentialReplayPolicy {
   /// Whether [request] is semantically idempotent and safe to replay once.
@@ -94,6 +103,7 @@ final class DioCredentialsInterceptor<C extends Object, F extends Object>
     RequestInterceptorHandler handler,
   ) async {
     try {
+      final expectedGeneration = options.extra[credentialGenerationExtraKey];
       final loaded = await _withCancelToken(
         credentials.load(),
         options.cancelToken,
@@ -101,6 +111,17 @@ final class DioCredentialsInterceptor<C extends Object, F extends Object>
       switch (loaded) {
         case Ok<dynamic>(:final value):
           final lease = value as CredentialLease<C>;
+          if (expectedGeneration is CredentialGeneration &&
+              !identical(expectedGeneration, lease.generation)) {
+            handler.reject(
+              DioException(
+                requestOptions: options,
+                type: DioExceptionType.unknown,
+                error: const DioCredentialGenerationMismatch(),
+              ),
+            );
+            return;
+          }
           options.headers[authorizationHeader] = encodeAuthorization(
             lease.value,
           );

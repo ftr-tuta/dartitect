@@ -7,6 +7,7 @@ import 'package:dartitect_resilience/dartitect_resilience.dart';
 import 'package:dartitect_transfer/dartitect_transfer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:paved_road_canary/composition/application_module.wiring.dartitect.g.dart';
 import 'package:paved_road_canary/features/paved_road/composition/paved_road.wiring.dartitect.g.dart';
 import 'package:paved_road_canary/main.dart';
 
@@ -16,12 +17,12 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
-        home: ApplicationHost<CanaryRuntime>.create(
-          create: createCanaryApplication(),
+        home: ApplicationHost<ApplicationGraph>.create(
+          create: ApplicationModule.create,
           loading: (_) => const Text('loading'),
           failure: (_, _, retry) =>
               TextButton(onPressed: retry, child: const Text('retry')),
-          ready: (_, runtime) => CanaryApp(runtime: runtime),
+          ready: (_, graph) => CanaryApp(graph: graph),
         ),
       ),
     );

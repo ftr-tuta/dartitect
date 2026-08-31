@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "sdkVersion": "1.0.0-rc.8",
+  "sdkVersion": "1.0.0-rc.9",
   "entrypoints": {
     "packages/dartitect/lib/dartitect.dart": {
       "defaultAudience": "application-facing",
@@ -3039,6 +3039,58 @@
           ]
         },
         {
+          "name": "DartitectApplicationContextFactory",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class DartitectApplicationContextFactory",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectApplicationContextFactory(String context)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectApplicationContextFactory",
+              "parameters": [
+                {
+                  "name": "context",
+                  "declaration": "String context",
+                  "type": "String",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "context",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "String context",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            }
+          ]
+        },
+        {
           "name": "DartitectAssemblyBinding",
           "kind": "class",
           "audience": "generated-code",
@@ -4051,6 +4103,58 @@
           ]
         },
         {
+          "name": "DartitectFeatureFactory",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class DartitectFeatureFactory",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectFeatureFactory(String feature)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectFeatureFactory",
+              "parameters": [
+                {
+                  "name": "feature",
+                  "declaration": "String feature",
+                  "type": "String",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "feature",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "String feature",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            }
+          ]
+        },
+        {
           "name": "DartitectLocalExtension",
           "kind": "class",
           "audience": "extension-author",
@@ -4152,6 +4256,141 @@
               "typeParameters": [],
               "returnType": "DartitectProjectExtension",
               "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "DartitectSessionContextFactory",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class DartitectSessionContextFactory",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectSessionContextFactory(String context)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectSessionContextFactory",
+              "parameters": [
+                {
+                  "name": "context",
+                  "declaration": "String context",
+                  "type": "String",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "context",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "String context",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            }
+          ]
+        },
+        {
+          "name": "DartitectSessionFactory",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class DartitectSessionFactory",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectSessionFactory()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectSessionFactory",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "DartitectTransportContextFactory",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class DartitectTransportContextFactory",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectTransportContextFactory(String context)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectTransportContextFactory",
+              "parameters": [
+                {
+                  "name": "context",
+                  "declaration": "String context",
+                  "type": "String",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "context",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "String context",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
             }
           ]
         },
@@ -12126,7 +12365,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "tooling-test",
-              "declaration": "ConsumerTaxReport({required String profile, required Map<String, Object?> metrics, required Map<String, int> budgets, required Map<String, bool> capabilityOptIns, required List<String> requiredSymbols, required List<String> unusedDependencies, required List<ConsumerTaxFinding> findings})",
+              "declaration": "ConsumerTaxReport({required String profile, required Map<String, Object?> metrics, required Map<String, int> budgets, required Map<String, bool> capabilityOptIns, required List<String> requiredSymbols, required List<String> unusedDependencies, required List<ConsumerTaxFinding> findings, required Map<String, Object?> architectureTax, required Map<String, Object?> generatedTax, required Map<String, Object?> testTax, required Map<String, Object?> productCode, required List<String> diagnostics})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [
@@ -12190,8 +12429,60 @@
                   "kind": "requiredNamed",
                   "default": null,
                   "annotations": []
+                },
+                {
+                  "name": "architectureTax",
+                  "declaration": "{required Map<String, Object?> architectureTax}",
+                  "type": "Map<String, Object?>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "generatedTax",
+                  "declaration": "{required Map<String, Object?> generatedTax}",
+                  "type": "Map<String, Object?>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "testTax",
+                  "declaration": "{required Map<String, Object?> testTax}",
+                  "type": "Map<String, Object?>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "productCode",
+                  "declaration": "{required Map<String, Object?> productCode}",
+                  "type": "Map<String, Object?>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "diagnostics",
+                  "declaration": "{required List<String> diagnostics}",
+                  "type": "List<String>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
                 }
               ]
+            },
+            {
+              "name": "architectureTax",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> architectureTax",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Map<String, Object?>"
             },
             {
               "name": "budgets",
@@ -12218,6 +12509,18 @@
               "type": "Map<String, bool>"
             },
             {
+              "name": "diagnostics",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<String> diagnostics",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<String>"
+            },
+            {
               "name": "findings",
               "kind": "field",
               "audience": "tooling-test",
@@ -12230,10 +12533,34 @@
               "type": "List<ConsumerTaxFinding>"
             },
             {
+              "name": "generatedTax",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> generatedTax",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Map<String, Object?>"
+            },
+            {
               "name": "metrics",
               "kind": "field",
               "audience": "tooling-test",
               "declaration": "Map<String, Object?> metrics",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Map<String, Object?>"
+            },
+            {
+              "name": "productCode",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> productCode",
               "deprecated": false,
               "annotations": [],
               "modifiers": [
@@ -12277,6 +12604,18 @@
                 "static"
               ],
               "type": "int"
+            },
+            {
+              "name": "testTax",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> testTax",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Map<String, Object?>"
             },
             {
               "name": "unusedDependencies",
@@ -12511,6 +12850,221 @@
                 "static"
               ],
               "type": "Set<String>"
+            }
+          ]
+        },
+        {
+          "name": "DartitectBlueprintReport",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectBlueprintReport",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectBlueprintReport({required String id, required int version, required String manifestPath, required String manifestSha256, required List<FileGenerationOperation> operations})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectBlueprintReport",
+              "parameters": [
+                {
+                  "name": "id",
+                  "declaration": "{required String id}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "version",
+                  "declaration": "{required int version}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "manifestPath",
+                  "declaration": "{required String manifestPath}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "manifestSha256",
+                  "declaration": "{required String manifestSha256}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "operations",
+                  "declaration": "{required List<FileGenerationOperation> operations}",
+                  "type": "List<FileGenerationOperation>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "id",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String id",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "manifestPath",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String manifestPath",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "manifestSha256",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String manifestSha256",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "operations",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<FileGenerationOperation> operations",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<FileGenerationOperation>"
+            },
+            {
+              "name": "version",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "int version",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "DartitectBlueprintService",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectBlueprintService",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectBlueprintService(Directory root)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectBlueprintService",
+              "parameters": [
+                {
+                  "name": "root",
+                  "declaration": "Directory root",
+                  "type": "Directory",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "root",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Directory root",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Directory"
+            },
+            {
+              "name": "inspect",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Future<DartitectBlueprintReport> inspect(String path)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<DartitectBlueprintReport>",
+              "parameters": [
+                {
+                  "name": "path",
+                  "declaration": "String path",
+                  "type": "String",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
             }
           ]
         },
@@ -13188,7 +13742,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "tooling-test",
-              "declaration": "DartitectConfig({int configVersion = currentConfigVersion, String profile = nativeStrictProfile, Map<String, List<String>> layers = DartitectArchitectureRules.defaultLayers, List<String> compositionRoots = DartitectArchitectureRules.defaultCompositionRoots, List<String> generatedInfrastructure = DartitectArchitectureRules.defaultGeneratedInfrastructure, List<String> generatedSuffixes = DartitectArchitectureRules.defaultGeneratedSuffixes, List<DartitectSuppression> suppressions = const <DartitectSuppression>[], DartitectModelingConfig? modeling, DartitectFeaturesConfig? features, DartitectTargetsConfig? targets, Map<String, DartitectStorageContextConfig> storageContexts = const <String, DartitectStorageContextConfig>{}, Map<String, DartitectTransportConfig> transports = const <String, DartitectTransportConfig>{}, DartitectObservabilityConfig? observability, DartitectSchedulerConfig? scheduler, Iterable<String> extensionSources = const <String>[]})",
+              "declaration": "DartitectConfig({int configVersion = currentConfigVersion, String profile = nativeStrictProfile, Map<String, List<String>> layers = DartitectArchitectureRules.defaultLayers, List<String> compositionRoots = DartitectArchitectureRules.defaultCompositionRoots, List<String> generatedInfrastructure = DartitectArchitectureRules.defaultGeneratedInfrastructure, List<String> generatedSuffixes = DartitectArchitectureRules.defaultGeneratedSuffixes, List<DartitectSuppression> suppressions = const <DartitectSuppression>[], DartitectModelingConfig? modeling, DartitectFeaturesConfig? features, DartitectTargetsConfig? targets, Map<String, DartitectStorageContextConfig> storageContexts = const <String, DartitectStorageContextConfig>{}, Map<String, DartitectTransportConfig> transports = const <String, DartitectTransportConfig>{}, Map<String, DartitectContractConfig> contracts = const <String, DartitectContractConfig>{}, DartitectSessionConfig? session, DartitectObservabilityConfig? observability, DartitectSchedulerConfig? scheduler, Iterable<String> extensionSources = const <String>[]})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -13292,6 +13846,22 @@
                   "annotations": []
                 },
                 {
+                  "name": "contracts",
+                  "declaration": "{Map<String, DartitectContractConfig> contracts = const <String, DartitectContractConfig>{}}",
+                  "type": "Map<String, DartitectContractConfig>",
+                  "kind": "optionalNamed",
+                  "default": "const <String, DartitectContractConfig>{}",
+                  "annotations": []
+                },
+                {
+                  "name": "session",
+                  "declaration": "{DartitectSessionConfig? session}",
+                  "type": "DartitectSessionConfig?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
                   "name": "observability",
                   "declaration": "{DartitectObservabilityConfig? observability}",
                   "type": "DartitectObservabilityConfig?",
@@ -13363,6 +13933,18 @@
                 "final"
               ],
               "type": "int"
+            },
+            {
+              "name": "contracts",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Map<String, DartitectContractConfig> contracts",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Map<String, DartitectContractConfig>"
             },
             {
               "name": "extensionSources",
@@ -13471,6 +14053,18 @@
                 "final"
               ],
               "type": "DartitectSchedulerConfig"
+            },
+            {
+              "name": "session",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectSessionConfig? session",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectSessionConfig?"
             },
             {
               "name": "storageContexts",
@@ -13688,6 +14282,478 @@
           ]
         },
         {
+          "name": "DartitectContractConfig",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectContractConfig",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectContractConfig({required String spec, required String output, required String transport})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectContractConfig",
+              "parameters": [
+                {
+                  "name": "spec",
+                  "declaration": "{required String spec}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "output",
+                  "declaration": "{required String output}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "transport",
+                  "declaration": "{required String transport}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "output",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String output",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "spec",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String spec",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "transport",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String transport",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "DartitectFactoryMethodIr",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectFactoryMethodIr",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectFactoryMethodIr({required String name, required String returnType, required String valueType, required List<DartitectFactoryParameterIr> parameters, required List<String> libraryUris, required DartitectFactoryDisposalKind disposalKind})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectFactoryMethodIr",
+              "parameters": [
+                {
+                  "name": "name",
+                  "declaration": "{required String name}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "returnType",
+                  "declaration": "{required String returnType}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "valueType",
+                  "declaration": "{required String valueType}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "parameters",
+                  "declaration": "{required List<DartitectFactoryParameterIr> parameters}",
+                  "type": "List<DartitectFactoryParameterIr>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "libraryUris",
+                  "declaration": "{required List<String> libraryUris}",
+                  "type": "List<String>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "disposalKind",
+                  "declaration": "{required DartitectFactoryDisposalKind disposalKind}",
+                  "type": "DartitectFactoryDisposalKind",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "disposalKind",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectFactoryDisposalKind disposalKind",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectFactoryDisposalKind"
+            },
+            {
+              "name": "libraryUris",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<String> libraryUris",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<String>"
+            },
+            {
+              "name": "name",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String name",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "parameters",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<DartitectFactoryParameterIr> parameters",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<DartitectFactoryParameterIr>"
+            },
+            {
+              "name": "returnType",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String returnType",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "valueType",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String valueType",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "DartitectFactoryParameterIr",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectFactoryParameterIr",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectFactoryParameterIr({required String name, required String type, required bool named, required bool required})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectFactoryParameterIr",
+              "parameters": [
+                {
+                  "name": "name",
+                  "declaration": "{required String name}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "type",
+                  "declaration": "{required String type}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "named",
+                  "declaration": "{required bool named}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "required",
+                  "declaration": "{required bool required}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "name",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String name",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "named",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "bool named",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "required",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "bool required",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "type",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String type",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "DartitectFactorySourceConfig",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectFactorySourceConfig",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectFactorySourceConfig({required String source, required String declaration})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectFactorySourceConfig",
+              "parameters": [
+                {
+                  "name": "source",
+                  "declaration": "{required String source}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "declaration",
+                  "declaration": "{required String declaration}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "declaration",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String declaration",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "source",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String source",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
           "name": "DartitectFeatureDeclaration",
           "kind": "class",
           "audience": "tooling-test",
@@ -13706,7 +14772,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "tooling-test",
-              "declaration": "DartitectFeatureDeclaration({required FeatureProfile profile, required FeatureScope scope, required FeaturePagination pagination, required FeatureDiagnosticsLevel diagnostics, String? storageContext, DartitectStorageDatasetConfig? dataset, String? transport, Iterable<DartitectPlatform> targets = const <DartitectPlatform>[], Iterable<DartitectPlatform> headlessTargets = const <DartitectPlatform>[], Iterable<DartitectCapability> capabilities = const <DartitectCapability>[]})",
+              "declaration": "DartitectFeatureDeclaration({required FeatureProfile profile, required FeatureScope scope, DartitectFactorySourceConfig? factorySource, FeatureLocalAuthorityStrategy localAuthority = FeatureLocalAuthorityStrategy.custom, required FeaturePagination pagination, required FeatureDiagnosticsLevel diagnostics, String? storageContext, DartitectStorageDatasetConfig? dataset, String? transport, Iterable<DartitectPlatform> targets = const <DartitectPlatform>[], Iterable<DartitectPlatform> headlessTargets = const <DartitectPlatform>[], Iterable<DartitectCapability> capabilities = const <DartitectCapability>[], Iterable<DartitectOpenApiOperationConfig> operations = const <DartitectOpenApiOperationConfig>[]})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -13727,6 +14793,22 @@
                   "type": "FeatureScope",
                   "kind": "requiredNamed",
                   "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "factorySource",
+                  "declaration": "{DartitectFactorySourceConfig? factorySource}",
+                  "type": "DartitectFactorySourceConfig?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "localAuthority",
+                  "declaration": "{FeatureLocalAuthorityStrategy localAuthority = FeatureLocalAuthorityStrategy.custom}",
+                  "type": "FeatureLocalAuthorityStrategy",
+                  "kind": "optionalNamed",
+                  "default": "FeatureLocalAuthorityStrategy.custom",
                   "annotations": []
                 },
                 {
@@ -13792,6 +14874,14 @@
                   "kind": "optionalNamed",
                   "default": "const <DartitectCapability>[]",
                   "annotations": []
+                },
+                {
+                  "name": "operations",
+                  "declaration": "{Iterable<DartitectOpenApiOperationConfig> operations = const <DartitectOpenApiOperationConfig>[]}",
+                  "type": "Iterable<DartitectOpenApiOperationConfig>",
+                  "kind": "optionalNamed",
+                  "default": "const <DartitectOpenApiOperationConfig>[]",
+                  "annotations": []
                 }
               ]
             },
@@ -13832,6 +14922,18 @@
               "type": "FeatureDiagnosticsLevel"
             },
             {
+              "name": "factorySource",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectFactorySourceConfig factorySource",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectFactorySourceConfig"
+            },
+            {
               "name": "headlessTargets",
               "kind": "field",
               "audience": "tooling-test",
@@ -13842,6 +14944,30 @@
                 "final"
               ],
               "type": "List<DartitectPlatform>"
+            },
+            {
+              "name": "localAuthority",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "FeatureLocalAuthorityStrategy localAuthority",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "FeatureLocalAuthorityStrategy"
+            },
+            {
+              "name": "operations",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<DartitectOpenApiOperationConfig> operations",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<DartitectOpenApiOperationConfig>"
             },
             {
               "name": "pagination",
@@ -14986,6 +16112,56 @@
               ]
             },
             {
+              "name": "impact",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Future<DartitectFleetReport> impact({required String fromSnapshot, required String toSnapshot})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<DartitectFleetReport>",
+              "parameters": [
+                {
+                  "name": "fromSnapshot",
+                  "declaration": "{required String fromSnapshot}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "toSnapshot",
+                  "declaration": "{required String toSnapshot}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "inventory",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Future<DartitectFleetReport> inventory(Iterable<String> roots)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<DartitectFleetReport>",
+              "parameters": [
+                {
+                  "name": "roots",
+                  "declaration": "Iterable<String> roots",
+                  "type": "Iterable<String>",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
               "name": "policy",
               "kind": "method",
               "audience": "tooling-test",
@@ -15753,6 +16929,88 @@
           ]
         },
         {
+          "name": "DartitectOpenApiOperationConfig",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectOpenApiOperationConfig",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectOpenApiOperationConfig({required String contract, required String operationId})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectOpenApiOperationConfig",
+              "parameters": [
+                {
+                  "name": "contract",
+                  "declaration": "{required String contract}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "operationId",
+                  "declaration": "{required String operationId}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "contract",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String contract",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "operationId",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String operationId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
           "name": "DartitectProjectService",
           "kind": "class",
           "audience": "tooling-test",
@@ -16361,6 +17619,241 @@
           ]
         },
         {
+          "name": "DartitectSemanticFactoryCompiler",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectSemanticFactoryCompiler",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectSemanticFactoryCompiler(Directory root)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectSemanticFactoryCompiler",
+              "parameters": [
+                {
+                  "name": "root",
+                  "declaration": "Directory root",
+                  "type": "Directory",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "root",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Directory root",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Directory"
+            },
+            {
+              "name": "compile",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Future<List<DartitectSemanticFactoryIr>> compile(DartitectConfig config)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<List<DartitectSemanticFactoryIr>>",
+              "parameters": [
+                {
+                  "name": "config",
+                  "declaration": "DartitectConfig config",
+                  "type": "DartitectConfig",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "DartitectSemanticFactoryIr",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectSemanticFactoryIr",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectSemanticFactoryIr({required DartitectSemanticFactoryRole role, required String bindingName, required String sourcePath, required String libraryUri, required String declarationType, required Map<String, DartitectFactoryMethodIr> methods})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectSemanticFactoryIr",
+              "parameters": [
+                {
+                  "name": "role",
+                  "declaration": "{required DartitectSemanticFactoryRole role}",
+                  "type": "DartitectSemanticFactoryRole",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "bindingName",
+                  "declaration": "{required String bindingName}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "sourcePath",
+                  "declaration": "{required String sourcePath}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "libraryUri",
+                  "declaration": "{required String libraryUri}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "declarationType",
+                  "declaration": "{required String declarationType}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "methods",
+                  "declaration": "{required Map<String, DartitectFactoryMethodIr> methods}",
+                  "type": "Map<String, DartitectFactoryMethodIr>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "bindingName",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String bindingName",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "declarationType",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String declarationType",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "libraryUri",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String libraryUri",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "methods",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Map<String, DartitectFactoryMethodIr> methods",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Map<String, DartitectFactoryMethodIr>"
+            },
+            {
+              "name": "role",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectSemanticFactoryRole role",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectSemanticFactoryRole"
+            },
+            {
+              "name": "sourcePath",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String sourcePath",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
           "name": "DartitectSemanticInput",
           "kind": "class",
           "audience": "tooling-test",
@@ -16562,6 +18055,70 @@
           ]
         },
         {
+          "name": "DartitectSessionConfig",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectSessionConfig",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectSessionConfig({required DartitectFactorySourceConfig factorySource})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectSessionConfig",
+              "parameters": [
+                {
+                  "name": "factorySource",
+                  "declaration": "{required DartitectFactorySourceConfig factorySource}",
+                  "type": "DartitectFactorySourceConfig",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "factorySource",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectFactorySourceConfig factorySource",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectFactorySourceConfig"
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
           "name": "DartitectSourceClassification",
           "kind": "class",
           "audience": "tooling-test",
@@ -16693,7 +18250,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "tooling-test",
-              "declaration": "DartitectStorageContextConfig({required String provider, required DartitectStorageMode mode, required Iterable<DartitectPlatform> targets})",
+              "declaration": "DartitectStorageContextConfig({required String provider, required DartitectStorageMode mode, FeatureScope scope = FeatureScope.application, DartitectFactorySourceConfig? factorySource, required Iterable<DartitectPlatform> targets})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -16717,6 +18274,22 @@
                   "annotations": []
                 },
                 {
+                  "name": "scope",
+                  "declaration": "{FeatureScope scope = FeatureScope.application}",
+                  "type": "FeatureScope",
+                  "kind": "optionalNamed",
+                  "default": "FeatureScope.application",
+                  "annotations": []
+                },
+                {
+                  "name": "factorySource",
+                  "declaration": "{DartitectFactorySourceConfig? factorySource}",
+                  "type": "DartitectFactorySourceConfig?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
                   "name": "targets",
                   "declaration": "{required Iterable<DartitectPlatform> targets}",
                   "type": "Iterable<DartitectPlatform>",
@@ -16725,6 +18298,18 @@
                   "annotations": []
                 }
               ]
+            },
+            {
+              "name": "factorySource",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectFactorySourceConfig factorySource",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectFactorySourceConfig"
             },
             {
               "name": "mode",
@@ -16749,6 +18334,18 @@
                 "final"
               ],
               "type": "String"
+            },
+            {
+              "name": "scope",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "FeatureScope scope",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "FeatureScope"
             },
             {
               "name": "targets",
@@ -17187,7 +18784,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "tooling-test",
-              "declaration": "DartitectTransportConfig({required String provider, required Iterable<DartitectPlatform> targets})",
+              "declaration": "DartitectTransportConfig({required String provider, FeatureScope scope = FeatureScope.application, DartitectFactorySourceConfig? factorySource, required Iterable<DartitectPlatform> targets})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -17203,6 +18800,22 @@
                   "annotations": []
                 },
                 {
+                  "name": "scope",
+                  "declaration": "{FeatureScope scope = FeatureScope.application}",
+                  "type": "FeatureScope",
+                  "kind": "optionalNamed",
+                  "default": "FeatureScope.application",
+                  "annotations": []
+                },
+                {
+                  "name": "factorySource",
+                  "declaration": "{DartitectFactorySourceConfig? factorySource}",
+                  "type": "DartitectFactorySourceConfig?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
                   "name": "targets",
                   "declaration": "{required Iterable<DartitectPlatform> targets}",
                   "type": "Iterable<DartitectPlatform>",
@@ -17211,6 +18824,18 @@
                   "annotations": []
                 }
               ]
+            },
+            {
+              "name": "factorySource",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectFactorySourceConfig factorySource",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectFactorySourceConfig"
             },
             {
               "name": "provider",
@@ -17223,6 +18848,18 @@
                 "final"
               ],
               "type": "String"
+            },
+            {
+              "name": "scope",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "FeatureScope scope",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "FeatureScope"
             },
             {
               "name": "targets",
@@ -17246,6 +18883,110 @@
               "modifiers": [],
               "typeParameters": [],
               "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "DartitectV2ConfigMigration",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectV2ConfigMigration",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectV2ConfigMigration({required DartitectConfig config, required bool changed, required List<String> manualActions})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectV2ConfigMigration",
+              "parameters": [
+                {
+                  "name": "config",
+                  "declaration": "{required DartitectConfig config}",
+                  "type": "DartitectConfig",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "changed",
+                  "declaration": "{required bool changed}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "manualActions",
+                  "declaration": "{required List<String> manualActions}",
+                  "type": "List<String>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "changed",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "bool changed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "config",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectConfig config",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectConfig"
+            },
+            {
+              "name": "manualActions",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<String> manualActions",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<String>"
+            },
+            {
+              "name": "migrationId",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "String get migrationId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
               "parameters": []
             }
           ]
@@ -17513,6 +19254,35 @@
                   "declaration": "{DartitectConfig? config}",
                   "type": "DartitectConfig?",
                   "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "inspectStagedFeature",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Future<DartitectWiringReport> inspectStagedFeature({required DartitectConfig config, required List<FileGenerationOperation> seams})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<DartitectWiringReport>",
+              "parameters": [
+                {
+                  "name": "config",
+                  "declaration": "{required DartitectConfig config}",
+                  "type": "DartitectConfig",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "seams",
+                  "declaration": "{required List<FileGenerationOperation> seams}",
+                  "type": "List<FileGenerationOperation>",
+                  "kind": "requiredNamed",
                   "default": null,
                   "annotations": []
                 }
@@ -18724,7 +20494,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "tooling-test",
-              "declaration": "FeatureScaffoldOptions({required FeatureProfile profile, required FeatureScope scope, String? storageContext, DartitectStorageDatasetConfig? dataset, String? transport, Set<DartitectPlatform> targets = const <DartitectPlatform>{}, FeaturePagination pagination = FeaturePagination.none, Set<DartitectPlatform> headlessTargets = const <DartitectPlatform>{}, FeatureDiagnosticsLevel diagnostics = FeatureDiagnosticsLevel.basic, Set<DartitectCapability> capabilities = const <DartitectCapability>{}})",
+              "declaration": "FeatureScaffoldOptions({required FeatureProfile profile, required FeatureScope scope, String? storageContext, DartitectStorageDatasetConfig? dataset, String? transport, FeatureLocalAuthorityStrategy? localAuthority, Set<DartitectPlatform> targets = const <DartitectPlatform>{}, FeaturePagination pagination = FeaturePagination.none, Set<DartitectPlatform> headlessTargets = const <DartitectPlatform>{}, FeatureDiagnosticsLevel diagnostics = FeatureDiagnosticsLevel.basic, Set<DartitectCapability> capabilities = const <DartitectCapability>{}})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -18767,6 +20537,14 @@
                   "name": "transport",
                   "declaration": "{String? transport}",
                   "type": "String?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "localAuthority",
+                  "declaration": "{FeatureLocalAuthorityStrategy? localAuthority}",
+                  "type": "FeatureLocalAuthorityStrategy?",
                   "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
@@ -18862,6 +20640,18 @@
               "type": "Set<DartitectPlatform>"
             },
             {
+              "name": "localAuthority",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "FeatureLocalAuthorityStrategy localAuthority",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "FeatureLocalAuthorityStrategy"
+            },
+            {
               "name": "pagination",
               "kind": "field",
               "audience": "tooling-test",
@@ -18954,7 +20744,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "tooling-test",
-              "declaration": "FileGenerationOperation({required String relativePath, required String content, GeneratedOwnership ownership = GeneratedOwnership.generatedOnce, String? sourcePath, int rendererVersion = 1, int semanticSchemaVersion = 1, String? inputSignature})",
+              "declaration": "FileGenerationOperation({required String relativePath, required String content, required String rendererId, GeneratedOwnership ownership = GeneratedOwnership.generatedOnce, String? sourcePath, int rendererVersion = 1, int semanticSchemaVersion = 1, String? inputSignature})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [
@@ -18974,6 +20764,14 @@
                 {
                   "name": "content",
                   "declaration": "{required String content}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "rendererId",
+                  "declaration": "{required String rendererId}",
                   "type": "String",
                   "kind": "requiredNamed",
                   "default": null,
@@ -19062,6 +20860,18 @@
               "kind": "field",
               "audience": "tooling-test",
               "declaration": "String relativePath",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "rendererId",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String rendererId",
               "deprecated": false,
               "annotations": [],
               "modifiers": [
@@ -21214,6 +23024,90 @@
           ]
         },
         {
+          "name": "DartitectFactoryDisposalKind",
+          "kind": "enum",
+          "audience": "tooling-test",
+          "declaration": "enum DartitectFactoryDisposalKind",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectFactoryDisposalKind()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectFactoryDisposalKind",
+              "parameters": []
+            },
+            {
+              "name": "asynchronous",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectFactoryDisposalKind asynchronous",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "DartitectFactoryDisposalKind"
+            },
+            {
+              "name": "none",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectFactoryDisposalKind none",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "DartitectFactoryDisposalKind"
+            },
+            {
+              "name": "synchronous",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectFactoryDisposalKind synchronous",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "DartitectFactoryDisposalKind"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<DartitectFactoryDisposalKind> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<DartitectFactoryDisposalKind>"
+            }
+          ]
+        },
+        {
           "name": "DartitectFleetCanaryCommand",
           "kind": "enum",
           "audience": "tooling-test",
@@ -21674,6 +23568,104 @@
           ]
         },
         {
+          "name": "DartitectSemanticFactoryRole",
+          "kind": "enum",
+          "audience": "tooling-test",
+          "declaration": "enum DartitectSemanticFactoryRole",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectSemanticFactoryRole()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectSemanticFactoryRole",
+              "parameters": []
+            },
+            {
+              "name": "feature",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectSemanticFactoryRole feature",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "DartitectSemanticFactoryRole"
+            },
+            {
+              "name": "session",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectSemanticFactoryRole session",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "DartitectSemanticFactoryRole"
+            },
+            {
+              "name": "storage",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectSemanticFactoryRole storage",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "DartitectSemanticFactoryRole"
+            },
+            {
+              "name": "transport",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectSemanticFactoryRole transport",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "DartitectSemanticFactoryRole"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<DartitectSemanticFactoryRole> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<DartitectSemanticFactoryRole>"
+            }
+          ]
+        },
+        {
           "name": "DartitectStorageMode",
           "kind": "enum",
           "audience": "tooling-test",
@@ -22005,6 +23997,120 @@
               ],
               "typeParameters": [],
               "returnType": "FeatureDiagnosticsLevel",
+              "parameters": [
+                {
+                  "name": "value",
+                  "declaration": "String value",
+                  "type": "String",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "FeatureLocalAuthorityStrategy",
+          "kind": "enum",
+          "audience": "tooling-test",
+          "declaration": "enum FeatureLocalAuthorityStrategy",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "FeatureLocalAuthorityStrategy(String wireName)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "FeatureLocalAuthorityStrategy",
+              "parameters": [
+                {
+                  "name": "wireName",
+                  "declaration": "String wireName",
+                  "type": "String",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "custom",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "FeatureLocalAuthorityStrategy custom",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "FeatureLocalAuthorityStrategy"
+            },
+            {
+              "name": "generatedPull",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "FeatureLocalAuthorityStrategy generatedPull",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "FeatureLocalAuthorityStrategy"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<FeatureLocalAuthorityStrategy> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<FeatureLocalAuthorityStrategy>"
+            },
+            {
+              "name": "wireName",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String wireName",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "parse",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "FeatureLocalAuthorityStrategy parse(String value)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "static"
+              ],
+              "typeParameters": [],
+              "returnType": "FeatureLocalAuthorityStrategy",
               "parameters": [
                 {
                   "name": "value",
@@ -23059,6 +25165,29 @@
           ]
         },
         {
+          "name": "migrateDartitectV2Config",
+          "kind": "function",
+          "audience": "tooling-test",
+          "declaration": "DartitectV2ConfigMigration migrateDartitectV2Config(String source)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "static"
+          ],
+          "typeParameters": [],
+          "returnType": "DartitectV2ConfigMigration",
+          "parameters": [
+            {
+              "name": "source",
+              "declaration": "String source",
+              "type": "String",
+              "kind": "requiredPositional",
+              "default": null,
+              "annotations": []
+            }
+          ]
+        },
+        {
           "name": "currentConfigVersion",
           "kind": "getter",
           "audience": "tooling-test",
@@ -23070,6 +25199,20 @@
           ],
           "typeParameters": [],
           "returnType": "int",
+          "parameters": []
+        },
+        {
+          "name": "dartitectV2ToV3MigrationId",
+          "kind": "getter",
+          "audience": "tooling-test",
+          "declaration": "String get dartitectV2ToV3MigrationId",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "static"
+          ],
+          "typeParameters": [],
+          "returnType": "String",
           "parameters": []
         },
         {
@@ -23113,6 +25256,77 @@
     "packages/dartitect_cli/lib/dartitect_contracts.dart": {
       "defaultAudience": "tooling-test",
       "symbols": [
+        {
+          "name": "DartitectOpenApiGraphCompiler",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectOpenApiGraphCompiler",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectOpenApiGraphCompiler(Directory root)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectOpenApiGraphCompiler",
+              "parameters": [
+                {
+                  "name": "root",
+                  "declaration": "Directory root",
+                  "type": "Directory",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "root",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Directory root",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Directory"
+            },
+            {
+              "name": "compile",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Future<Map<String, OpenApiContractReport>> compile(DartitectConfig config)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<Map<String, OpenApiContractReport>>",
+              "parameters": [
+                {
+                  "name": "config",
+                  "declaration": "DartitectConfig config",
+                  "type": "DartitectConfig",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
         {
           "name": "OpenApiContractFinding",
           "kind": "class",
@@ -23256,7 +25470,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "tooling-test",
-              "declaration": "OpenApiContractReport({required String command, required String specPath, required String outputPath, required List<OpenApiContractFinding> findings, required GenerationPlan? plan, required bool applied, required int writes})",
+              "declaration": "OpenApiContractReport({required String command, required String specPath, required String outputPath, required Set<String> operationIds, required Map<String, String> operationTypes, required List<OpenApiContractFinding> findings, required GenerationPlan? plan, required bool applied, required int writes})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [
@@ -23285,6 +25499,22 @@
                   "name": "outputPath",
                   "declaration": "{required String outputPath}",
                   "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "operationIds",
+                  "declaration": "{required Set<String> operationIds}",
+                  "type": "Set<String>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "operationTypes",
+                  "declaration": "{required Map<String, String> operationTypes}",
+                  "type": "Map<String, String>",
                   "kind": "requiredNamed",
                   "default": null,
                   "annotations": []
@@ -23358,6 +25588,30 @@
                 "final"
               ],
               "type": "List<OpenApiContractFinding>"
+            },
+            {
+              "name": "operationIds",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Set<String> operationIds",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Set<String>"
+            },
+            {
+              "name": "operationTypes",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Map<String, String> operationTypes",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Map<String, String>"
             },
             {
               "name": "outputPath",
@@ -24682,7 +26936,7 @@
               "name": "execute",
               "kind": "method",
               "audience": "adapter-author",
-              "declaration": "Future<Result<DioResponse<T>, DioFailure>> execute<T>(DioEndpoint<T> endpoint, {Map<String, Object?> query = const <String, Object?>{}, Map<String, String> pathParameters = const <String, String>{}, Object? jsonBody, CancellationSignal? cancellation})",
+              "declaration": "Future<Result<DioResponse<T>, DioFailure>> execute<T>(DioEndpoint<T> endpoint, {Map<String, Object?> query = const <String, Object?>{}, Map<String, String> pathParameters = const <String, String>{}, Map<String, Object?> headers = const <String, Object?>{}, Object? jsonBody, CancellationSignal? cancellation, DioRequestContext? context})",
               "deprecated": false,
               "annotations": [
                 "@override"
@@ -24723,6 +26977,14 @@
                   "annotations": []
                 },
                 {
+                  "name": "headers",
+                  "declaration": "{Map<String, Object?> headers = const <String, Object?>{}}",
+                  "type": "Map<String, Object?>",
+                  "kind": "optionalNamed",
+                  "default": "const <String, Object?>{}",
+                  "annotations": []
+                },
+                {
                   "name": "jsonBody",
                   "declaration": "{Object? jsonBody}",
                   "type": "Object?",
@@ -24734,6 +26996,14 @@
                   "name": "cancellation",
                   "declaration": "{CancellationSignal? cancellation}",
                   "type": "CancellationSignal?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "context",
+                  "declaration": "{DioRequestContext? context}",
+                  "type": "DioRequestContext?",
                   "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
@@ -26374,6 +28644,53 @@
           ]
         },
         {
+          "name": "DioCredentialGenerationMismatch",
+          "kind": "class",
+          "audience": "adapter-author",
+          "declaration": "final class DioCredentialGenerationMismatch implements Exception",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "Exception"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "adapter-author",
+              "declaration": "DioCredentialGenerationMismatch()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DioCredentialGenerationMismatch",
+              "parameters": []
+            },
+            {
+              "name": "toString",
+              "kind": "method",
+              "audience": "adapter-author",
+              "declaration": "String toString()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
           "name": "DioCredentialReplayPolicy",
           "kind": "class",
           "audience": "adapter-author",
@@ -26773,6 +29090,58 @@
           ]
         },
         {
+          "name": "DioDeadlineExceededFailure",
+          "kind": "class",
+          "audience": "adapter-author",
+          "declaration": "final class DioDeadlineExceededFailure extends DioFailure",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "DioFailure",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "adapter-author",
+              "declaration": "DioDeadlineExceededFailure({required DateTime deadline})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DioDeadlineExceededFailure",
+              "parameters": [
+                {
+                  "name": "deadline",
+                  "declaration": "{required DateTime deadline}",
+                  "type": "DateTime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "deadline",
+              "kind": "field",
+              "audience": "adapter-author",
+              "declaration": "DateTime deadline",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DateTime"
+            }
+          ]
+        },
+        {
           "name": "DioDecodingFailure",
           "kind": "class",
           "audience": "adapter-author",
@@ -26850,7 +29219,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "adapter-author",
-              "declaration": "DioEndpoint<T>({required String method, required RouteTemplate route, required T Function(Object?) decode, required Set<int> acceptedStatusCodes})",
+              "declaration": "DioEndpoint<T>({required String method, required RouteTemplate route, T Function(Object?)? decode, Map<int, T Function(Object?)>? statusDecoders, required Set<int> acceptedStatusCodes})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -26875,9 +29244,17 @@
                 },
                 {
                   "name": "decode",
-                  "declaration": "{required T Function(Object?) decode}",
-                  "type": "T Function(Object?)",
-                  "kind": "requiredNamed",
+                  "declaration": "{T Function(Object?)? decode}",
+                  "type": "T Function(Object?)?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "statusDecoders",
+                  "declaration": "{Map<int, T Function(Object?)>? statusDecoders}",
+                  "type": "Map<int, T Function(Object?)>?",
+                  "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
                 },
@@ -26907,13 +29284,13 @@
               "name": "decode",
               "kind": "field",
               "audience": "adapter-author",
-              "declaration": "T Function(Object?) decode",
+              "declaration": "T Function(Object?)? decode",
               "deprecated": false,
               "annotations": [],
               "modifiers": [
                 "final"
               ],
-              "type": "T Function(Object?)"
+              "type": "T Function(Object?)?"
             },
             {
               "name": "method",
@@ -26938,6 +29315,18 @@
                 "final"
               ],
               "type": "RouteTemplate"
+            },
+            {
+              "name": "statusDecoders",
+              "kind": "field",
+              "audience": "adapter-author",
+              "declaration": "Map<int, T Function(Object?)> statusDecoders",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Map<int, T Function(Object?)>"
             }
           ]
         },
@@ -27108,6 +29497,19 @@
               "annotations": [],
               "modifiers": [],
               "type": "int"
+            },
+            {
+              "name": "parentTraceContextExtraKey",
+              "kind": "field",
+              "audience": "adapter-author",
+              "declaration": "String parentTraceContextExtraKey",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
             },
             {
               "name": "traceFailureCount",
@@ -27399,7 +29801,7 @@
               "name": "execute",
               "kind": "method",
               "audience": "adapter-author",
-              "declaration": "Future<Result<DioResponse<T>, DioFailure>> execute<T>(DioEndpoint<T> endpoint, {Map<String, Object?> query = const <String, Object?>{}, Map<String, String> pathParameters = const <String, String>{}, Object? jsonBody, CancellationSignal? cancellation})",
+              "declaration": "Future<Result<DioResponse<T>, DioFailure>> execute<T>(DioEndpoint<T> endpoint, {Map<String, Object?> query = const <String, Object?>{}, Map<String, String> pathParameters = const <String, String>{}, Map<String, Object?> headers = const <String, Object?>{}, Object? jsonBody, CancellationSignal? cancellation, DioRequestContext? context})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [
@@ -27440,6 +29842,14 @@
                   "annotations": []
                 },
                 {
+                  "name": "headers",
+                  "declaration": "{Map<String, Object?> headers = const <String, Object?>{}}",
+                  "type": "Map<String, Object?>",
+                  "kind": "optionalNamed",
+                  "default": "const <String, Object?>{}",
+                  "annotations": []
+                },
+                {
                   "name": "jsonBody",
                   "declaration": "{Object? jsonBody}",
                   "type": "Object?",
@@ -27451,6 +29861,14 @@
                   "name": "cancellation",
                   "declaration": "{CancellationSignal? cancellation}",
                   "type": "CancellationSignal?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "context",
+                  "declaration": "{DioRequestContext? context}",
+                  "type": "DioRequestContext?",
                   "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
@@ -27619,6 +30037,116 @@
               "typeParameters": [],
               "returnType": "void",
               "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "DioRequestContext",
+          "kind": "class",
+          "audience": "adapter-author",
+          "declaration": "final class DioRequestContext",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "adapter-author",
+              "declaration": "DioRequestContext({CancellationSignal? cancellation, DateTime? deadline, TraceContext? traceParent, CredentialGeneration? credentialGeneration})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DioRequestContext",
+              "parameters": [
+                {
+                  "name": "cancellation",
+                  "declaration": "{CancellationSignal? cancellation}",
+                  "type": "CancellationSignal?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "deadline",
+                  "declaration": "{DateTime? deadline}",
+                  "type": "DateTime?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "traceParent",
+                  "declaration": "{TraceContext? traceParent}",
+                  "type": "TraceContext?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "credentialGeneration",
+                  "declaration": "{CredentialGeneration? credentialGeneration}",
+                  "type": "CredentialGeneration?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "cancellation",
+              "kind": "field",
+              "audience": "adapter-author",
+              "declaration": "CancellationSignal? cancellation",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "CancellationSignal?"
+            },
+            {
+              "name": "credentialGeneration",
+              "kind": "field",
+              "audience": "adapter-author",
+              "declaration": "CredentialGeneration? credentialGeneration",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "CredentialGeneration?"
+            },
+            {
+              "name": "deadline",
+              "kind": "field",
+              "audience": "adapter-author",
+              "declaration": "DateTime? deadline",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DateTime?"
+            },
+            {
+              "name": "traceParent",
+              "kind": "field",
+              "audience": "adapter-author",
+              "declaration": "TraceContext? traceParent",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "TraceContext?"
             }
           ]
         },
@@ -29392,6 +31920,24 @@
           "modifiers": [],
           "typeParameters": [],
           "aliasedType": "CancellationSignal"
+        },
+        {
+          "name": "DioStatusDecoder",
+          "kind": "type_alias",
+          "audience": "adapter-author",
+          "declaration": "typedef DioStatusDecoder<out T> = T Function(Object?)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "out T",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "aliasedType": "T Function(Object?)"
         },
         {
           "name": "DioTransferCommitDecoder",
@@ -33810,6 +36356,281 @@
               "typeParameters": [],
               "returnType": "Iterable<Object?>",
               "parameters": []
+            },
+            {
+              "name": "match",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "R match<R>({required R Function(CommandIdleState<T, F>) idle, required R Function(CommandRunningState<T, F>) running, required R Function(CommandSuccessState<T, F>) success, required R Function(CommandFailureState<T, F>) failure, required R Function(CommandCancelledState<T, F>) cancelled, required R Function(CommandCrashState<T, F>) crashed})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [
+                {
+                  "name": "R",
+                  "declaration": "R",
+                  "bound": null,
+                  "annotations": []
+                }
+              ],
+              "returnType": "R",
+              "parameters": [
+                {
+                  "name": "idle",
+                  "declaration": "{required R Function(CommandIdleState<T, F>) idle}",
+                  "type": "R Function(CommandIdleState<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "running",
+                  "declaration": "{required R Function(CommandRunningState<T, F>) running}",
+                  "type": "R Function(CommandRunningState<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "success",
+                  "declaration": "{required R Function(CommandSuccessState<T, F>) success}",
+                  "type": "R Function(CommandSuccessState<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "failure",
+                  "declaration": "{required R Function(CommandFailureState<T, F>) failure}",
+                  "type": "R Function(CommandFailureState<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cancelled",
+                  "declaration": "{required R Function(CommandCancelledState<T, F>) cancelled}",
+                  "type": "R Function(CommandCancelledState<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "crashed",
+                  "declaration": "{required R Function(CommandCrashState<T, F>) crashed}",
+                  "type": "R Function(CommandCrashState<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CommandStateBuilder",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class CommandStateBuilder<T, F extends Object> extends StatefulWidget",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "StatefulWidget",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandStateBuilder<T, F>({required DartitectCommand<T, F> command, required Widget Function(BuildContext, CommandIdleState<T, F>) idle, required Widget Function(BuildContext, CommandRunningState<T, F>) running, required Widget Function(BuildContext, CommandSuccessState<T, F>) success, required Widget Function(BuildContext, CommandFailureState<T, F>) failure, required Widget Function(BuildContext, CommandCancelledState<T, F>) cancelled, required Widget Function(BuildContext, CommandCrashState<T, F>) crashed, Key? key})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandStateBuilder<T, F>",
+              "parameters": [
+                {
+                  "name": "command",
+                  "declaration": "{required DartitectCommand<T, F> command}",
+                  "type": "DartitectCommand<T, F>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "idle",
+                  "declaration": "{required Widget Function(BuildContext, CommandIdleState<T, F>) idle}",
+                  "type": "Widget Function(BuildContext, CommandIdleState<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "running",
+                  "declaration": "{required Widget Function(BuildContext, CommandRunningState<T, F>) running}",
+                  "type": "Widget Function(BuildContext, CommandRunningState<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "success",
+                  "declaration": "{required Widget Function(BuildContext, CommandSuccessState<T, F>) success}",
+                  "type": "Widget Function(BuildContext, CommandSuccessState<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "failure",
+                  "declaration": "{required Widget Function(BuildContext, CommandFailureState<T, F>) failure}",
+                  "type": "Widget Function(BuildContext, CommandFailureState<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cancelled",
+                  "declaration": "{required Widget Function(BuildContext, CommandCancelledState<T, F>) cancelled}",
+                  "type": "Widget Function(BuildContext, CommandCancelledState<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "crashed",
+                  "declaration": "{required Widget Function(BuildContext, CommandCrashState<T, F>) crashed}",
+                  "type": "Widget Function(BuildContext, CommandCrashState<T, F>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "key",
+                  "declaration": "{Key? key}",
+                  "type": "Key?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "cancelled",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, CommandCancelledState<T, F>) cancelled",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, CommandCancelledState<T, F>)"
+            },
+            {
+              "name": "command",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DartitectCommand<T, F> command",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectCommand<T, F>"
+            },
+            {
+              "name": "crashed",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, CommandCrashState<T, F>) crashed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, CommandCrashState<T, F>)"
+            },
+            {
+              "name": "failure",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, CommandFailureState<T, F>) failure",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, CommandFailureState<T, F>)"
+            },
+            {
+              "name": "idle",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, CommandIdleState<T, F>) idle",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, CommandIdleState<T, F>)"
+            },
+            {
+              "name": "running",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, CommandRunningState<T, F>) running",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, CommandRunningState<T, F>)"
+            },
+            {
+              "name": "success",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, CommandSuccessState<T, F>) success",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, CommandSuccessState<T, F>)"
+            },
+            {
+              "name": "createState",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "State<CommandStateBuilder<T, F>> createState()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "State<CommandStateBuilder<T, F>>",
+              "parameters": []
             }
           ]
         },
@@ -33940,6 +36761,127 @@
               "modifiers": [],
               "typeParameters": [],
               "returnType": "Iterable<Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "DartitectCommand",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "abstract interface class DartitectCommand<T, F extends Object> implements DartitectObservableResource, ValueListenable<CommandState<T, F>>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "interface"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "DartitectObservableResource",
+            "ValueListenable<CommandState<T, F>>"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectCommand<T, F>()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectCommand<T, F>",
+              "parameters": []
+            },
+            {
+              "name": "isRunning",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get isRunning",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "state",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "CommandState<T, F> get state",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandState<T, F>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "DartitectObservableResource",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "abstract interface class DartitectObservableResource implements Listenable, AsyncDisposable",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "interface"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "Listenable",
+            "AsyncDisposable"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DartitectObservableResource()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DartitectObservableResource",
+              "parameters": []
+            },
+            {
+              "name": "isDisposed",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get isDisposed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "bool",
               "parameters": []
             }
           ]
@@ -34370,15 +37312,15 @@
               "name": "ownCommand",
               "kind": "method",
               "audience": "application-facing",
-              "declaration": "T ownCommand<T extends AsyncDisposable>(T command, {String? label})",
+              "declaration": "T ownCommand<T extends DartitectObservableResource>(T command, {String? label})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
               "typeParameters": [
                 {
                   "name": "T",
-                  "declaration": "T extends AsyncDisposable",
-                  "bound": "AsyncDisposable",
+                  "declaration": "T extends DartitectObservableResource",
+                  "bound": "DartitectObservableResource",
                   "annotations": []
                 }
               ],
@@ -35045,6 +37987,411 @@
               "typeParameters": [],
               "returnType": "void",
               "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "FeatureHost",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class FeatureHost<Parent, Root, ViewModel extends Object> extends StatefulWidget",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Parent",
+              "declaration": "Parent",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Root",
+              "declaration": "Root",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "ViewModel",
+              "declaration": "ViewModel extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "StatefulWidget",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "FeatureHost<Parent, Root, ViewModel>({required Parent parent, required FutureOr<Root> Function(Parent, ResourceTransaction) createGraph, required ViewModel Function(Root) createViewModel, required Widget Function(BuildContext) loading, required Widget Function(BuildContext, FeatureHostFailure, void Function()) failure, required Widget Function(BuildContext, Root, ViewModel) ready, Object? generationKey, FutureOr<void> Function(ViewModel)? start, FutureOr<void> Function(ViewModel)? disposeViewModel, DartitectDiagnosticSubject? diagnostics, FutureOr<void> Function()? onDisposed, Key? key})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "FeatureHost<Parent, Root, ViewModel>",
+              "parameters": [
+                {
+                  "name": "parent",
+                  "declaration": "{required Parent parent}",
+                  "type": "Parent",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "createGraph",
+                  "declaration": "{required FutureOr<Root> Function(Parent, ResourceTransaction) createGraph}",
+                  "type": "FutureOr<Root> Function(Parent, ResourceTransaction)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "createViewModel",
+                  "declaration": "{required ViewModel Function(Root) createViewModel}",
+                  "type": "ViewModel Function(Root)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "loading",
+                  "declaration": "{required Widget Function(BuildContext) loading}",
+                  "type": "Widget Function(BuildContext)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "failure",
+                  "declaration": "{required Widget Function(BuildContext, FeatureHostFailure, void Function()) failure}",
+                  "type": "Widget Function(BuildContext, FeatureHostFailure, void Function())",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "ready",
+                  "declaration": "{required Widget Function(BuildContext, Root, ViewModel) ready}",
+                  "type": "Widget Function(BuildContext, Root, ViewModel)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "generationKey",
+                  "declaration": "{Object? generationKey}",
+                  "type": "Object?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "start",
+                  "declaration": "{FutureOr<void> Function(ViewModel)? start}",
+                  "type": "FutureOr<void> Function(ViewModel)?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "disposeViewModel",
+                  "declaration": "{FutureOr<void> Function(ViewModel)? disposeViewModel}",
+                  "type": "FutureOr<void> Function(ViewModel)?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "diagnostics",
+                  "declaration": "{DartitectDiagnosticSubject? diagnostics}",
+                  "type": "DartitectDiagnosticSubject?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "onDisposed",
+                  "declaration": "{FutureOr<void> Function()? onDisposed}",
+                  "type": "FutureOr<void> Function()?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "key",
+                  "declaration": "{Key? key}",
+                  "type": "Key?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "createGraph",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "FutureOr<Root> Function(Parent, ResourceTransaction) createGraph",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "FutureOr<Root> Function(Parent, ResourceTransaction)"
+            },
+            {
+              "name": "createViewModel",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "ViewModel Function(Root) createViewModel",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "ViewModel Function(Root)"
+            },
+            {
+              "name": "diagnostics",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DartitectDiagnosticSubject? diagnostics",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectDiagnosticSubject?"
+            },
+            {
+              "name": "disposeViewModel",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "FutureOr<void> Function(ViewModel)? disposeViewModel",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "FutureOr<void> Function(ViewModel)?"
+            },
+            {
+              "name": "failure",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, FeatureHostFailure, void Function()) failure",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, FeatureHostFailure, void Function())"
+            },
+            {
+              "name": "generationKey",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Object? generationKey",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Object?"
+            },
+            {
+              "name": "loading",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext) loading",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext)"
+            },
+            {
+              "name": "onDisposed",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "FutureOr<void> Function()? onDisposed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "FutureOr<void> Function()?"
+            },
+            {
+              "name": "parent",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Parent parent",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Parent"
+            },
+            {
+              "name": "ready",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, Root, ViewModel) ready",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, Root, ViewModel)"
+            },
+            {
+              "name": "start",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "FutureOr<void> Function(ViewModel)? start",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "FutureOr<void> Function(ViewModel)?"
+            },
+            {
+              "name": "createState",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "State<FeatureHost<Parent, Root, ViewModel>> createState()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "State<FeatureHost<Parent, Root, ViewModel>>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "FeatureHostFailure",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class FeatureHostFailure",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "FeatureHostFailure({required Object error, required StackTrace stackTrace, required FeatureHostFailurePhase phase, required int attemptId})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "FeatureHostFailure",
+              "parameters": [
+                {
+                  "name": "error",
+                  "declaration": "{required Object error}",
+                  "type": "Object",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "stackTrace",
+                  "declaration": "{required StackTrace stackTrace}",
+                  "type": "StackTrace",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "phase",
+                  "declaration": "{required FeatureHostFailurePhase phase}",
+                  "type": "FeatureHostFailurePhase",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "attemptId",
+                  "declaration": "{required int attemptId}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "attemptId",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int attemptId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "error",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Object error",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Object"
+            },
+            {
+              "name": "phase",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "FeatureHostFailurePhase phase",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "FeatureHostFailurePhase"
+            },
+            {
+              "name": "stackTrace",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "StackTrace stackTrace",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "StackTrace"
             }
           ]
         },
@@ -35843,7 +39190,7 @@
           "name": "KeyedProgressCommand1",
           "kind": "class",
           "audience": "application-facing",
-          "declaration": "final class KeyedProgressCommand1<K, A, P, T, F extends Object> implements ValueListenable<CommandState<T, F>>, Disposable, AsyncDisposable",
+          "declaration": "final class KeyedProgressCommand1<K, A, P, T, F extends Object> implements DartitectCommand<T, F>, Disposable",
           "deprecated": false,
           "annotations": [],
           "modifiers": [
@@ -35884,9 +39231,8 @@
           "supertype": "Object",
           "mixins": [],
           "interfaces": [
-            "ValueListenable<CommandState<T, F>>",
-            "Disposable",
-            "AsyncDisposable"
+            "DartitectCommand<T, F>",
+            "Disposable"
           ],
           "members": [
             {
@@ -36763,7 +40109,7 @@
           "name": "ProgressCommand0",
           "kind": "class",
           "audience": "application-facing",
-          "declaration": "final class ProgressCommand0<P, T, F extends Object> implements ValueListenable<CommandState<T, F>>, Disposable, AsyncDisposable",
+          "declaration": "final class ProgressCommand0<P, T, F extends Object> implements DartitectCommand<T, F>, Disposable",
           "deprecated": false,
           "annotations": [],
           "modifiers": [
@@ -36792,9 +40138,8 @@
           "supertype": "Object",
           "mixins": [],
           "interfaces": [
-            "ValueListenable<CommandState<T, F>>",
-            "Disposable",
-            "AsyncDisposable"
+            "DartitectCommand<T, F>",
+            "Disposable"
           ],
           "members": [
             {
@@ -37079,7 +40424,7 @@
           "name": "ProgressCommand1",
           "kind": "class",
           "audience": "application-facing",
-          "declaration": "final class ProgressCommand1<A, P, T, F extends Object> implements ValueListenable<CommandState<T, F>>, Disposable, AsyncDisposable",
+          "declaration": "final class ProgressCommand1<A, P, T, F extends Object> implements DartitectCommand<T, F>, Disposable",
           "deprecated": false,
           "annotations": [],
           "modifiers": [
@@ -37114,9 +40459,8 @@
           "supertype": "Object",
           "mixins": [],
           "interfaces": [
-            "ValueListenable<CommandState<T, F>>",
-            "Disposable",
-            "AsyncDisposable"
+            "DartitectCommand<T, F>",
+            "Disposable"
           ],
           "members": [
             {
@@ -40054,6 +43398,90 @@
           ]
         },
         {
+          "name": "FeatureHostFailurePhase",
+          "kind": "enum",
+          "audience": "application-facing",
+          "declaration": "enum FeatureHostFailurePhase",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "FeatureHostFailurePhase()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "FeatureHostFailurePhase",
+              "parameters": []
+            },
+            {
+              "name": "graph",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "FeatureHostFailurePhase graph",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "FeatureHostFailurePhase"
+            },
+            {
+              "name": "start",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "FeatureHostFailurePhase start",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "FeatureHostFailurePhase"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "List<FeatureHostFailurePhase> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<FeatureHostFailurePhase>"
+            },
+            {
+              "name": "viewModel",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "FeatureHostFailurePhase viewModel",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "FeatureHostFailurePhase"
+            }
+          ]
+        },
+        {
           "name": "FlutterBindingKind",
           "kind": "enum",
           "audience": "application-facing",
@@ -40668,6 +44096,125 @@
             }
           ],
           "aliasedType": "Widget Function(BuildContext, R)"
+        },
+        {
+          "name": "FeatureFailureBuilder",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef FeatureFailureBuilder = Widget Function(BuildContext, FeatureHostFailure, void Function())",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "aliasedType": "Widget Function(BuildContext, FeatureHostFailure, void Function())"
+        },
+        {
+          "name": "FeatureGraphBuilder",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef FeatureGraphBuilder<in Parent, out Root> = FutureOr<Root> Function(Parent, ResourceTransaction)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [
+            {
+              "name": "Parent",
+              "declaration": "in Parent",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Root",
+              "declaration": "out Root",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "aliasedType": "FutureOr<Root> Function(Parent, ResourceTransaction)"
+        },
+        {
+          "name": "FeatureReadyBuilder",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef FeatureReadyBuilder<in Root, in ViewModel extends Object> = Widget Function(BuildContext, Root, ViewModel)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [
+            {
+              "name": "Root",
+              "declaration": "in Root",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "ViewModel",
+              "declaration": "in ViewModel extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "aliasedType": "Widget Function(BuildContext, Root, ViewModel)"
+        },
+        {
+          "name": "FeatureViewModelDisposer",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef FeatureViewModelDisposer<in ViewModel extends Object> = FutureOr<void> Function(ViewModel)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [
+            {
+              "name": "ViewModel",
+              "declaration": "in ViewModel extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "aliasedType": "FutureOr<void> Function(ViewModel)"
+        },
+        {
+          "name": "FeatureViewModelFactory",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef FeatureViewModelFactory<in Root, out ViewModel extends Object> = ViewModel Function(Root)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [
+            {
+              "name": "Root",
+              "declaration": "in Root",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "ViewModel",
+              "declaration": "out ViewModel extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "aliasedType": "ViewModel Function(Root)"
+        },
+        {
+          "name": "FeatureViewModelStarter",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef FeatureViewModelStarter<in ViewModel extends Object> = FutureOr<void> Function(ViewModel)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [
+            {
+              "name": "ViewModel",
+              "declaration": "in ViewModel extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "aliasedType": "FutureOr<void> Function(ViewModel)"
         },
         {
           "name": "FlutterBindingBuildObserver",
@@ -76333,6 +79880,74 @@
           ]
         },
         {
+          "name": "MutationConflictPolicy",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "abstract interface class MutationConflictPolicy<T>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "interface"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "MutationConflictPolicy<T>()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "MutationConflictPolicy<T>",
+              "parameters": []
+            },
+            {
+              "name": "resolve",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "T resolve(T local, T remote)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "T",
+              "parameters": [
+                {
+                  "name": "local",
+                  "declaration": "T local",
+                  "type": "T",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "remote",
+                  "declaration": "T remote",
+                  "type": "T",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "MutationExecution",
           "kind": "class",
           "audience": "application-facing",
@@ -76644,6 +80259,80 @@
                 "final"
               ],
               "type": "EntitySyncState"
+            }
+          ]
+        },
+        {
+          "name": "MutationIdempotencyPolicy",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "abstract interface class MutationIdempotencyPolicy<K, A>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "interface"
+          ],
+          "typeParameters": [
+            {
+              "name": "K",
+              "declaration": "K",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "A",
+              "declaration": "A",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "MutationIdempotencyPolicy<K, A>()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "MutationIdempotencyPolicy<K, A>",
+              "parameters": []
+            },
+            {
+              "name": "create",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "String create(K key, A argument)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": [
+                {
+                  "name": "key",
+                  "declaration": "K key",
+                  "type": "K",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "argument",
+                  "declaration": "A argument",
+                  "type": "A",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
             }
           ]
         },
@@ -85171,6 +88860,80 @@
           ]
         },
         {
+          "name": "FeatureConnectivityHarness",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class FeatureConnectivityHarness",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "FeatureConnectivityHarness()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "FeatureConnectivityHarness",
+              "parameters": []
+            },
+            {
+              "name": "generation",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "int get generation",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "isOnline",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "bool get isOnline",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "setOnline",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "void setOnline(bool value)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "value",
+                  "declaration": "bool value",
+                  "type": "bool",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "FeatureContractFixtures",
           "kind": "class",
           "audience": "tooling-test",
@@ -85257,6 +89020,30 @@
               "parameters": []
             },
             {
+              "name": "clock",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "ManualClock clock",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "ManualClock"
+            },
+            {
+              "name": "connectivity",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "FeatureConnectivityHarness connectivity",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "FeatureConnectivityHarness"
+            },
+            {
               "name": "faults",
               "kind": "field",
               "audience": "tooling-test",
@@ -85267,6 +89054,30 @@
                 "final"
               ],
               "type": "FeatureFaultController"
+            },
+            {
+              "name": "ids",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DeterministicIdGenerator ids",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DeterministicIdGenerator"
+            },
+            {
+              "name": "randomness",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "FeatureDeterministicRandom randomness",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "FeatureDeterministicRandom"
             },
             {
               "name": "resources",
@@ -85281,6 +89092,18 @@
               "type": "ResourceCensus"
             },
             {
+              "name": "scheduler",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "ManualScheduler scheduler",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "ManualScheduler"
+            },
+            {
               "name": "store",
               "kind": "field",
               "audience": "tooling-test",
@@ -85292,6 +89115,19 @@
                 "late"
               ],
               "type": "FeatureObservedStore"
+            },
+            {
+              "name": "transport",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "FeatureTransportHarness transport",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final",
+                "late"
+              ],
+              "type": "FeatureTransportHarness"
             },
             {
               "name": "acknowledgements",
@@ -85457,6 +89293,27 @@
               "kind": "constructor",
               "audience": "tooling-test",
               "declaration": "FeatureContractMatrix<T>.cache({required FeatureContractFixtures<T> fixtures})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "FeatureContractMatrix<T>",
+              "parameters": [
+                {
+                  "name": "fixtures",
+                  "declaration": "{required FeatureContractFixtures<T> fixtures}",
+                  "type": "FeatureContractFixtures<T>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "local",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "FeatureContractMatrix<T>.local({required FeatureContractFixtures<T> fixtures})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -85864,6 +89721,65 @@
               "typeParameters": [],
               "returnType": "bool",
               "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "FeatureDeterministicRandom",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class FeatureDeterministicRandom",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "FeatureDeterministicRandom({int seed = 1})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "FeatureDeterministicRandom",
+              "parameters": [
+                {
+                  "name": "seed",
+                  "declaration": "{int seed = 1}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "1",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "nextInt",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "int nextInt(int maximum)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": [
+                {
+                  "name": "maximum",
+                  "declaration": "int maximum",
+                  "type": "int",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
             }
           ]
         },
@@ -87040,6 +90956,92 @@
                 "final"
               ],
               "type": "int"
+            }
+          ]
+        },
+        {
+          "name": "FeatureTransportHarness",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class FeatureTransportHarness",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "FeatureTransportHarness(ResourceCensus resources)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "FeatureTransportHarness",
+              "parameters": [
+                {
+                  "name": "resources",
+                  "declaration": "ResourceCensus resources",
+                  "type": "ResourceCensus",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "attempts",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "int get attempts",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "execute",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Future<T> execute<T>(CancellationSignal cancellation, FutureOr<T> Function() action)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [
+                {
+                  "name": "T",
+                  "declaration": "T",
+                  "bound": null,
+                  "annotations": []
+                }
+              ],
+              "returnType": "Future<T>",
+              "parameters": [
+                {
+                  "name": "cancellation",
+                  "declaration": "CancellationSignal cancellation",
+                  "type": "CancellationSignal",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "action",
+                  "declaration": "FutureOr<T> Function() action",
+                  "type": "FutureOr<T> Function()",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
             }
           ]
         },

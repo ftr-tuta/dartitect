@@ -3,7 +3,7 @@
 Dartitect is closed to concrete product, organization, and business behavior.
 When reusable infrastructure is intentionally specific to one greenfield
 project, declare it in ordinary typed Dart inside that project and list the
-source in config v2. The SDK has no plugin loader, registry, string lookup,
+source in config v3. The SDK has no plugin loader, registry, string lookup,
 marketplace, or globally installed extension.
 
 ```dart

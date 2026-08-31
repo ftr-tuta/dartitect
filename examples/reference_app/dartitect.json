@@ -1,5 +1,5 @@
 {
-  "configVersion": 2,
+  "configVersion": 3,
   "profile": "native_strict",
   "layers": {
     "domain": ["**/domain/**"],
@@ -33,10 +33,58 @@
   ],
   "suppressions": [],
   "targets": {"platforms": ["android", "ios", "macos", "windows", "linux", "web"]},
-  "storageContexts": {},
-  "transports": {},
+  "storageContexts": {
+    "reference_runtime": {
+      "provider": "custom:reference-runtime",
+      "mode": "durable",
+      "scope": "application",
+      "factorySource": {
+        "source": "lib/composition/reference_factories.dart",
+        "declaration": "ReferenceRuntimeFactory"
+      },
+      "targets": ["android", "ios", "macos", "windows", "linux", "web"]
+    }
+  },
+  "transports": {
+    "reference_transport": {
+      "provider": "custom:reference-transport",
+      "scope": "application",
+      "factorySource": {
+        "source": "lib/composition/reference_factories.dart",
+        "declaration": "ReferenceTransportFactory"
+      },
+      "targets": ["android", "ios", "macos", "windows", "linux", "web"]
+    }
+  },
+  "contracts": {},
   "observability": {"provider": "none"},
   "scheduler": {"provider": "none"},
-  "features": {"declarations": {}},
+  "features": {
+    "declarations": {
+      "tasks": {
+        "profile": "cache",
+        "scope": "application",
+        "factorySource": {
+          "source": "lib/features/tasks/composition/tasks_factory.dart",
+          "declaration": "TasksFactory"
+        },
+        "localAuthority": "custom",
+        "storageContext": "reference_runtime",
+        "transport": "reference_transport",
+        "dataset": {
+          "dataset": "tasks",
+          "partition": "reference",
+          "codec": "tasks_v1",
+          "retention": "indefinite",
+          "transactionBoundary": "reference_tasks"
+        },
+        "pagination": "cursor",
+        "diagnostics": "full",
+        "headlessTargets": [],
+        "capabilities": [],
+        "operations": []
+      }
+    }
+  },
   "extensionSources": []
 }

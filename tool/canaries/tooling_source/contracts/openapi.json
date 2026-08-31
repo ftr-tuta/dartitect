@@ -1,0 +1,12 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "Tooling Canary", "version": "1"},
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "responses": {"204": {"description": "healthy"}}
+      }
+    }
+  }
+}

@@ -3,7 +3,7 @@ import 'package:dartitect_cli/src/fleet/v1_config_migration.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('exact RC6 aliases become closed target-aware config v2', () {
+  test('exact RC6 aliases converge through the migration chain to v3', () {
     final result = migrateDartitectV1Config('''{
   "configVersion": 1,
   "profile": "native_strict",
@@ -34,7 +34,7 @@ void main() {
 
     expect(result.changed, isTrue);
     expect(result.config.profile, nativeStrictProfile);
-    expect(result.config.configVersion, 2);
+    expect(result.config.configVersion, 3);
     expect(result.config.scheduler.provider, 'workmanager');
     final orders = result.config.features.declarations['orders']!;
     expect(orders.scope, FeatureScope.application);
@@ -48,6 +48,7 @@ void main() {
     );
     expect(orders.targets, isNot(contains(DartitectPlatform.web)));
     expect(orders.pagination, FeaturePagination.cursor);
+    expect(orders.localAuthority, FeatureLocalAuthorityStrategy.generatedPull);
     expect(orders.headlessTargets, isNot(contains(DartitectPlatform.windows)));
     expect(result.config.encode(), isNot(contains('scaffolds')));
     expect(result.config.encode(), isNot(contains('ecosystem')));

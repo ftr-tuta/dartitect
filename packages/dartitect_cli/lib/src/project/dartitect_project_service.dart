@@ -716,11 +716,7 @@ final class DartitectProjectService {
   }
 
   static String _renderDependencyUpgrade(String source, String target) {
-    const sections = <String>{
-      'dependencies',
-      'dev_dependencies',
-      'dependency_overrides',
-    };
+    const sections = <String>{'dependencies', 'dev_dependencies'};
     String? section;
     final lineEnding = source.contains('\r\n') ? '\r\n' : '\n';
     final lines = source.split(RegExp(r'\r?\n'));

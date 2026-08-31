@@ -1,0 +1,30 @@
+name: large_consumer_canary
+description: Workspace source for the isolated 30-feature scale canary.
+version: 1.0.0-rc.9
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dependencies:
+  dartitect: ^1.0.0-rc.9
+  dartitect_dio: ^1.0.0-rc.9
+  dartitect_drift: ^1.0.0-rc.9
+  dartitect_flutter: ^1.0.0-rc.9
+  dartitect_observability: ^1.0.0-rc.9
+  dartitect_sync: ^1.0.0-rc.9
+  dartitect_workmanager: ^1.0.0-rc.9
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  dartitect_cli: ^1.0.0-rc.9
+  dartitect_testing: ^1.0.0-rc.9
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: false

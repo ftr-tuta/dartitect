@@ -86,12 +86,26 @@ final class AppRuntime implements AsyncDisposable, DartitectScopeValue {
   }
 
   Future<void>? _sessionCloseFuture;
+  Completer<void>? _authenticatedRoutesRemoved;
+
+  /// Arms the route-removal fence for the current authenticated shell.
+  void markAuthenticatedRoutesMounted() {
+    if (_authenticatedRoutesRemoved?.isCompleted == false) return;
+    _authenticatedRoutesRemoved = Completer<void>();
+  }
+
+  /// Confirms that the authenticated feature subtree has left the widget tree.
+  void confirmAuthenticatedRoutesRemoved() {
+    final removed = _authenticatedRoutesRemoved;
+    if (removed != null && !removed.isCompleted) removed.complete();
+  }
 
   /// Drains the session graph after the shell has removed authenticated routes.
   Future<void> completeForcedLogout() =>
       _sessionCloseFuture ??= _closeSession();
 
   Future<void> _closeSession() async {
+    await _authenticatedRoutesRemoved?.future;
     await tasks.disposeAsync();
     if (!sessionState.isDisposed) {
       sessionState.transition(

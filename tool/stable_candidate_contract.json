@@ -15,5 +15,6 @@
   ],
   "publicationWorkflow": ".github/workflows/publish.yaml",
   "manualTriggerOnly": true,
+  "promotionBlockers": ["ui-ux-business-neutral"],
   "externalAuthorizationRecordsAccepted": false
 }

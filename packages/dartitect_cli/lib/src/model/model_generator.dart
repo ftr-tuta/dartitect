@@ -234,6 +234,7 @@ final class DartitectModelGenerator {
         FileGenerationOperation(
           relativePath: library.outputPath,
           content: _render(library),
+          rendererId: 'model.value',
           ownership: GeneratedOwnership.fullyGenerated,
           sourcePath: library.path,
           rendererVersion: DartitectGenerationVersions.modelRenderer,

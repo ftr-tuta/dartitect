@@ -1,3 +1,7 @@
+## 1.0.0-rc.9
+
+- Join the RC9 typed capability graph and mandatory attachments-canary cohort.
+
 ## 1.0.0-rc.8
 
 - Prepare the package for the RC8 greenfield platform baseline and compatible post-1.0 publication cohorts.

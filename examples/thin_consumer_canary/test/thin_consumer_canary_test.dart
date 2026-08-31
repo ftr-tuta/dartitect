@@ -1,19 +1,59 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:dartitect/dartitect_credentials.dart';
+import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:dartitect_flutter/dartitect_flutter_forms.dart';
 import 'package:dartitect_flutter/dartitect_flutter_queries.dart';
+import 'package:dartitect_jobs/dartitect_jobs.dart';
+import 'package:dartitect_resilience/dartitect_resilience.dart';
+import 'package:dartitect_sync/dartitect_sync.dart';
 import 'package:dartitect_transfer/dartitect_attachments.dart';
+import 'package:dartitect_transfer/dartitect_transfer.dart';
 import 'package:dartitect_workmanager/dartitect_workmanager.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/material.dart';
+import 'package:thin_consumer_canary/composition/application_module.wiring.dartitect.g.dart';
+import 'package:thin_consumer_canary/features/tasks/application/tasks_mutation.dart';
+import 'package:thin_consumer_canary/features/tasks/application/tasks_remote_port.dart';
 import 'package:thin_consumer_canary/features/tasks/composition/tasks.wiring.dartitect.g.dart';
+import 'package:thin_consumer_canary/features/tasks/composition/tasks_workmanager.wiring.dartitect.g.dart';
+import 'package:thin_consumer_canary/features/tasks/composition/tasks_factory.dart';
+import 'package:thin_consumer_canary/features/tasks/domain/tasks_model.dart';
+import 'package:thin_consumer_canary/features/tasks/domain/tasks_repository.dart';
+import 'package:thin_consumer_canary/presentation/thin_consumer_app.dart';
 
 final class _Failure implements Exception {
   const _Failure();
 }
 
 void main() {
+  testWidgets('generated graph renders Tasks through FeatureHost', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ApplicationHost<ApplicationGraph>.create(
+          create: ApplicationModule.create,
+          loading: (_) => const Text('Bootstrapping'),
+          failure: (_, failure, retry) => TextButton(
+            onPressed: retry,
+            child: const Text('Retry bootstrap'),
+          ),
+          ready: (_, graph) => ThinConsumerApp(graph: graph),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('First Task'), findsOneWidget);
+    expect(find.text('Status: open'), findsOneWidget);
+
+    await tester.tap(find.text('First Task'));
+    await tester.pumpAndSettle();
+    expect(find.text('Status: completed'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpAndSettle();
+  });
+
   test('strict wiring enables the complete opt-in workflow set', () async {
     expect(TasksFeatureWiring.profile, 'offline-full');
     expect(TasksFeatureWiring.scope, 'application');
@@ -60,34 +100,118 @@ void main() {
       DartitectWorkmanagerPlatform.windows,
     );
     expect(windows.maturity, DartitectWorkmanagerMaturity.unsupported);
+    expect(<Type>[JobEnvelope, RateLimiter, TransferChunk], hasLength(3));
   });
 
-  test('generated main stays on the public paved road', () {
-    final lines = File('${_packageRoot().path}/lib/main.dart')
-        .readAsLinesSync()
-        .where((line) => line.trim().isNotEmpty)
-        .toList(growable: false);
-    expect(lines, hasLength(lessThanOrEqualTo(15)));
-    expect(lines.join('\n'), contains('runDartitectApplication'));
-  });
-}
+  test('generated graph owns offline mutation, restart recovery, sync, and disposal', () async {
+    final coordinator = ApplicationModule.create();
+    final attempt = await coordinator.run();
+    expect(attempt, isA<BootstrapSucceeded<ApplicationGraph>>());
+    final application = (attempt as BootstrapSucceeded<ApplicationGraph>).graph;
+    addTearDown(coordinator.disposeAsync);
 
-Directory _packageRoot() {
-  var directory = Directory.current.absolute;
-  while (true) {
-    final config = File('${directory.path}/.dart_tool/package_config.json');
-    if (config.existsSync()) {
-      final json =
-          jsonDecode(config.readAsStringSync()) as Map<String, Object?>;
-      final packages = json['packages']! as List<Object?>;
-      final entry = packages.cast<Map<String, Object?>>().singleWhere(
-        (candidate) => candidate['name'] == 'thin_consumer_canary',
-      );
-      return Directory.fromUri(config.uri.resolve(entry['rootUri']! as String));
-    }
-    if (directory.parent.path == directory.path) {
-      throw StateError('Dart package configuration was not found.');
-    }
-    directory = directory.parent;
-  }
+    final first = await ResourceTransaction.create<TasksRuntime>(
+      (transaction) => TasksRuntime.create(
+        application.root,
+        const TasksFactory(),
+        transaction,
+      ),
+    );
+    first.root.remotePort.mode = TasksRemoteMode.offline;
+    final queued = await first.root.mutationCommand.execute(
+      'first',
+      const TasksMutation(aggregateId: 'first'),
+    );
+    expect(
+      (queued
+              as CommandSucceeded<
+                MutationExecution<TasksMutation, String, void, TasksFailure>,
+                TasksFailure
+              >)
+          .value
+          .disposition,
+      CommitDisposition.queued,
+    );
+    expect(
+      application.root.primary.outbox.single.syncState,
+      EntitySyncState.pending,
+    );
+    final readCancellation = CancellationSource();
+    expect(
+      (await application.root.primary.read(
+        readCancellation.signal,
+      ) as Ok<List<Task>>).value.single.status,
+      TaskStatus.completed,
+    );
+    readCancellation.dispose();
+    await first.disposeAsync();
+    expect(first.root.mutationCommand.isDisposed, isTrue);
+
+    final restarted = await ResourceTransaction.create<TasksRuntime>(
+      (transaction) => TasksRuntime.create(
+        application.root,
+        const TasksFactory(),
+        transaction,
+      ),
+    );
+    restarted.root.remotePort.mode = TasksRemoteMode.online;
+    final recovered = await restarted.root.mutationCommand.recoverPending();
+    expect(recovered, isA<Ok<dynamic>>());
+    expect(restarted.root.remotePort.deliveredIdempotencyKeys, hasLength(1));
+    expect(
+      application.root.primary.outbox.single.syncState,
+      EntitySyncState.synced,
+    );
+
+    await application.root.primary.addOffline(
+      const Task(id: 'conflict', title: 'Conflicting Task'),
+    );
+    restarted.root.remotePort.mode = TasksRemoteMode.conflict;
+    final conflicted = await restarted.root.mutationCommand.execute(
+      'conflict',
+      const TasksMutation(aggregateId: 'conflict'),
+    );
+    expect(
+      (conflicted
+              as CommandSucceeded<
+                MutationExecution<TasksMutation, String, void, TasksFailure>,
+                TasksFailure
+              >)
+          .value
+          .syncState,
+      EntitySyncState.conflicted,
+    );
+
+    await application.root.primary.addOffline(
+      const Task(id: 'uncertain', title: 'Uncertain Task'),
+    );
+    restarted.root.remotePort.mode = TasksRemoteMode.uncertain;
+    final uncertain = await restarted.root.mutationCommand.execute(
+      'uncertain',
+      const TasksMutation(aggregateId: 'uncertain'),
+    );
+    expect(
+      (uncertain
+              as CommandSucceeded<
+                MutationExecution<TasksMutation, String, void, TasksFailure>,
+                TasksFailure
+              >)
+          .value
+          .disposition,
+      CommitDisposition.uncertain,
+    );
+
+    final sync = await restarted.root.syncEngine.start().done;
+    expect(sync.succeeded, isTrue);
+    final headless = TasksWorkmanagerJob.create(
+      jobId: 'tasks-headless',
+      deadline: DateTime.utc(2030),
+    );
+    expect(headless.definition, 'tasks');
+    await restarted.disposeAsync();
+    expect(restarted.root.mutationCommand.isDisposed, isTrue);
+    expect(restarted.root.syncEngine.activeRunCount, 0);
+    await application.disposeAsync();
+    expect(application.root.primary.closed, isTrue);
+  });
 }

@@ -1,0 +1,21 @@
+name: dartitect_tooling_packaged_canary
+description: Isolated packaged proof for CLI, OpenAPI, DevTools, lints, MCP, and testing.
+version: 0.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  dartitect: 1.0.0-rc.9
+  dartitect_cli: 1.0.0-rc.9
+  dartitect_devtools: 1.0.0-rc.9
+  dartitect_dio: 1.0.0-rc.9
+  dartitect_lints: 1.0.0-rc.9
+  dartitect_mcp: 1.0.0-rc.9
+  dartitect_modeling_analyzer: 1.0.0-rc.9
+  dartitect_testing: 1.0.0-rc.9
+
+dev_dependencies:
+  crypto: ^3.0.7
+  test: ^1.30.0

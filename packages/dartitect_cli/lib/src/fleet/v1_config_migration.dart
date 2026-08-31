@@ -2,13 +2,19 @@ import 'dart:convert';
 
 import '../config/dartitect_config.dart';
 import '../rules/generated_boundary_policy.dart';
+import 'v2_config_migration.dart';
 
-/// Exact, one-way Dartitect config migration to v2.
+/// Stable identity of the released config-v1 to config-v2 migration.
+const String dartitectV1ToV2MigrationId = 'config-v1-to-v2';
+
+/// Exact, versioned Dartitect config migration-chain result.
 final class DartitectV1ConfigMigration {
   /// Creates a migration result.
   const DartitectV1ConfigMigration({
     required this.config,
     required this.changed,
+    required this.steps,
+    required this.manualActions,
   });
 
   /// Strict RC8 configuration.
@@ -16,6 +22,12 @@ final class DartitectV1ConfigMigration {
 
   /// Whether the input used the exact RC6 representation.
   final bool changed;
+
+  /// Ordered migration IDs and apply/no-op disposition.
+  final List<Map<String, String>> steps;
+
+  /// Consumer-owned declarations that must be implemented before apply.
+  final List<String> manualActions;
 }
 
 /// Migrates only the released RC6 config-v1 representation.
@@ -31,6 +43,29 @@ DartitectV1ConfigMigration migrateDartitectV1Config(String source) {
     return DartitectV1ConfigMigration(
       config: DartitectConfig.fromJson(decoded),
       changed: false,
+      steps: const <Map<String, String>>[
+        <String, String>{'id': dartitectV1ToV2MigrationId, 'action': 'no-op'},
+        <String, String>{'id': dartitectV2ToV3MigrationId, 'action': 'no-op'},
+      ],
+      manualActions: const <String>[],
+    );
+  }
+  if (decoded['configVersion'] == 2) {
+    final migrated = migrateDartitectV2Config(source);
+    return DartitectV1ConfigMigration(
+      config: migrated.config,
+      changed: migrated.changed,
+      steps: <Map<String, String>>[
+        const <String, String>{
+          'id': dartitectV1ToV2MigrationId,
+          'action': 'no-op',
+        },
+        <String, String>{
+          'id': dartitectV2ToV3MigrationId,
+          'action': migrated.changed ? 'apply' : 'no-op',
+        },
+      ],
+      manualActions: migrated.manualActions,
     );
   }
   final appearsV1 =
@@ -81,7 +116,7 @@ DartitectV1ConfigMigration migrateDartitectV1Config(String source) {
     );
   }
   final strict = <String, Object?>{
-    'configVersion': currentConfigVersion,
+    'configVersion': 2,
     'profile': nativeStrictProfile,
     'layers': decoded['layers'],
     'compositionRoots': decoded['compositionRoots'],
@@ -110,9 +145,15 @@ DartitectV1ConfigMigration migrateDartitectV1Config(String source) {
     'features': <String, Object?>{'declarations': migrated.declarations},
     'extensionSources': const <Object?>[],
   };
+  final v2Migration = migrateDartitectV2Config(jsonEncode(strict));
   return DartitectV1ConfigMigration(
-    config: DartitectConfig.fromJson(strict),
+    config: v2Migration.config,
     changed: true,
+    steps: const <Map<String, String>>[
+      <String, String>{'id': dartitectV1ToV2MigrationId, 'action': 'apply'},
+      <String, String>{'id': dartitectV2ToV3MigrationId, 'action': 'apply'},
+    ],
+    manualActions: v2Migration.manualActions,
   );
 }
 

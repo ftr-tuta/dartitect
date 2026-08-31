@@ -6,6 +6,38 @@ import 'package:test/test.dart';
 
 void main() {
   test(
+    'local matrix and deterministic instruments are fully managed',
+    () async {
+      late FeatureContractHarness observed;
+      final matrix = FeatureContractMatrix<_ObservedDriver>.local(
+        fixtures: FeatureContractFixtures<_ObservedDriver>(
+          create: (harness) {
+            observed = harness;
+            return _ObservedDriver(harness);
+          },
+        ),
+      );
+
+      final results = await matrix.run();
+
+      expect(results, hasLength(7));
+      expect(results.every((result) => result.succeeded), isTrue);
+      expect(observed.clock.now(), DateTime.utc(2026));
+      expect(observed.ids.nextId(), 'feature-1');
+      expect(observed.randomness.nextInt(10), inInclusiveRange(0, 9));
+      observed.connectivity.setOnline(false);
+      expect(observed.connectivity.generation, 1);
+      final cancellation = CancellationSource();
+      expect(
+        await observed.transport.execute<int>(cancellation.signal, () => 42),
+        42,
+      );
+      cancellation.dispose();
+      observed.resources.verifyZero();
+    },
+  );
+
+  test(
     'offline-full derives every row from observed runtime evidence',
     () async {
       var creates = 0;

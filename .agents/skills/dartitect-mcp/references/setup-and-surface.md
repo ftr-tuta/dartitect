@@ -7,6 +7,6 @@ by configured names. Do not put credentials in command arguments or environment.
 The closed read surface provides inspect, verify, bounded scan, doctor, finding
 explanation, conformance auditing, and modeling migration previews. Generated resources expose
 package metadata, diagnostics, canonical English guides, and credential-free
-config v2. There is no free-form file resource. Results include structured
+config v3. There is no free-form file resource. Results include structured
 content plus compatible JSON text. Read tools/previews are annotated read-only;
 only apply is mutable/destructive.

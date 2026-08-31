@@ -197,15 +197,6 @@ void main() {
     expect(calls, 1);
     expect(viewModel.isDisposed, isTrue);
   });
-
-  test('requires owned commands to be listenable at runtime', () async {
-    final viewModel = _TestViewModel();
-    expect(
-      () => viewModel.addCommand(_NonListenableDisposable()),
-      throwsArgumentError,
-    );
-    await viewModel.disposeAsync();
-  });
 }
 
 final class _TestViewModel extends DartitectViewModel {
@@ -214,8 +205,10 @@ final class _TestViewModel extends DartitectViewModel {
         crashReporter: reporter ?? const NoOpDartitectViewModelCrashReporter(),
       );
 
-  T addCommand<T extends AsyncDisposable>(T command, {String? label}) =>
-      ownCommand(command, label: label);
+  T addCommand<T extends DartitectObservableResource>(
+    T command, {
+    String? label,
+  }) => ownCommand(command, label: label);
 
   T addResource<T extends Object>(
     T resource,
@@ -229,16 +222,22 @@ final class _TestViewModel extends DartitectViewModel {
       runReportingCrashes(operation, body);
 }
 
-final class _FakeCommand extends ChangeNotifier implements AsyncDisposable {
+final class _FakeCommand extends ChangeNotifier
+    implements DartitectObservableResource {
   _FakeCommand(this.label, this.events);
 
   final String label;
   final List<String> events;
+  var _disposed = false;
+
+  @override
+  bool get isDisposed => _disposed;
 
   void publish() => notifyListeners();
 
   @override
   Future<void> disposeAsync() async {
+    _disposed = true;
     events.add('dispose:$label');
     notifyListeners();
     super.dispose();
@@ -255,11 +254,6 @@ Command0<void, String> _cancellableCommand(String label, List<String> events) =>
       signal.throwIfCancelled();
       return const Ok<void>(null);
     });
-
-final class _NonListenableDisposable implements AsyncDisposable {
-  @override
-  Future<void> disposeAsync() async {}
-}
 
 final class _CrashReporter implements DartitectViewModelCrashReporter {
   final errors = <Object>[];

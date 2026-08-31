@@ -1,5 +1,6 @@
 // GENERATED CODE - DO NOT EDIT BY HAND.
 // Operational schema only; domain tables and queries remain consumer-owned.
+// ignore_for_file: public_member_api_docs
 
 import 'package:dartitect_drift/dartitect_drift.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';

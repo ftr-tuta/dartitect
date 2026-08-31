@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.9
+
+- Add compile-time observable command contracts, exhaustive `CommandState.match`, material-neutral `CommandStateBuilder`, and lifecycle-safe `FeatureHost`.
+
 ## 1.0.0-rc.8
 
 - Prepare the package for the RC8 greenfield platform baseline and compatible post-1.0 publication cohorts.

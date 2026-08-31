@@ -274,7 +274,7 @@ worker; and `dartitect_flutter` for local-authority presentation. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.8` source candidate. Supported
+The workspace contains the `1.0.0-rc.9` source candidate. Supported
 Git consumption requires one compatible cohort from a tag with a corresponding
 published GitHub Release, using its Release-note coordinates. If no compatible
 Release exists, there is no supported consumption path. See the

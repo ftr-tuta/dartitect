@@ -31,7 +31,7 @@ void main() {
     ]);
 
     expect(accepted.exitCode, 0);
-    expect(accepted.stdout, contains('nominal five-cell'));
+    expect(accepted.stdout, contains('ui-ux-business-neutral'));
     expect(rejected.exitCode, 1);
   });
 }
