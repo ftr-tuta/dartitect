@@ -2,7 +2,7 @@
 
 Snapshot:: 2026-08-23
 Toolchain:: Dart 3.13.1 / Flutter 3.47.1 / Linux x64
-Role:: Reviewed `1.0.0-rc.9` thresholds; exact-root reproduction runs in Actions
+Role:: Reviewed `1.0.0-rc.10` thresholds; exact-root reproduction runs in Actions
 
 The generated-composition gate runs `tool/benchmark_wiring_sync.dart` with 100
 features. Seven warm previews must have a median at or below two seconds; a

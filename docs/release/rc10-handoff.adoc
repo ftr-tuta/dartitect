@@ -1,0 +1,44 @@
+= RC10 UI-quality source-candidate handoff
+:toc:
+
+Candidate:: `1.0.0-rc.10`
+State:: SOURCE CANDIDATE ONLY
+Topology:: 25 packages / 32 public entrypoints
+
+This branch assembles RC10 without creating a tag, GitHub Release, or pub.dev
+publication. Those actions remain manual and require successful `CI / Required`
+evidence for the exact source.
+
+== UI-quality closure
+
+* `dartitect_flutter_ui.dart` classifies available width and height separately
+  and exposes required compact, medium, and expanded branches without selecting
+  controls, navigation, appearance, or state ownership;
+* forms, queries, and reactive resources expose exhaustive, ticker-aware
+  borrowed builders and retain their existing state authorities;
+* `dartitect_flutter_testing` provides a bounded five-row UI matrix and restores
+  every test-binding override in `finally`;
+* CLI and analyzer diagnostics share a versioned positive/false-positive corpus,
+  severity, and suppression policy;
+* `dartitect create app` emits a localized Material 3 shell with official
+  controls and a matrix-based base test;
+* the managed `dartitect-ui` skill routes presentation architecture,
+  responsiveness, accessibility, localization, focus, navigation, forms, and
+  verification work; and
+* the synthetic canary covers command, form, query, and resource states,
+  semantics, keyboard behavior, three shared-layout goldens, and six hosted
+  platform build definitions.
+
+== Evidence and non-goals
+
+`tool/ui_quality_contract.json` and `tool/check_ui_quality.dart` define
+`ui-quality-v1`. The stable-candidate checker accepts
+`promotionBlockers: []` only while this evidence is current. Tests and goldens
+remain local or in hosted CI; no screenshot, semantics tree, or screen content
+is transmitted as telemetry.
+
+Colors, typography, visible text, localization policy, navigation, identity,
+design system, focus order, keyboard shortcuts, and product-composed widgets
+remain consumer-owned. No existing import is removed, config v3 is unchanged,
+and fleet commands only report adoption; automatic widget migration is
+forbidden.

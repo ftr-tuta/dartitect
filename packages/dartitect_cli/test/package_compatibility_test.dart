@@ -12,7 +12,7 @@ void main() {
       final lock = File('${root.path}/pubspec.lock');
       await lock.writeAsString(
         _lock(<String, String>{
-          'dartitect': '1.0.0-rc.9',
+          'dartitect': '1.0.0-rc.10',
           'dartitect_cli': '1.0.0-rc.10',
         }),
       );
@@ -28,14 +28,14 @@ void main() {
     await lock.writeAsString(
       _lock(<String, String>{
         'dartitect': '1.0.0-rc.8',
-        'dartitect_cli': '1.0.0-rc.9',
+        'dartitect_cli': '1.0.0-rc.10',
       }),
     );
 
     final findings = await DartitectLockCompatibility.inspect(lock);
     expect(findings, hasLength(1));
     expect(findings.single.package, 'dartitect');
-    expect(findings.single.expectedRange, '>=1.0.0-rc.9 <1.0.0');
+    expect(findings.single.expectedRange, '>=1.0.0-rc.10 <1.0.0');
   });
 }
 

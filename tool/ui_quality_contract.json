@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "artifact": "ui-quality-v1",
+  "goal": "V1S-18",
+  "cohortVersion": "1.0.0-rc.10",
+  "topology": {"packages": 25, "publicEntrypoints": 32},
+  "entrypoints": [
+    "package:dartitect_flutter/dartitect_flutter_ui.dart",
+    "package:dartitect_flutter_testing/dartitect_flutter_testing.dart"
+  ],
+  "builders": [
+    "DartitectFormSnapshotBuilder",
+    "DartitectQueryStateBuilder",
+    "ResourcePresentationBuilder"
+  ],
+  "matrix": [
+    {"size": "360x640", "textScale": 1.0, "direction": "ltr", "brightness": "light", "highContrast": false, "reducedMotion": false},
+    {"size": "430x932", "textScale": 2.0, "direction": "rtl", "brightness": "dark", "highContrast": true, "reducedMotion": true},
+    {"size": "768x1024", "textScale": 1.0, "direction": "rtl", "brightness": "light", "highContrast": true, "reducedMotion": false},
+    {"size": "1024x768", "textScale": 2.0, "direction": "ltr", "brightness": "dark", "highContrast": false, "reducedMotion": true},
+    {"size": "1440x900", "textScale": 1.0, "direction": "ltr", "brightness": "light", "highContrast": true, "reducedMotion": true}
+  ],
+  "diagnosticParity": {
+    "corpus": "tool/boundary_parity_corpus.json",
+    "checker": "tool/check_boundary_parity.dart",
+    "errors": ["DT3001", "DT3002"],
+    "warnings": ["DT3101", "DT3102", "DT3103", "DT3104", "DT3105", "DT3106"]
+  },
+  "skill": ".agents/skills/dartitect-ui/SKILL.md",
+  "scaffold": "packages/dartitect_cli/lib/src/cli/dartitect_cli_runner.dart",
+  "canary": {
+    "root": "examples/paved_road_canary",
+    "controls": ["MaterialApp", "Scaffold", "FilledButton", "TextButton", "NavigationBar", "NavigationRail", "CircularProgressIndicator.adaptive", "Switch.adaptive", "CupertinoButton"],
+    "states": ["loading", "stale", "empty", "expected failure", "crash"],
+    "tests": [
+      "test/ui_quality_matrix_test.dart",
+      "test/ui_quality_state_gallery_test.dart",
+      "test/shared_layout_golden_test.dart"
+    ],
+    "goldens": [
+      "test/goldens/shared_compact.png",
+      "test/goldens/shared_medium.png",
+      "test/goldens/shared_expanded.png"
+    ],
+    "platformBuilds": ["android", "ios", "web", "linux", "windows", "macos"]
+  },
+  "privacy": {"uploadsScreenshots": false, "uploadsSemantics": false, "uploadsScreenContent": false}
+}

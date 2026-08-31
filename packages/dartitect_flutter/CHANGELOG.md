@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.10
+
+- Join the RC10 business-neutral UI quality and evidence cohort.
+
 ## 1.0.0-rc.9
 
 - Add compile-time observable command contracts, exhaustive `CommandState.match`, material-neutral `CommandStateBuilder`, and lifecycle-safe `FeatureHost`.

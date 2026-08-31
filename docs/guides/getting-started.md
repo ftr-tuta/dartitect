@@ -51,7 +51,7 @@ through a baseline.
 
 ## Agent guidance
 
-`dartitect codex sync --dry-run` previews eleven managed, implicitly invocable
+`dartitect codex sync --dry-run` previews twelve managed, implicitly invocable
 skills. New work starts with `$dartitect-design`; `$dartitect-audit` validates
 that a Dartitect-created project still conforms after development or an SDK
 upgrade. It does not produce an adoption or conversion plan. Focused

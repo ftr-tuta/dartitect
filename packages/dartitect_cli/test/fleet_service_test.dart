@@ -228,7 +228,7 @@ Result<int, StateError> load() => const Ok<int>(1);
   });
 
   test(
-    'fleet CLI previews RC9 upgrade and writes nothing by default',
+    'fleet CLI previews RC10 upgrade and writes nothing by default',
     () async {
       final fleet = await _fleet();
       final app = await _project(fleet, 'app', '^1.0.0-rc.6');
@@ -247,7 +247,7 @@ Result<int, StateError> load() => const Ok<int>(1);
           'upgrade',
           'app',
           '--dry-run',
-          '--to=1.0.0-rc.9',
+          '--to=1.0.0-rc.10',
           '--json',
         ]),
         0,
@@ -267,7 +267,7 @@ Result<int, StateError> load() => const Ok<int>(1);
           'fleet',
           'upgrade',
           'app',
-          '--to=1.0.0-rc.9',
+          '--to=1.0.0-rc.10',
         ]),
         0,
       );
@@ -288,12 +288,12 @@ dependency_overrides:
   dartitect:
     git:
       url: /tmp/dartitect-candidate
-      ref: v1.0.0-rc.9
+      ref: v1.0.0-rc.10
       path: packages/dartitect
 ''');
 
       final report = await DartitectFleetService(fleet)
-          .previewUpgrade(<String>['app'], targetCohort: '1.0.0-rc.9');
+          .previewUpgrade(<String>['app'], targetCohort: '1.0.0-rc.10');
       final plan = report.projects.single['plan']! as Map<String, Object?>;
 
       expect(plan['operations'], contains('UPDATE pubspec.yaml'));
@@ -330,12 +330,12 @@ dependency_overrides:
       );
 
       final report = await DartitectFleetService(fleet)
-          .previewUpgrade(<String>['app'], targetCohort: '1.0.0-rc.9');
+          .previewUpgrade(<String>['app'], targetCohort: '1.0.0-rc.10');
       final plan = report.projects.single['plan']! as Map<String, Object?>;
 
       expect(plan['migrations'], <Object?>[
         <String, String>{'id': 'renderer-manifest-v2-to-v3', 'action': 'no-op'},
-        <String, String>{'id': 'wiring-renderers-rc9-v3', 'action': 'apply'},
+        <String, String>{'id': 'wiring-renderers-rc10-v3', 'action': 'apply'},
         <String, String>{'id': 'openapi-renderer-v3-to-v4', 'action': 'no-op'},
       ]);
     },
@@ -355,12 +355,12 @@ dependency_overrides:
 
     final report = await service.applyUpgrade(<String>[
       'app',
-    ], targetCohort: '1.0.0-rc.9');
+    ], targetCohort: '1.0.0-rc.10');
 
     expect(report.exitCode, 0);
     expect(
       await File('${app.path}/pubspec.yaml').readAsString(),
-      contains('^1.0.0-rc.9'),
+      contains('^1.0.0-rc.10'),
     );
     expect(commands, <String>['dart pub get', 'dart analyze', 'dart test']);
     expect(
@@ -389,7 +389,7 @@ dependency_overrides:
       service.applyUpgrade(<String>[
         'beta',
         'alpha',
-      ], targetCohort: '1.0.0-rc.9'),
+      ], targetCohort: '1.0.0-rc.10'),
       throwsFormatException,
     );
     expect(await File('${alpha.path}/pubspec.yaml').readAsBytes(), beforeAlpha);

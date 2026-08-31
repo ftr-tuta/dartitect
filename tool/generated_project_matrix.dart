@@ -472,6 +472,30 @@ Future<void> _verifyProviderNeutralScaffold(
   Directory project,
   _Scenario scenario,
 ) async {
+  final main = await File('${project.path}/lib/main.dart').readAsString();
+  for (final token in const <String>[
+    'ThemeData(useMaterial3: true)',
+    'GlobalMaterialLocalizations.delegates',
+    'DartitectResponsiveWindowBuilder(',
+    'NavigationBar(',
+    'NavigationRail(',
+  ]) {
+    if (!main.contains(token)) {
+      throw StateError('Generated app shell is missing $token.');
+    }
+  }
+  final matrixTest = await File('${project.path}/test/ui_matrix_test.dart')
+      .readAsString();
+  if (!matrixTest.contains('testDartitectUiMatrix(') ||
+      !matrixTest.contains('FilledButton(')) {
+    throw StateError('Generated app lacks the paired Material UI base test.');
+  }
+  final pubspec = await File('${project.path}/pubspec.yaml').readAsString();
+  if (!pubspec.contains('flutter_localizations:') ||
+      !pubspec.contains('dartitect_flutter_testing:')) {
+    throw StateError('Generated app lacks localization or UI test wiring.');
+  }
+
   final dartFiles = <File>[];
   await for (final entity in Directory(
     '${project.path}/lib',
@@ -490,6 +514,16 @@ Future<void> _verifyProviderNeutralScaffold(
             source.contains('package:dartitect_drift/'))) {
       throw StateError('Drift leaked into provider-neutral $relative.');
     }
+  }
+  if (scenario.feature != null &&
+      !dartFiles.any(
+        (file) =>
+            file.path.contains(
+              '${Platform.pathSeparator}presentation${Platform.pathSeparator}',
+            ) &&
+            file.readAsStringSync().contains('CommandStateBuilder'),
+      )) {
+    throw StateError('Generated feature lacks exhaustive command rendering.');
   }
 }
 

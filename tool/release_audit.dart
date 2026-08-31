@@ -59,6 +59,7 @@ Future<void> main(List<String> arguments) async {
         'tool/check_rc_validation.dart',
         '--contract-only',
       ]),
+    const _Command('dart', <String>['run', 'tool/check_ui_quality.dart']),
     const _Command('dart', <String>[
       'run',
       'tool/check_stable_candidate.dart',
@@ -91,7 +92,7 @@ Future<void> main(List<String> arguments) async {
     'docs/release/publish-exceptions.adoc',
     'docs/release/publication-runbook.adoc',
     'docs/release/package-cohorts.adoc',
-    'docs/release/rc8-handoff.adoc',
+    'docs/release/rc10-handoff.adoc',
     'tool/api_surface.snapshot.json',
     'tool/package_release_contract.json',
     'tool/provider_constructor_evidence.json',
@@ -101,6 +102,8 @@ Future<void> main(List<String> arguments) async {
     'tool/check_publication_readiness.dart',
     'tool/rc_validation_contract.json',
     'tool/stable_candidate_contract.json',
+    'tool/ui_quality_contract.json',
+    'tool/check_ui_quality.dart',
     '.github/workflows/publish.yaml',
   ]) {
     if (!await File('${root.path}/$path').exists()) {

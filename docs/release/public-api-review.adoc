@@ -1,12 +1,12 @@
 = Public API review for the 1.0 release candidate
 
-Review date:: 2026-08-30
-Reviewed version:: `1.0.0-rc.9` baseline across independent publication cohorts
+Review date:: 2026-08-31
+Reviewed version:: `1.0.0-rc.10` baseline across independent publication cohorts
 Snapshot gate:: `dart run tool/check_api_snapshot.dart`
 
 == Result
 
-The checked API snapshot covers all 30 public entrypoints and matches their
+The checked API snapshot covers all 32 public entrypoints and matches their
 source declarations. New ecosystem entrypoints are deliberately narrow;
 pre-1.0 aliases and architecture overlap controls are intentionally absent.
 
@@ -95,6 +95,16 @@ authority, state projection, and restoration contracts.
 restart-latest source backpressure, stale policy, and deterministic teardown
 are covered by the paved-road and performance gates.
 
+| `package:dartitect_flutter/dartitect_flutter_ui.dart`
+| Business-neutral compact/medium/expanded size classes, independently
+classified width and height, validated Material 3 breakpoints, and window or
+finite-region builders. It owns no control, theme, text, navigation, or state.
+
+| `package:dartitect_flutter_testing/dartitect_flutter_testing.dart`
+| Dev-only paired surface matrix and harness around Flutter's official
+semantics, contrast, and tap-target guidelines. Consumers provide the root,
+themes, locales, focus, keyboard, navigation, and action assertions.
+
 | `package:dartitect_isolates/dartitect_isolates.dart`
 | Pure-Dart versioned worker protocol with ACK, readiness, heartbeat, deadline,
 crash/exit completion, safe-stop, and terminal supervisor cleanup.
@@ -118,7 +128,7 @@ returns typed not-supported outside iOS.
 access, cancellation, failure outcomes, and cleanup for its sole owned metadata.
 
 | `package:dartitect_mcp/dartitect_mcp.dart`
-| Local STDIO tooling on the RC9 release-candidate baseline; no HTTP/OAuth, app
+| Local STDIO tooling on the RC10 release-candidate baseline; no HTTP/OAuth, app
 runtime, arbitrary filesystem, or private-plan access.
 
 | `package:dartitect_objectbox/dartitect_objectbox.dart`
@@ -160,15 +170,14 @@ entrypoint remains thin; advanced reactive APIs require a deliberate import and
 Material remains consumer-owned. No public Dartitect API retains an
 experimental marker.
 
-The RC9 diff makes config-v3 semantic factories and concrete application,
+The RC10 diff makes config-v3 semantic factories and concrete application,
 session, feature runtime/host, and harness outputs the paved road. It adds
 typed OpenAPI operation selection, schema-2 consumer tax, fleet
 inventory/impact, confined blueprints, 12-scenario change tax, and a mandatory
 canary catalog for all packages, entrypoints, renderers, profiles,
 capabilities, providers, scopes, and targets. No general application conversion
-or debt-baseline path exists. `FeatureHost` and `CommandStateBuilder` are
-mechanical only; stable promotion remains blocked on the separate
-business-neutral UI/UX gate.
+or debt-baseline path exists. Presentation helpers remain mechanical and
+consumer-owned; `ui-quality-v1` now provides the stable-promotion evidence.
 
 The semantic snapshot schema records constructors, members, parameters,
 generic bounds, defaults, modifiers, annotations, and return types. Every

@@ -36,7 +36,7 @@ cross-tree, or altered input stops before tag, Release, or package publication.
 
 pub.dev uses the exact `publicationOrder` in
 `tool/package_release_contract.json`. The generated
-`docs/release/package-cohorts.adoc` records all 24 packages, five publication
+`docs/release/package-cohorts.adoc` records all 25 packages, five publication
 cohorts, and the current baseline without duplicating a hand-maintained order.
 
 The workflow stops on the first publication failure. pub.dev versions are

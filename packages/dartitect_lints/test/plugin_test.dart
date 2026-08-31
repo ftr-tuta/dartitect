@@ -3,9 +3,11 @@ import 'dart:io';
 
 import 'package:analysis_server_plugin/registry.dart';
 import 'package:analyzer/analysis_rule/analysis_rule.dart';
+import 'package:analyzer/error/error.dart';
 import 'package:dartitect_lints/main.dart';
 import 'package:dartitect_lints/src/dartitect_boundary_rule.dart';
 import 'package:dartitect_lints/src/dartitect_modeling_rule.dart';
+import 'package:dartitect_lints/src/dartitect_ui_rule.dart';
 import 'package:dartitect_lints/src/ecosystem_policy.g.dart';
 import 'package:dartitect_lints/src/generated_boundary_policy.dart';
 import 'package:dartitect_lints/src/lint_boundary_config.dart';
@@ -18,7 +20,24 @@ void main() {
     plugin.register(registry);
 
     expect(plugin.name, 'Dartitect architecture rules');
-    expect(registry.warningRules, hasLength(2));
+    expect(registry.warningRules, hasLength(3));
+    expect(
+      registry.warningRules
+          .whereType<DartitectUiRule>()
+          .single
+          .diagnosticCodes
+          .map((code) => (code.lowerCaseName, code.severity)),
+      <(String, DiagnosticSeverity)>[
+        ('dartitect_dt3001', DiagnosticSeverity.ERROR),
+        ('dartitect_dt3002', DiagnosticSeverity.ERROR),
+        ('dartitect_dt3101', DiagnosticSeverity.WARNING),
+        ('dartitect_dt3102', DiagnosticSeverity.WARNING),
+        ('dartitect_dt3103', DiagnosticSeverity.WARNING),
+        ('dartitect_dt3104', DiagnosticSeverity.WARNING),
+        ('dartitect_dt3105', DiagnosticSeverity.WARNING),
+        ('dartitect_dt3106', DiagnosticSeverity.WARNING),
+      ],
+    );
     expect(
       registry.warningRules
           .whereType<DartitectBoundaryRule>()
@@ -262,6 +281,38 @@ dependencies:
       isTrue,
     );
   });
+
+  test(
+    'lint resolver applies active reviewed suppressions by relative path',
+    () {
+      final root = Directory.systemTemp.createTempSync(
+        'dartitect-ui-suppress-',
+      );
+      addTearDown(() => root.deleteSync(recursive: true));
+      File('${root.path}/dartitect.json').writeAsStringSync(
+        jsonEncode(<String, Object?>{
+          ..._config(compositionRoots: <String>['lib/main.dart']),
+          'suppressions': <Object?>[
+            <String, Object?>{
+              'code': 'DT3103',
+              'path': 'lib/features/**',
+              'reason': 'A focused migration is tracked.',
+              'owner': 'ui-platform',
+              'expiresAt': '2099-12-31',
+            },
+          ],
+        }),
+      );
+      final page = File('${root.path}/lib/features/catalog/page.dart')
+        ..createSync(recursive: true)
+        ..writeAsStringSync('void page() {}\n');
+
+      expect(
+        DartitectLintBoundaryResolver.resolve(page.path).suppressedCodes,
+        <String>{'DT3103'},
+      );
+    },
+  );
 
   test('invalid config is explicit instead of a silent strict fallback', () {
     final root = Directory.systemTemp.createTempSync(

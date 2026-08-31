@@ -265,9 +265,9 @@ Future<void> _configureSentry(Directory root) async {
   final pubspec = File('${root.path}/pubspec.yaml');
   var pubspecSource = await pubspec.readAsString();
   pubspecSource = pubspecSource.replaceFirst(
-    '  dartitect_sync: ^1.0.0-rc.9\n',
-    '  dartitect_sync: ^1.0.0-rc.9\n'
-        '  dartitect_sentry: ^1.0.0-rc.9\n'
+    '  dartitect_sync: ^1.0.0-rc.10\n',
+    '  dartitect_sync: ^1.0.0-rc.10\n'
+        '  dartitect_sentry: ^1.0.0-rc.10\n'
         '  sentry: ^9.27.0\n',
   );
   await pubspec.writeAsString(pubspecSource, flush: true);

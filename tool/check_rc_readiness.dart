@@ -90,6 +90,7 @@ void _validatePolicy(
     'docs/release/dependency-licenses.json',
     'tool/api_surface.snapshot.json',
     'tool/package_release_contract.json',
+    'tool/ui_quality_contract.json',
   ])) {
     errors.add('The readiness repository artifact set is not exact.');
   }

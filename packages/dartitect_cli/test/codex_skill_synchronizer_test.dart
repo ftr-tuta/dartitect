@@ -16,10 +16,11 @@ const _managedSkills = <String>[
   'dartitect-runtime',
   'dartitect-testing',
   'dartitect-tooling',
+  'dartitect-ui',
 ];
 
 void main() {
-  test('sync installs eleven valid skills and is idempotent', () async {
+  test('sync installs twelve valid skills and is idempotent', () async {
     final root = await _temporaryRoot();
     final localSkill = Directory(
       '${root.path}/.agents/skills/repository-contribution',
@@ -36,7 +37,7 @@ void main() {
       first.operations.where(
         (operation) => operation.startsWith('CREATE .agents/skills/'),
       ),
-      hasLength(11),
+      hasLength(12),
     );
     expect(
       second.operations,
@@ -88,7 +89,7 @@ void main() {
       expect(metadata, contains('default_prompt: "Use \$$name '));
       expect(metadata, contains('allow_implicit_invocation: true'));
       expect(manifest['schemaVersion'], 1);
-      expect(manifest['sdkVersion'], '1.0.0-rc.9');
+      expect(manifest['sdkVersion'], '1.0.0-rc.10');
       expect(manifest['contentHash'], matches(RegExp(r'^[0-9a-f]{8}$')));
     }
   }, timeout: const Timeout(Duration(minutes: 2)));

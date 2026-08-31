@@ -900,6 +900,156 @@ provider constraints or changes the domain contract.
     },
   ),
   DartitectSkillTemplate(
+    name: 'dartitect-ui',
+    displayName: 'Dartitect UI',
+    shortDescription: 'Build adaptive accessible Flutter presentation',
+    defaultPrompt: r'Use $dartitect-ui to design and verify Dartitect Flutter presentation.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-ui
+description: Build business-neutral Flutter presentation around Dartitect state using consumer-owned Material or Cupertino controls, adaptive layouts, accessibility, localization, focus, navigation, forms, and UI tests. Use for Flutter UI implementation or review; do not use to invent an SDK design system.
+---
+
+# Build Dartitect presentation
+
+## When to use
+
+Use this skill when a Flutter consumer needs to render Dartitect commands,
+forms, queries, effects, or reactive resources; choose responsive layouts;
+design navigation and focus; or establish semantic, keyboard, accessibility,
+and UI-matrix tests.
+
+## When not to use
+
+Use `$dartitect-runtime` for ownership and ViewModel design,
+`$dartitect-reactive` for resource behavior, and `$dartitect-testing` for
+non-UI lifecycle matrices. Do not create Dartitect-branded buttons, fields,
+switches, dialogs, navigation, themes, copy, localization, or visual tokens.
+
+## Invariants
+
+The consumer owns `ThemeData`, `ColorScheme`, component themes,
+`ThemeExtension`, typography, visible text, localization, navigation, brand,
+and product composition. Use official Material 3 controls directly; use
+adaptive or Cupertino controls only for established platform conventions.
+Choose layout from finite available space, never device labels or orientation.
+Keep ViewModels, controllers, focus nodes, navigation state, and restoration
+above responsive branch replacement. Dartitect builders borrow state and never
+dispose it.
+
+## Workflow
+
+1. Identify the authoritative command, form, query, effect, or resource. Do not
+   introduce another async envelope.
+2. Keep product state and actions in a ViewModel/controller above the layout;
+   drain one-shot effects at the mounted View boundary.
+3. Build controls directly from Material 3. Use `.adaptive` or Cupertino only
+   when Flutter or an Apple convention defines a meaningful difference.
+4. Use `DartitectResponsiveWindowBuilder` for the full surface and
+   `DartitectResponsiveRegionBuilder` for a finite nested region. Supply all
+   compact, medium, and expanded branches.
+5. Render every state with `CommandStateBuilder`,
+   `DartitectFormSnapshotBuilder`, `DartitectQueryStateBuilder`, or
+   `ResourcePresentationBuilder`. Preserve stale content when the domain policy
+   calls for it and distinguish expected failure from crash.
+6. Localize all visible labels and semantics. Define traversal order, initial
+   focus, shortcuts, and restoration in consumer code; keep actions reachable
+   without pointer input.
+7. Test the paired `DartitectUiMatrix`, then add product-specific focus,
+   keyboard, navigation, and action assertions.
+
+Read [references/presentation.md](references/presentation.md) for state,
+responsive layout, navigation, forms, focus, and effects. Read
+[references/verification.md](references/verification.md) for semantics,
+accessibility, matrix, audit, and golden guidance.
+
+## Validate
+
+Run Flutter analyze/tests plus `dartitect ui audit --strict`. Prove all size
+classes, 100%/200% text, LTR/RTL, light/dark, high contrast, reduced motion,
+semantics, focus, keyboard activation, expected failures, crashes, stale and
+empty states. Keep golden coverage small and secondary to behavior. Tests and
+audits must not upload screenshots, semantics, or screen content.
+
+''',
+      'references/presentation.md': r'''# Presentation architecture
+
+## State and actions
+
+Treat existing authorities as final: `DartitectCommand` for an action,
+`DartitectFormController` for form snapshots/submission,
+`DartitectQueryController` for query state, `EffectChannel` for one-shot UI
+effects, and `LiveResource` plus `ResourcePresentationState` for reactive local
+authority. Do not wrap them in a second loading/error model. Builders borrow
+controllers and resources, observe only while `TickerMode` is enabled, catch up
+on reactivation, and never dispose what they receive.
+
+Keep validation policy in the form controller and render official `TextField`,
+`TextFormField`, selection, and button controls with localized labels, errors,
+hints, and announcements. Keep submit commands exhaustive and prevent duplicate
+submission through command policy rather than a widget-local flag.
+
+Drain effects from a mounted View boundary. Navigation, snack bars, dialogs,
+and platform intents are consumer presentation behavior; ViewModels emit typed
+effects but do not retain `BuildContext`.
+
+## Responsive layout and navigation
+
+Use the Material 3 width thresholds 600 and 840 and height thresholds 480 and
+900 unless the app supplies validated alternatives. An exact threshold belongs
+to the larger class. Window classification records width and height separately;
+branch selection uses available width. A nested region must have finite width.
+
+The responsive builders choose no `Scaffold`, route, navigation control, color,
+or copy, and they preserve no state implicitly. Put route state, selected
+destination, scroll controllers, focus nodes, forms, and restorable state above
+the branch. A consumer may select `NavigationBar`, `NavigationRail`, drawer,
+split view, or a product-specific composition without changing domain state.
+
+## Platform, focus, and localization
+
+Prefer Material 3 everywhere. Choose `.adaptive` when Flutter provides it for
+the same semantic control. Use Cupertino directly only for a deliberate Apple
+convention, not as a wholesale platform fork. Do not infer layout from
+`Platform`, device models, or orientation.
+
+Every visible string, tooltip, semantic label, validation message, and action
+name belongs to consumer localization. Use Flutter `Localizations`/gen-l10n and
+locale-aware directionality. Define focus traversal and shortcuts explicitly
+for dialogs, forms, split panes, menus, and desktop/web commands. Test keyboard
+activation and restoration as product assertions rather than generic harness
+behavior.
+''',
+      'references/verification.md': r'''# UI verification
+
+Use `dartitect_flutter_testing` only as a dev dependency. The standard matrix is
+five paired rows: 360x640, 430x932, 768x1024, 1024x768, and 1440x900. Across
+those rows it covers 100%/200% text, LTR/RTL, light/dark, normal/high contrast,
+and normal/reduced motion without a Cartesian explosion. The consumer supplies
+the root widget, themes, locales, and scenario exercises.
+
+`DartitectUiHarness` configures and restores the Flutter test view, platform,
+MediaQuery, accessibility features, and semantics even after failure. Its
+policy uses Flutter's official labeled-target, contrast, and mobile tap-target
+guidelines and fails on framework exceptions or overflow. Add explicit
+assertions for focus order, keyboard activation, shortcuts, navigation,
+restoration, and product actions.
+
+Run `dartitect ui audit --strict` and the analyzer plugin. Errors cover objective
+low-level custom-button primitives and orientation locks. Warnings cover
+orientation/device sizing, broad MediaQuery subscriptions, gesture controls
+without evident semantics, visual literals outside themes, and unlabeled icon
+actions. Reviewed suppressions require code, narrow path, owner, reason, and
+expiry.
+
+Use goldens only for genuinely shared compact, medium, and expanded layouts on
+a pinned runner, font, and renderer. Do not multiply goldens per screen or
+platform. Semantics and behavior remain the release gate. Neither tests nor
+audits send screenshots, semantics, or content to telemetry.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
     name: 'dartitect-testing',
     displayName: 'Dartitect Testing',
     shortDescription: 'Test failures, lifecycles, and providers',

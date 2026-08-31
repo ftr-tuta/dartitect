@@ -1,7 +1,7 @@
 = Competitive performance and lifecycle report
 
-Generated:: 2026-08-28T23:59:51.074873Z
-Candidate cohort:: `1.0.0-rc.9`
+Generated:: 2026-08-31T15:18:45.530047Z
+Candidate cohort:: `1.0.0-rc.10`
 Evidence status:: `REFERENCE_ONLY_REPRODUCTION_REQUIRED`
 Public claim eligible:: `NO`
 Claim policy:: `INTERNAL_GATE_ONLY`
@@ -16,42 +16,42 @@ These measurements are internal compatibility gates. They are not authorized for
 [cols="1,1,1,1,1,1",options="header"]
 |===
 | Listeners | Change | Framework | Median us | p95 us | Callbacks
-| 1 | 0% | bloc | 3.238 | 4.043 | 0
-| 1 | 0% | dartitect | 0.044 | 0.060 | 0
-| 1 | 0% | riverpod | 11.631 | 25.686 | 0
-| 1 | 10% | bloc | 3.527 | 5.407 | 1
-| 1 | 10% | dartitect | 0.107 | 0.389 | 1
-| 1 | 10% | riverpod | 9.495 | 16.155 | 1
-| 1 | 100% | bloc | 3.297 | 5.398 | 1
-| 1 | 100% | dartitect | 0.406 | 2.673 | 1
-| 1 | 100% | riverpod | 10.039 | 17.219 | 1
-| 10 | 0% | bloc | 36.844 | 52.935 | 0
-| 10 | 0% | dartitect | 0.189 | 0.359 | 0
-| 10 | 0% | riverpod | 11.817 | 26.046 | 0
-| 10 | 10% | bloc | 37.499 | 47.114 | 1
-| 10 | 10% | dartitect | 0.249 | 0.401 | 1
-| 10 | 10% | riverpod | 11.950 | 15.414 | 1
-| 10 | 100% | bloc | 37.186 | 54.476 | 10
-| 10 | 100% | dartitect | 0.853 | 2.683 | 10
-| 10 | 100% | riverpod | 11.557 | 25.553 | 10
-| 100 | 0% | bloc | 439.390 | 544.600 | 0
-| 100 | 0% | dartitect | 1.720 | 1.885 | 0
-| 100 | 0% | riverpod | 32.530 | 37.310 | 0
-| 100 | 10% | bloc | 547.425 | 666.740 | 10
-| 100 | 10% | dartitect | 2.280 | 4.345 | 10
-| 100 | 10% | riverpod | 35.935 | 54.375 | 10
-| 100 | 100% | bloc | 545.970 | 658.215 | 100
-| 100 | 100% | dartitect | 7.440 | 10.695 | 100
-| 100 | 100% | riverpod | 40.295 | 52.045 | 100
-| 1000 | 0% | bloc | 5988.200 | 6326.775 | 0
-| 1000 | 0% | dartitect | 17.950 | 18.675 | 0
-| 1000 | 0% | riverpod | 270.750 | 300.175 | 0
-| 1000 | 10% | bloc | 6110.725 | 6543.525 | 100
-| 1000 | 10% | dartitect | 22.825 | 34.300 | 100
-| 1000 | 10% | riverpod | 308.500 | 424.625 | 100
-| 1000 | 100% | bloc | 6100.575 | 6790.425 | 1000
-| 1000 | 100% | dartitect | 75.725 | 120.900 | 1000
-| 1000 | 100% | riverpod | 308.875 | 335.250 | 1000
+| 1 | 0% | bloc | 4.841 | 10.025 | 0
+| 1 | 0% | dartitect | 0.049 | 0.115 | 0
+| 1 | 0% | riverpod | 11.570 | 24.121 | 0
+| 1 | 10% | bloc | 4.589 | 6.702 | 1
+| 1 | 10% | dartitect | 0.104 | 0.459 | 1
+| 1 | 10% | riverpod | 9.133 | 13.217 | 1
+| 1 | 100% | bloc | 4.474 | 6.115 | 1
+| 1 | 100% | dartitect | 0.634 | 1.792 | 1
+| 1 | 100% | riverpod | 9.623 | 17.919 | 1
+| 10 | 0% | bloc | 50.318 | 86.398 | 0
+| 10 | 0% | dartitect | 0.175 | 0.414 | 0
+| 10 | 0% | riverpod | 15.467 | 33.231 | 0
+| 10 | 10% | bloc | 49.432 | 54.171 | 1
+| 10 | 10% | dartitect | 0.218 | 0.373 | 1
+| 10 | 10% | riverpod | 11.197 | 15.967 | 1
+| 10 | 100% | bloc | 49.161 | 65.153 | 10
+| 10 | 100% | dartitect | 0.798 | 1.285 | 10
+| 10 | 100% | riverpod | 12.414 | 27.622 | 10
+| 100 | 0% | bloc | 593.690 | 784.135 | 0
+| 100 | 0% | dartitect | 1.655 | 1.925 | 0
+| 100 | 0% | riverpod | 39.480 | 59.115 | 0
+| 100 | 10% | bloc | 722.285 | 980.605 | 10
+| 100 | 10% | dartitect | 2.480 | 13.425 | 10
+| 100 | 10% | riverpod | 37.480 | 54.950 | 10
+| 100 | 100% | bloc | 754.025 | 865.340 | 100
+| 100 | 100% | dartitect | 7.690 | 12.130 | 100
+| 100 | 100% | riverpod | 43.515 | 122.420 | 100
+| 1000 | 0% | bloc | 8134.950 | 9574.975 | 0
+| 1000 | 0% | dartitect | 19.350 | 44.800 | 0
+| 1000 | 0% | riverpod | 293.025 | 576.100 | 0
+| 1000 | 10% | bloc | 8172.325 | 9520.375 | 100
+| 1000 | 10% | dartitect | 24.700 | 33.675 | 100
+| 1000 | 10% | riverpod | 325.825 | 500.300 | 100
+| 1000 | 100% | bloc | 8698.750 | 9416.600 | 1000
+| 1000 | 100% | dartitect | 77.825 | 205.475 | 1000
+| 1000 | 100% | riverpod | 331.350 | 580.275 | 1000
 |===
 
 Every framework performed exactly one selection evaluation per listener and only changed selectors invoked callbacks. Dartitect must remain within `max(best * 1.10, best + 5 us)` at median and `max(best * 1.15, best + 10 us)` at p95.
@@ -61,9 +61,9 @@ Every framework performed exactly one selection evaluation per listener and only
 [cols="2,1,1,1,1",options="header"]
 | Scenario | Changed | Projected | Reduction | Median us
 |===
-| hundred-change | 100 | 100 | 99.00% | 4890.000
-| one-change | 1 | 1 | 99.99% | 6029.000
-| reorder | 0 | 0 | 100.00% | 5381.000
+| hundred-change | 100 | 100 | 99.00% | 7102.000
+| one-change | 1 | 1 | 99.99% | 6860.000
+| reorder | 0 | 0 | 100.00% | 5538.000
 |===
 
 == Workload and lifecycle gates
@@ -78,8 +78,8 @@ Every framework performed exactly one selection evaluation per listener and only
 
 == Memory census
 
-* RSS before/after/max: 213053440 / 361345024 / 396046336 bytes.
-* Heap before/after/capacity: 107160928 / 227523248 / 233283584 bytes.
+* RSS before/after/max: 209166336 / 356237312 / 394838016 bytes.
+* Heap before/after/capacity: 107396384 / 227470016 / 247070720 bytes.
 * External memory after: 131536 bytes.
 
 RSS and heap are observations, not leak thresholds; exact owned resource census is the terminal leak gate. Raw samples and the full environment manifest accompany this report.

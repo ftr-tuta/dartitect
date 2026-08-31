@@ -15,7 +15,15 @@
     "DARTITECT_PROVIDER_CODEGEN_BOUNDARY": "DT1012",
     "DARTITECT_SERVICE_LOCATOR": "DT1013",
     "DARTITECT_SCOPE_BOUNDARY": "DT1016",
-    "DARTITECT_TEMPORARY_DISPOSABLE_HOST_VALUE": "DT1045"
+    "DARTITECT_TEMPORARY_DISPOSABLE_HOST_VALUE": "DT1045",
+    "DARTITECT_DT3001": "DT3001",
+    "DARTITECT_DT3002": "DT3002",
+    "DARTITECT_DT3101": "DT3101",
+    "DARTITECT_DT3102": "DT3102",
+    "DARTITECT_DT3103": "DT3103",
+    "DARTITECT_DT3104": "DT3104",
+    "DARTITECT_DT3105": "DT3105",
+    "DARTITECT_DT3106": "DT3106"
   },
   "cases": [
     {
@@ -41,6 +49,22 @@
     {
       "path": "lib/features/orders/presentation/temporary_host_value.dart",
       "expected": ["DT1045"]
+    },
+    {
+      "path": "lib/features/orders/presentation/ui_quality_violations.dart",
+      "expected": ["DT3001", "DT3002", "DT3101", "DT3102", "DT3103", "DT3104", "DT3105", "DT3106"]
+    },
+    {
+      "path": "lib/features/orders/presentation/ui_quality_false_positives.dart",
+      "expected": []
+    },
+    {
+      "path": "lib/features/orders/presentation/app_theme.dart",
+      "expected": []
+    },
+    {
+      "path": "lib/features/orders/infrastructure/platform_path.dart",
+      "expected": []
     }
   ],
   "performanceBudget": {

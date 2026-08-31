@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.10
+
+- Join the RC10 business-neutral UI quality and evidence cohort.
+
 ## 1.0.0-rc.9
 
 - Propagate credentials, cancellation, deadlines, and observation through `DioJsonClient` for generated typed contract operations.

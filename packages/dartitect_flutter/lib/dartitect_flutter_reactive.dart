@@ -21,3 +21,4 @@ export 'src/reactive/reactive_sources.dart';
 export 'src/reactive/resource_family.dart';
 export 'src/reactive/resource_lifecycle.dart';
 export 'src/reactive/resource_presentation.dart';
+export 'src/reactive/resource_presentation_builder.dart';

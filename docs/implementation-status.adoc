@@ -1,11 +1,11 @@
 = Dartitect 1.0 Git candidate implementation status
 :toc:
 
-Snapshot:: 2026-08-30
+Snapshot:: 2026-08-31
 Release status:: *ACTIONS READINESS PENDING*
 Feature policy:: *FEATURE FREEZE*
 Toolchain floor:: Dart 3.13 / Flutter 3.47.1 stable
-Target topology:: 24 packages / 30 public entrypoints
+Target topology:: 25 packages / 32 public entrypoints
 
 `tool/goal_gates.json` is the machine-readable roadmap authority. GitHub
 Actions is the only technical evidence authority. Local commands are optional
@@ -19,7 +19,7 @@ feedback and cannot declare an RC or stable candidate ready.
 | IMPLEMENTED_LOCAL
 | Roadmap, privacy/consumer-neutrality, ecosystem, generator recovery, media,
 geometry, Drift, modular modeling/compiler, and public API guards are
-implemented for the twenty-four-package topology.
+implemented for the twenty-five-package topology.
 
 | V1S-04
 | IN_PROGRESS
@@ -35,7 +35,7 @@ benchmark, clean-clone, and canary gates are implemented.
 The provider canary owns its Drift schema and exercises transaction/checkpoint
 ports; the offline-first canary opens Drift and ObjectBox in separate bounded
 contexts without dual-write.
-The RC9 real vertical Task and thin-consumer canaries cover config-v3 factories,
+The RC10 real vertical Task and thin-consumer canaries cover config-v3 factories,
 concrete graphs/hosts, credential generations, durable operational contexts,
 explicit sync triggers, OpenAPI operation selection, schema-2 consumer tax,
 semantic API compatibility, and observed runtime evidence with zero residual
@@ -53,6 +53,13 @@ simulator. Every manifest binds SHA, tree, run ID, attempt, and hosted runner.
 | A successful push to `main` produces one `actions-readiness-v1` artifact for
 90 days with job conclusions and artifact hashes. RC validation consumes the
 same nominal five native cells.
+
+| V1S-18
+| IMPLEMENTED_LOCAL
+| `ui-quality-v1` validates the business-neutral responsive API, exhaustive
+borrowed builders, paired five-row UI matrix, CLI/analyzer parity, managed
+skill, Material 3 scaffold, synthetic accessibility canary, three shared-layout
+goldens, and hosted Android/iOS/Web/Linux/Windows/macOS build cells.
 
 | V1-18
 | IN_PROGRESS
@@ -76,6 +83,6 @@ simulator availability failure makes `CI / Required` fail.
 * dependency-free core and isolated optional capabilities;
 * fresh graph construction and reverse teardown in every isolate.
 
-Stable `1.0.0` promotion remains blocked by the machine-readable
-`ui-ux-business-neutral` gate; RC9 contains only material-neutral mechanical
-widgets.
+Stable `1.0.0` promotion now requires the machine-readable `ui-quality-v1`
+evidence together with the existing Actions-readiness artifact. Publication
+remains a separate manual action and is outside this source delivery.

@@ -178,7 +178,7 @@ Combine with the reactive entrypoint for local-authority observation,
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.9` source candidate. Supported
+The workspace contains the `1.0.0-rc.10` source candidate. Supported
 Git consumption requires a matching tag and published GitHub Release and the
 complete compatible cohort coordinates in its notes. Without one, there is no
 supported consumption path. See the

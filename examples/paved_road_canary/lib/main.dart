@@ -1,9 +1,11 @@
 import 'package:dartitect_flutter/dartitect_flutter.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'composition/application_module.wiring.dartitect.g.dart';
 import 'composition/canary_factories.dart';
 import 'features/paved_road/composition/paved_road.wiring.dartitect.g.dart';
+import 'presentation/ui_quality_shell.dart';
 
 void main() => runDartitectApplication<ApplicationGraph>(
   create: ApplicationModule.create,
@@ -17,15 +19,24 @@ final class CanaryApp extends StatelessWidget {
   final ApplicationGraph graph;
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    home: PavedRoadFeatureHost(
-      graph: graph,
-      factory: const PavedRoadFactory(),
-      loading: (_) => const _Status('Loading feature'),
-      failure: (_, failure, retry) => _Failure(retry: retry),
-      ready: (_, runtime, viewModel) => CanaryScreen(viewModel: viewModel),
-    ),
-  );
+  Widget build(BuildContext context) {
+    final textDirection = Directionality.of(context);
+    return MaterialApp(
+      theme: ThemeData(
+        useMaterial3: true,
+        brightness: MediaQuery.platformBrightnessOf(context),
+      ),
+      builder: (context, child) =>
+          Directionality(textDirection: textDirection, child: child!),
+      home: PavedRoadFeatureHost(
+        graph: graph,
+        factory: const PavedRoadFactory(),
+        loading: (_) => const _Status('Loading feature'),
+        failure: (_, failure, retry) => _Failure(retry: retry),
+        ready: (_, runtime, viewModel) => CanaryScreen(viewModel: viewModel),
+      ),
+    );
+  }
 }
 
 final class CanaryScreen extends StatelessWidget {
@@ -34,8 +45,7 @@ final class CanaryScreen extends StatelessWidget {
   final CanaryViewModel viewModel;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Dartitect paved-road canary')),
+  Widget build(BuildContext context) => CanaryUiShell(
     body: Center(
       child: ListenableBuilder(
         listenable: viewModel.doubled,
@@ -44,15 +54,57 @@ final class CanaryScreen extends StatelessWidget {
           children: <Widget>[
             Text('value ${viewModel.counter.value}'),
             Text('lazy ${viewModel.doubled.value}'),
-            FilledButton(
-              onPressed: viewModel.increment,
-              child: const Text('Increment local state'),
+            CommandStateBuilder<void, String>(
+              command: viewModel.incrementCommand,
+              idle: _incrementButton,
+              running: (context, state) => Semantics(
+                label: 'Incrementing local state',
+                child: CircularProgressIndicator.adaptive(),
+              ),
+              success: _incrementButton,
+              failure: _incrementButton,
+              cancelled: _incrementButton,
+              crashed: _incrementButton,
+            ),
+            Semantics(
+              label: 'Use adaptive behavior',
+              child: Switch.adaptive(value: true, onChanged: null),
+            ),
+            _PlatformConventionAction(
+              onPressed: viewModel.incrementCommand.execute,
             ),
           ],
         ),
       ),
     ),
   );
+
+  Widget _incrementButton(BuildContext context, Object state) => FilledButton(
+    onPressed: viewModel.incrementCommand.execute,
+    child: const Text('Increment local state'),
+  );
+}
+
+final class _PlatformConventionAction extends StatelessWidget {
+  const _PlatformConventionAction({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final platform = Theme.of(context).platform;
+    if (platform == TargetPlatform.iOS || platform == TargetPlatform.macOS) {
+      // A text-style action is an established Apple convention.
+      return CupertinoButton(
+        onPressed: onPressed,
+        child: const Text('Apple-style secondary action'),
+      );
+    }
+    return TextButton(
+      onPressed: onPressed,
+      child: const Text('Secondary action'),
+    );
+  }
 }
 
 final class _Status extends StatelessWidget {

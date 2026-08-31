@@ -23,4 +23,5 @@ export 'src/policy/ecosystem_policy.dart';
 export 'src/project/dartitect_project_service.dart';
 export 'src/rules/boundary_rules.dart';
 export 'src/scan/project_scanner.dart';
+export 'src/ui/ui_auditor.dart';
 export 'src/verification/verification_service.dart';

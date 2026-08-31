@@ -260,7 +260,7 @@ import 'package:flutter/widgets.dart';
         r'^NO-OP \.agents/skills/dartitect-',
         multiLine: true,
       ).allMatches(output.toString()),
-      hasLength(11),
+      hasLength(12),
     );
   }, timeout: const Timeout(Duration(minutes: 2)));
 

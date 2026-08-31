@@ -4,7 +4,8 @@
 
 Flutter primitives for owned or borrowed ViewModels, bounded asynchronous
 commands, selected rebuilds, explicit scope identity, one-shot effects, session
-state, foreground error binding, and an opt-in owned reactive runtime.
+state, foreground error binding, forms, queries, space-based layout, and an
+opt-in owned reactive runtime.
 
 ## When to use
 
@@ -26,9 +27,18 @@ Flutter is required on its supported platforms.
 
 - `package:dartitect_flutter/dartitect_flutter.dart` is the thin lifecycle,
   command, scope, effect, session, and error-binding entrypoint.
+- `package:dartitect_flutter/dartitect_flutter_forms.dart` exposes form state,
+  validation, submission, drafts, history, restoration, and its exhaustive
+  borrowed snapshot builder.
+- `package:dartitect_flutter/dartitect_flutter_queries.dart` exposes filter,
+  pagination, selection, restoration, and its exhaustive borrowed state
+  builder.
 - `package:dartitect_flutter/dartitect_flutter_reactive.dart` is an opt-in
   entrypoint for the owned reactive runtime. It does not export Material
   widgets.
+- `package:dartitect_flutter/dartitect_flutter_ui.dart` exposes only size
+  classes, validated breakpoints, and space-based builders. It owns no visual
+  control, theme, text, locale, navigation, or state.
 
 ## Mental model and data flow
 
@@ -130,6 +140,22 @@ Reactive entrypoint:
 - `ReactiveSelector` and `DebouncedReactiveValue` provide headless derived
   values. Reactive/resource/collection/paged builders borrow their input and
   listen only while ticker-enabled.
+- `ResourcePresentationBuilder` exhaustively renders loading, content, empty,
+  expected failure, and crash presentations, including stale content, while
+  borrowing the resource and following `TickerMode`.
+
+Forms, queries, and UI entrypoints:
+
+- `DartitectFormSnapshotBuilder` and `DartitectQueryStateBuilder` render their
+  existing state authorities exhaustively, borrow their controllers, and
+  recover the current state after ticker reactivation.
+- `DartitectSizeClass`, `DartitectWindowClass`, and
+  `DartitectLayoutBreakpoints` classify width and height independently. Exact
+  thresholds enter the larger class.
+- `DartitectResponsiveWindowBuilder` uses `MediaQuery.sizeOf`, while
+  `DartitectResponsiveRegionBuilder` requires finite `LayoutBuilder` width.
+  Both require compact, medium, and expanded branches and preserve no state
+  implicitly.
 
 ## Ownership and lifecycle
 
@@ -185,14 +211,15 @@ page timelines, text scaling, semantics, and keyboard actions.
 
 Use `dartitect` for pure-Dart results/ownership, `dartitect_sync` for durable
 mutation and dataset sync, a persistence adapter for provider-backed sources,
-and `dartitect_testing` for deterministic harnesses. Read
+`dartitect_testing` for deterministic runtime harnesses, and
+`dartitect_flutter_testing` as a dev dependency for the paired UI matrix. Read
 [commands/results/effects](../../docs/guides/commands-results-effects.md),
 [reactive runtime](../../docs/guides/reactive-runtime.md), and
-[composition/lifecycle/isolates](../../docs/guides/composition-lifecycle-isolates.md).
+[UI quality](../../docs/guides/ui-quality.md).
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.9` source candidate. Supported
+The workspace contains the `1.0.0-rc.10` source candidate. Supported
 Git consumption requires a matching tag and published GitHub Release plus the
 complete cohort coordinates in its notes. Without that Release, there is no
 supported consumption path. See the

@@ -11,7 +11,7 @@ final RegExp _rendererId = RegExp(r'^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$');
 /// Independent compatibility versions used by generation and reporting.
 abstract final class DartitectGenerationVersions {
   /// Package release version; never used as generated ownership identity.
-  static const String release = '1.0.0-rc.9';
+  static const String release = '1.0.0-rc.10';
 
   /// Cross-component generation protocol version.
   static const int protocol = 1;

@@ -5,3 +5,4 @@ export 'package:dartitect/dartitect.dart'
     show CancellationException, CancellationSignal, Result, Ok, Err;
 
 export 'src/forms/form_controller.dart';
+export 'src/forms/form_snapshot_builder.dart';

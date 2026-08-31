@@ -781,21 +781,17 @@ final class ${name.pascal}View extends StatelessWidget {
   final ${name.pascal}ViewModel viewModel;
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: viewModel,
-    builder: (context, child) => switch (viewModel.loadCommand.state) {
-      CommandIdleState<List<String>, ${name.pascal}Failure>() ||
-      CommandRunningState<List<String>, ${name.pascal}Failure>() =>
-        const Text('Loading ${name.pascal}'),
-      CommandSuccessState<List<String>, ${name.pascal}Failure>(:final value) =>
-        Text(value.isEmpty ? 'No ${name.pascal}' : value.join(', ')),
-      CommandFailureState<List<String>, ${name.pascal}Failure>() =>
-        const Text('${name.pascal} unavailable'),
-      CommandCrashState<List<String>, ${name.pascal}Failure>() =>
+  Widget build(BuildContext context) => CommandStateBuilder(
+    command: viewModel.loadCommand,
+    idle: (context, state) => const Text('Loading ${name.pascal}'),
+    running: (context, state) => const Text('Loading ${name.pascal}'),
+    success: (context, state) => Text(
+      state.value.isEmpty ? 'No ${name.pascal}' : state.value.join(', '),
+    ),
+    failure: (context, state) => const Text('${name.pascal} unavailable'),
+    crashed: (context, state) =>
         const Text('Unexpected ${name.pascal} failure'),
-      CommandCancelledState<List<String>, ${name.pascal}Failure>() =>
-        const Text('${name.pascal} cancelled'),
-    },
+    cancelled: (context, state) => const Text('${name.pascal} cancelled'),
   );
 }
 ''';

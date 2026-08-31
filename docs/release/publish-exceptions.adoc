@@ -16,7 +16,7 @@ other warning, a changed warning count, or the same warning in another package.
 
 == Reviewed MCP protocol pin
 
-`dartitect_mcp 1.0.0-rc.9` intentionally pins `dart_mcp` exactly to `0.5.2`. The
+`dartitect_mcp 1.0.0-rc.10` intentionally pins `dart_mcp` exactly to `0.5.2`. The
 upstream protocol dependency is pre-1.0, while Dartitect's public MCP contract
 is stable and its reviewed server behavior, schemas, annotations and
 real-client tests cover that exact release. Pub validation
@@ -27,4 +27,4 @@ The release audit accepts exactly one warning for `dartitect_mcp`: the
 `dart_mcp` tight-constraint warning at version `0.5.2`. It rejects a warning for
 any other dependency, a changed warning count, or the same warning in another
 package. `dartitect_mcp` and its `dartitect_cli` dependency are both inside the
-compatibility ranges generated from the RC9 release authority.
+compatibility ranges generated from the RC10 release authority.

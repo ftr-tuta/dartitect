@@ -1,4 +1,5 @@
 import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:dartitect_flutter/dartitect_flutter_reactive.dart';
 
 final class CanaryPersistence {
@@ -76,15 +77,22 @@ final class CanaryRepository implements AsyncDisposable {
   }
 }
 
-final class CanaryViewModel {
-  const CanaryViewModel(this.repository);
+final class CanaryViewModel extends DartitectViewModel {
+  CanaryViewModel(this.repository) {
+    incrementCommand = ownCommand(
+      Command0<void, String>(() async {
+        repository.increment();
+        return const Ok<void>(null);
+      }),
+      label: 'incrementCommand',
+    );
+  }
 
   final CanaryRepository repository;
+  late final Command0<void, String> incrementCommand;
 
   ReactiveValue<int> get counter => repository.counter;
   ReactiveLazyComputed<int> get doubled => repository.doubled;
-
-  void increment() => repository.increment();
 }
 
 @DartitectFeatureFactory('paved_road')

@@ -18,10 +18,10 @@ import '../verification/verification_service.dart';
 import 'v1_config_migration.dart';
 
 const _rendererManifestMigrationId = 'renderer-manifest-v2-to-v3';
-const _wiringRendererMigrationId = 'wiring-renderers-rc9-v3';
+const _wiringRendererMigrationId = 'wiring-renderers-rc10-v3';
 const _openApiRendererMigrationId = 'openapi-renderer-v3-to-v4';
 
-const _rc9WiringRendererVersions = <String, int>{
+const _rc10WiringRendererVersions = <String, int>{
   'wiring.application': 3,
   'wiring.session': 3,
   'wiring.feature': 3,
@@ -30,7 +30,7 @@ const _rc9WiringRendererVersions = <String, int>{
   'wiring.storage': 4,
 };
 
-const _rc9OpenApiRendererVersions = <String, int>{'contracts.openapi': 4};
+const _rc10OpenApiRendererVersions = <String, int>{'contracts.openapi': 4};
 
 /// Result from one closed, allowlisted fleet validation command.
 final class DartitectFleetCommandResult {
@@ -431,14 +431,14 @@ final class DartitectFleetService {
     );
   }
 
-  /// Applies the registered migration chain to the RC9 source cohort.
+  /// Applies the registered migration chain to the RC10 source cohort.
   Future<DartitectFleetReport> applyUpgrade(
     Iterable<String> roots, {
     required String targetCohort,
   }) async {
-    if (targetCohort != '1.0.0-rc.9') {
+    if (targetCohort != '1.0.0-rc.10') {
       throw const FormatException(
-        'Fleet apply supports only the exact RC9 source migration chain.',
+        'Fleet apply supports only the exact RC10 source migration chain.',
       );
     }
     final projects = await _projects(roots);
@@ -503,9 +503,9 @@ final class DartitectFleetService {
     _FleetProject project,
     String targetCohort,
   ) async {
-    if (targetCohort != '1.0.0-rc.9') {
+    if (targetCohort != '1.0.0-rc.10') {
       throw const FormatException(
-        'Fleet upgrade accepts only --to=1.0.0-rc.9.',
+        'Fleet upgrade accepts only --to=1.0.0-rc.10.',
       );
     }
     final pubspec = await File(_join(project.directory.path, 'pubspec.yaml'))
@@ -553,8 +553,8 @@ final class DartitectFleetService {
     });
     operations.add('MIGRATION $_rendererManifestMigrationId $rendererAction');
     for (final migration in <(String, Map<String, int>)>[
-      (_wiringRendererMigrationId, _rc9WiringRendererVersions),
-      (_openApiRendererMigrationId, _rc9OpenApiRendererVersions),
+      (_wiringRendererMigrationId, _rc10WiringRendererVersions),
+      (_openApiRendererMigrationId, _rc10OpenApiRendererVersions),
     ]) {
       final action = await _rendererVersionMigrationAction(
         project.directory,
@@ -738,7 +738,7 @@ final class DartitectFleetService {
         .where((dependency) => dependency['section'] != 'dependency_overrides');
     if (dependencies.isEmpty) {
       throw const FormatException(
-        'Fleet RC9 migration requires at least one Dartitect dependency.',
+        'Fleet RC10 migration requires at least one Dartitect dependency.',
       );
     }
     for (final dependency in dependencies) {
@@ -751,12 +751,12 @@ final class DartitectFleetService {
             '1.0.0-rc.8',
             '^1.0.0-rc.8',
             '>=1.0.0-rc.8 <1.0.0',
-            '1.0.0-rc.9',
-            '^1.0.0-rc.9',
-            '>=1.0.0-rc.9 <1.0.0',
+            '1.0.0-rc.10',
+            '^1.0.0-rc.10',
+            '>=1.0.0-rc.10 <1.0.0',
           }.contains(constraint)) {
         throw FormatException(
-          'Dependency ${dependency['package']} is outside the RC6/RC8/RC9 chain.',
+          'Dependency ${dependency['package']} is outside the RC6/RC8/RC10 chain.',
         );
       }
     }

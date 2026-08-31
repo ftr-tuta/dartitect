@@ -1,3 +1,6 @@
+@TestOn('vm')
+library;
+
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_flutter/dartitect_flutter_reactive.dart';
 import 'package:flutter_test/flutter_test.dart';

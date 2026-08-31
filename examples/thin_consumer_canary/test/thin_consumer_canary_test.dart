@@ -3,6 +3,8 @@ import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:dartitect_flutter/dartitect_flutter_forms.dart';
 import 'package:dartitect_flutter/dartitect_flutter_queries.dart';
+import 'package:dartitect_flutter/dartitect_flutter_ui.dart';
+import 'package:dartitect_flutter_testing/dartitect_flutter_testing.dart';
 import 'package:dartitect_jobs/dartitect_jobs.dart';
 import 'package:dartitect_resilience/dartitect_resilience.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
@@ -26,6 +28,14 @@ final class _Failure implements Exception {
 }
 
 void main() {
+  test('UI entrypoints expose the paired adaptive matrix', () {
+    expect(DartitectUiMatrix.standard.scenarios, hasLength(5));
+    expect(
+      DartitectUiMatrix.standard.scenarios.first.windowClass().width,
+      DartitectSizeClass.compact,
+    );
+  });
+
   testWidgets('generated graph renders Tasks through FeatureHost', (
     tester,
   ) async {

@@ -284,7 +284,7 @@ Future<Map<String, Object?>> _runCanary({
         'fleet',
         'upgrade',
         '.',
-        '--to=1.0.0-rc.9',
+        '--to=1.0.0-rc.10',
         '--apply',
         '--json',
       ]);
@@ -649,7 +649,7 @@ void _validateContract(
         'adapters',
         'tooling',
       })) {
-    throw StateError('All nine RC9 formal canaries are required.');
+    throw StateError('All nine RC10 formal canaries are required.');
   }
   const requiredCoverage = <String>{
     'pure_dart_modeling',
@@ -758,7 +758,7 @@ void _validateCoverageCatalog({
   };
   if (catalog.keys.toSet().difference(sections).isNotEmpty ||
       sections.difference(catalog.keys.toSet()).isNotEmpty) {
-    throw StateError('The RC9 canary catalog has an unsupported shape.');
+    throw StateError('The RC10 canary catalog has an unsupported shape.');
   }
   final maps = <String, Map<String, Object?>>{
     for (final section in sections) section: _object(catalog[section]),
@@ -784,7 +784,7 @@ void _validateCoverageCatalog({
         _strings(release['publicationOrder']).toSet(),
       )) {
     throw StateError(
-      'Every one of the 24 packages must have catalog coverage.',
+      'Every one of the ${expectedPackages.length} packages must have catalog coverage.',
     );
   }
   final expectedEntrypoints = <String>{
@@ -794,7 +794,7 @@ void _validateCoverageCatalog({
   };
   if (!_sameSet(maps['entrypoints']!.keys.toSet(), expectedEntrypoints)) {
     throw StateError(
-      'Every one of the 30 public entrypoints must have catalog coverage.',
+      'Every one of the ${expectedEntrypoints.length} public entrypoints must have catalog coverage.',
     );
   }
   final expectedRenderers = _productionRendererIds(workspace);

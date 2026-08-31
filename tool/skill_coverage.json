@@ -121,6 +121,10 @@
       "packages/dartitect_modeling_analyzer/lib/dartitect_modeling_analyzer.dart",
       "tool/setup_objectbox_vm.dart"
     ],
+    "dartitect-ui": [
+      "packages/dartitect_flutter/lib/dartitect_flutter_ui.dart",
+      "packages/dartitect_flutter_testing/lib/dartitect_flutter_testing.dart"
+    ],
     "dartitect-mcp": [
       "packages/dartitect_mcp/lib/dartitect_mcp.dart"
     ]
@@ -136,6 +140,7 @@
     "testing": ["dartitect-testing"],
     "cliAndLints": ["dartitect-tooling"],
     "localMcp": ["dartitect-mcp"],
-    "immutableModels": ["dartitect-modeling"]
+    "immutableModels": ["dartitect-modeling"],
+    "flutterPresentation": ["dartitect-ui"]
   }
 }

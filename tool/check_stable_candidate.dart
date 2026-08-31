@@ -21,23 +21,28 @@ Future<void> main(List<String> arguments) async {
         ? _strings(value['promotionBlockers'])
         : const <String>[];
     if (value is! Map<String, Object?> ||
-        value['schemaVersion'] != 2 ||
+        value['schemaVersion'] != 3 ||
         value['goal'] != 'V1-18' ||
         value['authority'] != 'github-actions' ||
         value['stableVersion'] != '1.0.0' ||
         value['requiresExactMainSha'] != true ||
         value['requiresReadinessArtifact'] != 'actions-readiness-v1' ||
+        value['requiresUiQualityEvidence'] != 'ui-quality-v1' ||
         value['requiredCheck'] != 'CI / Required' ||
         !_same(_strings(value['requiredNativeCells']), _nativeCells) ||
         value['publicationWorkflow'] != '.github/workflows/publish.yaml' ||
         value['manualTriggerOnly'] != true ||
-        !_same(promotionBlockers, const <String>['ui-ux-business-neutral']) ||
+        promotionBlockers.isNotEmpty ||
         value['externalAuthorizationRecordsAccepted'] != false) {
       throw StateError('Stable Actions policy is incomplete.');
     }
-    if (options.manifest != null && promotionBlockers.isNotEmpty) {
+    final uiQuality = await Process.run(Platform.resolvedExecutable, <String>[
+      '${root.path}/tool/check_ui_quality.dart',
+      '--root=${root.path}',
+    ], workingDirectory: root.path);
+    if (uiQuality.exitCode != 0) {
       throw StateError(
-        'Stable promotion is blocked by ${promotionBlockers.join(', ')}.',
+        'Stable candidate rejected ui-quality-v1: ${uiQuality.stderr}',
       );
     }
     if (options.manifest != null) {
@@ -55,9 +60,9 @@ Future<void> main(List<String> arguments) async {
     stdout.writeln(
       options.manifest == null
           ? 'Stable policy passed structurally with the nominal five-cell '
-                'Actions matrix; promotion remains blocked by '
-                'ui-ux-business-neutral.'
-          : 'Stable candidate passed actions-readiness-v1.',
+                'Actions matrix and ui-quality-v1 evidence; formal Actions '
+                'readiness remains external.'
+          : 'Stable candidate passed actions-readiness-v1 and ui-quality-v1.',
     );
   } on Object catch (error) {
     stderr.writeln('Stable candidate validation failed: $error');

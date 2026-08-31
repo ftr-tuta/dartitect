@@ -3,23 +3,23 @@
 
 == RC source cohort and post-1.0 independence
 
-All 24 packages start at +1.0.0-rc.9+. The candidate tag is +v1.0.0-rc.9+ and is not materialized by this source delivery.
+All 25 packages start at +1.0.0-rc.10+. The candidate tag is +v1.0.0-rc.10+ and is not materialized by this source delivery.
 
-During the release-candidate series, internal dependencies use +>=1.0.0-rc.9 <1.0.0+. After 1.0, packages may receive independent patches; compatibility is determined by the generated package manifest and consumer lockfile, never global version equality. The default stable range is +>=1.0.0 <1.1.0+.
+During the release-candidate series, internal dependencies use +>=1.0.0-rc.10 <1.0.0+. After 1.0, packages may receive independent patches; compatibility is determined by the generated package manifest and consumer lockfile, never global version equality. The default stable range is +>=1.0.0 <1.1.0+.
 
 == Publication cohorts
 
 * +foundation+: +dartitect+, +dartitect_observability+, +dartitect_resilience+.
 * +platformServices+: +dartitect_flutter+, +dartitect_isolates+, +dartitect_jobs+, +dartitect_sync+, +dartitect_transfer+.
 * +providerAdapters+: +dartitect_dio+, +dartitect_drift+, +dartitect_objectbox+, +dartitect_sentry+, +dartitect_workmanager+.
-* +tooling+: +dartitect_cli+, +dartitect_devtools+, +dartitect_lints+, +dartitect_mcp+, +dartitect_modeling_analyzer+, +dartitect_testing+.
+* +tooling+: +dartitect_cli+, +dartitect_devtools+, +dartitect_flutter_testing+, +dartitect_lints+, +dartitect_mcp+, +dartitect_modeling_analyzer+, +dartitect_testing+.
 * +leafUtilities+: +dartitect_geometry+, +dartitect_locale_br+, +dartitect_media+, +dartitect_modeling+, +dartitect_privacy+.
 
 == Publication DAG
 
 . Layer 0: +dartitect+, +dartitect_geometry+, +dartitect_locale_br+, +dartitect_privacy+.
 . Layer 1: +dartitect_devtools+, +dartitect_flutter+, +dartitect_isolates+, +dartitect_jobs+, +dartitect_media+, +dartitect_modeling+, +dartitect_observability+, +dartitect_resilience+, +dartitect_transfer+.
-. Layer 2: +dartitect_modeling_analyzer+, +dartitect_sentry+, +dartitect_sync+, +dartitect_workmanager+.
+. Layer 2: +dartitect_flutter_testing+, +dartitect_modeling_analyzer+, +dartitect_sentry+, +dartitect_sync+, +dartitect_workmanager+.
 . Layer 3: +dartitect_dio+, +dartitect_drift+, +dartitect_objectbox+, +dartitect_testing+.
 . Layer 4: +dartitect_cli+, +dartitect_lints+.
 . Layer 5: +dartitect_mcp+.

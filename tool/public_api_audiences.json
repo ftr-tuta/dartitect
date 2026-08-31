@@ -19,6 +19,8 @@
     "packages/dartitect_flutter/lib/dartitect_flutter_forms.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_flutter/lib/dartitect_flutter_queries.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_flutter/lib/dartitect_flutter_ui.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_flutter_testing/lib/dartitect_flutter_testing.dart": {"defaultAudience": "tooling-test"},
     "packages/dartitect_geometry/lib/dartitect_geometry.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_isolates/lib/dartitect_isolates.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_jobs/lib/dartitect_jobs.dart": {"defaultAudience": "application-facing"},

@@ -82,7 +82,7 @@ final class CommandEnvelope {
   static const int schemaVersion = 1;
 
   /// SDK/tool version.
-  static const String sdkVersion = '1.0.0-rc.9';
+  static const String sdkVersion = '1.0.0-rc.10';
 
   /// Command that produced the envelope.
   final String command;

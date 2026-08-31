@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.10
+
+- Join the RC10 business-neutral UI quality and evidence cohort.
+
 ## 1.0.0-rc.9
 
 - Add semantic factory annotations and concrete application/session graph contracts while retaining generic assembly primitives as low-level APIs.

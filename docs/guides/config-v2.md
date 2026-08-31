@@ -1,6 +1,6 @@
 # Config v2 migration input
 
-Config v2 is the released RC8 input schema. RC9 normal loading requires
+Config v2 is the released RC8 input schema. RC10 normal loading requires
 [config v3](config-v3.md); only the versioned `fleet upgrade` migration reads
 v2 and converts it transactionally.
 

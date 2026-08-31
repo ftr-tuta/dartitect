@@ -17,6 +17,7 @@ import '../model/model_generator.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
 import '../scan/project_scanner.dart';
+import '../ui/ui_auditor.dart';
 import '../verification/verification_service.dart';
 
 /// Stable CLI exit statuses.
@@ -91,6 +92,7 @@ final class DartitectCliRunner {
         'wiring' => await _wiring(root, parsed),
         'dependencies' => await _dependencies(root, parsed),
         'fleet' => await _fleet(root, parsed),
+        'ui' => await _ui(root, parsed),
         _ => _usageError('Unknown command "$command".'),
       };
     } on _UsageException catch (error) {
@@ -195,6 +197,27 @@ final class DartitectCliRunner {
       await service.applyChange(plan);
     }
     return DartitectExitCode.success.code;
+  }
+
+  Future<int> _ui(Directory root, _CliArguments arguments) async {
+    if (arguments.positionals.length != 1 ||
+        arguments.positionals.single != 'audit') {
+      throw const _UsageException(
+        'Usage: dartitect ui audit [--json|--sarif] [--strict].',
+      );
+    }
+    arguments.requireOnlyFlags(<String>{'json', 'sarif', 'strict', 'verbose'});
+    if (arguments.flags.contains('json') && arguments.flags.contains('sarif')) {
+      throw const _UsageException('--json and --sarif are mutually exclusive.');
+    }
+    final envelope = await DartitectUiAuditor(root)
+        .audit(strict: arguments.flags.contains('strict'));
+    if (arguments.flags.contains('sarif')) {
+      _stdout.writeln(jsonEncode(DartitectSarifReport.fromEnvelope(envelope)));
+    } else {
+      _writeEnvelope(envelope, json: arguments.flags.contains('json'));
+    }
+    return envelope.exitCode;
   }
 
   Future<int> _create(Directory root, _CliArguments arguments) async {
@@ -621,26 +644,31 @@ final class DartitectCliRunner {
     final localSdk = _findLocalSdkRoot();
     final sdkPackages = <String>{'dartitect', 'dartitect_flutter'}.toList()
       ..sort();
-    final devSdkPackages = example == 'tasks'
-        ? <String>['dartitect_testing']
-        : const <String>[];
+    final devSdkPackages = <String>{
+      'dartitect_flutter_testing',
+      if (example == 'tasks') 'dartitect_testing',
+    }.toList()..sort();
     final localOverridePackages = _localSdkPackageClosure(<String>[
       ...sdkPackages,
       ...devSdkPackages,
     ]);
     final dependencyBlock = localSdk == null || workspaceMember
-        ? sdkPackages.map((package) => '  $package: ^1.0.0-rc.9\n').join()
+        ? '${sdkPackages.map((package) => '  $package: ^1.0.0-rc.10\n').join()}'
+              '  flutter_localizations:\n'
+              '    sdk: flutter\n'
         : sdkPackages
-              .map(
-                (package) =>
-                    '  $package:\n'
-                    '    path: ${_yamlQuote(_join(localSdk.path, 'packages/$package'))}\n',
-              )
-              .join();
+                  .map(
+                    (package) =>
+                        '  $package:\n'
+                        '    path: ${_yamlQuote(_join(localSdk.path, 'packages/$package'))}\n',
+                  )
+                  .join() +
+              '  flutter_localizations:\n'
+                  '    sdk: flutter\n';
     source = source.replaceFirst(
       'dev_dependencies:\n',
       '${dependencyBlock}dev_dependencies:\n'
-          '${localSdk == null || workspaceMember ? devSdkPackages.map((package) => '  $package: ^1.0.0-rc.9\n').join() : devSdkPackages.map((package) => '  $package:\n    path: ${_yamlQuote(_join(localSdk.path, 'packages/$package'))}\n').join()}',
+          '${localSdk == null || workspaceMember ? devSdkPackages.map((package) => '  $package: ^1.0.0-rc.10\n').join() : devSdkPackages.map((package) => '  $package:\n    path: ${_yamlQuote(_join(localSdk.path, 'packages/$package'))}\n').join()}',
     );
     if (workspaceMember) {
       source = source.replaceFirst(
@@ -656,10 +684,39 @@ final class DartitectCliRunner {
 
     final widgetTest = File(_join(project.path, 'test/widget_test.dart'));
     if (await widgetTest.exists()) await widgetTest.delete();
+    final uiMatrixTest = File(_join(project.path, 'test/ui_matrix_test.dart'));
+    await uiMatrixTest.writeAsString(
+      '''import 'package:dartitect_flutter_testing/dartitect_flutter_testing.dart';
+import 'package:flutter/material.dart';
+
+void main() {
+  testDartitectUiMatrix(
+    'generated Material shell',
+    buildRoot: (scenario) => MaterialApp(
+      theme: ThemeData(
+        useMaterial3: true,
+        brightness: scenario.brightness,
+      ),
+      home: Scaffold(
+        body: Center(
+          child: FilledButton(
+            onPressed: () {},
+            child: const Text('${name.pascal} action'),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+''',
+      flush: true,
+    );
     final mainFile = File(_join(project.path, 'lib/main.dart'));
     await mainFile.writeAsString(
       '''import 'package:dartitect_flutter/dartitect_flutter.dart';
+import 'package:dartitect_flutter/dartitect_flutter_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'composition/application_module.wiring.dartitect.g.dart';
 ${example == 'tasks' ? "import 'features/tasks/composition/tasks.wiring.dartitect.g.dart';\nimport 'features/tasks/composition/tasks_factory.dart';\nimport 'features/tasks/presentation/tasks_view.dart';" : ''}
@@ -667,17 +724,114 @@ ${example == 'tasks' ? "import 'features/tasks/composition/tasks.wiring.dartitec
 void main() => runDartitectApplication<ApplicationGraph>(
   create: ApplicationModule.create,
   application: (graph) => MaterialApp(
-    title: '${name.pascal}',
-    home: ${example == 'tasks' ? '''TasksFeatureHost(
+    onGenerateTitle: (context) => _AppStrings.of(context).title,
+    theme: ThemeData(useMaterial3: true),
+    localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+      _AppStringsDelegate(),
+      ...GlobalMaterialLocalizations.delegates,
+    ],
+    supportedLocales: const <Locale>[Locale('en')],
+    home: Builder(
+      builder: (context) => _AppShell(
+        body: ${example == 'tasks' ? '''TasksFeatureHost(
       graph: graph,
       factory: const TasksFactory(),
       start: (viewModel) => viewModel.start(),
-      loading: (_) => const Text('Loading Tasks'),
-      failure: (_, failure, retry) => const Text('Tasks unavailable'),
+      loading: (context) => Semantics(
+        label: _AppStrings.of(context).loading,
+        child: const Center(child: CircularProgressIndicator.adaptive()),
+      ),
+      failure: (context, failure, retry) => Center(
+        child: TextButton(
+          onPressed: retry,
+          child: Text(_AppStrings.of(context).retry),
+        ),
+      ),
       ready: (_, runtime, viewModel) => TasksView(viewModel: viewModel),
-    )''' : 'const SizedBox.shrink()'},
+    )''' : '''Center(
+      child: FilledButton(
+        onPressed: () {},
+        child: Text(_AppStrings.of(context).primaryAction),
+      ),
+    )'''},
+      ),
+    ),
   ),
 );
+
+final class _AppShell extends StatelessWidget {
+  const _AppShell({required this.body});
+
+  final Widget body;
+
+  @override
+  Widget build(BuildContext context) => DartitectResponsiveWindowBuilder(
+    compact: (context, window) => _compact(context),
+    medium: (context, window) => _rail(context, extended: false),
+    expanded: (context, window) => _rail(context, extended: true),
+  );
+
+  Widget _compact(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(_AppStrings.of(context).title)),
+    body: body,
+    bottomNavigationBar: NavigationBar(
+      selectedIndex: 0,
+      destinations: <NavigationDestination>[
+        NavigationDestination(
+          icon: const Icon(Icons.home_outlined),
+          selectedIcon: const Icon(Icons.home),
+          label: _AppStrings.of(context).home,
+        ),
+      ],
+    ),
+  );
+
+  Widget _rail(BuildContext context, {required bool extended}) => Scaffold(
+    appBar: AppBar(title: Text(_AppStrings.of(context).title)),
+    body: Row(
+      children: <Widget>[
+        NavigationRail(
+          extended: extended,
+          selectedIndex: 0,
+          destinations: <NavigationRailDestination>[
+            NavigationRailDestination(
+              icon: const Icon(Icons.home_outlined),
+              selectedIcon: const Icon(Icons.home),
+              label: Text(_AppStrings.of(context).home),
+            ),
+          ],
+        ),
+        Expanded(child: body),
+      ],
+    ),
+  );
+}
+
+final class _AppStrings {
+  const _AppStrings();
+
+  static _AppStrings of(BuildContext context) =>
+      Localizations.of<_AppStrings>(context, _AppStrings)!;
+
+  String get title => '${name.pascal}';
+  String get home => 'Home';
+  String get primaryAction => 'Continue';
+  String get loading => 'Loading';
+  String get retry => 'Try again';
+}
+
+final class _AppStringsDelegate extends LocalizationsDelegate<_AppStrings> {
+  const _AppStringsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => locale.languageCode == 'en';
+
+  @override
+  Future<_AppStrings> load(Locale locale) async => const _AppStrings();
+
+  @override
+  bool shouldReload(_AppStringsDelegate old) => false;
+}
 ''',
       flush: true,
     );
@@ -1136,7 +1290,7 @@ void main() => runDartitectApplication<ApplicationGraph>(
         }
         if (arguments.options['to'] == null) {
           throw const _UsageException(
-            'fleet upgrade requires --to=1.0.0-rc.9.',
+            'fleet upgrade requires --to=1.0.0-rc.10.',
           );
         }
         report = arguments.flags.contains('apply')
@@ -1325,6 +1479,7 @@ void main() => runDartitectApplication<ApplicationGraph>(
     final closure = <String>{...packages};
     const dependencies = <String, Set<String>>{
       'dartitect_flutter': {'dartitect'},
+      'dartitect_flutter_testing': {'dartitect_flutter'},
       'dartitect_observability': {'dartitect'},
       'dartitect_jobs': {'dartitect'},
       'dartitect_resilience': {'dartitect'},
@@ -1405,6 +1560,8 @@ Usage: dartitect <command> [arguments]
 Read-only commands:
   scan [--json|--sarif] [--root PATH]
                                     Scan files and architecture boundaries.
+  ui audit [--json|--sarif] [--strict]
+                                    Audit adaptive and accessible UI source.
   codex sync [--dry-run] [--overwrite-managed]
                                     Install managed, focused Codex skills.
   doctor [--json] [--deep] [--release]
@@ -1421,7 +1578,7 @@ Read-only commands:
   fleet check <root...>            Scan explicit fleet roots without writes.
   fleet policy <root...> --bundle=PATH --sha256=DIGEST
                                     Audit with a pinned local policy bundle.
-  fleet upgrade <root...> --to=1.0.0-rc.9 --apply [--json]
+  fleet upgrade <root...> --to=1.0.0-rc.10 --apply [--json]
                                     Upgrade a cohort transactionally.
 
 Convergent synchronizers (preview by default):

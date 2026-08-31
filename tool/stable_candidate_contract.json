@@ -1,10 +1,11 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "goal": "V1-18",
   "authority": "github-actions",
   "stableVersion": "1.0.0",
   "requiresExactMainSha": true,
   "requiresReadinessArtifact": "actions-readiness-v1",
+  "requiresUiQualityEvidence": "ui-quality-v1",
   "requiredCheck": "CI / Required",
   "requiredNativeCells": [
     "android-media-floor-build",
@@ -15,6 +16,6 @@
   ],
   "publicationWorkflow": ".github/workflows/publish.yaml",
   "manualTriggerOnly": true,
-  "promotionBlockers": ["ui-ux-business-neutral"],
+  "promotionBlockers": [],
   "externalAuthorizationRecordsAccepted": false
 }

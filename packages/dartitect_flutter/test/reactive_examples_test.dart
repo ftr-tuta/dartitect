@@ -1,7 +1,11 @@
+@TestOn('vm')
+library;
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../example/reactive_offline_first_example.dart';
+import 'reactive_example_web.dart'
+    if (dart.library.io) 'reactive_example_vm.dart';
 
 void main() {
   testWidgets('headless offline-first example renders and tears down', (
