@@ -30,7 +30,7 @@ Toolchain observed:: Dart 3.13.1, Flutter 3.47.1
 | Sentry Dart | 9.27.0 | https://pub.dev/packages/sentry/versions/9.27.0[pub.dev] | 2026-08-22 | VERIFIED; consumer-owned Hub
 | GitHub Actions checkout | 7.0.1 | https://github.com/actions/checkout/releases/tag/v7.0.1[GitHub release] | 2026-08-22 | VERIFIED; full commit SHA pinned
 | Flutter Action | 2.23.0 | https://github.com/subosito/flutter-action/releases/tag/v2.23.0[GitHub release] | 2026-08-22 | VERIFIED; full commit SHA pinned
-| OSV Scanner Action | 2.5.1 | https://github.com/google/osv-scanner-action/releases/tag/v2.5.1[GitHub release] | 2026-08-22 | VERIFIED; reusable workflow pinned by full commit SHA
+| OSV Scanner Action | 2.5.1 + fail-closed hardening | https://github.com/google/osv-scanner-action/commit/8e5cf47b818121e8b405931c82126c2630b0b20d[reviewed upstream commit] | 2026-08-31 | VERIFIED; signed full SHA pins both action surfaces and rejects incomplete scans
 | Codex skills format | 2026-08-22 docs | https://learn.chatgpt.com/docs/build-skills[OpenAI Build skills] | 2026-08-22 | VERIFIED
 | dart_mcp | 0.5.2 | https://pub.dev/packages/dart_mcp/versions/0.5.2[pub.dev] | 2026-08-22 | VERIFIED; experimental STDIO/tools/resources surface
 | Codex MCP | 2026-08-22 docs | https://learn.chatgpt.com/docs/extend/mcp?surface=cli[OpenAI MCP for Codex] | 2026-08-22 | VERIFIED; STDIO configuration and write approvals

@@ -2,10 +2,10 @@ import 'dart:io';
 
 const _checkoutSha = '3d3c42e5aac5ba805825da76410c181273ba90b1';
 const _flutterActionSha = '1a449444c387b1966244ae4d4f8c696479add0b2';
-const _osvActionSha = 'ffa0a5f39214d80778c9b494822d94d0d9668458';
-const _osvScannerSha = 'ffa0a5f39214d80778c9b494822d94d0d9668458';
-const _uploadArtifactSha = 'ea165f8d65b6e75b540449e92b4886f43607fa02';
-const _downloadArtifactSha = 'd3f86a106a0bac45b974a628896c90dbdf5c8093';
+const _osvActionSha = '8e5cf47b818121e8b405931c82126c2630b0b20d';
+const _osvScannerSha = '8e5cf47b818121e8b405931c82126c2630b0b20d';
+const _uploadArtifactSha = '043fb46d1a93c77aae656e7c1c64a875d1fc6a0a';
+const _downloadArtifactSha = '3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c';
 
 /// Audits immutable Actions references and bounded OSV exceptions.
 void main() {
