@@ -13,12 +13,12 @@ Future<void> main(List<String> arguments) async {
     final ciRunAttempt = int.tryParse(environment['CI_RUN_ATTEMPT'] ?? '');
     if (environment['GITHUB_ACTIONS'] != 'true' ||
         environment['RUNNER_ENVIRONMENT'] != 'github-hosted' ||
-        environment['GITHUB_WORKFLOW'] != 'Publish' ||
+        environment['GITHUB_WORKFLOW'] != 'Release' ||
         environment['GITHUB_EVENT_NAME'] != 'workflow_dispatch' ||
         ciRunAttempt == null ||
         ciRunAttempt <= 0) {
       throw StateError(
-        'Publication readiness is restricted to the manual hosted Publish workflow.',
+        'Release readiness is restricted to the manual hosted Release workflow.',
       );
     }
     final root = options.root;
@@ -28,26 +28,29 @@ Future<void> main(List<String> arguments) async {
             .readAsStringSync(),
       ),
     );
-    final channels = _strings(_object(policy['publication'])['channels']);
-    if (!channels.contains(options.channel)) {
-      throw FormatException('Unsupported publication channel.');
+    final release = _object(policy['release']);
+    if (release['workflowPath'] != '.github/workflows/release.yaml' ||
+        release['manualOnly'] != true ||
+        !_sameStrings(_strings(release['requiredInputs']), const <String>[
+          'source_sha',
+          'ci_run_id',
+        ])) {
+      throw const FormatException('Release readiness policy is incomplete.');
     }
-    if (options.channel == 'pub-dev-stable') {
-      final stableValidation = await Process.run(
-        Platform.resolvedExecutable,
-        <String>[
-          '${root.path}/tool/check_stable_candidate.dart',
-          '--root=${root.path}',
-          '--contract-only',
-        ],
-        workingDirectory: root.path,
+    final stableValidation = await Process.run(
+      Platform.resolvedExecutable,
+      <String>[
+        '${root.path}/tool/check_stable_candidate.dart',
+        '--root=${root.path}',
+        '--contract-only',
+      ],
+      workingDirectory: root.path,
+    );
+    if (stableValidation.exitCode != 0) {
+      throw StateError(
+        'Stable release rejected candidate evidence: '
+        '${stableValidation.stderr}',
       );
-      if (stableValidation.exitCode != 0) {
-        throw StateError(
-          'Stable promotion rejected ui-quality-v1 evidence: '
-          '${stableValidation.stderr}',
-        );
-      }
     }
     final head = (await _git(root, const <String>['rev-parse', 'HEAD'])).trim();
     final tree = (await _git(root, const <String>[
@@ -115,12 +118,11 @@ Future<void> main(List<String> arguments) async {
       }
     }
     stdout.writeln(
-      'Publication source ${options.sourceSha} is authorized by CI run '
-      '${options.ciRunId}; actor ${environment['GITHUB_ACTOR']} selected '
-      '${options.channel}.',
+      'Release source ${options.sourceSha} is authorized by CI run '
+      '${options.ciRunId}; actor ${environment['GITHUB_ACTOR']}.',
     );
   } on Object catch (error) {
-    stderr.writeln('Publication readiness rejected: $error');
+    stderr.writeln('Release readiness rejected: $error');
     exitCode = error is FormatException ? 64 : 1;
   }
 }
@@ -160,12 +162,15 @@ List<String> _strings(Object? value) {
   return value.cast<String>();
 }
 
+bool _sameStrings(List<String> left, List<String> right) =>
+    left.length == right.length &&
+    left.asMap().entries.every((entry) => entry.value == right[entry.key]);
+
 final class _Options {
   const _Options({
     required this.root,
     required this.sourceSha,
     required this.ciRunId,
-    required this.channel,
     required this.manifest,
   });
 
@@ -173,7 +178,6 @@ final class _Options {
     Directory? root;
     String? sourceSha;
     int? ciRunId;
-    String? channel;
     File? manifest;
     for (final argument in arguments) {
       if (argument.startsWith('--root=')) {
@@ -187,9 +191,6 @@ final class _Options {
         if (ciRunId != null)
           throw const FormatException('Duplicate CI run ID.');
         ciRunId = int.tryParse(argument.substring('--ci-run-id='.length));
-      } else if (argument.startsWith('--channel=')) {
-        if (channel != null) throw const FormatException('Duplicate channel.');
-        channel = argument.substring('--channel='.length);
       } else if (argument.startsWith('--manifest=')) {
         if (manifest != null)
           throw const FormatException('Duplicate manifest.');
@@ -202,20 +203,17 @@ final class _Options {
         !_gitSha.hasMatch(sourceSha) ||
         ciRunId == null ||
         ciRunId <= 0 ||
-        channel == null ||
-        channel.isEmpty ||
         manifest == null ||
         !manifest.existsSync() ||
         (root != null && !root.existsSync())) {
       throw const FormatException(
-        'Required valid --source-sha, --ci-run-id, --channel, and --manifest.',
+        'Required valid --source-sha, --ci-run-id, and --manifest.',
       );
     }
     return _Options(
       root: root ?? File.fromUri(Platform.script).parent.parent.absolute,
       sourceSha: sourceSha,
       ciRunId: ciRunId,
-      channel: channel,
       manifest: manifest,
     );
   }
@@ -223,6 +221,5 @@ final class _Options {
   final Directory root;
   final String sourceSha;
   final int ciRunId;
-  final String channel;
   final File manifest;
 }

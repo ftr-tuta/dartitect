@@ -44,7 +44,7 @@ void _validatePolicy(
   List<String> errors,
 ) {
   final artifact = _objectOrNull(policy['artifact']);
-  final publication = _objectOrNull(policy['publication']);
+  final release = _objectOrNull(policy['release']);
   if (policy['schemaVersion'] != 1 ||
       policy['authority'] != 'github-actions' ||
       policy['workflow'] != 'CI' ||
@@ -89,28 +89,29 @@ void _validatePolicy(
     'docs/release/sbom.spdx.json',
     'docs/release/dependency-licenses.json',
     'tool/api_surface.snapshot.json',
+    'tool/actions_readiness_policy.json',
+    'tool/distribution_policy.json',
     'tool/package_release_contract.json',
+    'tool/stable_candidate_contract.json',
+    'tool/dependency_snippets.dart',
+    'tool/build_release_assets.dart',
+    'tool/github_ruleset_policy.json',
+    'tool/github_release_ruleset_policy.json',
     'tool/ui_quality_contract.json',
   ])) {
     errors.add('The readiness repository artifact set is not exact.');
   }
-  if (publication?['workflowPath'] != '.github/workflows/publish.yaml' ||
-      publication?['manualOnly'] != true ||
-      !_same(_stringsOrNull(publication?['requiredInputs']), const <String>[
+  if (release?['workflowPath'] != '.github/workflows/release.yaml' ||
+      release?['manualOnly'] != true ||
+      !_same(_stringsOrNull(release?['requiredInputs']), const <String>[
         'source_sha',
         'ci_run_id',
-        'channel',
-      ]) ||
-      !_same(_stringsOrNull(publication?['channels']), const <String>[
-        'github-release',
-        'pub-dev-prerelease',
-        'pub-dev-stable',
       ])) {
-    errors.add('The manual publication policy is incomplete.');
+    errors.add('The manual Release policy is incomplete.');
   }
   for (final path in const <String>[
     '.github/workflows/ci.yaml',
-    '.github/workflows/publish.yaml',
+    '.github/workflows/release.yaml',
     'tool/native_evidence_contract.json',
   ]) {
     if (!File('${root.path}/$path').existsSync()) {

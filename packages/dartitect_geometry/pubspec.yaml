@@ -1,6 +1,7 @@
 name: dartitect_geometry
 description: Dependency-free typed two-dimensional geometry and deterministic pole-of-inaccessibility calculation.
-version: 1.0.0-rc.10
+version: 1.0.0
+publish_to: none
 repository: https://github.com/ftr-tuta/dartitect
 issue_tracker: https://github.com/ftr-tuta/dartitect/issues
 topics: [geometry, polygon, polylabel, maps]

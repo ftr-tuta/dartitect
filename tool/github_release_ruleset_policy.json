@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "rulesetId": 21525640,
+  "name": "Protect release tags",
+  "target": "tag",
+  "enforcement": "active",
+  "include": ["refs/tags/v*"],
+  "exclude": [],
+  "bypassActors": [],
+  "deletionBlocked": true,
+  "nonFastForwardBlocked": true
+}

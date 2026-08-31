@@ -1,7 +1,7 @@
 = Competitive performance and lifecycle report
 
 Generated:: 2026-08-31T15:18:45.530047Z
-Candidate cohort:: `1.0.0-rc.10`
+Candidate cohort:: `1.0.0`
 Evidence status:: `REFERENCE_ONLY_REPRODUCTION_REQUIRED`
 Public claim eligible:: `NO`
 Claim policy:: `INTERNAL_GATE_ONLY`

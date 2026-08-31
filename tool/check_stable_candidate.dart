@@ -28,9 +28,11 @@ Future<void> main(List<String> arguments) async {
         value['requiresExactMainSha'] != true ||
         value['requiresReadinessArtifact'] != 'actions-readiness-v1' ||
         value['requiresUiQualityEvidence'] != 'ui-quality-v1' ||
+        value['requiresDistributionPolicy'] !=
+            'tool/distribution_policy.json' ||
         value['requiredCheck'] != 'CI / Required' ||
         !_same(_strings(value['requiredNativeCells']), _nativeCells) ||
-        value['publicationWorkflow'] != '.github/workflows/publish.yaml' ||
+        value['releaseWorkflow'] != '.github/workflows/release.yaml' ||
         value['manualTriggerOnly'] != true ||
         promotionBlockers.isNotEmpty ||
         value['externalAuthorizationRecordsAccepted'] != false) {
@@ -45,9 +47,24 @@ Future<void> main(List<String> arguments) async {
         'Stable candidate rejected ui-quality-v1: ${uiQuality.stderr}',
       );
     }
+    final distribution = await Process.run(
+      Platform.resolvedExecutable,
+      <String>[
+        '${root.path}/tool/check_distribution_policy.dart',
+        '--root',
+        root.path,
+      ],
+      workingDirectory: root.path,
+    );
+    if (distribution.exitCode != 0) {
+      throw StateError(
+        'Stable candidate rejected distribution policy: '
+        '${distribution.stderr}',
+      );
+    }
     if (options.manifest != null) {
       final result = await Process.run(Platform.resolvedExecutable, <String>[
-        '${root.path}/tool/check_rc_readiness.dart',
+        '${root.path}/tool/check_actions_readiness.dart',
         '--root=${root.path}',
         '--manifest=${options.manifest!.path}',
       ], workingDirectory: root.path);

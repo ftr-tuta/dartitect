@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
+import 'package:yaml/yaml.dart';
 
 import '../codex/codex_skill_synchronizer.dart';
 import '../codex/skill_catalog.dart';
@@ -15,6 +16,12 @@ import '../policy/ecosystem_policy.dart';
 import '../release/package_compatibility.dart';
 import '../scan/baseline.dart';
 import '../scan/project_scanner.dart';
+
+typedef _DartitectUpgradeCommandRunner = Future<ProcessResult> Function(
+  Directory root,
+  String executable,
+  List<String> arguments,
+);
 
 /// A filesystem change supported by the reusable Dartitect project service.
 enum DartitectChangeKind {
@@ -187,6 +194,13 @@ final class DartitectProjectService {
 
   /// Project root used internally. Public results contain relative paths only.
   final Directory root;
+
+  _DartitectUpgradeCommandRunner get _upgradeCommandRunner {
+    final override = Zone.current[#dartitectUpgradeCommandRunner];
+    return override is _DartitectUpgradeCommandRunner
+        ? override
+        : _runDependencyUpgradeCommand;
+  }
 
   static final Set<String> _activeChangeRoots = <String>{};
 
@@ -458,12 +472,12 @@ final class DartitectProjectService {
           severity: FindingSeverity.error,
           message:
               '${incompatibility.package} ${incompatibility.version} is not '
-              'compatible with this Dartitect SDK.',
+              'compatible with this Dartitect SDK: '
+              '${incompatibility.reason}.',
           path: 'pubspec.lock',
           evidence: incompatibility.expectedRange,
           remediation:
-              'Resolve a version accepted by the generated package '
-              'compatibility manifest.',
+              'Resolve the package from the canonical GitHub release tag.',
         ),
       );
     }
@@ -705,70 +719,165 @@ final class DartitectProjectService {
   }
 
   static String _validatedTargetCohort(String? value) {
-    if (value == null ||
-        !RegExp(r'^1\.0\.0-rc\.[1-9][0-9]*$').hasMatch(value)) {
+    if (value != '1.0.0') {
       throw const DartitectChangeException(
         'invalid_target_cohort',
-        'The target cohort must be an explicit 1.0.0-rc.N version.',
+        'The target cohort must be the stable 1.0.0 release.',
       );
     }
-    return value;
+    return '1.0.0';
   }
 
   static String _renderDependencyUpgrade(String source, String target) {
-    const sections = <String>{'dependencies', 'dev_dependencies'};
-    String? section;
     final lineEnding = source.contains('\r\n') ? '\r\n' : '\n';
     final lines = source.split(RegExp(r'\r?\n'));
-    for (var index = 0; index < lines.length; index += 1) {
+    final output = <String>[];
+    String? section;
+    for (var index = 0; index < lines.length;) {
       final line = lines[index];
       final topLevel = RegExp(r'^([a-zA-Z_][a-zA-Z0-9_]*):(?:\s|$)')
           .firstMatch(line);
       if (topLevel != null) {
-        section = sections.contains(topLevel.group(1))
+        section =
+            const <String>{
+              'dependencies',
+              'dev_dependencies',
+              'dependency_overrides',
+            }.contains(topLevel.group(1))
             ? topLevel.group(1)
             : null;
+        output.add(line);
+        index += 1;
         continue;
       }
-      if (section == null) continue;
-      final declaration = RegExp(r'^(  )([a-z][a-z0-9_]*):\s*(.*?)\s*(#.*)?$')
-          .firstMatch(line);
-      if (declaration == null) continue;
-      final package = declaration.group(2)!;
-      if (!_dartitectPackages.contains(package)) continue;
-      final raw = declaration.group(3)!.trim();
-      if (raw.isEmpty) {
-        throw DartitectChangeException(
-          'unsupported_dependency_source',
-          'Dependency $package uses a structured source and cannot be upgraded automatically.',
-        );
+      if (section == null) {
+        output.add(line);
+        index += 1;
+        continue;
       }
-      final quote = raw.startsWith("'") && raw.endsWith("'")
-          ? "'"
-          : raw.startsWith('"') && raw.endsWith('"')
-          ? '"'
-          : '';
-      final constraint = quote.isEmpty ? raw : raw.substring(1, raw.length - 1);
-      final replacement = switch (constraint) {
-        final value when RegExp(r'^\^1\.0\.0-rc\.\d+$').hasMatch(value) =>
-          '^$target',
-        final value when RegExp(r'^1\.0\.0-rc\.\d+$').hasMatch(value) => target,
-        final value
-            when RegExp(r'^>=1\.0\.0-rc\.\d+\s+<1\.0\.0$').hasMatch(value) =>
-          '>=$target <1.0.0',
-        _ => throw DartitectChangeException(
-          'unsupported_dependency_constraint',
-          'Dependency $package has a constraint that requires manual review.',
-        ),
-      };
-      lines[index] =
-          '${declaration.group(1)}$package: '
-          '$quote$replacement$quote${declaration.group(4) == null ? '' : ' ${declaration.group(4)}'}';
+      final declaration = RegExp(
+        r'^(  )([a-z][a-z0-9_]*):[ \t]*([^#\r\n]*?)[ \t]*(#.*)?$',
+      ).firstMatch(line);
+      if (declaration == null) {
+        output.add(line);
+        index += 1;
+        continue;
+      }
+      final package = declaration.group(2)!;
+      if (!_dartitectPackages.contains(package)) {
+        output.add(line);
+        index += 1;
+        continue;
+      }
+      final blockEnd = _dependencyBlockEnd(lines, index + 1);
+      final nested = lines.sublist(index + 1, blockEnd);
+      final comments = <String>[
+        for (final nestedLine in nested)
+          if (nestedLine.trimLeft().startsWith('#')) nestedLine,
+      ];
+      if (section == 'dependency_overrides') {
+        output.addAll(comments);
+      } else {
+        _validateUpgradeableDependency(
+          package,
+          declaration.group(3)!.trim(),
+          nested,
+        );
+        final trailingComment = declaration.group(4) == null
+            ? ''
+            : ' ${declaration.group(4)}';
+        output.add('  $package:$trailingComment');
+        output.addAll(<String>[
+          '    git:',
+          '      url: https://github.com/ftr-tuta/dartitect.git',
+          '      path: packages/$package',
+          "      tag_pattern: 'v{{version}}'",
+          '    version: $target',
+          ...comments,
+        ]);
+      }
+      index = blockEnd;
     }
-    return lines.join(lineEnding);
+    _removeEmptyDartitectOverrideSection(output);
+    return output.join(lineEnding);
   }
 
-  /// Applies the closed hosted-constraint codemod without touching disk.
+  static int _dependencyBlockEnd(List<String> lines, int start) {
+    var index = start;
+    while (index < lines.length) {
+      final line = lines[index];
+      if (line.startsWith('    ') || line.startsWith('\t')) {
+        index += 1;
+        continue;
+      }
+      break;
+    }
+    return index;
+  }
+
+  static void _validateUpgradeableDependency(
+    String package,
+    String scalar,
+    List<String> nested,
+  ) {
+    if (scalar.isNotEmpty) {
+      final value = scalar.replaceAll(RegExp(r'''^['"]|['"]$'''), '');
+      if (const <String>{
+        '1.0.0-rc.10',
+        '^1.0.0-rc.10',
+        '>=1.0.0-rc.10 <1.0.0',
+      }.contains(value)) {
+        return;
+      }
+      throw DartitectChangeException(
+        'unsupported_dependency_constraint',
+        'Dependency $package is not from the RC10 source cohort.',
+      );
+    }
+    final descriptorSource = <String>[
+      'dependency:',
+      for (final line in nested) '  ${line.substring(4)}',
+    ].join('\n');
+    final parsed = loadYaml(descriptorSource);
+    final descriptor = parsed is Map<Object?, Object?>
+        ? parsed['dependency']
+        : null;
+    if (descriptor is! Map<Object?, Object?> ||
+        descriptor['git'] is! Map<Object?, Object?>) {
+      throw DartitectChangeException(
+        'unsupported_dependency_source',
+        'Dependency $package must use the previous canonical Git source.',
+      );
+    }
+    final git = descriptor['git']! as Map<Object?, Object?>;
+    final declaredVersion = '${descriptor['version'] ?? '1.0.0-rc.10'}';
+    if (git['url'] != 'https://github.com/ftr-tuta/dartitect.git' ||
+        git['path'] != 'packages/$package' ||
+        !const <String>{'1.0.0-rc.10', '1.0.0'}.contains(declaredVersion)) {
+      throw DartitectChangeException(
+        'unsupported_dependency_source',
+        'Dependency $package has non-canonical Git coordinates.',
+      );
+    }
+  }
+
+  static void _removeEmptyDartitectOverrideSection(List<String> lines) {
+    final header = lines.indexOf('dependency_overrides:');
+    if (header < 0) return;
+    var end = header + 1;
+    var hasDeclaration = false;
+    while (end < lines.length &&
+        !RegExp(r'^[a-zA-Z_][a-zA-Z0-9_]*:').hasMatch(lines[end])) {
+      if (RegExp(r'^  [a-z][a-z0-9_]*:').hasMatch(lines[end])) {
+        hasDeclaration = true;
+      }
+      end += 1;
+    }
+    if (hasDeclaration) return;
+    lines.removeAt(header);
+  }
+
+  /// Applies the closed RC10-to-stable Git codemod without touching disk.
   static String renderDependencyUpgradeSource(String source, String target) =>
       _renderDependencyUpgrade(source, _validatedTargetCohort(target));
 
@@ -782,17 +891,33 @@ final class DartitectProjectService {
     final backup = File(
       _join(directory.path, 'dependency-upgrade.pubspec.backup'),
     );
+    final lockfile = File(_join(root.path, 'pubspec.lock'));
+    final lockfileBackup = File(
+      _join(directory.path, 'dependency-upgrade.pubspec.lock.backup'),
+    );
     final journal = File(
       _join(directory.path, 'dependency-upgrade.transaction.json'),
     );
     await _recoverDependencyUpgradeIfNeeded();
     if (await target.readAsString() == content) return;
     final digest = sha256.convert(utf8.encode(content)).toString();
+    final lockfileExisted = await lockfile.exists();
+    if (lockfileExisted) await lockfile.copy(lockfileBackup.path);
     await stage.writeAsString(content, flush: true);
-    await _writeDependencyJournal(journal, 'staged', digest);
+    await _writeDependencyJournal(
+      journal,
+      'staged',
+      digest,
+      lockfileExisted: lockfileExisted,
+    );
     try {
       await target.rename(backup.path);
-      await _writeDependencyJournal(journal, 'backedUp', digest);
+      await _writeDependencyJournal(
+        journal,
+        'backedUp',
+        digest,
+        lockfileExisted: lockfileExisted,
+      );
       try {
         await stage.rename(target.path);
       } on FileSystemException {
@@ -806,8 +931,20 @@ final class DartitectProjectService {
           'The upgraded pubspec failed its post-write digest check.',
         );
       }
-      await _writeDependencyJournal(journal, 'committed', digest);
-      await _cleanupDependencyUpgrade(stage, backup, journal);
+      await _writeDependencyJournal(
+        journal,
+        'validating',
+        digest,
+        lockfileExisted: lockfileExisted,
+      );
+      await _validateDependencyUpgrade(content);
+      await _writeDependencyJournal(
+        journal,
+        'committed',
+        digest,
+        lockfileExisted: lockfileExisted,
+      );
+      await _cleanupDependencyUpgrade(stage, backup, lockfileBackup, journal);
     } on Object {
       await _recoverDependencyUpgradeIfNeeded();
       rethrow;
@@ -823,11 +960,17 @@ final class DartitectProjectService {
     final backup = File(
       _join(directory.path, 'dependency-upgrade.pubspec.backup'),
     );
+    final lockfile = File(_join(root.path, 'pubspec.lock'));
+    final lockfileBackup = File(
+      _join(directory.path, 'dependency-upgrade.pubspec.lock.backup'),
+    );
     final journal = File(
       _join(directory.path, 'dependency-upgrade.transaction.json'),
     );
     if (!await journal.exists()) {
-      if (await stage.exists() || await backup.exists()) {
+      if (await stage.exists() ||
+          await backup.exists() ||
+          await lockfileBackup.exists()) {
         throw const DartitectChangeException(
           'dependency_upgrade_recovery_required',
           'Unjournaled dependency-upgrade artifacts require manual review.',
@@ -847,7 +990,8 @@ final class DartitectProjectService {
     if (decoded is! Map<String, Object?> ||
         decoded['schemaVersion'] != 1 ||
         decoded['phase'] is! String ||
-        decoded['targetSha256'] is! String) {
+        decoded['targetSha256'] is! String ||
+        decoded['lockfileExisted'] is! bool) {
       throw const DartitectChangeException(
         'dependency_upgrade_recovery_required',
         'The dependency-upgrade journal is invalid and requires manual review.',
@@ -856,7 +1000,7 @@ final class DartitectProjectService {
     if (decoded['phase'] == 'committed' && await target.exists()) {
       final digest = await sha256.bind(target.openRead()).first;
       if (digest.toString() == decoded['targetSha256']) {
-        await _cleanupDependencyUpgrade(stage, backup, journal);
+        await _cleanupDependencyUpgrade(stage, backup, lockfileBackup, journal);
         return;
       }
     }
@@ -864,26 +1008,75 @@ final class DartitectProjectService {
       if (await target.exists()) await target.delete();
       await backup.rename(target.path);
     }
+    if (decoded['lockfileExisted'] == true) {
+      if (!await lockfileBackup.exists()) {
+        throw const DartitectChangeException(
+          'dependency_upgrade_recovery_required',
+          'The dependency-upgrade lockfile backup is missing.',
+        );
+      }
+      if (await lockfile.exists()) await lockfile.delete();
+      await lockfileBackup.rename(lockfile.path);
+    } else {
+      if (await lockfile.exists()) await lockfile.delete();
+      if (await lockfileBackup.exists()) await lockfileBackup.delete();
+    }
     if (await stage.exists()) await stage.delete();
     if (await journal.exists()) await journal.delete();
   }
 
+  Future<void> _validateDependencyUpgrade(String pubspec) async {
+    final flutter = RegExp(
+      r'^\s+flutter:\s*$[\s\S]*?^\s+sdk:\s+flutter\s*$',
+      multiLine: true,
+    ).hasMatch(pubspec);
+    final executable = flutter ? 'flutter' : 'dart';
+    final commands = <List<String>>[
+      const <String>['pub', 'get'],
+      const <String>['analyze'],
+      const <String>['test'],
+    ];
+    for (final arguments in commands) {
+      final result = await _upgradeCommandRunner(root, executable, arguments);
+      if (result.exitCode == 0) continue;
+      final output = '${result.stderr}\n${result.stdout}'.trim().replaceAll(
+        RegExp(r'\s+'),
+        ' ',
+      );
+      throw DartitectChangeException(
+        'dependency_upgrade_validation_failed',
+        'Stable dependency validation failed for '
+            '$executable ${arguments.join(' ')}'
+            '${output.isEmpty ? '.' : ': ${output.length <= 300 ? output : '${output.substring(0, 300)}…'}'}',
+      );
+    }
+  }
+
+  static Future<ProcessResult> _runDependencyUpgradeCommand(
+    Directory root,
+    String executable,
+    List<String> arguments,
+  ) => Process.run(executable, arguments, workingDirectory: root.path);
+
   static Future<void> _writeDependencyJournal(
     File journal,
     String phase,
-    String digest,
-  ) => journal.writeAsString(
-    '${jsonEncode(<String, Object?>{'schemaVersion': 1, 'phase': phase, 'targetSha256': digest})}\n',
+    String digest, {
+    required bool lockfileExisted,
+  }) => journal.writeAsString(
+    '${jsonEncode(<String, Object?>{'schemaVersion': 1, 'phase': phase, 'targetSha256': digest, 'lockfileExisted': lockfileExisted})}\n',
     flush: true,
   );
 
   static Future<void> _cleanupDependencyUpgrade(
     File stage,
     File backup,
+    File lockfileBackup,
     File journal,
   ) async {
     if (await stage.exists()) await stage.delete();
     if (await backup.exists()) await backup.delete();
+    if (await lockfileBackup.exists()) await lockfileBackup.delete();
     if (await journal.exists()) await journal.delete();
   }
 
@@ -1205,6 +1398,7 @@ final class DartitectProjectService {
     'pubspec.lock',
     '.dartitect/dependency-upgrade.pubspec.stage',
     '.dartitect/dependency-upgrade.pubspec.backup',
+    '.dartitect/dependency-upgrade.pubspec.lock.backup',
     '.dartitect/dependency-upgrade.transaction.json',
   };
 
@@ -1223,9 +1417,11 @@ final class DartitectProjectService {
   static const Set<String> _dartitectPackages = <String>{
     'dartitect',
     'dartitect_cli',
+    'dartitect_devtools',
     'dartitect_dio',
     'dartitect_drift',
     'dartitect_flutter',
+    'dartitect_flutter_testing',
     'dartitect_geometry',
     'dartitect_isolates',
     'dartitect_jobs',

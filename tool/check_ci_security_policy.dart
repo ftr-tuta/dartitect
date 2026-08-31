@@ -147,7 +147,7 @@ void _auditWorkflows(Directory root, List<String> errors) {
     'GITHUB_EVENT_NAME\" == \"merge_group',
     '--exclude-merge-commits',
     'Clean clone / release audit',
-    'Git consumption / v1.0.0-rc.10',
+    'Git consumption / v1.0.0',
     'tool/run_git_canaries.dart',
     'dart run tool/change_tax.dart',
     'DARTITECT_CI_RUNNER_ID: ubuntu-24.04-flutter-3.47.1',
@@ -214,24 +214,35 @@ void _auditWorkflows(Directory root, List<String> errors) {
     }
   }
 
-  final publish = File('${workflowRoot.path}/publish.yaml').readAsStringSync();
+  final release = File('${workflowRoot.path}/release.yaml').readAsStringSync();
   for (final required in const <String>[
+    'name: Release',
     'workflow_dispatch:',
     'source_sha:',
     'ci_run_id:',
-    'channel:',
+    'contents: write',
+    r'repos/${GITHUB_REPOSITORY}/immutable-releases',
+    '.enabled == true',
+    'current remote main HEAD',
     r'actions/runs/${CI_RUN_ID}',
     r'CI_RUN_ATTEMPT=$ci_run_attempt',
     '.name == "CI / Required" and .conclusion == "success"',
     r'run-id: ${{ inputs.ci_run_id }}',
-    'tool/check_publication_readiness.dart',
-    'GITHUB_ACTOR',
+    'tool/check_release_readiness.dart',
+    'tool/build_release_assets.dart',
+    r'repos/${GITHUB_REPOSITORY}/git/tags',
+    r'refs/tags/${RELEASE_TAG}',
+    '--verify-tag',
+    '--draft',
+    'SHA256SUMS',
+    r'gh release verify "$RELEASE_TAG"',
+    'gh release verify-asset',
+    '.immutable == true',
   ]) {
-    if (!publish.contains(required)) {
-      errors.add('Publish workflow is missing required policy: $required');
+    if (!release.contains(required)) {
+      errors.add('Release workflow is missing required policy: $required');
     }
   }
-
   final rulesetFile = File('${root.path}/tool/github_ruleset_policy.json');
   if (!rulesetFile.existsSync()) {
     errors.add('The checked main ruleset policy is missing.');
@@ -246,6 +257,30 @@ void _auditWorkflows(Directory root, List<String> errors) {
     ]) {
       if (!source.contains(required)) {
         errors.add('The main ruleset policy is missing: $required');
+      }
+    }
+  }
+
+  final releaseRulesetFile = File(
+    '${root.path}/tool/github_release_ruleset_policy.json',
+  );
+  if (!releaseRulesetFile.existsSync()) {
+    errors.add('The checked release-tag ruleset policy is missing.');
+  } else {
+    final source = releaseRulesetFile.readAsStringSync();
+    for (final required in const <String>[
+      '"rulesetId": 21525640',
+      '"name": "Protect release tags"',
+      '"target": "tag"',
+      '"enforcement": "active"',
+      '"include": ["refs/tags/v*"]',
+      '"exclude": []',
+      '"bypassActors": []',
+      '"deletionBlocked": true',
+      '"nonFastForwardBlocked": true',
+    ]) {
+      if (!source.contains(required)) {
+        errors.add('The release-tag ruleset policy is missing: $required');
       }
     }
   }

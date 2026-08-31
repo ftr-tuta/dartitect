@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -356,34 +357,52 @@ void main() {
   );
 
   test(
-    'dependency upgrade applies one cohort and cleans its journal',
+    'dependency upgrade migrates RC10 and only Dartitect overrides',
     () async {
       final root = await _project();
       final pubspec = File('${root.path}/pubspec.yaml');
       await pubspec.writeAsString('''name: fixture
 dependencies:
-  dartitect: ">=1.0.0-rc.2 <1.0.0" # cohort
-  dartitect_flutter: ^1.0.0-rc.2
+  # direct dependencies stay ordered
+  dartitect: ^1.0.0-rc.10 # core
+  http: ^1.0.0
 dev_dependencies:
-  dartitect_testing: 1.0.0-rc.2
+  dartitect_testing: ">=1.0.0-rc.10 <1.0.0"
+dependency_overrides:
+  dartitect:
+    path: ../dartitect
+  meta: ^1.0.0 # external override
 ''');
+      final commands = <String>[];
       final service = DartitectProjectService(root);
 
-      final plan = await service.previewDependencyUpgrade('1.0.0-rc.4');
-      final receipt = await service.applyChange(plan);
+      final plan = await service.previewDependencyUpgrade('1.0.0');
+      final receipt = await _withUpgradeCommandRunner((
+        project,
+        executable,
+        arguments,
+      ) async {
+        commands.add('$executable ${arguments.join(' ')}');
+        return ProcessResult(1, 0, '', '');
+      }, () => service.applyChange(plan));
       final result = await pubspec.readAsString();
 
-      expect(plan.stateToken, matches(RegExp(r'^[0-9a-f]{64}$')));
-      expect(plan.targetCohort, '1.0.0-rc.4');
-      expect(plan.preview, isNot(contains(result)));
+      expect(plan.targetCohort, '1.0.0');
       expect(receipt.changed, isTrue);
-      expect(result, contains('>=1.0.0-rc.4 <1.0.0'));
-      expect(result, contains('dartitect_flutter: ^1.0.0-rc.4'));
-      expect(result, contains('dartitect_testing: 1.0.0-rc.4'));
-      expect(result, contains('# cohort'));
+      expect(result, contains('# direct dependencies stay ordered'));
+      expect(result, contains('dartitect: # core'));
+      expect(result, contains('path: packages/dartitect'));
+      expect(result, contains('path: packages/dartitect_testing'));
+      expect(result, contains("tag_pattern: 'v{{version}}'"));
+      expect(result, contains('version: 1.0.0'));
+      expect(result, contains('  http: ^1.0.0'));
+      expect(result, contains('  meta: ^1.0.0 # external override'));
+      expect(result, isNot(contains('path: ../dartitect')));
+      expect(commands, <String>['dart pub get', 'dart analyze', 'dart test']);
       for (final path in <String>[
         'dependency-upgrade.pubspec.stage',
         'dependency-upgrade.pubspec.backup',
+        'dependency-upgrade.pubspec.lock.backup',
         'dependency-upgrade.transaction.json',
       ]) {
         expect(File('${root.path}/.dartitect/$path').existsSync(), isFalse);
@@ -391,125 +410,194 @@ dev_dependencies:
     },
   );
 
-  test('dependency upgrade preserves structured source overrides', () async {
-    final root = await _project();
-    final pubspec = File('${root.path}/pubspec.yaml');
-    const override = '''dependency_overrides:
-  dartitect:
-    git:
-      url: /tmp/dartitect-candidate
-      ref: v1.0.0-rc.10
-      path: packages/dartitect
-''';
-    await pubspec.writeAsString('''name: fixture
+  test('dependency upgrade canonicalizes an old Git descriptor', () async {
+    const source = '''name: fixture
 dependencies:
-  dartitect: ^1.0.0-rc.8
-$override''');
-    final service = DartitectProjectService(root);
+  dartitect_flutter:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_flutter
+      ref: v1.0.0-rc.10
+    version: 1.0.0-rc.10
+''';
 
-    final plan = await service.previewDependencyUpgrade('1.0.0-rc.10');
-    await service.applyChange(plan);
-    final result = await pubspec.readAsString();
+    final result = DartitectProjectService.renderDependencyUpgradeSource(
+      source,
+      '1.0.0',
+    );
 
-    expect(result, contains('dartitect: ^1.0.0-rc.10'));
-    expect(result, endsWith(override));
+    expect(result, contains('path: packages/dartitect_flutter'));
+    expect(result, contains("tag_pattern: 'v{{version}}'"));
+    expect(result, contains('version: 1.0.0'));
+    expect(result, isNot(contains('ref:')));
   });
 
-  test(
-    'dependency upgrade rejects stale and structured dependency plans',
-    () async {
-      final root = await _project();
-      final pubspec = File('${root.path}/pubspec.yaml');
-      await pubspec.writeAsString('''name: fixture
+  test('dependency upgrade preserves comments and CRLF idempotently', () async {
+    const source =
+        'name: fixture\r\ndependencies:\r\n'
+        '  dartitect: 1.0.0-rc.10 # direct\r\n'
+        '  collection: ^1.0.0\r\n';
+
+    final first = DartitectProjectService.renderDependencyUpgradeSource(
+      source,
+      '1.0.0',
+    );
+    final second = DartitectProjectService.renderDependencyUpgradeSource(
+      first,
+      '1.0.0',
+    );
+
+    expect(first, second);
+    expect(first, contains('dartitect: # direct\r\n'));
+    expect(first, contains('  collection: ^1.0.0\r\n'));
+    expect(first.replaceAll('\r\n', ''), isNot(contains('\n')));
+  });
+
+  test('dependency upgrade rejects stale and unsupported plans', () async {
+    final root = await _project();
+    final pubspec = File('${root.path}/pubspec.yaml');
+    await pubspec.writeAsString('''name: fixture
 dependencies:
-  dartitect: ^1.0.0-rc.2
+  dartitect: 1.0.0-rc.10
 ''');
-      final service = DartitectProjectService(root);
-      final plan = await service.previewDependencyUpgrade('1.0.0-rc.4');
-      await pubspec.writeAsString('''name: fixture
+    final service = DartitectProjectService(root);
+    final plan = await service.previewDependencyUpgrade('1.0.0');
+    await pubspec.writeAsString('''name: fixture
 dependencies:
-  dartitect: 1.0.0-rc.2
+  dartitect: ^1.0.0-rc.10
 ''');
 
-      await expectLater(
-        service.applyChange(plan),
-        throwsA(
-          isA<DartitectChangeException>().having(
-            (error) => error.code,
-            'code',
-            'stale_plan',
-          ),
+    await expectLater(
+      service.applyChange(plan),
+      throwsA(
+        isA<DartitectChangeException>().having(
+          (error) => error.code,
+          'code',
+          'stale_plan',
         ),
-      );
-      await pubspec.writeAsString('''name: fixture
+      ),
+    );
+    await pubspec.writeAsString('''name: fixture
 dependencies:
   dartitect:
     path: ../sdk
 ''');
+    await expectLater(
+      service.previewDependencyUpgrade('1.0.0'),
+      throwsA(
+        isA<DartitectChangeException>().having(
+          (error) => error.code,
+          'code',
+          'unsupported_dependency_source',
+        ),
+      ),
+    );
+  });
+
+  test(
+    'dependency upgrade rolls pubspec and lock back on validation failure',
+    () async {
+      final root = await _project();
+      final pubspec = File('${root.path}/pubspec.yaml');
+      final lockfile = File('${root.path}/pubspec.lock');
+      const original = '''name: fixture
+dependencies:
+  dartitect: 1.0.0-rc.10
+''';
+      await pubspec.writeAsString(original);
+      await lockfile.writeAsString('original lock\n');
+      final service = DartitectProjectService(root);
+      final plan = await service.previewDependencyUpgrade('1.0.0');
+
       await expectLater(
-        service.previewDependencyUpgrade('1.0.0-rc.4'),
+        _withUpgradeCommandRunner((project, executable, arguments) async {
+          if (arguments.first == 'pub') {
+            await File('${project.path}/pubspec.lock')
+                .writeAsString('new lock\n');
+            return ProcessResult(1, 0, '', '');
+          }
+          return ProcessResult(1, 1, '', 'analysis failed');
+        }, () => service.applyChange(plan)),
         throwsA(
           isA<DartitectChangeException>().having(
             (error) => error.code,
             'code',
-            'unsupported_dependency_source',
+            'dependency_upgrade_validation_failed',
           ),
         ),
+      );
+
+      expect(await pubspec.readAsString(), original);
+      expect(await lockfile.readAsString(), 'original lock\n');
+      expect(
+        File('${root.path}/.dartitect/dependency-upgrade.transaction.json')
+            .existsSync(),
+        isFalse,
       );
     },
   );
 
-  test('dependency upgrade recovers a backed-up pubspec before commit', () async {
+  test('dependency upgrade recovers a journal before applying', () async {
     final root = await _project();
     final pubspec = File('${root.path}/pubspec.yaml');
+    final lockfile = File('${root.path}/pubspec.lock');
     const original = '''name: fixture
 dependencies:
-  dartitect: ^1.0.0-rc.2
+  dartitect: 1.0.0-rc.10
 ''';
     await pubspec.writeAsString(original);
+    await lockfile.writeAsString('original lock\n');
     final service = DartitectProjectService(root);
-    final plan = await service.previewDependencyUpgrade('1.0.0-rc.4');
+    final plan = await service.previewDependencyUpgrade('1.0.0');
     final transaction = Directory('${root.path}/.dartitect');
     await transaction.create();
     await File('${transaction.path}/dependency-upgrade.pubspec.backup')
         .writeAsString(original);
+    await File('${transaction.path}/dependency-upgrade.pubspec.lock.backup')
+        .writeAsString('original lock\n');
     await File('${transaction.path}/dependency-upgrade.pubspec.stage')
         .writeAsString('partial');
     await pubspec.writeAsString('name: partial\n');
+    await lockfile.writeAsString('partial lock\n');
     await File(
       '${transaction.path}/dependency-upgrade.transaction.json',
     ).writeAsString(
-      '${jsonEncode(<String, Object?>{'schemaVersion': 1, 'phase': 'backedUp', 'targetSha256': '0' * 64})}\n',
+      '${jsonEncode(<String, Object?>{'schemaVersion': 1, 'phase': 'validating', 'targetSha256': '0' * 64, 'lockfileExisted': true})}\n',
+    );
+    final receipt = await _withUpgradeCommandRunner(
+      _successfulUpgradeCommand,
+      () => service.applyChange(plan),
     );
 
-    final receipt = await service.applyChange(plan);
-
     expect(receipt.changed, isTrue);
-    expect(await pubspec.readAsString(), contains('^1.0.0-rc.4'));
+    expect(await pubspec.readAsString(), contains('version: 1.0.0'));
     expect(
-      await File('${transaction.path}/dependency-upgrade.transaction.json')
-          .exists(),
+      File('${transaction.path}/dependency-upgrade.transaction.json')
+          .existsSync(),
       isFalse,
     );
   });
-
-  test('dependency upgrade preserves CRLF line endings', () async {
-    final root = await _project();
-    final pubspec = File('${root.path}/pubspec.yaml');
-    await pubspec.writeAsString(
-      'name: fixture\r\ndependencies:\r\n'
-      '  dartitect: ^1.0.0-rc.2\r\n',
-    );
-    final service = DartitectProjectService(root);
-
-    final plan = await service.previewDependencyUpgrade('1.0.0-rc.4');
-    await service.applyChange(plan);
-    final result = await pubspec.readAsString();
-
-    expect(result, contains('dartitect: ^1.0.0-rc.4\r\n'));
-    expect(result.replaceAll('\r\n', ''), isNot(contains('\n')));
-  });
 }
+
+typedef _UpgradeCommandRunner = Future<ProcessResult> Function(
+  Directory root,
+  String executable,
+  List<String> arguments,
+);
+
+Future<T> _withUpgradeCommandRunner<T>(
+  _UpgradeCommandRunner runner,
+  Future<T> Function() action,
+) => runZoned<Future<T>>(
+  action,
+  zoneValues: <Object?, Object?>{#dartitectUpgradeCommandRunner: runner},
+);
+
+Future<ProcessResult> _successfulUpgradeCommand(
+  Directory root,
+  String executable,
+  List<String> arguments,
+) async => ProcessResult(1, 0, '', '');
 
 Future<Directory> _project({
   String source = 'void main() {}\n',

@@ -98,7 +98,8 @@ provide HTTP facts only when duplicate Sentry capture is disabled. Read
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.10` source candidate. Use only coordinates
-from a matching tag with a corresponding published GitHub Release and its
-complete cohort notes. Without one, there is no supported consumption path. See
-the [Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).
+Dartitect `1.0.0` is distributed only by the annotated `v1.0.0` tag and
+its immutable GitHub Release. Declare this package directly with the canonical
+Git descriptor; its transitive Dartitect dependencies resolve from the same tag
+without overrides. See the
+[Git release consumption guide](../../docs/guides/git-release-consumption.md).

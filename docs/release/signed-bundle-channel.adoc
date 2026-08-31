@@ -1,8 +1,9 @@
 = Historical signed RC bundle channel (superseded)
 
 NOTE: This document describes the superseded pre-Actions materialization
-policy. The active release authority is `.github/workflows/publish.yaml` plus
-`actions-readiness-v1`; this historical channel cannot authorize a release.
+policy. The active authority is `.github/workflows/release.yaml`, the
+GitHub-only distribution policy, and `actions-readiness-v1`; this historical
+channel cannot authorize a release.
 
 Status:: Tooling ready; materialization not authorized
 Goals:: V1S-16 and V1S-17

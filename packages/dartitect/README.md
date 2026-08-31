@@ -152,8 +152,8 @@ Project-only infrastructure can use the confined
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.10` source candidate. Supported
-Git consumption requires a tag with a corresponding published GitHub Release
-and the coordinates from that Release's notes. If no compatible Release exists,
-there is no supported consumption path; see the
-[Git candidate consumption guide](../../docs/guides/git-candidate-consumption.md).
+Dartitect `1.0.0` is distributed only by the annotated `v1.0.0` tag and
+its immutable GitHub Release. Declare this package directly with the canonical
+Git descriptor; its transitive Dartitect dependencies resolve from the same tag
+without overrides. See the
+[Git release consumption guide](../../docs/guides/git-release-consumption.md).

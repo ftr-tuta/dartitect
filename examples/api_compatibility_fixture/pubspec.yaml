@@ -8,9 +8,24 @@ environment:
   sdk: ^3.13.0
 
 dependencies:
-  dartitect: '>=1.0.0-rc.10 <1.0.0'
-  dartitect_cli: '>=1.0.0-rc.10 <1.0.0'
-  dartitect_dio: '>=1.0.0-rc.10 <1.0.0'
+  dartitect:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+  dartitect_cli:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_cli
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+  dartitect_dio:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_dio
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
 
 dev_dependencies:
   test: ^1.31.1

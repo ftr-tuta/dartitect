@@ -1,0 +1,305 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact current main SHA authorized by CI
+        required: true
+        type: string
+      ci_run_id:
+        description: Successful main CI run that produced actions-readiness-v1
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: release-${{ inputs.source_sha }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release / immutable GitHub transaction
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_SHA: ${{ inputs.source_sha }}
+      CI_RUN_ID: ${{ inputs.ci_run_id }}
+      RELEASE_TAG: v1.0.0
+      RELEASE_TITLE: Dartitect 1.0.0
+      GITHUB_API_VERSION: "2026-03-10"
+    steps:
+      - name: Validate input shapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "source_sha must be a full lowercase commit SHA." >&2
+            exit 64
+          }
+          [[ "$CI_RUN_ID" =~ ^[1-9][0-9]*$ ]] || {
+            echo "ci_run_id must be a positive Actions run ID." >&2
+            exit 64
+          }
+      - name: Check out the exact source SHA
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: "3.47.1"
+          channel: stable
+          cache: true
+      - name: Resolve workspace
+        run: flutter pub get
+      - name: Verify immutable-release policy and referenced main CI
+        shell: bash
+        run: |
+          set -euo pipefail
+          api_header="X-GitHub-Api-Version: ${GITHUB_API_VERSION}"
+          remote_main="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" \
+            --header "$api_header" --jq .object.sha)"
+          [[ "$remote_main" == "$SOURCE_SHA" ]] || {
+            echo "source_sha is not the current remote main HEAD." >&2
+            exit 1
+          }
+          immutable_json="$(gh api "repos/${GITHUB_REPOSITORY}/immutable-releases" \
+            --header "$api_header")"
+          jq -e '.enabled == true' <<<"$immutable_json" >/dev/null || {
+            echo "Immutable Releases are not enabled for this repository." >&2
+            exit 1
+          }
+          release_ruleset="$(gh api "repos/${GITHUB_REPOSITORY}/rulesets/21525640" \
+            --header "$api_header")"
+          jq -e \
+            '.name == "Protect release tags" and .target == "tag" and .enforcement == "active" and .conditions.ref_name.include == ["refs/tags/v*"] and .conditions.ref_name.exclude == [] and .bypass_actors == [] and ([.rules[].type] | sort) == ["deletion", "non_fast_forward"]' \
+            <<<"$release_ruleset" >/dev/null || {
+              echo "Release tag ruleset 21525640 does not match policy." >&2
+              exit 1
+            }
+          run_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${CI_RUN_ID}" \
+            --header "$api_header")"
+          jq -e \
+            --arg sha "$SOURCE_SHA" \
+            '.name == "CI" and .event == "push" and .head_branch == "main" and .head_sha == $sha and .conclusion == "success"' \
+            <<<"$run_json" >/dev/null || {
+              echo "ci_run_id is not a successful main CI run for source_sha." >&2
+              exit 1
+            }
+          ci_run_attempt="$(jq -er '.run_attempt | select(type == "number" and . > 0)' <<<"$run_json")"
+          echo "CI_RUN_ATTEMPT=$ci_run_attempt" >>"$GITHUB_ENV"
+          jobs_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${CI_RUN_ID}/jobs?per_page=100" \
+            --header "$api_header")"
+          jq -e \
+            '[.jobs[] | select(.name == "CI / Required" and .conclusion == "success")] | length == 1' \
+            <<<"$jobs_json" >/dev/null || {
+              echo "ci_run_id has no unique successful CI / Required job." >&2
+              exit 1
+            }
+      - name: Download actions-readiness-v1 from the referenced run
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: actions-readiness-v1
+          path: build/actions-readiness-v1
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.ci_run_id }}
+      - name: Validate readiness, stable candidate, and distribution policy
+        run: >-
+          dart run tool/check_release_readiness.dart
+          --source-sha=${SOURCE_SHA}
+          --ci-run-id=${CI_RUN_ID}
+          --manifest=build/actions-readiness-v1/actions-readiness-v1.json
+      - name: Build deterministic Release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_tree="$(git show -s --format=%T "$SOURCE_SHA")"
+          echo "SOURCE_TREE=$source_tree" >>"$GITHUB_ENV"
+          dart run tool/build_release_assets.dart \
+            --output=build/release-assets \
+            --readiness=build/actions-readiness-v1/actions-readiness-v1.json \
+            --source-sha="$SOURCE_SHA" \
+            --source-tree="$source_tree" \
+            --ci-run-id="$CI_RUN_ID" \
+            --ci-run-attempt="$CI_RUN_ATTEMPT"
+          jq -n \
+            --arg sha "$SOURCE_SHA" \
+            --argjson run "$CI_RUN_ID" \
+            '"Stable GitHub-only release of the 25-package Dartitect lockstep cohort.\n\nSource: `" + $sha + "`\nCI: https://github.com/${{ github.repository }}/actions/runs/" + ($run | tostring)' \
+            --raw-output >build/release-notes.md
+      - name: Inspect tag and Release state before any write
+        id: state
+        shell: bash
+        run: |
+          set -euo pipefail
+          api_header="X-GitHub-Api-Version: ${GITHUB_API_VERSION}"
+          tag_state=absent
+          tag_error="$(mktemp)"
+          if tag_ref="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" \
+            --header "$api_header" 2>"$tag_error")"; then
+            tag_object_sha="$(jq -er '.object.sha' <<<"$tag_ref")"
+            [[ "$(jq -er '.object.type' <<<"$tag_ref")" == tag ]] || {
+              echo "Existing ${RELEASE_TAG} is not an annotated tag." >&2
+              exit 1
+            }
+            tag_object="$(gh api "repos/${GITHUB_REPOSITORY}/git/tags/${tag_object_sha}" \
+              --header "$api_header")"
+            jq -e \
+              --arg tag "$RELEASE_TAG" \
+              --arg sha "$SOURCE_SHA" \
+              --arg message "$RELEASE_TITLE" \
+              '.tag == $tag and .object.type == "commit" and .object.sha == $sha and .message == $message' \
+              <<<"$tag_object" >/dev/null || {
+                echo "Existing annotated tag differs from the authorized transaction." >&2
+                exit 1
+            }
+            tag_state=exact
+          elif ! grep -q 'HTTP 404' "$tag_error"; then
+            cat "$tag_error" >&2
+            echo "Could not prove that ${RELEASE_TAG} is absent." >&2
+            exit 1
+          fi
+          rm -f "$tag_error"
+
+          releases="$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            --header "$api_header" --paginate --slurp)"
+          matches="$(jq --arg tag "$RELEASE_TAG" '[.[][] | select(.tag_name == $tag)]' <<<"$releases")"
+          [[ "$(jq length <<<"$matches")" -le 1 ]] || {
+            echo "Multiple Releases claim ${RELEASE_TAG}." >&2
+            exit 1
+          }
+          release_state=absent
+          if [[ "$(jq length <<<"$matches")" -eq 1 ]]; then
+            release="$(jq '.[0]' <<<"$matches")"
+            expected_body="$(<build/release-notes.md)"
+            jq -e \
+              --arg tag "$RELEASE_TAG" \
+              --arg title "$RELEASE_TITLE" \
+              --arg sha "$SOURCE_SHA" \
+              --arg body "$expected_body" \
+              '.tag_name == $tag and .name == $title and .target_commitish == $sha and .prerelease == false and .body == $body' \
+              <<<"$release" >/dev/null || {
+                echo "Existing Release metadata differs from the authorized transaction." >&2
+                exit 1
+              }
+            actual_assets="$(jq -r '.assets[].name' <<<"$release" | sort)"
+            expected_assets="$(find build/release-assets -maxdepth 1 -type f -printf '%f\n' | sort)"
+            if [[ "$(jq -r .draft <<<"$release")" == true ]]; then
+              unexpected_assets="$(comm -23 <(printf '%s\n' "$actual_assets") <(printf '%s\n' "$expected_assets"))"
+              [[ -z "$unexpected_assets" ]] || {
+                echo "Existing draft contains unexpected assets: $unexpected_assets" >&2
+                exit 1
+              }
+              release_state=draft
+            else
+              [[ "$actual_assets" == "$expected_assets" ]] || {
+                echo "Published Release asset inventory differs." >&2
+                exit 1
+              }
+              jq -e '.immutable == true' <<<"$release" >/dev/null || {
+                echo "Published Release is not immutable." >&2
+                exit 1
+              }
+              release_state=published
+            fi
+          fi
+          if [[ "$release_state" != absent && "$tag_state" != exact ]]; then
+            echo "A Release exists without the exact annotated tag." >&2
+            exit 1
+          fi
+          echo "tag_state=$tag_state" >>"$GITHUB_OUTPUT"
+          echo "release_state=$release_state" >>"$GITHUB_OUTPUT"
+      - name: Verify an already-published immutable Release
+        if: steps.state.outputs.release_state == 'published'
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release verify "$RELEASE_TAG"
+          while IFS= read -r asset; do
+            gh release verify-asset "$RELEASE_TAG" "$asset"
+          done < <(find build/release-assets -maxdepth 1 -type f | sort)
+      - name: Create the annotated tag object and reference
+        if: steps.state.outputs.tag_state == 'absent'
+        shell: bash
+        run: |
+          set -euo pipefail
+          api_header="X-GitHub-Api-Version: ${GITHUB_API_VERSION}"
+          tag_object="$(gh api "repos/${GITHUB_REPOSITORY}/git/tags" \
+            --header "$api_header" --method POST \
+            -f tag="$RELEASE_TAG" \
+            -f message="$RELEASE_TITLE" \
+            -f object="$SOURCE_SHA" \
+            -f type=commit)"
+          tag_object_sha="$(jq -er .sha <<<"$tag_object")"
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
+            --header "$api_header" --method POST \
+            -f ref="refs/tags/${RELEASE_TAG}" \
+            -f sha="$tag_object_sha" >/dev/null
+      - name: Verify the annotated tag peel
+        if: steps.state.outputs.release_state != 'published'
+        shell: bash
+        run: |
+          set -euo pipefail
+          api_header="X-GitHub-Api-Version: ${GITHUB_API_VERSION}"
+          tag_ref="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" --header "$api_header")"
+          [[ "$(jq -er '.object.type' <<<"$tag_ref")" == tag ]] || exit 1
+          tag_object="$(gh api "repos/${GITHUB_REPOSITORY}/git/tags/$(jq -er '.object.sha' <<<"$tag_ref")" --header "$api_header")"
+          jq -e --arg sha "$SOURCE_SHA" '.object.type == "commit" and .object.sha == $sha' <<<"$tag_object" >/dev/null
+      - name: Create the exact draft Release
+        if: steps.state.outputs.release_state == 'absent'
+        shell: bash
+        run: >-
+          gh release create "${RELEASE_TAG}"
+          --verify-tag
+          --target "${SOURCE_SHA}"
+          --title "${RELEASE_TITLE}"
+          --notes-file build/release-notes.md
+          --draft
+          --latest=false
+      - name: Upload or replace draft assets
+        if: steps.state.outputs.release_state != 'published'
+        shell: bash
+        run: gh release upload "${RELEASE_TAG}" build/release-assets/* --clobber
+      - name: Download and verify the complete draft
+        if: steps.state.outputs.release_state != 'published'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/release-download
+          gh release download "$RELEASE_TAG" --dir build/release-download
+          diff -u build/release-assets/SHA256SUMS build/release-download/SHA256SUMS
+          (cd build/release-download && sha256sum --check SHA256SUMS)
+          while IFS= read -r asset; do
+            cmp "build/release-assets/$asset" "build/release-download/$asset"
+          done < <(find build/release-assets -maxdepth 1 -type f -printf '%f\n' | sort)
+      - name: Publish stable latest Release
+        if: steps.state.outputs.release_state != 'published'
+        run: gh release edit "${RELEASE_TAG}" --draft=false --prerelease=false --latest
+      - name: Verify immutable Release, assets, and attestation
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" \
+            --header "X-GitHub-Api-Version: ${GITHUB_API_VERSION}")"
+          jq -e \
+            --arg tag "$RELEASE_TAG" \
+            --arg title "$RELEASE_TITLE" \
+            '.tag_name == $tag and .name == $title and .draft == false and .prerelease == false and .immutable == true' \
+            <<<"$release_json" >/dev/null
+          gh release verify "$RELEASE_TAG"
+          while IFS= read -r asset; do
+            gh release verify-asset "$RELEASE_TAG" "$asset"
+          done < <(find build/release-assets -maxdepth 1 -type f | sort)
+          {
+            echo "### Immutable GitHub Release"
+            echo "- Tag: ${RELEASE_TAG} (annotated, ${SOURCE_SHA})"
+            echo "- CI run: ${CI_RUN_ID} (attempt ${CI_RUN_ATTEMPT})"
+            echo "- Release: stable, latest, immutable, attestation verified"
+          } >>"$GITHUB_STEP_SUMMARY"

@@ -1,6 +1,6 @@
 name: dartitect_devtools_extension_web
 description: Flutter Web source for the read-only Dartitect DevTools extension.
-version: 1.0.0-rc.10
+version: 1.0.0
 publish_to: none
 
 environment:

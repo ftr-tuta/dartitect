@@ -8,13 +8,13 @@ environment:
   flutter: '>=3.47.1'
 
 dependencies:
-  dartitect: 1.0.0-rc.10
-  dartitect_flutter: 1.0.0-rc.10
-  dartitect_modeling: 1.0.0-rc.10
+  dartitect: 1.0.0
+  dartitect_flutter: 1.0.0
+  dartitect_modeling: 1.0.0
   flutter:
     sdk: flutter
 
 dev_dependencies:
-  dartitect_cli: 1.0.0-rc.10
+  dartitect_cli: 1.0.0
   flutter_test:
     sdk: flutter

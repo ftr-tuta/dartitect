@@ -24,7 +24,7 @@ Future<void> main(List<String> arguments) async {
     ),
     'package release contract',
   );
-  final cohort = release['cohortVersion'];
+  final cohort = release['releaseVersion'];
   if (cohort is! String) throw const FormatException('Invalid release cohort.');
   final policy = _loadPolicy(root);
   final entrypoints = await _entrypoints(root);

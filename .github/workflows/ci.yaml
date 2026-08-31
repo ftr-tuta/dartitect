@@ -93,12 +93,12 @@ jobs:
           path: build/change-tax/report.json
           if-no-files-found: error
           retention-days: 30
-      - name: Audit release artifacts and package dry-runs
+      - name: Audit GitHub-only release artifacts
         if: matrix.flutter == '3.47.1'
         env:
           AUTHOR_REVISION: ${{ github.event.pull_request.head.sha || '' }}
         run: |
-          arguments=(--docs --publish-dry-run)
+          arguments=(--docs)
           if [[ -n "$AUTHOR_REVISION" ]]; then
             arguments+=("--author-revision=$AUTHOR_REVISION")
           elif [[ "$GITHUB_EVENT_NAME" == "merge_group" ]]; then
@@ -574,7 +574,7 @@ jobs:
         run: git diff --exit-code -- .
 
   git-consumption:
-    name: Git consumption / v1.0.0-rc.10
+    name: Git consumption / v1.0.0
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
@@ -601,14 +601,27 @@ jobs:
         run: |
           git config user.name ftr
           git config user.email ftr@tuta.com
-          git tag --delete v1.0.0-rc.10 2>/dev/null || true
-          git tag --annotate v1.0.0-rc.10 --message "Dartitect 1.0.0-rc.10 Git candidate"
+          git tag --delete v1.0.0 2>/dev/null || true
+          git tag --annotate v1.0.0 --message "Dartitect 1.0.0 Git release canary"
           git clone --bare . "${RUNNER_TEMP:?}/dartitect.git"
       - name: Validate all consumers through Git only
+        env:
+          GIT_CONFIG_COUNT: 1
+          GIT_CONFIG_KEY_0: url.file://${{ runner.temp }}/dartitect.git.insteadOf
+          GIT_CONFIG_VALUE_0: https://github.com/ftr-tuta/dartitect.git
         run: >-
           dart run tool/run_git_canaries.dart
-          --repository=file://${RUNNER_TEMP:?}/dartitect.git
-          --ref=v1.0.0-rc.10
+          --repository=https://github.com/ftr-tuta/dartitect.git
+          --ref=v1.0.0
+      - name: Validate CLI installation from the release tag
+        env:
+          GIT_CONFIG_COUNT: 1
+          GIT_CONFIG_KEY_0: url.file://${{ runner.temp }}/dartitect.git.insteadOf
+          GIT_CONFIG_VALUE_0: https://github.com/ftr-tuta/dartitect.git
+        run: >-
+          dart install https://github.com/ftr-tuta/dartitect.git
+          --git-path packages/dartitect_cli
+          --git-ref v1.0.0
       - name: Confirm tracked files are unchanged
         if: always()
         run: git diff --exit-code -- .
@@ -687,7 +700,7 @@ jobs:
       - name: Validate formal main readiness
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: >-
-          dart run tool/check_rc_readiness.dart
+          dart run tool/check_actions_readiness.dart
           --manifest=build/actions-readiness-v1/actions-readiness-v1.json
       - name: Upload actions-readiness-v1
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

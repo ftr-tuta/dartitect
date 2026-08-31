@@ -264,12 +264,29 @@ Future<void> _removeOpenApiOperationAssertion(Directory root) async {
 Future<void> _configureSentry(Directory root) async {
   final pubspec = File('${root.path}/pubspec.yaml');
   var pubspecSource = await pubspec.readAsString();
+  const syncDescriptor = '''  dartitect_sync:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_sync
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+''';
   pubspecSource = pubspecSource.replaceFirst(
-    '  dartitect_sync: ^1.0.0-rc.10\n',
-    '  dartitect_sync: ^1.0.0-rc.10\n'
-        '  dartitect_sentry: ^1.0.0-rc.10\n'
-        '  sentry: ^9.27.0\n',
+    syncDescriptor,
+    '$syncDescriptor'
+    '  dartitect_sentry:\n'
+    '    git:\n'
+    '      url: https://github.com/ftr-tuta/dartitect.git\n'
+    '      path: packages/dartitect_sentry\n'
+    "      tag_pattern: 'v{{version}}'\n"
+    '    version: 1.0.0\n'
+    '  sentry: ^9.27.0\n',
   );
+  if (!pubspecSource.contains('  dartitect_sentry:')) {
+    throw StateError(
+      'Large-consumer source lacks the canonical sync descriptor.',
+    );
+  }
   await pubspec.writeAsString(pubspecSource, flush: true);
 
   await File('${root.path}/lib/sentry_observability.dart').writeAsString('''
@@ -341,7 +358,7 @@ Future<void> _prepareStandalonePubspec(
           .readAsString(),
     ),
   );
-  final packages = _strings(release['publicationOrder']);
+  final packages = _strings(release['dependencyOrder']);
   source =
       '$source\ndependency_overrides:\n'
       '${packages.map((name) => '  $name:\n'

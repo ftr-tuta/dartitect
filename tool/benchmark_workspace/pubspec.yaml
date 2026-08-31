@@ -23,6 +23,7 @@ dev_dependencies:
   test: 1.31.1
   vm_service: 15.3.0
 
+# This is an isolated in-repository benchmark fixture, not a consumer example.
 dependency_overrides:
   dartitect:
     path: ../../packages/dartitect

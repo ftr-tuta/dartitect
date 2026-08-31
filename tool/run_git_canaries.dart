@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'git_dependency_overrides.dart';
-
 /// Resolves and runs all consumer canaries from one annotated Git tag.
 Future<void> main(List<String> arguments) async {
   final options = _Options.parse(arguments);
@@ -29,9 +27,9 @@ Future<void> main(List<String> arguments) async {
           .readAsStringSync(),
     ),
   );
-  if (contract['schemaVersion'] != 2 ||
-      contract['cohortVersion'] != release['cohortVersion'] ||
-      options.ref != 'v${release['cohortVersion']}') {
+  if (contract['schemaVersion'] != 3 ||
+      contract['releaseVersion'] != release['releaseVersion'] ||
+      options.ref != 'v${release['releaseVersion']}') {
     throw StateError('Git tag and canary release cohorts differ.');
   }
   final temporary = await Directory.systemTemp.createTemp(
@@ -46,8 +44,8 @@ Future<void> main(List<String> arguments) async {
           temporary: temporary,
           options: options,
           tag: tag,
-          cohortVersion: release['cohortVersion']! as String,
-          publicationOrder: _strings(release['publicationOrder']),
+          releaseVersion: release['releaseVersion']! as String,
+          dependencyOrder: _strings(release['dependencyOrder']),
           contract: canary,
         ),
       );
@@ -60,7 +58,7 @@ Future<void> main(List<String> arguments) async {
       '${receiptDirectory.path}/${options.ref}-${tag.commit}.json',
     );
     await receipt.writeAsString(
-      '${const JsonEncoder.withIndent('  ').convert(<String, Object?>{'schemaVersion': 1, 'cohortVersion': release['cohortVersion'], 'repository': options.repository, 'ref': options.ref, 'annotatedTagObject': tag.object, 'sourceCommit': tag.commit, 'packageSource': 'git', 'localPathDependencies': false, 'pubDevDartitectDependencies': false, 'canaries': receipts, 'result': 'PASS', 'recordedAtUtc': DateTime.now().toUtc().toIso8601String()})}\n',
+      '${const JsonEncoder.withIndent('  ').convert(<String, Object?>{'schemaVersion': 1, 'releaseVersion': release['releaseVersion'], 'repository': options.repository, 'ref': options.ref, 'annotatedTagObject': tag.object, 'sourceCommit': tag.commit, 'packageSource': 'git', 'localPathDependencies': false, 'registryDartitectDependencies': false, 'canaries': receipts, 'result': 'PASS', 'recordedAtUtc': DateTime.now().toUtc().toIso8601String()})}\n',
       flush: true,
     );
     stdout
@@ -80,8 +78,8 @@ Future<Map<String, Object?>> _runCanary({
   required Directory temporary,
   required _Options options,
   required _Tag tag,
-  required String cohortVersion,
-  required List<String> publicationOrder,
+  required String releaseVersion,
+  required List<String> dependencyOrder,
   required Map<String, Object?> contract,
 }) async {
   final id = contract['id']! as String;
@@ -89,18 +87,19 @@ Future<Map<String, Object?>> _runCanary({
   final pubspec = File('${workspace.path}/${contract['pubspec']}');
   final consumer = Directory('${temporary.path}/$id');
   await _copyConsumer(source, consumer);
-  final overrides = buildGitDependencyOverrides(
-    workspace,
-    _strings(contract['requiredPackages']),
+  final renderedPubspec = _renderGitDependencies(
+    pubspec.readAsStringSync(),
     repository: options.repository,
-    ref: options.ref,
+    version: releaseVersion,
   );
-  final template = pubspec.readAsStringSync();
-  if (RegExp(r'^dependency_overrides:', multiLine: true).hasMatch(template)) {
+  if (RegExp(
+    r'^dependency_overrides:',
+    multiLine: true,
+  ).hasMatch(renderedPubspec)) {
     throw StateError('${contract['pubspec']} already contains overrides.');
   }
   await File('${consumer.path}/pubspec.yaml')
-      .writeAsString('${template.trimRight()}\n\n$overrides', flush: true);
+      .writeAsString(renderedPubspec, flush: true);
 
   stdout.writeln('\nValidating Git-tag canary: $id');
   final commands = <Map<String, Object?>>[];
@@ -223,7 +222,7 @@ Future<Map<String, Object?>> _runCanary({
         'fleet',
         'upgrade',
         '.',
-        '--to=1.0.0-rc.10',
+        '--to=1.0.0',
         '--apply',
         '--json',
       ]);
@@ -323,8 +322,8 @@ Future<Map<String, Object?>> _runCanary({
     repository: options.repository,
     ref: options.ref,
     resolvedCommit: tag.commit,
-    cohortVersion: cohortVersion,
-    publicationOrder: publicationOrder,
+    releaseVersion: releaseVersion,
+    dependencyOrder: dependencyOrder,
     requiredPackages: _strings(contract['requiredPackages']),
     forbiddenPackages: _strings(contract['forbiddenPackages']),
   );
@@ -335,6 +334,48 @@ Future<Map<String, Object?>> _runCanary({
     'residualResourceCensus': contract['residualResourceCensus'],
     'result': 'PASS',
   };
+}
+
+String _renderGitDependencies(
+  String source, {
+  required String repository,
+  required String version,
+}) {
+  final ending = source.contains('\r\n') ? '\r\n' : '\n';
+  final output = <String>[];
+  String? section;
+  for (final line in source.split(RegExp(r'\r?\n'))) {
+    final top = RegExp(r'^([a-zA-Z_][a-zA-Z0-9_]*):(?:\s|$)').firstMatch(line);
+    if (top != null) {
+      section =
+          const <String>{
+            'dependencies',
+            'dev_dependencies',
+          }.contains(top.group(1))
+          ? top.group(1)
+          : null;
+      output.add(line);
+      continue;
+    }
+    final dependency = section == null
+        ? null
+        : RegExp(r'^  (dartitect(?:_[a-z0-9_]+)?):\s*[^#\s]+\s*(#.*)?$')
+              .firstMatch(line);
+    if (dependency == null) {
+      output.add(line);
+      continue;
+    }
+    final package = dependency.group(1)!;
+    output.addAll(<String>[
+      '  $package:${dependency.group(2) == null ? '' : ' ${dependency.group(2)}'}',
+      '    git:',
+      '      url: $repository',
+      '      path: packages/$package',
+      "      tag_pattern: 'v{{version}}'",
+      '    version: $version',
+    ]);
+  }
+  return output.join(ending);
 }
 
 void _assertConsumerOwnedSeams(Directory project) {
@@ -394,15 +435,12 @@ Future<List<Map<String, Object?>>> _validateResolvedGraph({
   required String repository,
   required String ref,
   required String resolvedCommit,
-  required String cohortVersion,
-  required List<String> publicationOrder,
+  required String releaseVersion,
+  required List<String> dependencyOrder,
   required List<String> requiredPackages,
   required List<String> forbiddenPackages,
 }) async {
   final lock = File('${consumer.path}/pubspec.lock').readAsStringSync();
-  if (RegExp(r'^\s+source:\s+path\s*$', multiLine: true).hasMatch(lock)) {
-    throw StateError('${consumer.path} resolved a local path dependency.');
-  }
   final configFile = File('${consumer.path}/.dart_tool/package_config.json');
   final config = _object(jsonDecode(configFile.readAsStringSync()));
   final entries = _objects(config['packages']);
@@ -419,7 +457,7 @@ Future<List<Map<String, Object?>>> _validateResolvedGraph({
   }
 
   final graph = <Map<String, Object?>>[];
-  for (final package in publicationOrder.where(names.contains)) {
+  for (final package in dependencyOrder.where(names.contains)) {
     final entry = entries.singleWhere((value) => value['name'] == package);
     final rootUri = configFile.uri.resolve(entry['rootUri']! as String);
     if (rootUri.toFilePath().startsWith(workspace.path)) {
@@ -427,16 +465,16 @@ Future<List<Map<String, Object?>>> _validateResolvedGraph({
     }
     final locked = _lockEntry(lock, package);
     if (locked['source'] != 'git' ||
-        locked['version'] != cohortVersion ||
+        locked['version'] != releaseVersion ||
         locked['url'] != repository ||
-        locked['ref'] != ref ||
+        locked['tag-pattern'] != 'v{{version}}' ||
         locked['resolved-ref'] != resolvedCommit ||
         locked['path'] != 'packages/$package') {
       throw StateError('$package did not resolve from $repository@$ref.');
     }
     graph.add(<String, Object?>{
       'package': package,
-      'version': cohortVersion,
+      'version': releaseVersion,
       'source': 'git',
       'path': 'packages/$package',
       'resolvedCommit': resolvedCommit,
@@ -520,7 +558,7 @@ Map<String, String> _lockEntry(String source, String package) {
       'source',
       'version',
       'url',
-      'ref',
+      'tag-pattern',
       'resolved-ref',
       'path',
     ])
@@ -622,7 +660,7 @@ final class _Options {
 
   factory _Options.parse(List<String> arguments) {
     String? repository;
-    var ref = 'v1.0.0-rc.10';
+    var ref = 'v1.0.0';
     var keepArtifacts = false;
     for (final argument in arguments) {
       if (argument.startsWith('--repository=')) {

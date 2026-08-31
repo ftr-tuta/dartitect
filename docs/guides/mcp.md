@@ -2,7 +2,7 @@
 
 ## Scope
 
-`dartitect_mcp 1.0.0-rc.10` is local and STDIO-only. It uses
+`dartitect_mcp 1.0.0` is local and STDIO-only. It uses
 `dart_mcp 0.5.2`. Streamable HTTP, OAuth/authorization, remote ChatGPT plugins,
 MCP UI, arbitrary shell/files, scaffolding `create`, and access to running
 applications are out of scope. The bounded `dartitect_preview_create_feature`
@@ -10,10 +10,21 @@ tool is the only create workflow exposed.
 
 ## Read-only setup
 
-The candidate is not on pub.dev. Declare
-`dartitect_mcp: 1.0.0-rc.10` under `dev_dependencies`, apply the complete Git
-override closure from the [candidate consumption guide](git-candidate-consumption.md),
-then run `dart run dartitect_mcp:dartitect_mcp --root .`.
+Declare the MCP package directly under `dev_dependencies`; its transitive
+Dartitect packages resolve from the same tag without overrides:
+
+```yaml
+dev_dependencies:
+  dartitect_mcp:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_mcp
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+```
+
+Then run `dart run dartitect_mcp:dartitect_mcp --root .`. See the
+[Git release consumption guide](git-release-consumption.md).
 
 Stdout is reserved for newline-delimited JSON-RPC. Internal diagnostics use
 stderr. The process accepts repeated `--root` arguments; all must already exist.

@@ -4,70 +4,95 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 void main() {
-  test(
-    'accepts one RC baseline with a generated compatibility range',
-    () async {
-      final fixture = await _Fixture.create();
-      addTearDown(fixture.dispose);
-
-      final result = await fixture.check();
-
-      expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
-      expect(result.stdout, contains('2 packages from baseline 1.0.0-rc.8'));
-    },
-  );
-
-  test('accepts independent stable patches declared by the manifest', () async {
-    final fixture = await _Fixture.create(
-      baseline: '1.0.0',
-      syncVersion: '1.0.3',
-      constraint: '>=1.0.0 <1.1.0',
-    );
+  test('accepts the permanent 25-package lockstep contract', () async {
+    final fixture = await _Fixture.create();
     addTearDown(fixture.dispose);
 
     final result = await fixture.check();
 
     expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
+    expect(result.stdout, contains('25 packages'));
+    expect(result.stdout, contains('GitHub-only lockstep cohort'));
   });
 
-  test(
-    'rejects workspace version that differs from package metadata',
-    () async {
-      final fixture = await _Fixture.create(
-        syncVersion: '1.0.0-rc.10',
-        manifestSyncVersion: '1.0.0-rc.8',
-      );
-      addTearDown(fixture.dispose);
-
-      final result = await fixture.check();
-
-      expect(result.exitCode, 1);
-      expect(result.stderr, contains('does not match its release metadata'));
-    },
-  );
-
-  test('rejects a broad internal constraint', () async {
-    final fixture = await _Fixture.create(constraint: '^1.0.0-rc.8');
+  test('rejects package metadata outside lockstep', () async {
+    final fixture = await _Fixture.create();
     addTearDown(fixture.dispose);
+    await fixture.updateContract((contract) {
+      final packages = contract['packages']! as Map<String, Object?>;
+      final sync = packages['dartitect_sync']! as Map<String, Object?>;
+      sync['version'] = '1.0.1';
+    });
 
     final result = await fixture.check();
 
     expect(result.exitCode, 1);
-    expect(result.stderr, contains('uses ^1.0.0-rc.8'));
+    expect(result.stderr, contains('stable release metadata'));
   });
 
-  test('rejects publication in the dependency layer or later', () async {
-    final fixture = await _Fixture.create(
-      layers: const <List<String>>[
-        <String>['dartitect', 'dartitect_sync'],
-      ],
+  test('rejects a workspace package version outside lockstep', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+    final pubspec = File(
+      '${fixture.root.path}/packages/dartitect_sync/pubspec.yaml',
     );
-    addTearDown(fixture.dispose);
+    await pubspec.writeAsString(
+      (await pubspec.readAsString()).replaceFirst(
+        'version: 1.0.0',
+        'version: 1.0.1',
+      ),
+    );
 
     final result = await fixture.check();
 
     expect(result.exitCode, 1);
-    expect(result.stderr, contains('layers are not topological'));
+    expect(result.stderr, contains('must declare the lockstep version'));
+  });
+
+  test('rejects a non-canonical package path', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+    await fixture.updateContract((contract) {
+      final paths = contract['packagePaths']! as Map<String, Object?>;
+      paths['dartitect_sync'] = 'packages/dartitect';
+    });
+
+    final result = await fixture.check();
+
+    expect(result.exitCode, 1);
+    expect(result.stderr, contains('non-canonical package path'));
+  });
+
+  test('rejects a dependency order that is not topological', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+    await fixture.updateContract((contract) {
+      final order = contract['dependencyOrder']! as List<Object?>;
+      final dependency = order.indexOf('dartitect');
+      final consumer = order.indexOf('dartitect_sync');
+      final value = order.removeAt(dependency);
+      order.insert(consumer, value);
+    });
+
+    final result = await fixture.check();
+
+    expect(result.exitCode, 1);
+    expect(result.stderr, contains('Dependency order is not topological'));
+  });
+
+  test('rejects legacy independent-publication semantics', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+    await fixture.updateContract((contract) {
+      contract['compatibility'] = <String, Object?>{
+        'stableIndependentPatches': true,
+      };
+    });
+
+    final result = await fixture.check();
+
+    expect(result.exitCode, 1);
+    expect(result.stderr, contains('Independent-patch'));
   });
 }
 
@@ -76,123 +101,48 @@ final class _Fixture {
 
   final Directory root;
 
-  static Future<_Fixture> create({
-    String baseline = '1.0.0-rc.8',
-    String? syncVersion,
-    String? manifestSyncVersion,
-    String? constraint,
-    List<List<String>> layers = const <List<String>>[
-      <String>['dartitect'],
-      <String>['dartitect_sync'],
-    ],
-  }) async {
+  static Future<_Fixture> create() async {
+    final source = Directory.current.absolute;
     final root = await Directory.systemTemp.createTemp(
-      'dartitect-release-contract-',
+      'package-release-contract-',
     );
-    await Directory('${root.path}/tool').create(recursive: true);
-    final expectedConstraint = baseline.contains('-')
-        ? '>=$baseline <1.0.0'
-        : '>=1.0.0 <1.1.0';
-    final actualSyncVersion = syncVersion ?? baseline;
-    await _package(root, 'dartitect', baseline);
-    await _package(
-      root,
-      'dartitect_sync',
-      actualSyncVersion,
-      dependency: constraint ?? expectedConstraint,
-    );
-    final order = <String>[for (final layer in layers) ...layer];
-    await File('${root.path}/tool/package_release_contract.json').writeAsString(
-      jsonEncode(<String, Object?>{
-        'schemaVersion': 2,
-        'series': '1.0.x',
-        'cohortVersion': baseline,
-        'baselineVersion': baseline,
-        'candidateTag': 'v$baseline',
-        'packageCount': 2,
-        'publicEntrypointCount': 1,
-        'compatibility': <String, Object?>{
-          'defaultRange': expectedConstraint,
-          'packageRanges': <String, Object?>{},
-          'prereleaseBaselineRequired': true,
-          'stableIndependentPatches': true,
-          'stableDefaultRange': '>=1.0.0 <1.1.0',
-        },
-        'inventoryDecisions': <String, Object?>{
-          'dartitect': 'fixture-foundation',
-          'dartitect_sync': 'fixture-platform-service',
-        },
-        'publicationCohorts': <String, Object?>{
-          'foundation': <String>['dartitect'],
-          'platformServices': <String>['dartitect_sync'],
-          'providerAdapters': <String>[],
-          'tooling': <String>[],
-          'leafUtilities': <String>[],
-        },
-        'packages': <String, Object?>{
-          'dartitect': _metadata(baseline),
-          'dartitect_sync': _metadata(manifestSyncVersion ?? actualSyncVersion),
-        },
-        'publicationLayers': layers,
-        'publicationOrder': order,
-        'artifactContract': <String, Object?>{
-          'cleanClone': true,
-          'exactSourceSha': true,
-          'trackedTreeClean': true,
-          'pathDependencies': false,
-          'dependencyOverrides': false,
-          'digestAlgorithm': 'sha256',
-        },
-        'gitCandidate': <String, Object?>{
-          'tag': 'v$baseline',
-          'materialized': false,
-          'pubDevPublication': false,
-        },
-        'partialFailurePolicy': <String, Object?>{
-          'automaticRetry': false,
-          'overwritePublishedVersion': false,
-          'resumeOnlyWithSameSourceAndDigests': true,
-          'changedArtifactRequiresNextCohort': true,
-        },
-      }),
-    );
+    final contract = File('${root.path}/tool/package_release_contract.json');
+    await contract.parent.create(recursive: true);
+    await File('${source.path}/tool/package_release_contract.json')
+        .copy(contract.path);
+    for (final package in Directory(
+      '${source.path}/packages',
+    ).listSync(followLinks: false).whereType<Directory>()) {
+      final name = _basename(package.path);
+      final destination = Directory('${root.path}/packages/$name');
+      await destination.create(recursive: true);
+      await File('${package.path}/pubspec.yaml')
+          .copy('${destination.path}/pubspec.yaml');
+      await File('${package.path}/CHANGELOG.md')
+          .copy('${destination.path}/CHANGELOG.md');
+    }
     return _Fixture(root);
   }
 
-  static Map<String, Object?> _metadata(String version) => <String, Object?>{
-    'version': version,
-    'platforms': <String>['Dart'],
-    'stability': 'fixture',
-  };
-
-  Future<ProcessResult> check() async {
-    final checker = File(
-      '${Directory.current.path}/tool/check_package_release_contract.dart',
-    );
-    return Process.run(Platform.resolvedExecutable, <String>[
-      checker.path,
-      '--root',
-      root.path,
-    ]);
+  Future<void> updateContract(
+    void Function(Map<String, Object?> contract) update,
+  ) async {
+    final file = File('${root.path}/tool/package_release_contract.json');
+    final contract =
+        jsonDecode(await file.readAsString()) as Map<String, Object?>;
+    update(contract);
+    await file.writeAsString(jsonEncode(contract));
   }
+
+  Future<ProcessResult> check() =>
+      Process.run(Platform.resolvedExecutable, <String>[
+        '${Directory.current.path}/tool/check_package_release_contract.dart',
+        '--root',
+        root.path,
+      ]);
 
   Future<void> dispose() => root.delete(recursive: true);
-
-  static Future<void> _package(
-    Directory root,
-    String name,
-    String version, {
-    String? dependency,
-  }) async {
-    final directory = Directory('${root.path}/packages/$name');
-    await directory.create(recursive: true);
-    await File('${directory.path}/pubspec.yaml').writeAsString('''
-name: $name
-version: $version
-resolution: workspace
-${dependency == null ? '' : "dependencies:\n  dartitect: '$dependency'\n"}
-''');
-    await File('${directory.path}/CHANGELOG.md')
-        .writeAsString('# Changelog\n\n## $version\n');
-  }
 }
+
+String _basename(String path) =>
+    path.split(Platform.pathSeparator).where((part) => part.isNotEmpty).last;

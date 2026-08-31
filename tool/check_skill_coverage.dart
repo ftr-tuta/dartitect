@@ -37,10 +37,11 @@ Future<void> main() async {
     await File('${root.path}/tool/package_release_contract.json')
         .readAsString(),
   );
-  if (release is! Map<String, Object?> || release['cohortVersion'] is! String) {
+  if (release is! Map<String, Object?> ||
+      release['releaseVersion'] is! String) {
     throw const FormatException('Invalid package release cohort.');
   }
-  final cohort = release['cohortVersion']! as String;
+  final cohort = release['releaseVersion']! as String;
   final manifest = jsonDecode(
     await File('${root.path}/tool/skill_coverage.json').readAsString(),
   );

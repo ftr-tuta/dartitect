@@ -44,10 +44,7 @@ Future<void> main(List<String> arguments) async {
     require(contract['schemaVersion'] == 1, 'Unsupported contract schema.');
     require(contract['artifact'] == 'ui-quality-v1', 'Wrong artifact name.');
     require(contract['goal'] == 'V1S-18', 'Wrong goal.');
-    require(
-      contract['cohortVersion'] == '1.0.0-rc.10',
-      'Wrong cohort version.',
-    );
+    require(contract['releaseVersion'] == '1.0.0', 'Wrong cohort version.');
     final topology = _map(contract['topology']);
     require(topology['packages'] == 25, 'Expected 25 packages.');
     require(topology['publicEntrypoints'] == 32, 'Expected 32 entrypoints.');

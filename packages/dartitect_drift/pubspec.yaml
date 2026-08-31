@@ -1,6 +1,7 @@
 name: dartitect_drift
 description: Consumer-owned Drift lifecycle, transaction, and sync integration for Dartitect.
-version: 1.0.0-rc.10
+version: 1.0.0
+publish_to: none
 repository: https://github.com/ftr-tuta/dartitect
 issue_tracker: https://github.com/ftr-tuta/dartitect/issues
 topics: [drift, architecture, database, sync]
@@ -10,9 +11,24 @@ environment:
   sdk: ^3.13.0
 
 dependencies:
-  dartitect: '>=1.0.0-rc.10 <1.0.0'
-  dartitect_observability: '>=1.0.0-rc.10 <1.0.0'
-  dartitect_sync: '>=1.0.0-rc.10 <1.0.0'
+  dartitect:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+  dartitect_observability:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_observability
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+  dartitect_sync:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_sync
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
   drift: ^2.34.3
 
 dev_dependencies:

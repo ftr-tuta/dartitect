@@ -18,17 +18,32 @@ entrypoints, platforms, skills, and contraindications before adding anything.
 
 ## Install
 
-The candidate is not published on pub.dev. Keep the selected package versions
-visible and generate Git overrides for their complete internal closure:
+Declare only the Dartitect packages that the application uses directly. Their
+transitive Dartitect dependencies resolve automatically from the same release
+tag; no override section is needed.
 
-```console
-dart run tool/git_dependency_overrides.dart \
-  dartitect,dartitect_sync,dartitect_flutter,dartitect_observability
+```yaml
+dependencies:
+  dartitect:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
 ```
 
-Paste the result under `dependency_overrides`, run `flutter pub get`, and
-follow the [Git candidate consumption guide](git-candidate-consumption.md) to
-verify the URL, tag, package paths, and resolved commit.
+Generate other official direct-dependency snippets with
+`dart run tool/dependency_snippets.dart`, run `flutter pub get`, and follow the
+[Git release consumption guide](git-release-consumption.md) to verify the URL,
+paths, tag pattern, version, and common resolved commit.
+
+Install the CLI from the same release tag:
+
+```console
+dart install https://github.com/ftr-tuta/dartitect.git \
+  --git-path packages/dartitect_cli \
+  --git-ref v1.0.0
+```
 
 ## Compose
 

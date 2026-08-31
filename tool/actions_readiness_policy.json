@@ -33,14 +33,20 @@
     "docs/release/sbom.spdx.json",
     "docs/release/dependency-licenses.json",
     "tool/api_surface.snapshot.json",
+    "tool/actions_readiness_policy.json",
+    "tool/distribution_policy.json",
     "tool/package_release_contract.json",
+    "tool/stable_candidate_contract.json",
+    "tool/dependency_snippets.dart",
+    "tool/build_release_assets.dart",
+    "tool/github_ruleset_policy.json",
+    "tool/github_release_ruleset_policy.json",
     "tool/ui_quality_contract.json"
   ],
-  "publication": {
-    "workflowPath": ".github/workflows/publish.yaml",
+  "release": {
+    "workflowPath": ".github/workflows/release.yaml",
     "manualOnly": true,
-    "requiredInputs": ["source_sha", "ci_run_id", "channel"],
-    "channels": ["github-release", "pub-dev-prerelease", "pub-dev-stable"]
+    "requiredInputs": ["source_sha", "ci_run_id"]
   },
   "localValidationCanDeclareReadiness": false,
   "hostedRunnersOnly": true

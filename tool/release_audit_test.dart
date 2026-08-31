@@ -13,28 +13,24 @@ const _canonicalEnvironment = <String, String>{
 };
 
 void main() {
-  test(
-    'reads publication order from the schema-v2 release authority',
-    () async {
-      final root = await Directory.systemTemp.createTemp(
-        'dartitect-release-contract-test-',
-      );
-      addTearDown(() => root.delete(recursive: true));
-      await Directory('${root.path}/tool').create();
-      await File('${root.path}/tool/package_release_contract.json')
-          .writeAsString(
-            jsonEncode(<String, Object?>{
-              'schemaVersion': 2,
-              'publicationOrder': <String>['dartitect', 'dartitect_cli'],
-            }),
-          );
+  test('reads dependency order from the schema-v3 release authority', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-release-contract-test-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    await Directory('${root.path}/tool').create();
+    await File('${root.path}/tool/package_release_contract.json').writeAsString(
+      jsonEncode(<String, Object?>{
+        'schemaVersion': 3,
+        'dependencyOrder': <String>['dartitect', 'dartitect_cli'],
+      }),
+    );
 
-      expect(packagePublicationOrder(root), <String>[
-        'dartitect',
-        'dartitect_cli',
-      ]);
-    },
-  );
+    expect(packageDependencyOrder(root), <String>[
+      'dartitect',
+      'dartitect_cli',
+    ]);
+  });
 
   test('accepts canonical authorship for the selected history', () async {
     final repository = await _GitRepository.create();
@@ -153,7 +149,6 @@ ReleaseAuditOptions _options({
   bool excludeMergeCommits = false,
 }) => ReleaseAuditOptions(
   docs: false,
-  publishDryRun: false,
   authorRevision: authorRevision,
   excludeMergeCommits: excludeMergeCommits,
 );
