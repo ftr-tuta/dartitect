@@ -114,6 +114,7 @@ final class PreparedErrorEvent {
 final class PreparedSpanStart {
   const PreparedSpanStart._({
     required this.name,
+    required this.context,
     required this.parent,
     required this.kind,
     required this.attributes,
@@ -121,6 +122,9 @@ final class PreparedSpanStart {
 
   /// Sanitized span name.
   final String name;
+
+  /// Canonical runtime-generated context shared by every prepared tracer.
+  final TraceContext context;
 
   /// Validated protocol-only parent context.
   final TraceContext? parent;
@@ -629,11 +633,53 @@ final class ObservabilityFlushResult {
   bool get completed => destinations.values.every((value) => value.completed);
 }
 
+/// Shutdown behavior for a destination-aware observability runtime.
+final class ObservabilityShutdownPolicy {
+  /// Waits without a deadline until all admitted dispatch and flush work drains.
+  const ObservabilityShutdownPolicy.drain() : timeout = null;
+
+  /// Waits at most [timeout] per destination and leaves timed-out destinations
+  /// intact so a later shutdown call can finish safely.
+  const ObservabilityShutdownPolicy.bounded(this.timeout);
+
+  /// Per-destination timeout, or null for an unbounded safe drain.
+  final Duration? timeout;
+}
+
+/// Immutable result of one shutdown attempt.
+final class ObservabilityShutdownReceipt {
+  /// Creates a payload-free shutdown receipt.
+  ObservabilityShutdownReceipt({
+    required Map<String, ObservabilityDestinationFlushResult> destinations,
+    required Iterable<String> disposedDestinations,
+    required Iterable<String> timedOutDestinations,
+  }) : destinations =
+           Map<String, ObservabilityDestinationFlushResult>.unmodifiable(
+             destinations,
+           ),
+       disposedDestinations = Set<String>.unmodifiable(disposedDestinations),
+       timedOutDestinations = Set<String>.unmodifiable(timedOutDestinations);
+
+  /// Drain and flush outcome for every destination.
+  final Map<String, ObservabilityDestinationFlushResult> destinations;
+
+  /// Destinations whose owned components were disposed by this or an earlier attempt.
+  final Set<String> disposedDestinations;
+
+  /// Destinations retained because this attempt reached its bound.
+  final Set<String> timedOutDestinations;
+
+  /// Whether every destination is fully disposed.
+  bool get completed =>
+      disposedDestinations.length == destinations.length &&
+      timedOutDestinations.isEmpty;
+}
+
 /// Destination-aware runtime whose queues retain prepared events only.
 final class DestinationAwareObservabilityRuntime implements AsyncDisposable {
   /// Creates a validated privacy runtime.
   DestinationAwareObservabilityRuntime({
-    required this.privacyPolicy,
+    required ObservabilityPrivacyPolicy privacyPolicy,
     required Iterable<ObservabilityDestinationRegistration> destinations,
     Iterable<ObservabilityDataClassifier> classifiers =
         const <ObservabilityDataClassifier>[],
@@ -642,10 +688,51 @@ final class DestinationAwareObservabilityRuntime implements AsyncDisposable {
     ObservabilitySanitizationLimits limits =
         const ObservabilitySanitizationLimits(),
     DateTime Function()? clock,
+  }) : this._(
+         privacyPolicy: privacyPolicy,
+         destinations: destinations,
+         classifiers: classifiers,
+         projectors: projectors,
+         limits: limits,
+         clock: clock,
+         traceIdGenerator: null,
+       );
+
+  /// Creates a privacy runtime with an injected isolate-local trace ID source.
+  DestinationAwareObservabilityRuntime.withTraceIdGenerator({
+    required ObservabilityPrivacyPolicy privacyPolicy,
+    required Iterable<ObservabilityDestinationRegistration> destinations,
+    required TraceIdGenerator traceIdGenerator,
+    Iterable<ObservabilityDataClassifier> classifiers =
+        const <ObservabilityDataClassifier>[],
+    Iterable<ObservabilityValueProjector> projectors =
+        const <ObservabilityValueProjector>[],
+    ObservabilitySanitizationLimits limits =
+        const ObservabilitySanitizationLimits(),
+    DateTime Function()? clock,
+  }) : this._(
+         privacyPolicy: privacyPolicy,
+         destinations: destinations,
+         classifiers: classifiers,
+         projectors: projectors,
+         limits: limits,
+         clock: clock,
+         traceIdGenerator: traceIdGenerator,
+       );
+
+  DestinationAwareObservabilityRuntime._({
+    required this.privacyPolicy,
+    required Iterable<ObservabilityDestinationRegistration> destinations,
+    required Iterable<ObservabilityDataClassifier> classifiers,
+    required Iterable<ObservabilityValueProjector> projectors,
+    required ObservabilitySanitizationLimits limits,
+    required DateTime Function()? clock,
+    required TraceIdGenerator? traceIdGenerator,
   }) : destinations = List<ObservabilityDestinationRegistration>.unmodifiable(
          destinations,
        ),
-       _clock = clock ?? DateTime.now {
+       _clock = clock ?? DateTime.now,
+       _traceIds = traceIdGenerator ?? SecureTraceIdGenerator() {
     _validateComposition(this.destinations);
     _states = <_DestinationState>[
       for (final destination in this.destinations)
@@ -671,6 +758,7 @@ final class DestinationAwareObservabilityRuntime implements AsyncDisposable {
   final List<ObservabilityDestinationRegistration> destinations;
 
   final DateTime Function() _clock;
+  final TraceIdGenerator _traceIds;
   late final List<_DestinationState> _states;
 
   /// Runtime-local logger.
@@ -686,6 +774,7 @@ final class DestinationAwareObservabilityRuntime implements AsyncDisposable {
   var _accepting = true;
   var _disposed = false;
   Future<void>? _disposal;
+  Future<ObservabilityShutdownReceipt>? _shutdownInFlight;
 
   /// Whether disposal completed.
   bool get isDisposed => _disposed;
@@ -805,8 +894,14 @@ final class DestinationAwareObservabilityRuntime implements AsyncDisposable {
     required SpanKind kind,
     required Map<String, Object?> attributes,
   }) {
+    final context = TraceContext(
+      traceId: parent?.traceId ?? _traceIds.nextTraceId(),
+      spanId: _traceIds.nextSpanId(),
+      traceFlags: parent?.traceFlags ?? '00',
+      traceState: parent?.traceState,
+    );
     if (!_accepting) {
-      return NoOpTracer().startSpan('[DISPOSED]', parent: parent, kind: kind);
+      return _CanonicalNoOpSpan(context);
     }
     final bindings = <_PreparedSpanBinding>[];
     for (final state in _states) {
@@ -830,6 +925,7 @@ final class DestinationAwareObservabilityRuntime implements AsyncDisposable {
       }
       final start = PreparedSpanStart._(
         name: preparedName,
+        context: context,
         parent: _copyTraceContext(parent),
         kind: kind,
         attributes: state.prepareAttributes(attributes),
@@ -848,13 +944,9 @@ final class DestinationAwareObservabilityRuntime implements AsyncDisposable {
       }
     }
     if (bindings.isEmpty) {
-      return NoOpTracer().startSpan(
-        '[SAMPLED_OUT]',
-        parent: parent,
-        kind: kind,
-      );
+      return _CanonicalNoOpSpan(context);
     }
-    return _CompositePreparedSpan(bindings);
+    return _CompositePreparedSpan(bindings, context);
   }
 
   /// Flushes every destination concurrently with an independent timeout.
@@ -877,18 +969,72 @@ final class DestinationAwareObservabilityRuntime implements AsyncDisposable {
   Future<bool> flush(Duration timeout) async =>
       (await flushDetailed(timeout)).completed;
 
-  /// Idempotently stops intake, flushes, and disposes owned components.
-  @override
-  Future<void> disposeAsync() => _disposal ??= _dispose();
-
-  Future<void> _dispose() async {
+  /// Stops intake and attempts a policy-controlled safe shutdown.
+  ///
+  /// A bounded attempt never disposes a destination whose admitted dispatch
+  /// or component flush is still active. Calling this method again can finish
+  /// a previous timed-out attempt.
+  Future<ObservabilityShutdownReceipt> disposeDetailed(
+    ObservabilityShutdownPolicy policy,
+  ) {
+    final timeout = policy.timeout;
+    if (timeout != null && timeout.isNegative) {
+      return Future<ObservabilityShutdownReceipt>.error(
+        ArgumentError.value(timeout, 'policy.timeout', 'must not be negative'),
+      );
+    }
     _accepting = false;
-    await flush(const Duration(seconds: 5));
-    await Future.wait(<Future<void>>[
-      for (final state in _states) state.dispose(),
-    ]);
-    _disposed = true;
+    for (final state in _states) {
+      state.stopAccepting();
+    }
+    final active = _shutdownInFlight;
+    if (active != null) {
+      return active.then((_) => disposeDetailed(policy));
+    }
+    late final Future<ObservabilityShutdownReceipt> operation;
+    operation = _disposeDetailed(policy).whenComplete(() {
+      if (identical(_shutdownInFlight, operation)) {
+        _shutdownInFlight = null;
+      }
+    });
+    _shutdownInFlight = operation;
+    return operation;
   }
+
+  Future<ObservabilityShutdownReceipt> _disposeDetailed(
+    ObservabilityShutdownPolicy policy,
+  ) async {
+    final results = await Future.wait(
+      <Future<ObservabilityDestinationFlushResult>>[
+        for (final state in _states) state.flushOptional(policy.timeout),
+      ],
+    );
+    for (var index = 0; index < results.length; index += 1) {
+      if (results[index].completed) await _states[index].dispose();
+    }
+    final disposed = <String>{
+      for (final state in _states)
+        if (state.isDisposed) state.registration.name,
+    };
+    final timedOut = <String>{
+      for (final result in results)
+        if (result.timedOut) result.name,
+    };
+    _disposed = disposed.length == _states.length;
+    return ObservabilityShutdownReceipt(
+      destinations: <String, ObservabilityDestinationFlushResult>{
+        for (final result in results) result.name: result,
+      },
+      disposedDestinations: disposed,
+      timedOutDestinations: timedOut,
+    );
+  }
+
+  /// Idempotently stops intake, drains safely, and disposes owned components.
+  @override
+  Future<void> disposeAsync() => _disposal ??= () async {
+    await disposeDetailed(const ObservabilityShutdownPolicy.drain());
+  }();
 }
 
 final class _PrivacyLogger extends DartitectLogger {
@@ -946,8 +1092,36 @@ final class _PrivacyTracer extends Tracer {
   );
 }
 
+final class _CanonicalNoOpSpan extends Span {
+  _CanonicalNoOpSpan(this.context);
+
+  @override
+  final TraceContext context;
+
+  @override
+  bool isEnded = false;
+
+  @override
+  void addEvent(
+    String name, {
+    Map<String, Object?> attributes = const <String, Object?>{},
+  }) {}
+
+  @override
+  void setAttribute(String key, Object? value) {}
+
+  @override
+  void end({
+    SpanStatus status = SpanStatus.unset,
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
+    isEnded = true;
+  }
+}
+
 final class _CompositePreparedSpan extends Span {
-  _CompositePreparedSpan(this.bindings) : context = bindings.first.span.context;
+  _CompositePreparedSpan(this.bindings, this.context);
 
   final List<_PreparedSpanBinding> bindings;
 
@@ -1061,8 +1235,14 @@ final class _DestinationState {
   final Queue<_PreparedDispatch> queue = Queue<_PreparedDispatch>();
 
   Completer<void>? _idle;
+  Future<void>? _flushInFlight;
   var _draining = false;
   var _accepting = true;
+  var _disposed = false;
+
+  bool get isDisposed => _disposed;
+
+  void stopAccepting() => _accepting = false;
 
   int maxQueueDepth = 0;
   int enqueuedEvents = 0;
@@ -1196,34 +1376,27 @@ final class _DestinationState {
     }
   }
 
-  Future<ObservabilityDestinationFlushResult> flush(Duration timeout) async {
-    Future<void> operation() async {
-      await (_idle?.future ?? Future<void>.value());
-      for (final sink in registration.logSinks) {
-        try {
-          await sink.sink.flush();
-        } on Object {
-          sinkFailures += 1;
-        }
-      }
-      for (final reporter in registration.errorReporters) {
-        try {
-          await reporter.reporter.flush();
-        } on Object {
-          reporterFailures += 1;
-        }
-      }
-      for (final tracer in registration.tracers) {
-        try {
-          await tracer.tracer.flush();
-        } on Object {
-          tracerFailures += 1;
-        }
-      }
-    }
+  Future<ObservabilityDestinationFlushResult> flush(Duration timeout) =>
+      flushOptional(timeout);
 
+  Future<ObservabilityDestinationFlushResult> flushOptional(
+    Duration? timeout,
+  ) async {
+    if (_disposed) {
+      return ObservabilityDestinationFlushResult(
+        name: registration.name,
+        completed: true,
+        timedOut: false,
+        failureCount: failureCount,
+      );
+    }
+    final operation = _flushOperation();
     try {
-      await operation().timeout(timeout);
+      if (timeout == null) {
+        await operation;
+      } else {
+        await operation.timeout(timeout);
+      }
       return ObservabilityDestinationFlushResult(
         name: registration.name,
         completed: true,
@@ -1241,6 +1414,42 @@ final class _DestinationState {
     }
   }
 
+  Future<void> _flushOperation() {
+    final active = _flushInFlight;
+    if (active != null) return active;
+    late final Future<void> operation;
+    operation = _runFlush().whenComplete(() {
+      if (identical(_flushInFlight, operation)) _flushInFlight = null;
+    });
+    _flushInFlight = operation;
+    return operation;
+  }
+
+  Future<void> _runFlush() async {
+    await (_idle?.future ?? Future<void>.value());
+    for (final sink in registration.logSinks) {
+      try {
+        await sink.sink.flush();
+      } on Object {
+        sinkFailures += 1;
+      }
+    }
+    for (final reporter in registration.errorReporters) {
+      try {
+        await reporter.reporter.flush();
+      } on Object {
+        reporterFailures += 1;
+      }
+    }
+    for (final tracer in registration.tracers) {
+      try {
+        await tracer.tracer.flush();
+      } on Object {
+        tracerFailures += 1;
+      }
+    }
+  }
+
   int get failureCount =>
       filterFailures +
       samplingFailures +
@@ -1249,7 +1458,10 @@ final class _DestinationState {
       tracerFailures;
 
   Future<void> dispose() async {
+    if (_disposed) return;
     _accepting = false;
+    await (_idle?.future ?? Future<void>.value());
+    await (_flushInFlight ?? Future<void>.value());
     for (final tracer in registration.tracers.reversed) {
       if (!tracer.isOwned) continue;
       try {
@@ -1274,6 +1486,7 @@ final class _DestinationState {
         sinkFailures += 1;
       }
     }
+    _disposed = true;
   }
 
   ObservabilityDestinationDiagnosticsSnapshot snapshot() =>

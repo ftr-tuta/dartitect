@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:collection';
+import 'dart:typed_data';
 
 import 'package:dartitect_observability/dartitect_observability.dart';
 import 'package:test/test.dart';
@@ -171,6 +173,65 @@ void main() {
     expect(explicit.diagnostics.stackFrames, 2);
     expect(explicit.diagnostics.truncatedFrames, 1);
   });
+
+  test('custom classifiers fail closed without retaining partial classes', () {
+    final throwing = ObservabilitySanitizer(
+      policy: ObservabilityPrivacyPolicy.fromProfile(
+        profile: ObservabilityPrivacyProfile.diagnostic,
+      ),
+      classifiers: <ObservabilityDataClassifier>[_PartialThrowClassifier()],
+    ).prepare('safe-looking', destination: ObservabilityDestinationKind.local);
+    final exhausted = ObservabilitySanitizer(
+      policy: ObservabilityPrivacyPolicy.fromProfile(
+        profile: ObservabilityPrivacyProfile.diagnostic,
+      ),
+      classifiers: <ObservabilityDataClassifier>[_ManyClassesClassifier()],
+      limits: const ObservabilitySanitizationLimits(maxClassificationWork: 3),
+    ).prepare('safe-looking', destination: ObservabilityDestinationKind.local);
+
+    expect(throwing.value, '[DENIED]');
+    expect(throwing.diagnostics.classifierFailures, 1);
+    expect(exhausted.value, '[DENIED]');
+    expect(exhausted.diagnostics.truncatedClassification, greaterThan(0));
+  });
+
+  test('binary values become metadata without iterating their contents', () {
+    final sanitizer = _diagnosticSanitizer();
+    final bytes = Uint8List.fromList(<int>[115, 101, 99, 114, 101, 116]);
+    final typed = Int16List.fromList(<int>[1, 2, 3]);
+    final stream = StreamController<List<int>>.broadcast(sync: true);
+    addTearDown(stream.close);
+
+    expect(
+      sanitizer.sanitize(
+        bytes,
+        destination: ObservabilityDestinationKind.local,
+      ),
+      <String, Object?>{'kind': 'uint8_list', 'length': 6},
+    );
+    expect(
+      sanitizer.sanitize(
+        typed,
+        destination: ObservabilityDestinationKind.local,
+      ),
+      <String, Object?>{'kind': 'typed_data', 'length': 6},
+    );
+    expect(
+      sanitizer.sanitize(
+        bytes.buffer,
+        destination: ObservabilityDestinationKind.local,
+      ),
+      <String, Object?>{'kind': 'byte_buffer', 'length': 6},
+    );
+    expect(
+      sanitizer.sanitize(
+        stream.stream,
+        destination: ObservabilityDestinationKind.local,
+      ),
+      <String, Object?>{'kind': 'binary_stream', 'length': null},
+    );
+    expect(stream.hasListener, isFalse);
+  });
 }
 
 ObservabilitySanitizer _diagnosticSanitizer() => ObservabilitySanitizer(
@@ -230,4 +291,28 @@ final class _SafeIdProjector implements ObservabilityValueProjector {
         (value as _SafeId).value,
         classes: <ObservabilityDataClass>{ObservabilityDataClass.userId},
       );
+}
+
+final class _PartialThrowClassifier implements ObservabilityDataClassifier {
+  @override
+  Iterable<ObservabilityDataClass> classify(
+    Object? value, {
+    String? key,
+    ObservabilityDataClass? container,
+  }) sync* {
+    yield ObservabilityDataClass.safeMetadata;
+    throw StateError('classifier failed after a partial result');
+  }
+}
+
+final class _ManyClassesClassifier implements ObservabilityDataClassifier {
+  @override
+  Iterable<ObservabilityDataClass> classify(
+    Object? value, {
+    String? key,
+    ObservabilityDataClass? container,
+  }) sync* {
+    yield ObservabilityDataClass.safeMetadata;
+    yield ObservabilityDataClass.safeStatus;
+  }
 }

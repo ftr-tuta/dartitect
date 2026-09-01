@@ -61,11 +61,14 @@ final class ObservabilityDataClass {
   /// Creates an application-owned class such as
   /// `business.customer.contract_number`.
   factory ObservabilityDataClass.custom(String wireName) {
-    if (!_pattern.hasMatch(wireName)) {
+    if (wireName.length > 120 ||
+        wireName.split('.').length > 16 ||
+        !_pattern.hasMatch(wireName)) {
       throw ArgumentError.value(
         wireName,
         'wireName',
-        'must be 2-120 lowercase dotted ASCII segments',
+        'must contain 2-16 lowercase dotted ASCII segments and at most '
+            '120 characters',
       );
     }
     return ObservabilityDataClass._(wireName);

@@ -222,6 +222,92 @@ void main() {
     expect('${tracer.span.end?.error}', contains('_ExplosiveError'));
     await runtime.disposeAsync();
   });
+
+  test(
+    'runtime supplies one canonical trace context to every tracer',
+    () async {
+      final local = _RecordingPreparedTracer();
+      final remote = _RecordingPreparedTracer();
+      final runtime = ObservabilityRuntime.withPrivacyTraceIdGenerator(
+        privacyPolicy: ObservabilityPrivacyPolicy.fromProfile(
+          profile: ObservabilityPrivacyProfile.diagnostic,
+        ),
+        destinations: <ObservabilityDestinationRegistration>[
+          ObservabilityDestinationRegistration.local(
+            tracers: <TracerRegistration>[TracerRegistration.borrowed(local)],
+            samplingPolicy: FixedSamplingPolicy(spanRate: 1),
+          ),
+          ObservabilityDestinationRegistration.remote(
+            name: 'remote',
+            tracers: <TracerRegistration>[TracerRegistration.borrowed(remote)],
+            samplingPolicy: FixedSamplingPolicy(spanRate: 1),
+          ),
+        ],
+        traceIdGenerator: _FixedTraceIds(),
+      );
+
+      final span = runtime.tracing.startSpan('canonical');
+
+      expect(span.context.traceId, '11111111111111111111111111111111');
+      expect(span.context.spanId, '2222222222222222');
+      expect(local.starts.single.context.traceParent, span.context.traceParent);
+      expect(
+        remote.starts.single.context.traceParent,
+        span.context.traceParent,
+      );
+      await span.end();
+      await runtime.disposeAsync();
+    },
+  );
+
+  test(
+    'bounded shutdown retains an active destination for a later drain',
+    () async {
+      final gate = Completer<void>();
+      var disposeCalls = 0;
+      final runtime = ObservabilityRuntime.withPrivacy(
+        privacyPolicy: ObservabilityPrivacyPolicy.fromProfile(
+          profile: ObservabilityPrivacyProfile.diagnostic,
+        ),
+        destinations: <ObservabilityDestinationRegistration>[
+          ObservabilityDestinationRegistration.local(
+            logSinks: <PreparedLogSinkRegistration>[
+              PreparedLogSinkRegistration.owned(
+                CallbackPreparedLogSink(
+                  (event) => gate.future,
+                  onDispose: () => disposeCalls += 1,
+                ),
+              ),
+            ],
+            samplingPolicy: FixedSamplingPolicy(logRate: 1),
+          ),
+        ],
+      );
+      runtime.logger.info('admitted');
+      await Future<void>.delayed(Duration.zero);
+
+      final bounded = await runtime.disposeDetailed(
+        const ObservabilityShutdownPolicy.bounded(Duration.zero),
+      );
+
+      expect(bounded.completed, isFalse);
+      expect(bounded.timedOutDestinations, <String>{'local'});
+      expect(bounded.disposedDestinations, isEmpty);
+      expect(disposeCalls, 0);
+      expect(runtime.isDisposed, isFalse);
+
+      gate.complete();
+      final drained = await runtime.disposeDetailed(
+        const ObservabilityShutdownPolicy.drain(),
+      );
+      expect(drained.completed, isTrue);
+      expect(drained.timedOutDestinations, isEmpty);
+      expect(disposeCalls, 1);
+      expect(runtime.isDisposed, isTrue);
+      await runtime.disposeAsync();
+      expect(disposeCalls, 1);
+    },
+  );
 }
 
 void _ignoreLog(PreparedLogEvent event) {}
@@ -276,4 +362,12 @@ final class _ExplosiveError {
 final class _ExplosiveStackTrace implements StackTrace {
   @override
   String toString() => throw StateError('private stack');
+}
+
+final class _FixedTraceIds implements TraceIdGenerator {
+  @override
+  String nextSpanId() => '2222222222222222';
+
+  @override
+  String nextTraceId() => '11111111111111111111111111111111';
 }

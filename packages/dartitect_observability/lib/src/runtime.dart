@@ -121,6 +121,28 @@ final class ObservabilityRuntime implements AsyncDisposable {
     clock: clock,
   );
 
+  /// Creates the privacy runtime with an injected isolate-local trace ID source.
+  static DestinationAwareObservabilityRuntime withPrivacyTraceIdGenerator({
+    required ObservabilityPrivacyPolicy privacyPolicy,
+    required Iterable<ObservabilityDestinationRegistration> destinations,
+    required TraceIdGenerator traceIdGenerator,
+    Iterable<ObservabilityDataClassifier> classifiers =
+        const <ObservabilityDataClassifier>[],
+    Iterable<ObservabilityValueProjector> projectors =
+        const <ObservabilityValueProjector>[],
+    ObservabilitySanitizationLimits limits =
+        const ObservabilitySanitizationLimits(),
+    DateTime Function()? clock,
+  }) => DestinationAwareObservabilityRuntime.withTraceIdGenerator(
+    privacyPolicy: privacyPolicy,
+    destinations: destinations,
+    traceIdGenerator: traceIdGenerator,
+    classifiers: classifiers,
+    projectors: projectors,
+    limits: limits,
+    clock: clock,
+  );
+
   final List<LogSinkRegistration> _sinks;
   final ErrorReporter? _destinationReporter;
   final bool _ownsErrorReporter;

@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add destination-aware privacy profiles, masking, bounded structured sanitization, prepared telemetry, isolated destinations, diagnostics, safe tracing, and subsystem adapters while preserving every `1.0.0` API.
+- Fail closed on incomplete classifiers, project binary inputs as metadata only, use one runtime-owned trace context across destinations, and support resumable bounded shutdown without disposing active dispatch.
 
 ## 1.0.0
 

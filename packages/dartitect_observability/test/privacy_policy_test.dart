@@ -16,6 +16,17 @@ void main() {
       () => ObservabilityDataClass.custom('Customer Email'),
       throwsArgumentError,
     );
+    expect(
+      () => ObservabilityDataClass.custom(
+        'a.${List<String>.filled(119, 'b').join()}',
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () =>
+          ObservabilityDataClass.custom(List<String>.filled(17, 'a').join('.')),
+      throwsArgumentError,
+    );
   });
 
   test('leaf rules search ancestors before decisions combine', () {

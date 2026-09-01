@@ -384,11 +384,17 @@ final class _SanitizationState {
         value = projected.value;
       }
     }
-    classes.addAll(_classify(value, key: key, container: container));
+    final classification = _classify(value, key: key, container: container);
+    if (classification.denied) {
+      deniedValues += 1;
+      return _denied;
+    }
+    classes.addAll(classification.classes);
 
     final isContainer =
-        value is Map<Object?, Object?> ||
-        value is Iterable<Object?> && value is! String;
+        !_isBinaryValue(value) &&
+        (value is Map<Object?, Object?> ||
+            value is Iterable<Object?> && value is! String);
     final decision = sanitizer.policy.explain(
       destination: destination,
       destinationName: destinationName,
@@ -414,6 +420,8 @@ final class _SanitizationState {
     if (value is DateTime) return value.toUtc().toIso8601String();
     if (value is Duration) return value.inMicroseconds;
     if (value is Enum) return value.name;
+    final binaryMetadata = _binaryMetadata(value);
+    if (binaryMetadata != null) return binaryMetadata;
     if (value is Uri) return _sanitizeUri(value, depth: depth);
     if (value is ObservabilityErrorProjection) {
       return _sanitizeError(value, depth: depth);
@@ -539,16 +547,20 @@ final class _SanitizationState {
       final Enum value => value.name,
       _ => null,
     };
-    final classes = _classify(
+    final classification = _classify(
       projected,
       key: projected,
       container: container,
       keyPosition: true,
     );
+    if (classification.denied) {
+      deniedValues += 1;
+      return const _PreparedKey.denied();
+    }
     final decision = sanitizer.policy.explain(
       destination: destination,
       destinationName: destinationName,
-      classes: classes,
+      classes: classification.classes,
     );
     if (decision.action == ObservabilityPrivacyAction.deny) {
       deniedValues += 1;
@@ -633,14 +645,16 @@ final class _SanitizationState {
     return List<String>.unmodifiable(output);
   }
 
-  Set<ObservabilityDataClass> _classify(
+  _ClassificationResult _classify(
     Object? value, {
     required String? key,
     required ObservabilityDataClass? container,
     bool keyPosition = false,
   }) {
     final output = <ObservabilityDataClass>{};
-    if (!_takeClassificationWork()) return output;
+    if (!_takeClassificationWork()) {
+      return const _ClassificationResult.denied();
+    }
     if (value == null || value is bool || value is num || value is DateTime) {
       output.add(ObservabilityDataClass.safeMetadata);
     } else if (value is Duration) {
@@ -653,10 +667,8 @@ final class _SanitizationState {
       if (value.hasQuery) output.add(ObservabilityDataClass.httpQuery);
       if (value.userInfo.isNotEmpty)
         output.add(ObservabilityDataClass.credential);
-    } else if (value is Uint8List) {
-      output.add(ObservabilityDataClass.httpBinary);
-    } else if (value is Stream<Object?>) {
-      output.add(ObservabilityDataClass.httpBinary);
+    } else if (_isBinaryValue(value)) {
+      output.add(ObservabilityDataClass.safeMetadata);
     }
     if (key != null) {
       output.addAll(_classifyKey(key, container: container));
@@ -667,21 +679,28 @@ final class _SanitizationState {
       }
     }
     for (final classifier in sanitizer.classifiers) {
-      if (!_takeClassificationWork()) break;
+      if (!_takeClassificationWork()) {
+        return const _ClassificationResult.denied();
+      }
+      final additions = <ObservabilityDataClass>{};
       try {
         for (final dataClass in classifier.classify(
           value,
           key: key,
           container: container,
         )) {
-          if (!_takeClassificationWork()) break;
-          output.add(dataClass);
+          if (!_takeClassificationWork()) {
+            return const _ClassificationResult.denied();
+          }
+          additions.add(dataClass);
         }
       } on Object {
         classifierFailures += 1;
+        return const _ClassificationResult.denied();
       }
+      output.addAll(additions);
     }
-    return output;
+    return _ClassificationResult.allowed(output);
   }
 
   Set<ObservabilityDataClass> _classifyKey(
@@ -860,6 +879,17 @@ final class _PreparedKey {
   final bool masked;
 }
 
+final class _ClassificationResult {
+  const _ClassificationResult.allowed(this.classes) : denied = false;
+
+  const _ClassificationResult.denied()
+    : classes = const <ObservabilityDataClass>{},
+      denied = true;
+
+  final Set<ObservabilityDataClass> classes;
+  final bool denied;
+}
+
 final class _InlineDetector {
   const _InlineDetector(this.pattern, this.dataClass);
 
@@ -929,12 +959,56 @@ bool _isSupported(Object? value) =>
     value is DateTime ||
     value is Duration ||
     value is Enum ||
-    value is Uint8List ||
-    value is Stream<Object?> ||
+    value is TypedData ||
+    value is ByteBuffer ||
+    _isBinaryStream(value) ||
     value is Map<Object?, Object?> ||
     value is Iterable<Object?> ||
     value is ObservabilityErrorProjection ||
     value is ObservabilityStackTraceProjection;
+
+bool _isBinaryValue(Object? value) =>
+    value is TypedData || value is ByteBuffer || _isBinaryStream(value);
+
+bool _isBinaryStream(Object? value) =>
+    value is Stream<Uint8List> ||
+    value is Stream<List<int>> ||
+    value is Stream<TypedData> ||
+    value is Stream<ByteBuffer>;
+
+Map<String, Object?>? _binaryMetadata(Object? value) {
+  if (value is Uint8List) {
+    return Map<String, Object?>.unmodifiable(<String, Object?>{
+      'kind': 'uint8_list',
+      'length': value.lengthInBytes,
+    });
+  }
+  if (value is ByteData) {
+    return Map<String, Object?>.unmodifiable(<String, Object?>{
+      'kind': 'byte_data',
+      'length': value.lengthInBytes,
+    });
+  }
+  if (value is TypedData) {
+    return Map<String, Object?>.unmodifiable(<String, Object?>{
+      'kind': 'typed_data',
+      'length': value.lengthInBytes,
+    });
+  }
+  if (value is ByteBuffer) {
+    return Map<String, Object?>.unmodifiable(<String, Object?>{
+      'kind': 'byte_buffer',
+      'length': value.lengthInBytes,
+    });
+  }
+  if (_isBinaryStream(value)) {
+    return Map<String, Object?>.unmodifiable(const <String, Object?>{
+      'kind': 'binary_stream',
+      'length': null,
+    });
+  }
+  return null;
+}
 
 ObservabilityDataClass? _structuralContainer(
   Set<ObservabilityDataClass> classes,

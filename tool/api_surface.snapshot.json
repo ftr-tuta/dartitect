@@ -76425,6 +76425,75 @@
               ]
             },
             {
+              "name": "withTraceIdGenerator",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "DestinationAwareObservabilityRuntime.withTraceIdGenerator({required ObservabilityPrivacyPolicy privacyPolicy, required Iterable<ObservabilityDestinationRegistration> destinations, required TraceIdGenerator traceIdGenerator, Iterable<ObservabilityDataClassifier> classifiers = const <ObservabilityDataClassifier>[], Iterable<ObservabilityValueProjector> projectors = const <ObservabilityValueProjector>[], ObservabilitySanitizationLimits limits = const ObservabilitySanitizationLimits(), DateTime Function()? clock})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DestinationAwareObservabilityRuntime",
+              "parameters": [
+                {
+                  "name": "privacyPolicy",
+                  "declaration": "{required ObservabilityPrivacyPolicy privacyPolicy}",
+                  "type": "ObservabilityPrivacyPolicy",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "destinations",
+                  "declaration": "{required Iterable<ObservabilityDestinationRegistration> destinations}",
+                  "type": "Iterable<ObservabilityDestinationRegistration>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "traceIdGenerator",
+                  "declaration": "{required TraceIdGenerator traceIdGenerator}",
+                  "type": "TraceIdGenerator",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "classifiers",
+                  "declaration": "{Iterable<ObservabilityDataClassifier> classifiers = const <ObservabilityDataClassifier>[]}",
+                  "type": "Iterable<ObservabilityDataClassifier>",
+                  "kind": "optionalNamed",
+                  "default": "const <ObservabilityDataClassifier>[]",
+                  "annotations": []
+                },
+                {
+                  "name": "projectors",
+                  "declaration": "{Iterable<ObservabilityValueProjector> projectors = const <ObservabilityValueProjector>[]}",
+                  "type": "Iterable<ObservabilityValueProjector>",
+                  "kind": "optionalNamed",
+                  "default": "const <ObservabilityValueProjector>[]",
+                  "annotations": []
+                },
+                {
+                  "name": "limits",
+                  "declaration": "{ObservabilitySanitizationLimits limits = const ObservabilitySanitizationLimits()}",
+                  "type": "ObservabilitySanitizationLimits",
+                  "kind": "optionalNamed",
+                  "default": "const ObservabilitySanitizationLimits()",
+                  "annotations": []
+                },
+                {
+                  "name": "clock",
+                  "declaration": "{DateTime Function()? clock}",
+                  "type": "DateTime Function()?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
               "name": "destinations",
               "kind": "field",
               "audience": "application-facing",
@@ -76524,6 +76593,27 @@
               "typeParameters": [],
               "returnType": "Future<void>",
               "parameters": []
+            },
+            {
+              "name": "disposeDetailed",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Future<ObservabilityShutdownReceipt> disposeDetailed(ObservabilityShutdownPolicy policy)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<ObservabilityShutdownReceipt>",
+              "parameters": [
+                {
+                  "name": "policy",
+                  "declaration": "ObservabilityShutdownPolicy policy",
+                  "type": "ObservabilityShutdownPolicy",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
             },
             {
               "name": "flush",
@@ -81313,6 +81403,77 @@
                   "annotations": []
                 }
               ]
+            },
+            {
+              "name": "withPrivacyTraceIdGenerator",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "DestinationAwareObservabilityRuntime withPrivacyTraceIdGenerator({required ObservabilityPrivacyPolicy privacyPolicy, required Iterable<ObservabilityDestinationRegistration> destinations, required TraceIdGenerator traceIdGenerator, Iterable<ObservabilityDataClassifier> classifiers = const <ObservabilityDataClassifier>[], Iterable<ObservabilityValueProjector> projectors = const <ObservabilityValueProjector>[], ObservabilitySanitizationLimits limits = const ObservabilitySanitizationLimits(), DateTime Function()? clock})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "static"
+              ],
+              "typeParameters": [],
+              "returnType": "DestinationAwareObservabilityRuntime",
+              "parameters": [
+                {
+                  "name": "privacyPolicy",
+                  "declaration": "{required ObservabilityPrivacyPolicy privacyPolicy}",
+                  "type": "ObservabilityPrivacyPolicy",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "destinations",
+                  "declaration": "{required Iterable<ObservabilityDestinationRegistration> destinations}",
+                  "type": "Iterable<ObservabilityDestinationRegistration>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "traceIdGenerator",
+                  "declaration": "{required TraceIdGenerator traceIdGenerator}",
+                  "type": "TraceIdGenerator",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "classifiers",
+                  "declaration": "{Iterable<ObservabilityDataClassifier> classifiers = const <ObservabilityDataClassifier>[]}",
+                  "type": "Iterable<ObservabilityDataClassifier>",
+                  "kind": "optionalNamed",
+                  "default": "const <ObservabilityDataClassifier>[]",
+                  "annotations": []
+                },
+                {
+                  "name": "projectors",
+                  "declaration": "{Iterable<ObservabilityValueProjector> projectors = const <ObservabilityValueProjector>[]}",
+                  "type": "Iterable<ObservabilityValueProjector>",
+                  "kind": "optionalNamed",
+                  "default": "const <ObservabilityValueProjector>[]",
+                  "annotations": []
+                },
+                {
+                  "name": "limits",
+                  "declaration": "{ObservabilitySanitizationLimits limits = const ObservabilitySanitizationLimits()}",
+                  "type": "ObservabilitySanitizationLimits",
+                  "kind": "optionalNamed",
+                  "default": "const ObservabilitySanitizationLimits()",
+                  "annotations": []
+                },
+                {
+                  "name": "clock",
+                  "declaration": "{DateTime Function()? clock}",
+                  "type": "DateTime Function()?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
             }
           ]
         },
@@ -82346,6 +82507,174 @@
                   "annotations": []
                 }
               ]
+            }
+          ]
+        },
+        {
+          "name": "ObservabilityShutdownPolicy",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class ObservabilityShutdownPolicy",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "bounded",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "ObservabilityShutdownPolicy.bounded(Duration? timeout)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ObservabilityShutdownPolicy",
+              "parameters": [
+                {
+                  "name": "timeout",
+                  "declaration": "Duration? timeout",
+                  "type": "Duration?",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "drain",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "ObservabilityShutdownPolicy.drain()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ObservabilityShutdownPolicy",
+              "parameters": []
+            },
+            {
+              "name": "timeout",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Duration? timeout",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Duration?"
+            }
+          ]
+        },
+        {
+          "name": "ObservabilityShutdownReceipt",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class ObservabilityShutdownReceipt",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "ObservabilityShutdownReceipt({required Map<String, ObservabilityDestinationFlushResult> destinations, required Iterable<String> disposedDestinations, required Iterable<String> timedOutDestinations})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "ObservabilityShutdownReceipt",
+              "parameters": [
+                {
+                  "name": "destinations",
+                  "declaration": "{required Map<String, ObservabilityDestinationFlushResult> destinations}",
+                  "type": "Map<String, ObservabilityDestinationFlushResult>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "disposedDestinations",
+                  "declaration": "{required Iterable<String> disposedDestinations}",
+                  "type": "Iterable<String>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "timedOutDestinations",
+                  "declaration": "{required Iterable<String> timedOutDestinations}",
+                  "type": "Iterable<String>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "destinations",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Map<String, ObservabilityDestinationFlushResult> destinations",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Map<String, ObservabilityDestinationFlushResult>"
+            },
+            {
+              "name": "disposedDestinations",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Set<String> disposedDestinations",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Set<String>"
+            },
+            {
+              "name": "timedOutDestinations",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Set<String> timedOutDestinations",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Set<String>"
+            },
+            {
+              "name": "completed",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get completed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
             }
           ]
         },
@@ -83469,6 +83798,18 @@
                 "final"
               ],
               "type": "Map<String, Object?>"
+            },
+            {
+              "name": "context",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TraceContext context",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "TraceContext"
             },
             {
               "name": "kind",
