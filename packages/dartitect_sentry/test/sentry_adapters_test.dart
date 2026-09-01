@@ -5,7 +5,7 @@ import 'package:sentry/sentry.dart' as sentry show SpanStatus;
 import 'package:test/test.dart';
 
 void main() {
-  test('log sink maps breadcrumbs and events with sanitized data', () async {
+  test('1.0 log sink defensively redacts raw breadcrumbs and events', () async {
     final hub = _RecordingHub();
     final sink = SentryLogSink(hub: hub);
 
@@ -40,7 +40,7 @@ void main() {
   });
 
   test(
-    'error reporter maps handled, mechanism, fingerprint, and severity',
+    '1.0 error reporter defensively redacts and preserves event semantics',
     () async {
       final hub = _RecordingHub();
       final reporter = SentryErrorReporter(hub: hub);
