@@ -221,8 +221,8 @@ void _auditWorkflows(Directory root, List<String> errors) {
     'source_sha:',
     'ci_run_id:',
     'contents: write',
-    r'repos/${GITHUB_REPOSITORY}/immutable-releases',
-    '.enabled == true',
+    'Verify public release policy and referenced main CI',
+    r'https://api.github.com/repos/${GITHUB_REPOSITORY}/rulesets/21525640',
     'current remote main HEAD',
     r'actions/runs/${CI_RUN_ID}',
     r'CI_RUN_ATTEMPT=$ci_run_attempt',
@@ -238,9 +238,21 @@ void _auditWorkflows(Directory root, List<String> errors) {
     r'gh release verify "$RELEASE_TAG"',
     'gh release verify-asset',
     '.immutable == true',
+    'Verify immutable Release, assets, and attestation',
   ]) {
     if (!release.contains(required)) {
       errors.add('Release workflow is missing required policy: $required');
+    }
+  }
+  for (final forbidden in const <String>[
+    '/immutable-releases',
+    '.bypass_actors',
+  ]) {
+    if (release.contains(forbidden)) {
+      errors.add(
+        'Release workflow must not require Repository Administration through '
+        'GITHUB_TOKEN: $forbidden',
+      );
     }
   }
   final rulesetFile = File('${root.path}/tool/github_ruleset_policy.json');

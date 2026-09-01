@@ -34,6 +34,9 @@ void main(List<String> arguments) {
         release['annotatedTag'] != true ||
         release['signedTag'] != false ||
         release['immutable'] != true ||
+        release['administrativePreflight'] != true ||
+        release['releaseTagRulesetId'] != 21525640 ||
+        release['postPublicationVerification'] != true ||
         release['registryPublication'] != false) {
       errors.add('GitHub Release policy is incomplete.');
     }
@@ -201,6 +204,30 @@ void _checkWorkflows(
     if (name == portableBasename(releaseWorkflow)) {
       if (!write || !source.startsWith('name: Release\n')) {
         errors.add('Release must be the sole contents: write workflow.');
+      }
+      if (!source.contains(
+            'https://api.github.com/repos/\${GITHUB_REPOSITORY}/rulesets/21525640',
+          ) ||
+          !source.contains(
+            'Verify public release policy and referenced main CI',
+          )) {
+        errors.add('Release must revalidate the public release-tag ruleset.');
+      }
+      if (source.contains('/immutable-releases') ||
+          source.contains('.bypass_actors')) {
+        errors.add(
+          'Release must not call Repository Administration endpoints with '
+          'GITHUB_TOKEN.',
+        );
+      }
+      if (!source.contains(
+            'Verify immutable Release, assets, and attestation',
+          ) ||
+          RegExp(r'\.immutable\s*==\s*true').allMatches(source).length < 2 ||
+          !source.contains('gh release verify "\$RELEASE_TAG"')) {
+        errors.add(
+          'Release must verify immutability and attestation after publication.',
+        );
       }
     } else if (write || !read) {
       errors.add('$name must explicitly use contents: read.');
