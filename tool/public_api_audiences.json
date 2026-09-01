@@ -32,6 +32,7 @@
     "packages/dartitect_modeling_analyzer/lib/dartitect_modeling_analyzer.dart": {"defaultAudience": "tooling-test"},
     "packages/dartitect_objectbox/lib/dartitect_objectbox.dart": {"defaultAudience": "adapter-author"},
     "packages/dartitect_observability/lib/dartitect_observability.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_observability/lib/dartitect_observability_sync.dart": {"defaultAudience": "adapter-author"},
     "packages/dartitect_privacy/lib/dartitect_privacy.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_resilience/lib/dartitect_resilience.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_sentry/lib/dartitect_sentry.dart": {"defaultAudience": "adapter-author"},

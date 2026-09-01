@@ -290,10 +290,12 @@ abstract interface class TracePropagator {
 
 /// W3C `traceparent`/`tracestate` propagator. Baggage is never injected.
 final class W3CTracePropagator implements TracePropagator {
-  /// Creates a W3C propagator with dedicated [traceStatePolicy].
-  const W3CTracePropagator({
-    this.traceStatePolicy = TraceStatePropagationPolicy.propagateValidated,
-  });
+  /// Creates a W3C propagator that propagates validated tracestate.
+  const W3CTracePropagator()
+    : traceStatePolicy = TraceStatePropagationPolicy.propagateValidated;
+
+  /// Creates a W3C propagator with a dedicated [traceStatePolicy].
+  const W3CTracePropagator.withTraceStatePolicy(this.traceStatePolicy);
 
   /// Tracestate is never converted to an attribute, tag, or baggage item.
   final TraceStatePropagationPolicy traceStatePolicy;

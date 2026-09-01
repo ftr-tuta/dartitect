@@ -14,7 +14,7 @@
     "available": true
   },
   "packageCount": 25,
-  "publicEntrypointCount": 32,
+  "publicEntrypointCount": 33,
   "distribution": {
     "kind": "github-release",
     "repository": "https://github.com/ftr-tuta/dartitect.git",
@@ -160,8 +160,8 @@
   },
   "dependencyOrder": [
     "dartitect", "dartitect_geometry", "dartitect_locale_br", "dartitect_privacy",
-    "dartitect_devtools", "dartitect_flutter", "dartitect_isolates", "dartitect_jobs", "dartitect_media", "dartitect_modeling", "dartitect_observability", "dartitect_resilience", "dartitect_transfer",
-    "dartitect_flutter_testing", "dartitect_modeling_analyzer", "dartitect_sentry", "dartitect_sync", "dartitect_workmanager",
+    "dartitect_devtools", "dartitect_isolates", "dartitect_jobs", "dartitect_media", "dartitect_modeling", "dartitect_resilience", "dartitect_sync", "dartitect_observability", "dartitect_flutter", "dartitect_transfer",
+    "dartitect_flutter_testing", "dartitect_modeling_analyzer", "dartitect_sentry", "dartitect_workmanager",
     "dartitect_dio", "dartitect_drift", "dartitect_objectbox", "dartitect_testing",
     "dartitect_cli", "dartitect_lints", "dartitect_mcp"
   ],

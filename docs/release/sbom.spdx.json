@@ -2266,6 +2266,11 @@
     {
       "spdxElementId": "SPDXRef-Package-dartitect-api-compatibility-fixture",
       "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-observability"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-api-compatibility-fixture",
+      "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-test"
     },
     {
@@ -2377,6 +2382,11 @@
       "spdxElementId": "SPDXRef-Package-dartitect-flutter",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-flutter",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-observability"
     },
     {
       "spdxElementId": "SPDXRef-Package-dartitect-flutter",
@@ -2577,6 +2587,11 @@
       "spdxElementId": "SPDXRef-Package-dartitect-observability",
       "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-observability",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-sync"
     },
     {
       "spdxElementId": "SPDXRef-Package-dartitect-observability",

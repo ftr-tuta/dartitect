@@ -195,8 +195,8 @@ void main() {
       isNull,
     );
     final discardHeaders = <String, String>{};
-    const W3CTracePropagator(
-      traceStatePolicy: TraceStatePropagationPolicy.discard,
+    const W3CTracePropagator.withTraceStatePolicy(
+      TraceStatePropagationPolicy.discard,
     ).inject(discardHeaders, context);
     expect(discardHeaders, isNot(contains('tracestate')));
     expect(discardHeaders, isNot(contains('baggage')));

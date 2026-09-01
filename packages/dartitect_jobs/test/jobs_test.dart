@@ -33,7 +33,7 @@ void main() {
       diagnostics: emitter.subject(DartitectDiagnosticSubjectKind.owner),
     );
     final envelope = JobEnvelope<int>(
-      jobId: 'job-1',
+      jobId: 'private-job-sentinel',
       definition: 'double',
       deadline: DateTime.now().toUtc().add(const Duration(minutes: 1)),
       payload: 4,
@@ -59,6 +59,10 @@ void main() {
         DartitectDiagnosticPhase.succeeded,
         DartitectDiagnosticPhase.disposed,
       }),
+    );
+    expect(
+      '${diagnostics.events.map((event) => event.toJson())}',
+      isNot(contains('private-job-sentinel')),
     );
     await emitter.dispose();
     diagnostics.dispose();
