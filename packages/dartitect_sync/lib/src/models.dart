@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:dartitect/dartitect.dart';
 
@@ -335,7 +336,7 @@ final class SyncProgressStream<K> {
   SyncProgressStream._(this._stream, this._recent);
 
   final Stream<SyncProgressEvent<K>> _stream;
-  final List<SyncProgressEvent<K>> _recent;
+  final ListQueue<SyncProgressEvent<K>> _recent;
 
   /// Broadcast event stream. Runtime execution never waits for listeners.
   Stream<SyncProgressEvent<K>> get events => _stream;
@@ -359,7 +360,8 @@ final class SyncProgressController<K> {
   /// Maximum number of events retained by [stream]'s recent snapshot.
   final int maxRecentEvents;
   final StreamController<SyncProgressEvent<K>> _controller;
-  final List<SyncProgressEvent<K>> _recent = <SyncProgressEvent<K>>[];
+  final ListQueue<SyncProgressEvent<K>> _recent =
+      ListQueue<SyncProgressEvent<K>>();
 
   /// Read-only stream view.
   SyncProgressStream<K> get stream =>
@@ -369,7 +371,7 @@ final class SyncProgressController<K> {
   void add(SyncProgressEvent<K> event) {
     if (_controller.isClosed) return;
     _recent.add(event);
-    if (_recent.length > maxRecentEvents) _recent.removeAt(0);
+    if (_recent.length > maxRecentEvents) _recent.removeFirst();
     _controller.add(event);
   }
 

@@ -2,7 +2,10 @@
 
 ## Unreleased
 
-- Version-only lockstep candidate; provider-neutral Flutter error composition remains unchanged.
+- Use tombstoned listener registries with O(1) identity removal and safe
+  reentrant dispatch across reactive primitives.
+- Replace quadratic computed ordering and form-history shifts with stable
+  dependency indexing and ring-backed retention.
 
 ## 1.0.0
 

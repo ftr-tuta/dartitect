@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:dartitect/dartitect.dart';
 
@@ -23,7 +24,8 @@ final class Bulkhead implements AsyncDisposable {
   /// Maximum queued operations.
   final int maxQueue;
 
-  final List<_BulkheadEntry<Object?>> _queue = <_BulkheadEntry<Object?>>[];
+  final ListQueue<_BulkheadEntry<Object?>> _queue =
+      ListQueue<_BulkheadEntry<Object?>>();
   final Set<Future<void>> _running = <Future<void>>{};
   final Set<_BulkheadEntry<Object?>> _activeEntries =
       <_BulkheadEntry<Object?>>{};
@@ -93,7 +95,7 @@ final class Bulkhead implements AsyncDisposable {
 
   void _startNext() {
     if (_disposed || _running.length >= maxConcurrent || _queue.isEmpty) return;
-    _start(_queue.removeAt(0));
+    _start(_queue.removeFirst());
   }
 
   /// Rejects queued work, cancels running work, and drains it.

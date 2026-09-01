@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Version-only lockstep candidate; no public behavior change.
+- Replace bulkhead queue shifts with an O(1) deque-backed FIFO.
 
 ## 1.0.0
 

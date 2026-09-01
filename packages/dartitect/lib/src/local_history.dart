@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'lifecycle/contracts.dart';
 
@@ -26,7 +27,7 @@ final class BoundedLocalHistory<T> implements Disposable {
       throw ArgumentError.value(maxWeight, 'maxWeight', 'Must be positive.');
     }
     _validateValue(initialValue);
-    _validateWeight(initialValue);
+    _currentWeight = _validatedWeight(initialValue);
   }
 
   /// Maximum total snapshots, including the current value.
@@ -37,9 +38,12 @@ final class BoundedLocalHistory<T> implements Disposable {
 
   final int Function(T value) _weightOf;
   final bool Function(T previous, T next) _equality;
-  final List<T> _past = <T>[];
-  final List<T> _future = <T>[];
+  final ListQueue<_HistoryEntry<T>> _past = ListQueue<_HistoryEntry<T>>();
+  final ListQueue<_HistoryEntry<T>> _future = ListQueue<_HistoryEntry<T>>();
   T _current;
+  late int _currentWeight;
+  var _pastWeight = 0;
+  var _futureWeight = 0;
   var _revision = 0;
   var _disposed = false;
 
@@ -63,19 +67,17 @@ final class BoundedLocalHistory<T> implements Disposable {
       _disposed ? 0 : _past.length + 1 + _future.length;
 
   /// Total consumer-defined retained weight.
-  int get retainedWeight => _disposed
-      ? 0
-      : <T>[
-          ..._past,
-          _current,
-          ..._future,
-        ].fold<int>(0, (total, value) => total + _weight(value));
+  int get retainedWeight =>
+      _disposed ? 0 : _pastWeight + _currentWeight + _futureWeight;
 
   /// Immutable oldest-to-newest undo values.
-  List<T> get undoValues => List<T>.unmodifiable(_past);
+  List<T> get undoValues =>
+      List<T>.unmodifiable(_past.map((entry) => entry.value));
 
   /// Immutable nearest-to-farthest redo values.
-  List<T> get redoValues => List<T>.unmodifiable(_future.reversed);
+  List<T> get redoValues => List<T>.unmodifiable(
+    _future.toList(growable: false).reversed.map((entry) => entry.value),
+  );
 
   /// Records [next] and discards the redo branch.
   ///
@@ -83,11 +85,14 @@ final class BoundedLocalHistory<T> implements Disposable {
   bool edit(T next) {
     _ensureActive();
     _validateValue(next);
-    _validateWeight(next);
+    final nextWeight = _validatedWeight(next);
     if (_equality(_current, next)) return false;
-    _past.add(_current);
+    _past.addLast(_HistoryEntry<T>(_current, _currentWeight));
+    _pastWeight += _currentWeight;
     _current = next;
+    _currentWeight = nextWeight;
     _future.clear();
+    _futureWeight = 0;
     _revision += 1;
     _trimOldestPast();
     return true;
@@ -97,8 +102,12 @@ final class BoundedLocalHistory<T> implements Disposable {
   bool undo() {
     _ensureActive();
     if (_past.isEmpty) return false;
-    _future.add(_current);
-    _current = _past.removeLast();
+    _future.addLast(_HistoryEntry<T>(_current, _currentWeight));
+    _futureWeight += _currentWeight;
+    final previous = _past.removeLast();
+    _pastWeight -= previous.weight;
+    _current = previous.value;
+    _currentWeight = previous.weight;
     _revision += 1;
     return true;
   }
@@ -107,20 +116,26 @@ final class BoundedLocalHistory<T> implements Disposable {
   bool redo() {
     _ensureActive();
     if (_future.isEmpty) return false;
-    _past.add(_current);
-    _current = _future.removeLast();
+    _past.addLast(_HistoryEntry<T>(_current, _currentWeight));
+    _pastWeight += _currentWeight;
+    final next = _future.removeLast();
+    _futureWeight -= next.weight;
+    _current = next.value;
+    _currentWeight = next.weight;
     _revision += 1;
     return true;
   }
 
   void _trimOldestPast() {
     while (_past.isNotEmpty && retainedEntryCount > maxEntries) {
-      _past.removeAt(0);
+      final removed = _past.removeFirst();
+      _pastWeight -= removed.weight;
     }
     final weightLimit = maxWeight;
     if (weightLimit == null) return;
     while (_past.isNotEmpty && retainedWeight > weightLimit) {
-      _past.removeAt(0);
+      final removed = _past.removeFirst();
+      _pastWeight -= removed.weight;
     }
   }
 
@@ -136,7 +151,7 @@ final class BoundedLocalHistory<T> implements Disposable {
     }
   }
 
-  void _validateWeight(T value) {
+  int _validatedWeight(T value) {
     final weight = _weight(value);
     final limit = maxWeight;
     if (limit != null && weight > limit) {
@@ -146,6 +161,7 @@ final class BoundedLocalHistory<T> implements Disposable {
         'One value cannot exceed maxWeight.',
       );
     }
+    return weight;
   }
 
   int _weight(T value) {
@@ -171,9 +187,19 @@ final class BoundedLocalHistory<T> implements Disposable {
     _disposed = true;
     _past.clear();
     _future.clear();
+    _pastWeight = 0;
+    _futureWeight = 0;
+    _currentWeight = 0;
   }
 
   static int _unitWeight<T>(T _) => 1;
 
   static bool _defaultEquality<T>(T previous, T next) => previous == next;
+}
+
+final class _HistoryEntry<T> {
+  const _HistoryEntry(this.value, this.weight);
+
+  final T value;
+  final int weight;
 }

@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add `balanced` observability privacy scaffolding, privacy-bypass scan diagnostics, and candidate-aware release tooling.
+- Traverse resolved dependency graphs with a deque-backed tooling queue.
 
 ## 1.0.0
 

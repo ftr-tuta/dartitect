@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Version-only lockstep candidate; job diagnostics remain payload-free.
+- Evict completed job receipts through an O(1) deque-backed FIFO.
 
 ## 1.0.0
 

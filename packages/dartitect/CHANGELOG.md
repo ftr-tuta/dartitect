@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Version-only lockstep candidate; no public behavior change.
+- Replace FIFO shifts with deque-backed command queues and progress retention.
+- Keep bounded local-history weight accounting in O(1).
 
 ## 1.0.0
 

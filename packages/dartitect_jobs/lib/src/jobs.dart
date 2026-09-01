@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:dartitect/dartitect.dart';
 
@@ -270,7 +271,7 @@ final class JobDispatcher<P, R, F extends Object, Q>
   final DartitectDiagnosticSubject? _diagnostics;
   final Map<String, JobDefinition<P, R, F, Q>> _definitions;
   final Map<String, _JobEntry<R, F>> _jobs = <String, _JobEntry<R, F>>{};
-  final List<String> _completedJobIds = <String>[];
+  final ListQueue<String> _completedJobIds = ListQueue<String>();
   var _executionId = 0;
   var _activeCount = 0;
   var _closing = false;
@@ -483,7 +484,7 @@ final class JobDispatcher<P, R, F extends Object, Q>
 
   void _evictCompleted() {
     while (_jobs.length >= maxRememberedJobs && _completedJobIds.isNotEmpty) {
-      _jobs.remove(_completedJobIds.removeAt(0));
+      _jobs.remove(_completedJobIds.removeFirst());
     }
   }
 

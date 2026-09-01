@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -777,12 +778,12 @@ Future<_ResolvedGraph> _resolvedGraph(
       final owners = <String, Set<String>>{};
       final paths = <String, Set<String>>{};
       for (final owner in direct.toList()..sort()) {
-        final pending = <List<String>>[
+        final pending = ListQueue<List<String>>.from(<List<String>>[
           <String>[owner],
-        ];
+        ]);
         final visited = <String>{};
         while (pending.isNotEmpty) {
-          final route = pending.removeAt(0);
+          final route = pending.removeFirst();
           final package = route.last;
           if (!visited.add(package)) continue;
           owners.putIfAbsent(package, () => <String>{}).add(owner);

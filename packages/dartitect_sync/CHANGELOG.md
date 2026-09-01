@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Version-only lockstep candidate; `SyncObserver<K>` remains compatible and the safe telemetry adapter lives in observability.
+- Retain recent sync progress in an O(1) bounded deque while preserving the
+  existing stream contract.
 
 ## 1.0.0
 

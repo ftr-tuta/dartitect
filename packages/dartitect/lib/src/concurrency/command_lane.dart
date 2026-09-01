@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import '../result.dart';
 import 'cancellation.dart';
@@ -224,7 +225,8 @@ final class CommandLane<T, F extends Object> {
   final CommandCrashReporter _reporter;
   final void Function()? _onChanged;
   final List<_CommandEntry<T, F>> _running = <_CommandEntry<T, F>>[];
-  final List<_CommandEntry<T, F>> _queue = <_CommandEntry<T, F>>[];
+  final ListQueue<_CommandEntry<T, F>> _queue =
+      ListQueue<_CommandEntry<T, F>>();
   CommandOutcome<T, F>? _lastOutcome;
   int? _lastOutcomeExecutionId;
   CommandLaneCrash? _lastCrash;
@@ -427,7 +429,7 @@ final class CommandLane<T, F extends Object> {
         _queue.isEmpty) {
       return;
     }
-    _start(_queue.removeAt(0));
+    _start(_queue.removeFirst());
   }
 
   void _cancelEntry(
@@ -807,7 +809,7 @@ final class KeyedCommandLane<K, A, T, F extends Object> {
         state.queue.isEmpty) {
       return;
     }
-    _start(state, state.queue.removeAt(0));
+    _start(state, state.queue.removeFirst());
   }
 
   void _cancelEntry(
@@ -922,8 +924,8 @@ final class _KeyState<K, A, T, F extends Object> {
   final K key;
   final List<_KeyedCommandEntry<K, A, T, F>> running =
       <_KeyedCommandEntry<K, A, T, F>>[];
-  final List<_KeyedCommandEntry<K, A, T, F>> queue =
-      <_KeyedCommandEntry<K, A, T, F>>[];
+  final ListQueue<_KeyedCommandEntry<K, A, T, F>> queue =
+      ListQueue<_KeyedCommandEntry<K, A, T, F>>();
   int? latestAcceptedExecutionId;
   var stopped = false;
 }

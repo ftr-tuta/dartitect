@@ -1,6 +1,7 @@
 import 'package:dartitect/dartitect.dart';
 import 'package:flutter/foundation.dart';
 
+import 'listener_registry.dart';
 import 'resource_lifecycle.dart';
 
 /// Owned debounce node that publishes only the latest source value.
@@ -25,7 +26,7 @@ final class DebouncedReactiveValue<T>
   final ValueListenable<T> _source;
   final ReactiveTimerFactory _timerFactory;
   final bool Function(T previous, T next) _equals;
-  final List<VoidCallback> _listeners = <VoidCallback>[];
+  final ListenerRegistry _listeners = ListenerRegistry();
   ReactiveTimerHandle? _timer;
   T _value;
   T? _pendingValue;
@@ -66,8 +67,7 @@ final class DebouncedReactiveValue<T>
 
   @override
   void removeListener(VoidCallback listener) {
-    final index = _listeners.indexOf(listener);
-    if (index >= 0) _listeners.removeAt(index);
+    _listeners.remove(listener);
   }
 
   /// Publishes a pending value immediately, if it is distinct.
@@ -113,15 +113,7 @@ final class DebouncedReactiveValue<T>
     if (_equals(_value, next)) return false;
     _value = next;
     _notificationCount += 1;
-    final snapshot = List<VoidCallback>.of(_listeners);
-    for (final listener in snapshot) {
-      if (_disposed || !_listeners.contains(listener)) continue;
-      try {
-        listener();
-      } catch (_) {
-        continue;
-      }
-    }
+    _listeners.notifySafely(shouldContinue: () => !_disposed);
     return true;
   }
 
