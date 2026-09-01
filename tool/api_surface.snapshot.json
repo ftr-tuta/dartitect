@@ -26336,6 +26336,102 @@
           ]
         },
         {
+          "name": "DartitectObservabilityPrivacyRegistration",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectObservabilityPrivacyRegistration implements Disposable",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "Disposable"
+          ],
+          "members": [
+            {
+              "name": "register",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectObservabilityPrivacyRegistration.register({required bool enabled, required DestinationAwareObservabilityRuntime runtime, DartitectServiceExtensionRegistrar registrar = const VmDartitectServiceExtensionRegistrar()})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "factory"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectObservabilityPrivacyRegistration",
+              "parameters": [
+                {
+                  "name": "enabled",
+                  "declaration": "{required bool enabled}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "runtime",
+                  "declaration": "{required DestinationAwareObservabilityRuntime runtime}",
+                  "type": "DestinationAwareObservabilityRuntime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "registrar",
+                  "declaration": "{DartitectServiceExtensionRegistrar registrar = const VmDartitectServiceExtensionRegistrar()}",
+                  "type": "DartitectServiceExtensionRegistrar",
+                  "kind": "optionalNamed",
+                  "default": "const VmDartitectServiceExtensionRegistrar()",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "isDisposed",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "bool get isDisposed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "isRegistered",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "bool get isRegistered",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "dispose",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "void dispose()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": []
+            }
+          ]
+        },
+        {
           "name": "DartitectServiceExtensionRegistrar",
           "kind": "class",
           "audience": "tooling-test",
@@ -26486,6 +26582,34 @@
           ],
           "typeParameters": [],
           "returnType": "String",
+          "parameters": []
+        },
+        {
+          "name": "dartitectObservabilityPrivacyExtension",
+          "kind": "getter",
+          "audience": "tooling-test",
+          "declaration": "String get dartitectObservabilityPrivacyExtension",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "static"
+          ],
+          "typeParameters": [],
+          "returnType": "String",
+          "parameters": []
+        },
+        {
+          "name": "dartitectObservabilityPrivacyServiceExtensions",
+          "kind": "getter",
+          "audience": "tooling-test",
+          "declaration": "List<String> get dartitectObservabilityPrivacyServiceExtensions",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "static"
+          ],
+          "typeParameters": [],
+          "returnType": "List<String>",
           "parameters": []
         },
         {
@@ -80755,6 +80879,35 @@
               "type": "ObservabilityRiskAcceptance?"
             },
             {
+              "name": "effectiveActions",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Map<String, ObservabilityPrivacyAction> effectiveActions({required ObservabilityDestinationKind destination, String? destinationName})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, ObservabilityPrivacyAction>",
+              "parameters": [
+                {
+                  "name": "destination",
+                  "declaration": "{required ObservabilityDestinationKind destination}",
+                  "type": "ObservabilityDestinationKind",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "destinationName",
+                  "declaration": "{String? destinationName}",
+                  "type": "String?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
               "name": "explain",
               "kind": "method",
               "audience": "application-facing",
@@ -81396,6 +81549,161 @@
                   "annotations": []
                 }
               ]
+            },
+            {
+              "name": "withActionCounts",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "ObservabilitySanitizationDiagnostics.withActionCounts({required int visitedNodes, required int textCodePoints, required int stackFrames, required int classificationWork, required int deniedValues, required int maskedValues, required int allowedValues, required int unknownObjects, required int cycles, required int truncatedNodes, required int truncatedText, required int truncatedCollections, required int truncatedFrames, required int truncatedClassification, required int classifierFailures, required int projectorFailures})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ObservabilitySanitizationDiagnostics",
+              "parameters": [
+                {
+                  "name": "visitedNodes",
+                  "declaration": "{required int visitedNodes}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "textCodePoints",
+                  "declaration": "{required int textCodePoints}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "stackFrames",
+                  "declaration": "{required int stackFrames}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "classificationWork",
+                  "declaration": "{required int classificationWork}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "deniedValues",
+                  "declaration": "{required int deniedValues}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "maskedValues",
+                  "declaration": "{required int maskedValues}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "allowedValues",
+                  "declaration": "{required int allowedValues}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "unknownObjects",
+                  "declaration": "{required int unknownObjects}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cycles",
+                  "declaration": "{required int cycles}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "truncatedNodes",
+                  "declaration": "{required int truncatedNodes}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "truncatedText",
+                  "declaration": "{required int truncatedText}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "truncatedCollections",
+                  "declaration": "{required int truncatedCollections}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "truncatedFrames",
+                  "declaration": "{required int truncatedFrames}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "truncatedClassification",
+                  "declaration": "{required int truncatedClassification}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "classifierFailures",
+                  "declaration": "{required int classifierFailures}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "projectorFailures",
+                  "declaration": "{required int projectorFailures}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "allowedValues",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int allowedValues",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
             },
             {
               "name": "classificationWork",
@@ -85768,6 +86076,20 @@
               "type": "List<TraceStatePropagationPolicy>"
             }
           ]
+        },
+        {
+          "name": "observabilityPrivacyPolicySchemaVersion",
+          "kind": "getter",
+          "audience": "application-facing",
+          "declaration": "int get observabilityPrivacyPolicySchemaVersion",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "static"
+          ],
+          "typeParameters": [],
+          "returnType": "int",
+          "parameters": []
         },
         {
           "name": "LazyLogMessage",

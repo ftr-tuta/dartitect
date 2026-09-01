@@ -57,6 +57,26 @@ final class ObservabilitySanitizationDiagnostics {
     required this.truncatedClassification,
     required this.classifierFailures,
     required this.projectorFailures,
+  }) : allowedValues = 0;
+
+  /// Creates a snapshot with explicit counts for all three policy actions.
+  const ObservabilitySanitizationDiagnostics.withActionCounts({
+    required this.visitedNodes,
+    required this.textCodePoints,
+    required this.stackFrames,
+    required this.classificationWork,
+    required this.deniedValues,
+    required this.maskedValues,
+    required this.allowedValues,
+    required this.unknownObjects,
+    required this.cycles,
+    required this.truncatedNodes,
+    required this.truncatedText,
+    required this.truncatedCollections,
+    required this.truncatedFrames,
+    required this.truncatedClassification,
+    required this.classifierFailures,
+    required this.projectorFailures,
   });
 
   /// Creates a zeroed diagnostics snapshot.
@@ -67,6 +87,7 @@ final class ObservabilitySanitizationDiagnostics {
       classificationWork = 0,
       deniedValues = 0,
       maskedValues = 0,
+      allowedValues = 0,
       unknownObjects = 0,
       cycles = 0,
       truncatedNodes = 0,
@@ -94,6 +115,9 @@ final class ObservabilitySanitizationDiagnostics {
 
   /// Values or keys masked by policy.
   final int maskedValues;
+
+  /// Values or keys allowed by policy.
+  final int allowedValues;
 
   /// Objects represented only by safe runtime type.
   final int unknownObjects;
@@ -305,6 +329,7 @@ final class _SanitizationState {
   int classificationWork = 0;
   int deniedValues = 0;
   int maskedValues = 0;
+  int allowedValues = 0;
   int unknownObjects = 0;
   int cycles = 0;
   int truncatedNodes = 0;
@@ -316,13 +341,14 @@ final class _SanitizationState {
   int projectorFailures = 0;
 
   ObservabilitySanitizationDiagnostics snapshot() =>
-      ObservabilitySanitizationDiagnostics(
+      ObservabilitySanitizationDiagnostics.withActionCounts(
         visitedNodes: visitedNodes,
         textCodePoints: textCodePoints,
         stackFrames: stackFrames,
         classificationWork: classificationWork,
         deniedValues: deniedValues,
         maskedValues: maskedValues,
+        allowedValues: allowedValues,
         unknownObjects: unknownObjects,
         cycles: cycles,
         truncatedNodes: truncatedNodes,
@@ -380,6 +406,7 @@ final class _SanitizationState {
       maskedValues += 1;
       return _mask(value);
     }
+    allowedValues += 1;
 
     if (value == null || value is bool) return value;
     if (value is num) return value;
@@ -532,6 +559,7 @@ final class _SanitizationState {
       maskedValues += 1;
       return _PreparedKey.masked(projected);
     }
+    allowedValues += 1;
     return _PreparedKey.allowed(_sanitizeInline(projected));
   }
 

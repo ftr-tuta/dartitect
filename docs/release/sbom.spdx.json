@@ -2316,6 +2316,11 @@
     {
       "spdxElementId": "SPDXRef-Package-dartitect-devtools",
       "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect-observability"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-devtools",
+      "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-test"
     },
     {

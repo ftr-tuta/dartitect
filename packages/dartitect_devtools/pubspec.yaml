@@ -17,5 +17,11 @@ dependencies:
       path: packages/dartitect
       tag_pattern: 'v{{version}}'
     version: 1.1.0-rc.1
+  dartitect_observability:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_observability
+      tag_pattern: 'v{{version}}'
+    version: 1.1.0-rc.1
 dev_dependencies:
   test: ^1.26.3

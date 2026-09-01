@@ -89,6 +89,28 @@ void main() {
     );
   });
 
+  test('effective action snapshot contains static and custom classes only', () {
+    final businessClass = ObservabilityDataClass.custom(
+      'business.customer.contract_number',
+    );
+    final policy = ObservabilityPrivacyPolicy.fromProfile(
+      profile: ObservabilityPrivacyProfile.balanced,
+      localOverrides: ObservabilityPrivacyOverrides(
+        mask: <ObservabilityDataClass>{businessClass},
+      ),
+    );
+
+    final actions = policy.effectiveActions(
+      destination: ObservabilityDestinationKind.local,
+      destinationName: 'developer_console',
+    );
+
+    expect(actions.keys, orderedEquals(actions.keys.toList()..sort()));
+    expect(actions['credential.token'], ObservabilityPrivacyAction.deny);
+    expect(actions[businessClass.wireName], ObservabilityPrivacyAction.mask);
+    expect(actions.keys.join(','), isNot(contains('reason')));
+  });
+
   test('conflicting rules and unsafe remote releases are rejected', () {
     expect(
       () => ObservabilityPrivacyPolicy.fromProfile(

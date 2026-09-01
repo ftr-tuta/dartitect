@@ -1327,6 +1327,7 @@ final class _SanitizationAccumulator {
   int classificationWork = 0;
   int deniedValues = 0;
   int maskedValues = 0;
+  int allowedValues = 0;
   int unknownObjects = 0;
   int cycles = 0;
   int truncatedNodes = 0;
@@ -1344,6 +1345,7 @@ final class _SanitizationAccumulator {
     classificationWork += value.classificationWork;
     deniedValues += value.deniedValues;
     maskedValues += value.maskedValues;
+    allowedValues += value.allowedValues;
     unknownObjects += value.unknownObjects;
     cycles += value.cycles;
     truncatedNodes += value.truncatedNodes;
@@ -1356,13 +1358,14 @@ final class _SanitizationAccumulator {
   }
 
   ObservabilitySanitizationDiagnostics snapshot() =>
-      ObservabilitySanitizationDiagnostics(
+      ObservabilitySanitizationDiagnostics.withActionCounts(
         visitedNodes: visitedNodes,
         textCodePoints: textCodePoints,
         stackFrames: stackFrames,
         classificationWork: classificationWork,
         deniedValues: deniedValues,
         maskedValues: maskedValues,
+        allowedValues: allowedValues,
         unknownObjects: unknownObjects,
         cycles: cycles,
         truncatedNodes: truncatedNodes,

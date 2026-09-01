@@ -14,7 +14,6 @@ Public entrypoint count:: 33
 . +dartitect_geometry+
 . +dartitect_locale_br+
 . +dartitect_privacy+
-. +dartitect_devtools+
 . +dartitect_isolates+
 . +dartitect_jobs+
 . +dartitect_media+
@@ -22,6 +21,7 @@ Public entrypoint count:: 33
 . +dartitect_resilience+
 . +dartitect_sync+
 . +dartitect_observability+
+. +dartitect_devtools+
 . +dartitect_flutter+
 . +dartitect_transfer+
 . +dartitect_flutter_testing+

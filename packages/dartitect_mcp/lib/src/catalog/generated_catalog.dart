@@ -655,6 +655,6 @@ abstract final class DartitectGeneratedCatalog {
     },
     "extensionSources": []
   },
-  "apiSnapshotHash": "e5f51324"
+  "apiSnapshotHash": "1f83e687"
 }''';
 }

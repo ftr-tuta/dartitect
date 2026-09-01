@@ -35,6 +35,7 @@ void main() {
     expect('${remote.value}', isNot(contains('top-secret')));
     expect('${remote.value}', isNot(contains('person@example.com')));
     expect(local.diagnostics.deniedValues, greaterThan(0));
+    expect(local.diagnostics.allowedValues, greaterThan(0));
     expect(local.value, isA<Map<String, Object?>>());
     expect(
       () => (local.value! as Map<String, Object?>)['new'] = 'value',

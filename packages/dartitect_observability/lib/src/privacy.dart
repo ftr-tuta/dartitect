@@ -1,5 +1,8 @@
 import 'dart:collection';
 
+/// Schema emitted by the payload-free observability privacy diagnostics view.
+const int observabilityPrivacyPolicySchemaVersion = 1;
+
 /// Security boundary applied to one observability destination.
 enum ObservabilityDestinationKind {
   /// A destination controlled by the current device or process.
@@ -668,6 +671,38 @@ final class ObservabilityPrivacyPolicy {
   /// Explicit high-risk acknowledgement, if configured.
   final ObservabilityRiskAcceptance? riskAcceptance;
 
+  /// Returns category names and their effective actions without observed data.
+  ///
+  /// The result includes every built-in category and every application-owned
+  /// category mentioned by an override. It intentionally excludes masking
+  /// replacements and risk-acceptance reasons because those configuration
+  /// strings are not required by read-only diagnostics.
+  Map<String, ObservabilityPrivacyAction> effectiveActions({
+    required ObservabilityDestinationKind destination,
+    String? destinationName,
+  }) {
+    final classes =
+        <ObservabilityDataClass>{
+            ..._builtInDiagnosticClasses,
+            ..._classesIn(globalOverrides),
+            ..._classesIn(localOverrides),
+            ..._classesIn(remoteOverrides),
+            for (final override in namedOverrides.values)
+              ..._classesIn(override.rules),
+          }.toList(growable: false)
+          ..sort((left, right) => left.wireName.compareTo(right.wireName));
+    return Map<String, ObservabilityPrivacyAction>.unmodifiable(
+      <String, ObservabilityPrivacyAction>{
+        for (final dataClass in classes)
+          dataClass.wireName: explain(
+            destination: destination,
+            destinationName: destinationName,
+            classes: <ObservabilityDataClass>{dataClass},
+          ).action,
+      },
+    );
+  }
+
   /// Resolves classes independently, then combines them with
   /// `deny > mask > allow`.
   ObservabilityPrivacyDecision explain({
@@ -773,6 +808,91 @@ final class ObservabilityPrivacyPolicy {
     ObservabilityPrivacyAction.deny => 2,
   };
 }
+
+Iterable<ObservabilityDataClass> _classesIn(
+  ObservabilityPrivacyOverrides overrides,
+) sync* {
+  yield* overrides.allow;
+  yield* overrides.mask;
+  yield* overrides.deny;
+}
+
+final Set<ObservabilityDataClass> _builtInDiagnosticClasses =
+    Set<ObservabilityDataClass>.unmodifiable(<ObservabilityDataClass>{
+      ObservabilityDataClass.safe,
+      ObservabilityDataClass.safeMetadata,
+      ObservabilityDataClass.safeEnum,
+      ObservabilityDataClass.safeCount,
+      ObservabilityDataClass.safeDuration,
+      ObservabilityDataClass.safeStatus,
+      ObservabilityDataClass.safeRouteTemplate,
+      ObservabilityDataClass.safeRuntimeType,
+      ObservabilityDataClass.safeProtocolVersion,
+      ObservabilityDataClass.http,
+      ObservabilityDataClass.httpMethod,
+      ObservabilityDataClass.httpRouteTemplate,
+      ObservabilityDataClass.httpStatus,
+      ObservabilityDataClass.httpErrorType,
+      ObservabilityDataClass.httpPath,
+      ObservabilityDataClass.httpQuery,
+      ObservabilityDataClass.httpBody,
+      ObservabilityDataClass.httpRequestBody,
+      ObservabilityDataClass.httpResponseBody,
+      ObservabilityDataClass.httpHeader,
+      ObservabilityDataClass.httpAuthorization,
+      ObservabilityDataClass.httpCookie,
+      ObservabilityDataClass.httpTraceHeader,
+      ObservabilityDataClass.httpContentType,
+      ObservabilityDataClass.httpMultipart,
+      ObservabilityDataClass.httpBinary,
+      ObservabilityDataClass.credential,
+      ObservabilityDataClass.password,
+      ObservabilityDataClass.secret,
+      ObservabilityDataClass.apiKey,
+      ObservabilityDataClass.session,
+      ObservabilityDataClass.cookie,
+      ObservabilityDataClass.token,
+      ObservabilityDataClass.httpToken,
+      ObservabilityDataClass.accessToken,
+      ObservabilityDataClass.refreshToken,
+      ObservabilityDataClass.jwt,
+      ObservabilityDataClass.dsn,
+      ObservabilityDataClass.identity,
+      ObservabilityDataClass.name,
+      ObservabilityDataClass.email,
+      ObservabilityDataClass.phone,
+      ObservabilityDataClass.cpf,
+      ObservabilityDataClass.cnpj,
+      ObservabilityDataClass.address,
+      ObservabilityDataClass.userId,
+      ObservabilityDataClass.deviceId,
+      ObservabilityDataClass.ipAddress,
+      ObservabilityDataClass.uuid,
+      ObservabilityDataClass.location,
+      ObservabilityDataClass.storage,
+      ObservabilityDataClass.storageQuery,
+      ObservabilityDataClass.storageStatement,
+      ObservabilityDataClass.storageTable,
+      ObservabilityDataClass.storageValue,
+      ObservabilityDataClass.storagePath,
+      ObservabilityDataClass.file,
+      ObservabilityDataClass.filePath,
+      ObservabilityDataClass.fileName,
+      ObservabilityDataClass.fileContent,
+      ObservabilityDataClass.operation,
+      ObservabilityDataClass.idempotencyKey,
+      ObservabilityDataClass.requestId,
+      ObservabilityDataClass.runId,
+      ObservabilityDataClass.datasetKey,
+      ObservabilityDataClass.checkpoint,
+      ObservabilityDataClass.partition,
+      ObservabilityDataClass.leaseOwner,
+      ObservabilityDataClass.error,
+      ObservabilityDataClass.errorType,
+      ObservabilityDataClass.errorMessage,
+      ObservabilityDataClass.errorStackTrace,
+      ObservabilityDataClass.errorFingerprint,
+    });
 
 final class _ResolvedRule {
   const _ResolvedRule(this.action, this.dataClass, this.source);

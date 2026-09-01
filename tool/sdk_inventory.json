@@ -38,12 +38,13 @@
       "version": "1.1.0-rc.1",
       "decision": "add-read-only-development-inspector",
       "runtimeDependencies": [
-        "dartitect"
+        "dartitect",
+        "dartitect_observability"
       ],
       "entrypoints": [
         "dartitect_devtools.dart"
       ],
-      "publicSymbolCount": 7
+      "publicSymbolCount": 10
     },
     {
       "name": "dartitect_dio",
@@ -247,7 +248,7 @@
         "dartitect_observability.dart",
         "dartitect_observability_sync.dart"
       ],
-      "publicSymbolCount": 89
+      "publicSymbolCount": 90
     },
     {
       "name": "dartitect_privacy",
