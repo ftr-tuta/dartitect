@@ -102731,6 +102731,388 @@
           ]
         },
         {
+          "name": "ObservabilityPrivacyExpectation",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ObservabilityPrivacyExpectation",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ObservabilityPrivacyExpectation({required ObservabilityDestinationKind destination, required Iterable<ObservabilityDataClass> classes, required ObservabilityPrivacyAction action, String? destinationName, ObservabilityPrivacyDecisionSource? source})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "ObservabilityPrivacyExpectation",
+              "parameters": [
+                {
+                  "name": "destination",
+                  "declaration": "{required ObservabilityDestinationKind destination}",
+                  "type": "ObservabilityDestinationKind",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "classes",
+                  "declaration": "{required Iterable<ObservabilityDataClass> classes}",
+                  "type": "Iterable<ObservabilityDataClass>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "action",
+                  "declaration": "{required ObservabilityPrivacyAction action}",
+                  "type": "ObservabilityPrivacyAction",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "destinationName",
+                  "declaration": "{String? destinationName}",
+                  "type": "String?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "source",
+                  "declaration": "{ObservabilityPrivacyDecisionSource? source}",
+                  "type": "ObservabilityPrivacyDecisionSource?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "action",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "ObservabilityPrivacyAction action",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "ObservabilityPrivacyAction"
+            },
+            {
+              "name": "classes",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Set<ObservabilityDataClass> classes",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Set<ObservabilityDataClass>"
+            },
+            {
+              "name": "destination",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "ObservabilityDestinationKind destination",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "ObservabilityDestinationKind"
+            },
+            {
+              "name": "destinationName",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String? destinationName",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String?"
+            },
+            {
+              "name": "source",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "ObservabilityPrivacyDecisionSource? source",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "ObservabilityPrivacyDecisionSource?"
+            }
+          ]
+        },
+        {
+          "name": "ObservabilityPrivacyPolicyHarness",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ObservabilityPrivacyPolicyHarness",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ObservabilityPrivacyPolicyHarness(ObservabilityPrivacyPolicy policy)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ObservabilityPrivacyPolicyHarness",
+              "parameters": [
+                {
+                  "name": "policy",
+                  "declaration": "ObservabilityPrivacyPolicy policy",
+                  "type": "ObservabilityPrivacyPolicy",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "policy",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "ObservabilityPrivacyPolicy policy",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "ObservabilityPrivacyPolicy"
+            },
+            {
+              "name": "verify",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "void verify(Iterable<ObservabilityPrivacyExpectation> expectations)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "expectations",
+                  "declaration": "Iterable<ObservabilityPrivacyExpectation> expectations",
+                  "type": "Iterable<ObservabilityPrivacyExpectation>",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "verifyRestrictivePrecedence",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "void verifyRestrictivePrecedence({required ObservabilityDestinationKind destination, required ObservabilityDataClass denied, required ObservabilityDataClass masked, required ObservabilityDataClass allowed, String? destinationName})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "destination",
+                  "declaration": "{required ObservabilityDestinationKind destination}",
+                  "type": "ObservabilityDestinationKind",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "denied",
+                  "declaration": "{required ObservabilityDataClass denied}",
+                  "type": "ObservabilityDataClass",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "masked",
+                  "declaration": "{required ObservabilityDataClass masked}",
+                  "type": "ObservabilityDataClass",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "allowed",
+                  "declaration": "{required ObservabilityDataClass allowed}",
+                  "type": "ObservabilityDataClass",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "destinationName",
+                  "declaration": "{String? destinationName}",
+                  "type": "String?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "ObservabilitySanitizationBudgetHarness",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ObservabilitySanitizationBudgetHarness",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ObservabilitySanitizationBudgetHarness(ObservabilitySanitizer sanitizer)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ObservabilitySanitizationBudgetHarness",
+              "parameters": [
+                {
+                  "name": "sanitizer",
+                  "declaration": "ObservabilitySanitizer sanitizer",
+                  "type": "ObservabilitySanitizer",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "sanitizer",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "ObservabilitySanitizer sanitizer",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "ObservabilitySanitizer"
+            },
+            {
+              "name": "prepareAndVerify",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "PreparedObservabilityValue prepareAndVerify(Object? value, {required ObservabilityDestinationKind destination, String? destinationName, String? key, Set<ObservabilityDataClass> classes = const <ObservabilityDataClass>{}})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "PreparedObservabilityValue",
+              "parameters": [
+                {
+                  "name": "value",
+                  "declaration": "Object? value",
+                  "type": "Object?",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "destination",
+                  "declaration": "{required ObservabilityDestinationKind destination}",
+                  "type": "ObservabilityDestinationKind",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "destinationName",
+                  "declaration": "{String? destinationName}",
+                  "type": "String?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "key",
+                  "declaration": "{String? key}",
+                  "type": "String?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "classes",
+                  "declaration": "{Set<ObservabilityDataClass> classes = const <ObservabilityDataClass>{}}",
+                  "type": "Set<ObservabilityDataClass>",
+                  "kind": "optionalNamed",
+                  "default": "const <ObservabilityDataClass>{}",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "verify",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "void verify(PreparedObservabilityValue prepared)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "prepared",
+                  "declaration": "PreparedObservabilityValue prepared",
+                  "type": "PreparedObservabilityValue",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "OfflineFullFeatureContractDriver",
           "kind": "class",
           "audience": "tooling-test",
@@ -103764,6 +104146,513 @@
               "typeParameters": [],
               "returnType": "void",
               "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "RecordingObservabilityDestination",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class RecordingObservabilityDestination",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "RecordingObservabilityDestination({required String name, required ObservabilityDestinationKind kind, Future<void>? logGate, bool failLogs = false, bool failErrors = false, bool failTraces = false})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "RecordingObservabilityDestination",
+              "parameters": [
+                {
+                  "name": "name",
+                  "declaration": "{required String name}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "kind",
+                  "declaration": "{required ObservabilityDestinationKind kind}",
+                  "type": "ObservabilityDestinationKind",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "logGate",
+                  "declaration": "{Future<void>? logGate}",
+                  "type": "Future<void>?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "failLogs",
+                  "declaration": "{bool failLogs = false}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "false",
+                  "annotations": []
+                },
+                {
+                  "name": "failErrors",
+                  "declaration": "{bool failErrors = false}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "false",
+                  "annotations": []
+                },
+                {
+                  "name": "failTraces",
+                  "declaration": "{bool failTraces = false}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "false",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "disposeCalls",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "int disposeCalls",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "type": "int"
+            },
+            {
+              "name": "errorReporter",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "PreparedErrorReporter errorReporter",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final",
+                "late"
+              ],
+              "type": "PreparedErrorReporter"
+            },
+            {
+              "name": "errors",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<PreparedErrorEvent> errors",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<PreparedErrorEvent>"
+            },
+            {
+              "name": "failErrors",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "bool failErrors",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "failLogs",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "bool failLogs",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "failTraces",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "bool failTraces",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "flushCalls",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "int flushCalls",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "type": "int"
+            },
+            {
+              "name": "kind",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "ObservabilityDestinationKind kind",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "ObservabilityDestinationKind"
+            },
+            {
+              "name": "logGate",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Future<void>? logGate",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Future<void>?"
+            },
+            {
+              "name": "logSink",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "PreparedLogSink logSink",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final",
+                "late"
+              ],
+              "type": "PreparedLogSink"
+            },
+            {
+              "name": "logs",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<PreparedLogEvent> logs",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<PreparedLogEvent>"
+            },
+            {
+              "name": "name",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String name",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "spanStarts",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<PreparedSpanStart> spanStarts",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<PreparedSpanStart>"
+            },
+            {
+              "name": "spans",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<RecordingPreparedSpan> spans",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<RecordingPreparedSpan>"
+            },
+            {
+              "name": "tracer",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "PreparedTracer tracer",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final",
+                "late"
+              ],
+              "type": "PreparedTracer"
+            },
+            {
+              "name": "registration",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "ObservabilityDestinationRegistration registration({bool owned = false, bool includeLogs = true, bool includeErrors = true, bool includeTraces = true, int queueCapacity = 256, SamplingPolicy? samplingPolicy})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "ObservabilityDestinationRegistration",
+              "parameters": [
+                {
+                  "name": "owned",
+                  "declaration": "{bool owned = false}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "false",
+                  "annotations": []
+                },
+                {
+                  "name": "includeLogs",
+                  "declaration": "{bool includeLogs = true}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "true",
+                  "annotations": []
+                },
+                {
+                  "name": "includeErrors",
+                  "declaration": "{bool includeErrors = true}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "true",
+                  "annotations": []
+                },
+                {
+                  "name": "includeTraces",
+                  "declaration": "{bool includeTraces = true}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "true",
+                  "annotations": []
+                },
+                {
+                  "name": "queueCapacity",
+                  "declaration": "{int queueCapacity = 256}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "256",
+                  "annotations": []
+                },
+                {
+                  "name": "samplingPolicy",
+                  "declaration": "{SamplingPolicy? samplingPolicy}",
+                  "type": "SamplingPolicy?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "RecordingPreparedSpan",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class RecordingPreparedSpan extends PreparedSpan",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "PreparedSpan",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "RecordingPreparedSpan({required PreparedSpanStart start, required TraceContext context})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "RecordingPreparedSpan",
+              "parameters": [
+                {
+                  "name": "start",
+                  "declaration": "{required PreparedSpanStart start}",
+                  "type": "PreparedSpanStart",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "context",
+                  "declaration": "{required TraceContext context}",
+                  "type": "TraceContext",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "attributes",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> attributes",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Map<String, Object?>"
+            },
+            {
+              "name": "context",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "TraceContext context",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [
+                "final"
+              ],
+              "type": "TraceContext"
+            },
+            {
+              "name": "end",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "PreparedSpanEnd? end",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "type": "PreparedSpanEnd?"
+            },
+            {
+              "name": "events",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<PreparedSpanEvent> events",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<PreparedSpanEvent>"
+            },
+            {
+              "name": "start",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "PreparedSpanStart start",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "PreparedSpanStart"
+            },
+            {
+              "name": "isEnded",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "bool get isEnded",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "addPreparedEvent",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "void addPreparedEvent(PreparedSpanEvent event)",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "event",
+                  "declaration": "PreparedSpanEvent event",
+                  "type": "PreparedSpanEvent",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "endPrepared",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "void endPrepared(PreparedSpanEnd end)",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "end",
+                  "declaration": "PreparedSpanEnd end",
+                  "type": "PreparedSpanEnd",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "setPreparedAttribute",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "void setPreparedAttribute(PreparedSpanAttribute attribute)",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "attribute",
+                  "declaration": "PreparedSpanAttribute attribute",
+                  "type": "PreparedSpanAttribute",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
             }
           ]
         },
@@ -107371,6 +108260,37 @@
               "name": "timeout",
               "declaration": "{required Duration timeout}",
               "type": "Duration",
+              "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            }
+          ]
+        },
+        {
+          "name": "expectNoSensitiveObservabilityData",
+          "kind": "function",
+          "audience": "tooling-test",
+          "declaration": "void expectNoSensitiveObservabilityData(Object? evidence, {required Iterable<String> sentinels})",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "static"
+          ],
+          "typeParameters": [],
+          "returnType": "void",
+          "parameters": [
+            {
+              "name": "evidence",
+              "declaration": "Object? evidence",
+              "type": "Object?",
+              "kind": "requiredPositional",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "sentinels",
+              "declaration": "{required Iterable<String> sentinels}",
+              "type": "Iterable<String>",
               "kind": "requiredNamed",
               "default": null,
               "annotations": []
