@@ -82507,6 +82507,36 @@
                   "annotations": []
                 }
               ]
+            },
+            {
+              "name": "shareDestinationPreparation",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "T shareDestinationPreparation<T>(T Function() prepare)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "static"
+              ],
+              "typeParameters": [
+                {
+                  "name": "T",
+                  "declaration": "T",
+                  "bound": null,
+                  "annotations": []
+                }
+              ],
+              "returnType": "T",
+              "parameters": [
+                {
+                  "name": "prepare",
+                  "declaration": "T Function() prepare",
+                  "type": "T Function()",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
             }
           ]
         },

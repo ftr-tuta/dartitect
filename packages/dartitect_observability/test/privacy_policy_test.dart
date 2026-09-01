@@ -58,6 +58,32 @@ void main() {
     expect(denied.winningClass, ObservabilityDataClass.accessToken);
   });
 
+  test('winner selection is independent of input iteration order', () {
+    final policy = ObservabilityPrivacyPolicy.fromProfile(
+      profile: ObservabilityPrivacyProfile.diagnostic,
+    );
+    final forward = policy.explain(
+      destination: ObservabilityDestinationKind.local,
+      classes: <ObservabilityDataClass>{
+        ObservabilityDataClass.safeMetadata,
+        ObservabilityDataClass.email,
+        ObservabilityDataClass.token,
+      },
+    );
+    final reverse = policy.explain(
+      destination: ObservabilityDestinationKind.local,
+      classes: <ObservabilityDataClass>{
+        ObservabilityDataClass.token,
+        ObservabilityDataClass.email,
+        ObservabilityDataClass.safeMetadata,
+      },
+    );
+
+    expect(reverse.action, forward.action);
+    expect(reverse.winningClass, forward.winningClass);
+    expect(reverse.source, forward.source);
+  });
+
   test('named, destination, global, and profile precedence is explicit', () {
     final policy = ObservabilityPrivacyPolicy.fromProfile(
       profile: ObservabilityPrivacyProfile.strict,

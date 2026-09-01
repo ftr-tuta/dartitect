@@ -824,68 +824,74 @@ final class DestinationAwareObservabilityRuntime implements AsyncDisposable {
       _messageBuilderFailures += 1;
       return;
     }
-    for (final candidate in candidates) {
-      final state = candidate.state;
-      final preparedMessage = state.sanitize(
-        message,
-        classes: <ObservabilityDataClass>{ObservabilityDataClass.errorMessage},
-      );
-      final preparedContext = state.prepareContext(input.context);
-      final preparedError = input.error == null
-          ? null
-          : state.sanitizeError(input.error!);
-      final preparedStack = input.stackTrace == null
-          ? null
-          : state.sanitizeStack(input.stackTrace!);
-      state.enqueue(
-        _PreparedLogDispatch(
-          PreparedLogEvent._(
-            timestamp: timestamp,
-            name: input.name,
-            level: input.level,
-            message: _preparedString(preparedMessage),
-            context: preparedContext,
-            error: preparedError,
-            stackTrace: preparedStack,
+    ObservabilitySanitizer.shareDestinationPreparation(() {
+      for (final candidate in candidates) {
+        final state = candidate.state;
+        final preparedMessage = state.sanitize(
+          message,
+          classes: <ObservabilityDataClass>{
+            ObservabilityDataClass.errorMessage,
+          },
+        );
+        final preparedContext = state.prepareContext(input.context);
+        final preparedError = input.error == null
+            ? null
+            : state.sanitizeError(input.error!);
+        final preparedStack = input.stackTrace == null
+            ? null
+            : state.sanitizeStack(input.stackTrace!);
+        state.enqueue(
+          _PreparedLogDispatch(
+            PreparedLogEvent._(
+              timestamp: timestamp,
+              name: input.name,
+              level: input.level,
+              message: _preparedString(preparedMessage),
+              context: preparedContext,
+              error: preparedError,
+              stackTrace: preparedStack,
+            ),
+            candidate.targets,
           ),
-          candidate.targets,
-        ),
-      );
-    }
+        );
+      }
+    });
   }
 
   void _report(ErrorEvent input) {
     if (!_accepting) return;
-    for (final state in _states) {
-      if (state.registration.errorReporters.isEmpty) continue;
-      final fingerprint = <String>[];
-      for (final value in input.fingerprint) {
-        fingerprint.add(
-          _preparedString(
-            state.sanitize(
-              value,
-              classes: <ObservabilityDataClass>{
-                ObservabilityDataClass.errorFingerprint,
-              },
+    ObservabilitySanitizer.shareDestinationPreparation(() {
+      for (final state in _states) {
+        if (state.registration.errorReporters.isEmpty) continue;
+        final fingerprint = <String>[];
+        for (final value in input.fingerprint) {
+          fingerprint.add(
+            _preparedString(
+              state.sanitize(
+                value,
+                classes: <ObservabilityDataClass>{
+                  ObservabilityDataClass.errorFingerprint,
+                },
+              ),
+            ),
+          );
+        }
+        state.enqueue(
+          _PreparedErrorDispatch(
+            PreparedErrorEvent._(
+              timestamp: input.timestamp.toUtc(),
+              error: state.sanitizeError(input.error),
+              stackTrace: state.sanitizeStack(input.stackTrace),
+              severity: input.severity,
+              mechanism: input.mechanism,
+              handled: input.handled,
+              fingerprint: List<String>.unmodifiable(fingerprint),
+              context: state.prepareContext(input.context),
             ),
           ),
         );
       }
-      state.enqueue(
-        _PreparedErrorDispatch(
-          PreparedErrorEvent._(
-            timestamp: input.timestamp.toUtc(),
-            error: state.sanitizeError(input.error),
-            stackTrace: state.sanitizeStack(input.stackTrace),
-            severity: input.severity,
-            mechanism: input.mechanism,
-            handled: input.handled,
-            fingerprint: List<String>.unmodifiable(fingerprint),
-            context: state.prepareContext(input.context),
-          ),
-        ),
-      );
-    }
+    });
   }
 
   Span _startSpan(
@@ -903,46 +909,51 @@ final class DestinationAwareObservabilityRuntime implements AsyncDisposable {
     if (!_accepting) {
       return _CanonicalNoOpSpan(context);
     }
-    final bindings = <_PreparedSpanBinding>[];
-    for (final state in _states) {
-      if (state.registration.tracers.isEmpty) continue;
-      final preparedName = _preparedString(
-        state.sanitize(
-          name,
-          classes: <ObservabilityDataClass>{
-            ObservabilityDataClass.safeMetadata,
-          },
-        ),
-      );
-      try {
-        if (!state.registration.samplingPolicy.shouldSampleSpan(preparedName)) {
-          state.sampledOutEvents += 1;
+    final bindings = ObservabilitySanitizer.shareDestinationPreparation(() {
+      final output = <_PreparedSpanBinding>[];
+      for (final state in _states) {
+        if (state.registration.tracers.isEmpty) continue;
+        final preparedName = _preparedString(
+          state.sanitize(
+            name,
+            classes: <ObservabilityDataClass>{
+              ObservabilityDataClass.safeMetadata,
+            },
+          ),
+        );
+        try {
+          if (!state.registration.samplingPolicy.shouldSampleSpan(
+            preparedName,
+          )) {
+            state.sampledOutEvents += 1;
+            continue;
+          }
+        } on Object {
+          state.samplingFailures += 1;
           continue;
         }
-      } on Object {
-        state.samplingFailures += 1;
-        continue;
-      }
-      final start = PreparedSpanStart._(
-        name: preparedName,
-        context: context,
-        parent: _copyTraceContext(parent),
-        kind: kind,
-        attributes: state.prepareAttributes(attributes),
-      );
-      for (final registration in state.registration.tracers) {
-        try {
-          bindings.add(
-            _PreparedSpanBinding(
-              state,
-              registration.tracer.startPreparedSpan(start),
-            ),
-          );
-        } on Object {
-          state.tracerFailures += 1;
+        final start = PreparedSpanStart._(
+          name: preparedName,
+          context: context,
+          parent: _copyTraceContext(parent),
+          kind: kind,
+          attributes: state.prepareAttributes(attributes),
+        );
+        for (final registration in state.registration.tracers) {
+          try {
+            output.add(
+              _PreparedSpanBinding(
+                state,
+                registration.tracer.startPreparedSpan(start),
+              ),
+            );
+          } on Object {
+            state.tracerFailures += 1;
+          }
         }
       }
-    }
+      return output;
+    });
     if (bindings.isEmpty) {
       return _CanonicalNoOpSpan(context);
     }
@@ -1136,20 +1147,22 @@ final class _CompositePreparedSpan extends Span {
   @override
   void setAttribute(String key, Object? value) {
     if (_ended) return;
-    for (final binding in bindings) {
-      final attributes = binding.state.prepareAttributes(<String, Object?>{
-        key: value,
-      });
-      if (attributes.isEmpty) continue;
-      final entry = attributes.entries.first;
-      try {
-        binding.span.setPreparedAttribute(
-          PreparedSpanAttribute._(entry.key, entry.value),
-        );
-      } on Object {
-        binding.state.tracerFailures += 1;
+    ObservabilitySanitizer.shareDestinationPreparation(() {
+      for (final binding in bindings) {
+        final attributes = binding.state.prepareAttributes(<String, Object?>{
+          key: value,
+        });
+        if (attributes.isEmpty) continue;
+        final entry = attributes.entries.first;
+        try {
+          binding.span.setPreparedAttribute(
+            PreparedSpanAttribute._(entry.key, entry.value),
+          );
+        } on Object {
+          binding.state.tracerFailures += 1;
+        }
       }
-    }
+    });
   }
 
   @override
@@ -1158,25 +1171,27 @@ final class _CompositePreparedSpan extends Span {
     Map<String, Object?> attributes = const <String, Object?>{},
   }) {
     if (_ended) return;
-    for (final binding in bindings) {
-      try {
-        binding.span.addPreparedEvent(
-          PreparedSpanEvent._(
-            name: _preparedString(
-              binding.state.sanitize(
-                name,
-                classes: <ObservabilityDataClass>{
-                  ObservabilityDataClass.safeMetadata,
-                },
+    ObservabilitySanitizer.shareDestinationPreparation(() {
+      for (final binding in bindings) {
+        try {
+          binding.span.addPreparedEvent(
+            PreparedSpanEvent._(
+              name: _preparedString(
+                binding.state.sanitize(
+                  name,
+                  classes: <ObservabilityDataClass>{
+                    ObservabilityDataClass.safeMetadata,
+                  },
+                ),
               ),
+              attributes: binding.state.prepareAttributes(attributes),
             ),
-            attributes: binding.state.prepareAttributes(attributes),
-          ),
-        );
-      } on Object {
-        binding.state.tracerFailures += 1;
+          );
+        } on Object {
+          binding.state.tracerFailures += 1;
+        }
       }
-    }
+    });
   }
 
   @override
@@ -1187,35 +1202,31 @@ final class _CompositePreparedSpan extends Span {
   }) async {
     if (_ended) return;
     _ended = true;
+    final endings = ObservabilitySanitizer.shareDestinationPreparation(() {
+      return <_PreparedSpanEnding>[
+        for (final binding in bindings)
+          _PreparedSpanEnding(
+            binding,
+            PreparedSpanEnd._(
+              status: status,
+              error: error == null ? null : binding.state.sanitizeError(error),
+              stackTrace: stackTrace == null
+                  ? null
+                  : binding.state.sanitizeStack(stackTrace),
+            ),
+          ),
+      ];
+    });
     await Future.wait(<Future<void>>[
-      for (final binding in bindings)
-        _endBinding(
-          binding,
-          status: status,
-          error: error,
-          stackTrace: stackTrace,
-        ),
+      for (final ending in endings) _endBinding(ending),
     ]);
   }
 
-  static Future<void> _endBinding(
-    _PreparedSpanBinding binding, {
-    required SpanStatus status,
-    required Object? error,
-    required StackTrace? stackTrace,
-  }) async {
+  static Future<void> _endBinding(_PreparedSpanEnding ending) async {
     try {
-      await binding.span.endPrepared(
-        PreparedSpanEnd._(
-          status: status,
-          error: error == null ? null : binding.state.sanitizeError(error),
-          stackTrace: stackTrace == null
-              ? null
-              : binding.state.sanitizeStack(stackTrace),
-        ),
-      );
+      await ending.binding.span.endPrepared(ending.end);
     } on Object {
-      binding.state.tracerFailures += 1;
+      ending.binding.state.tracerFailures += 1;
     }
   }
 }
@@ -1225,6 +1236,13 @@ final class _PreparedSpanBinding {
 
   final _DestinationState state;
   final PreparedSpan span;
+}
+
+final class _PreparedSpanEnding {
+  const _PreparedSpanEnding(this.binding, this.end);
+
+  final _PreparedSpanBinding binding;
+  final PreparedSpanEnd end;
 }
 
 final class _DestinationState {

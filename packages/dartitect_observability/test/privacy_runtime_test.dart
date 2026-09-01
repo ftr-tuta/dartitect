@@ -132,6 +132,54 @@ void main() {
     },
   );
 
+  test('classification and projection run once across destinations', () async {
+    final classifier = _CountingClassifier();
+    final projector = _CountingProjector();
+    final local = <PreparedLogEvent>[];
+    final remote = <PreparedLogEvent>[];
+    final projected = _SharedProjectedValue();
+    final runtime = ObservabilityRuntime.withPrivacy(
+      privacyPolicy: ObservabilityPrivacyPolicy.fromProfile(
+        profile: ObservabilityPrivacyProfile.diagnostic,
+      ),
+      destinations: <ObservabilityDestinationRegistration>[
+        ObservabilityDestinationRegistration.local(
+          logSinks: <PreparedLogSinkRegistration>[
+            PreparedLogSinkRegistration.borrowed(
+              CallbackPreparedLogSink(local.add),
+            ),
+          ],
+          samplingPolicy: FixedSamplingPolicy(logRate: 1),
+        ),
+        ObservabilityDestinationRegistration.remote(
+          name: 'remote',
+          logSinks: <PreparedLogSinkRegistration>[
+            PreparedLogSinkRegistration.borrowed(
+              CallbackPreparedLogSink(remote.add),
+            ),
+          ],
+          samplingPolicy: FixedSamplingPolicy(logRate: 1),
+        ),
+      ],
+      classifiers: <ObservabilityDataClassifier>[classifier],
+      projectors: <ObservabilityValueProjector>[projector],
+    );
+
+    runtime.logger.info(
+      'classified-once',
+      context: ObservabilityContext(
+        attributes: <String, Object?>{'projected': projected},
+      ),
+    );
+    await runtime.flush(const Duration(seconds: 1));
+
+    expect(classifier.targetCalls, 1);
+    expect(projector.calls, 1);
+    expect(local, hasLength(1));
+    expect(remote, hasLength(1));
+    await runtime.disposeAsync();
+  });
+
   test(
     'registration rejects names, empty capabilities, and reused instances',
     () {
@@ -370,4 +418,36 @@ final class _FixedTraceIds implements TraceIdGenerator {
 
   @override
   String nextTraceId() => '11111111111111111111111111111111';
+}
+
+final class _CountingClassifier implements ObservabilityDataClassifier {
+  int targetCalls = 0;
+
+  @override
+  Iterable<ObservabilityDataClass> classify(
+    Object? value, {
+    String? key,
+    ObservabilityDataClass? container,
+  }) {
+    if (value == 'classified-once') targetCalls += 1;
+    return const <ObservabilityDataClass>[];
+  }
+}
+
+final class _SharedProjectedValue {}
+
+final class _CountingProjector implements ObservabilityValueProjector {
+  int calls = 0;
+
+  @override
+  ObservabilityClassifiedValue<Object?> project(Object value) {
+    calls += 1;
+    return ObservabilityClassifiedValue<Object?>(
+      1,
+      classes: <ObservabilityDataClass>{ObservabilityDataClass.safeMetadata},
+    );
+  }
+
+  @override
+  bool supports(Object value) => value is _SharedProjectedValue;
 }

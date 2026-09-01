@@ -580,7 +580,25 @@ final class ObservabilityPrivacyPolicy {
            UnmodifiableMapView<
              String,
              ObservabilityDestinationPrivacyOverrides
-           >(namedOverrides);
+           >(namedOverrides),
+       _globalActions = _compileRules(globalOverrides),
+       _localActions = _compileRules(localOverrides),
+       _remoteActions = _compileRules(remoteOverrides),
+       _namedActions =
+           Map<String, Map<String, ObservabilityPrivacyAction>>.unmodifiable(
+             <String, Map<String, ObservabilityPrivacyAction>>{
+               for (final entry in namedOverrides.entries)
+                 entry.key: _compileRules(entry.value.rules),
+             },
+           ),
+       _localProfileActions = _profileRules(
+         profile,
+         ObservabilityDestinationKind.local,
+       ),
+       _remoteProfileActions = _profileRules(
+         profile,
+         ObservabilityDestinationKind.remote,
+       );
 
   /// Builds a conflict-checked policy from one reviewed profile.
   factory ObservabilityPrivacyPolicy.fromProfile({
@@ -674,6 +692,13 @@ final class ObservabilityPrivacyPolicy {
   /// Explicit high-risk acknowledgement, if configured.
   final ObservabilityRiskAcceptance? riskAcceptance;
 
+  final Map<String, ObservabilityPrivacyAction> _globalActions;
+  final Map<String, ObservabilityPrivacyAction> _localActions;
+  final Map<String, ObservabilityPrivacyAction> _remoteActions;
+  final Map<String, Map<String, ObservabilityPrivacyAction>> _namedActions;
+  final Map<String, ObservabilityPrivacyAction> _localProfileActions;
+  final Map<String, ObservabilityPrivacyAction> _remoteProfileActions;
+
   /// Returns category names and their effective actions without observed data.
   ///
   /// The result includes every built-in category and every application-owned
@@ -720,10 +745,8 @@ final class ObservabilityPrivacyPolicy {
         source: ObservabilityPrivacyDecisionSource.defaultRule,
       );
     }
-    final sorted = classes.toList(growable: false)
-      ..sort((left, right) => left.wireName.compareTo(right.wireName));
     _ResolvedRule? winner;
-    for (final dataClass in sorted) {
+    for (final dataClass in classes) {
       final resolved = _resolveClass(
         dataClass,
         destination: destination,
@@ -746,7 +769,10 @@ final class ObservabilityPrivacyPolicy {
     if (destinationName != null) {
       final named = namedOverrides[destinationName];
       if (named != null && named.kind == destination) {
-        final action = _lookupOverrides(named.rules, dataClass);
+        final action = _lookupCompiled(
+          _namedActions[destinationName]!,
+          dataClass,
+        );
         if (action != null) {
           return _ResolvedRule(
             action,
@@ -756,10 +782,10 @@ final class ObservabilityPrivacyPolicy {
         }
       }
     }
-    final destinationRules = destination == ObservabilityDestinationKind.local
-        ? localOverrides
-        : remoteOverrides;
-    final destinationAction = _lookupOverrides(destinationRules, dataClass);
+    final destinationActions = destination == ObservabilityDestinationKind.local
+        ? _localActions
+        : _remoteActions;
+    final destinationAction = _lookupCompiled(destinationActions, dataClass);
     if (destinationAction != null) {
       return _ResolvedRule(
         destinationAction,
@@ -767,7 +793,7 @@ final class ObservabilityPrivacyPolicy {
         ObservabilityPrivacyDecisionSource.destinationOverride,
       );
     }
-    final globalAction = _lookupOverrides(globalOverrides, dataClass);
+    final globalAction = _lookupCompiled(_globalActions, dataClass);
     if (globalAction != null) {
       return _ResolvedRule(
         globalAction,
@@ -775,8 +801,10 @@ final class ObservabilityPrivacyPolicy {
         ObservabilityPrivacyDecisionSource.globalOverride,
       );
     }
-    final profileAction = _lookupProfile(
-      _profileRules(profile, destination),
+    final profileAction = _lookupCompiled(
+      destination == ObservabilityDestinationKind.local
+          ? _localProfileActions
+          : _remoteProfileActions,
       dataClass,
     );
     if (profileAction != null) {
@@ -927,20 +955,20 @@ void _validateRules(String name, ObservabilityPrivacyOverrides rules) {
   }
 }
 
-ObservabilityPrivacyAction? _lookupOverrides(
+Map<String, ObservabilityPrivacyAction> _compileRules(
   ObservabilityPrivacyOverrides rules,
-  ObservabilityDataClass dataClass,
-) {
-  for (final candidate in dataClass.hierarchy) {
-    if (rules.deny.contains(candidate)) return ObservabilityPrivacyAction.deny;
-    if (rules.mask.contains(candidate)) return ObservabilityPrivacyAction.mask;
-    if (rules.allow.contains(candidate))
-      return ObservabilityPrivacyAction.allow;
-  }
-  return null;
-}
+) => Map<String, ObservabilityPrivacyAction>.unmodifiable(
+  <String, ObservabilityPrivacyAction>{
+    for (final dataClass in rules.allow)
+      dataClass.wireName: ObservabilityPrivacyAction.allow,
+    for (final dataClass in rules.mask)
+      dataClass.wireName: ObservabilityPrivacyAction.mask,
+    for (final dataClass in rules.deny)
+      dataClass.wireName: ObservabilityPrivacyAction.deny,
+  },
+);
 
-ObservabilityPrivacyAction? _lookupProfile(
+ObservabilityPrivacyAction? _lookupCompiled(
   Map<String, ObservabilityPrivacyAction> rules,
   ObservabilityDataClass dataClass,
 ) {
