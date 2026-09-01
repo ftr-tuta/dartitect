@@ -10,6 +10,7 @@
       }
     },
     "packages/dartitect/lib/dartitect_credentials.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect/lib/dartitect_incremental.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_cli/lib/dartitect_cli.dart": {"defaultAudience": "tooling-test"},
     "packages/dartitect_cli/lib/dartitect_contracts.dart": {"defaultAudience": "tooling-test"},
     "packages/dartitect_devtools/lib/dartitect_devtools.dart": {"defaultAudience": "tooling-test"},

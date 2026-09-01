@@ -11,9 +11,10 @@
       "runtimeDependencies": [],
       "entrypoints": [
         "dartitect.dart",
-        "dartitect_credentials.dart"
+        "dartitect_credentials.dart",
+        "dartitect_incremental.dart"
       ],
-      "publicSymbolCount": 120
+      "publicSymbolCount": 148
     },
     {
       "name": "dartitect_cli",
@@ -248,7 +249,7 @@
         "dartitect_observability.dart",
         "dartitect_observability_sync.dart"
       ],
-      "publicSymbolCount": 90
+      "publicSymbolCount": 92
     },
     {
       "name": "dartitect_privacy",
