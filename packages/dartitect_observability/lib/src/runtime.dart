@@ -6,8 +6,11 @@ import 'package:dartitect/dartitect.dart';
 import 'context.dart';
 import 'errors.dart';
 import 'logging.dart';
+import 'privacy.dart';
+import 'privacy_runtime.dart';
 import 'redactor.dart';
 import 'sampling.dart';
+import 'sanitizer.dart';
 import 'tracing.dart';
 
 /// Ownership declaration for one log destination.
@@ -98,6 +101,26 @@ final class ObservabilityRuntime implements AsyncDisposable {
     tracing = _RuntimeTracer(this);
   }
 
+  /// Creates the additive destination-aware privacy runtime.
+  static DestinationAwareObservabilityRuntime withPrivacy({
+    required ObservabilityPrivacyPolicy privacyPolicy,
+    required Iterable<ObservabilityDestinationRegistration> destinations,
+    Iterable<ObservabilityDataClassifier> classifiers =
+        const <ObservabilityDataClassifier>[],
+    Iterable<ObservabilityValueProjector> projectors =
+        const <ObservabilityValueProjector>[],
+    ObservabilitySanitizationLimits limits =
+        const ObservabilitySanitizationLimits(),
+    DateTime Function()? clock,
+  }) => DestinationAwareObservabilityRuntime(
+    privacyPolicy: privacyPolicy,
+    destinations: destinations,
+    classifiers: classifiers,
+    projectors: projectors,
+    limits: limits,
+    clock: clock,
+  );
+
   final List<LogSinkRegistration> _sinks;
   final ErrorReporter? _destinationReporter;
   final bool _ownsErrorReporter;
@@ -133,6 +156,31 @@ final class ObservabilityRuntime implements AsyncDisposable {
 
   /// Whether disposal has completed.
   bool get isDisposed => _disposed;
+
+  /// Returns the legacy counters through the immutable snapshot contract.
+  ObservabilityRuntimeDiagnosticsSnapshot get diagnosticsSnapshot =>
+      ObservabilityRuntimeDiagnosticsSnapshot(
+        messageBuilderFailures: diagnostics.messageBuilderFailures,
+        destinations: <String, ObservabilityDestinationDiagnosticsSnapshot>{
+          'legacy': ObservabilityDestinationDiagnosticsSnapshot(
+            name: 'legacy',
+            kind: ObservabilityDestinationKind.local,
+            queueDepth: _queue.length,
+            maxQueueDepth: queueCapacity,
+            enqueuedEvents: 0,
+            dispatchedEvents: 0,
+            droppedEvents: diagnostics.droppedEvents,
+            sampledOutEvents: diagnostics.sampledOutEvents,
+            filterFailures: 0,
+            samplingFailures: 0,
+            sinkFailures: diagnostics.sinkFailures,
+            reporterFailures: diagnostics.reporterFailures,
+            tracerFailures: diagnostics.tracerFailures,
+            flushTimeouts: diagnostics.flushTimeouts,
+            sanitization: const ObservabilitySanitizationDiagnostics.empty(),
+          ),
+        },
+      );
 
   void _log(
     LogLevel level,
@@ -318,6 +366,26 @@ final class ObservabilityRuntime implements AsyncDisposable {
       diagnostics.flushTimeouts += 1;
       return false;
     }
+  }
+
+  /// Returns the legacy runtime as one detailed local destination result.
+  Future<ObservabilityFlushResult> flushDetailed([
+    Duration timeout = const Duration(seconds: 5),
+  ]) async {
+    final completed = await flush(timeout);
+    return ObservabilityFlushResult(
+      <String, ObservabilityDestinationFlushResult>{
+        'legacy': ObservabilityDestinationFlushResult(
+          name: 'legacy',
+          completed: completed,
+          timedOut: !completed,
+          failureCount:
+              diagnostics.sinkFailures +
+              diagnostics.reporterFailures +
+              diagnostics.tracerFailures,
+        ),
+      },
+    );
   }
 
   /// Idempotently stops intake, flushes, and disposes owned destinations.

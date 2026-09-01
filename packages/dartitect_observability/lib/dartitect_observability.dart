@@ -6,6 +6,7 @@ export 'src/context.dart';
 export 'src/errors.dart';
 export 'src/logging.dart';
 export 'src/privacy.dart';
+export 'src/privacy_runtime.dart';
 export 'src/reactive_observer_adapter.dart';
 export 'src/redactor.dart';
 export 'src/runtime.dart';

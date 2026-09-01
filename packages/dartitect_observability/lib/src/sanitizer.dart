@@ -59,6 +59,24 @@ final class ObservabilitySanitizationDiagnostics {
     required this.projectorFailures,
   });
 
+  /// Creates a zeroed diagnostics snapshot.
+  const ObservabilitySanitizationDiagnostics.empty()
+    : visitedNodes = 0,
+      textCodePoints = 0,
+      stackFrames = 0,
+      classificationWork = 0,
+      deniedValues = 0,
+      maskedValues = 0,
+      unknownObjects = 0,
+      cycles = 0,
+      truncatedNodes = 0,
+      truncatedText = 0,
+      truncatedCollections = 0,
+      truncatedFrames = 0,
+      truncatedClassification = 0,
+      classifierFailures = 0,
+      projectorFailures = 0;
+
   /// Nodes and keys visited.
   final int visitedNodes;
 
