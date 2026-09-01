@@ -7,8 +7,16 @@ environment:
 dependencies:
   dartitect:
     path: dependencies/dartitect
+  dartitect_dio:
+    path: dependencies/dartitect_dio
   dartitect_flutter:
     path: dependencies/dartitect_flutter
+  dartitect_observability:
+    path: dependencies/dartitect_observability
+  dartitect_sentry:
+    path: dependencies/dartitect_sentry
+  dio:
+    path: dependencies/dio
   flutter:
     path: dependencies/flutter
   sentry: ^9.27.0

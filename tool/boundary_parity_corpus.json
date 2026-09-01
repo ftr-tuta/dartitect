@@ -16,6 +16,11 @@
     "DARTITECT_SERVICE_LOCATOR": "DT1013",
     "DARTITECT_SCOPE_BOUNDARY": "DT1016",
     "DARTITECT_TEMPORARY_DISPOSABLE_HOST_VALUE": "DT1045",
+    "DARTITECT_SENSITIVE_LOG_INTERPOLATION": "DT1050",
+    "DARTITECT_DIO_LOG_INTERCEPTOR_CONFLICT": "DT1051",
+    "DARTITECT_PRODUCTION_RISK_ACCEPTANCE": "DT1052",
+    "DARTITECT_UNCLASSIFIED_CUSTOM_CAPTURE": "DT1053",
+    "DARTITECT_LEGACY_SENTRY_PREPARED_REGISTRATION": "DT1054",
     "DARTITECT_DT3001": "DT3001",
     "DARTITECT_DT3002": "DT3002",
     "DARTITECT_DT3101": "DT3101",
@@ -60,6 +65,22 @@
     },
     {
       "path": "lib/features/orders/presentation/app_theme.dart",
+      "expected": []
+    },
+    {
+      "path": "lib/composition/observability_privacy_violations.dart",
+      "expected": ["DT1050", "DT1051", "DT1052", "DT1053", "DT1054"]
+    },
+    {
+      "path": "lib/composition/observability_privacy_safe.dart",
+      "expected": []
+    },
+    {
+      "path": "lib/qa/observability_risk_acceptance_qa.dart",
+      "expected": []
+    },
+    {
+      "path": "lib/observability_risk_acceptance_declaration.dart",
       "expected": []
     },
     {

@@ -5,6 +5,25 @@ import 'package:test/test.dart';
 import 'check_boundary_parity.dart';
 
 void main() {
+  test('isolated analyzer fixture does not depend on the Dio host cache', () {
+    final pubspec = File('tool/analyzer_plugin_fixture/pubspec.yaml')
+        .readAsStringSync();
+    final lock = File('tool/analyzer_plugin_fixture/pubspec.lock')
+        .readAsStringSync();
+
+    expect(pubspec, contains('dio:\n    path: dependencies/dio'));
+    expect(
+      lock,
+      contains(
+        'path: "dependencies/dio"\n'
+        '      relative: true\n'
+        '    source: path\n'
+        '    version: "5.11.0"',
+      ),
+    );
+    expect(lock, isNot(contains('\n  mime:')));
+  });
+
   test('normalizes native paths and analyzer file URIs identically', () async {
     final root = await Directory.systemTemp.createTemp('boundary-parity-');
     addTearDown(() => root.delete(recursive: true));

@@ -17303,6 +17303,19 @@
               "type": "String"
             },
             {
+              "name": "dioLogInterceptorConflict",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String dioLogInterceptorConflict",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
               "name": "domainFlutter",
               "kind": "field",
               "audience": "tooling-test",
@@ -17368,6 +17381,19 @@
               "type": "String"
             },
             {
+              "name": "legacySentryPreparedRegistration",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String legacySentryPreparedRegistration",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
               "name": "packageDependencyCycle",
               "kind": "field",
               "audience": "tooling-test",
@@ -17420,6 +17446,19 @@
               "type": "String"
             },
             {
+              "name": "productionRiskAcceptance",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String productionRiskAcceptance",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
               "name": "providerCodegenBoundary",
               "kind": "field",
               "audience": "tooling-test",
@@ -17459,6 +17498,19 @@
               "type": "String"
             },
             {
+              "name": "sensitiveLogInterpolation",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String sensitiveLogInterpolation",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
               "name": "serviceLocator",
               "kind": "field",
               "audience": "tooling-test",
@@ -17476,6 +17528,19 @@
               "kind": "field",
               "audience": "tooling-test",
               "declaration": "String temporaryDisposableHostValue",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "unclassifiedCustomCapture",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String unclassifiedCustomCapture",
               "deprecated": false,
               "annotations": [],
               "modifiers": [

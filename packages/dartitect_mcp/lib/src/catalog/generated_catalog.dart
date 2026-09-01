@@ -453,6 +453,26 @@ abstract final class DartitectGeneratedCatalog {
       "summary": "A disposable temporary is passed directly to a borrowing host .value constructor.",
       "remediation": "Retain and dispose the value at an explicit owner boundary, or use the host's owning constructor."
     },
+    "DT1050": {
+      "summary": "A sensitive field is interpolated into a log message.",
+      "remediation": "Pass classified structured context through the privacy-aware observability runtime instead of interpolating the value."
+    },
+    "DT1051": {
+      "summary": "Dio LogInterceptor is enabled beside Dartitect's safe observability interceptor.",
+      "remediation": "Remove LogInterceptor so request and response payloads are not captured outside the classified transport path."
+    },
+    "DT1052": {
+      "summary": "Observability risk acceptance appears in production source.",
+      "remediation": "Keep risk acceptance in test or QA-only source and use a non-releasing production privacy profile."
+    },
+    "DT1053": {
+      "summary": "A custom value is captured without an explicit observability classification.",
+      "remediation": "Wrap the value in ObservabilityClassifiedValue with the narrowest applicable privacy classes."
+    },
+    "DT1054": {
+      "summary": "A legacy Sentry adapter is registered inside a privacy-prepared runtime.",
+      "remediation": "Use the sanitized-input Sentry adapter so prepared telemetry is neither re-redacted nor handled by a raw-input path."
+    },
     "DT2000": {
       "summary": "dartitect.json is missing.",
       "remediation": "Preview and review `dartitect init`."
@@ -635,6 +655,6 @@ abstract final class DartitectGeneratedCatalog {
     },
     "extensionSources": []
   },
-  "apiSnapshotHash": "857e28fd"
+  "apiSnapshotHash": "e5f51324"
 }''';
 }

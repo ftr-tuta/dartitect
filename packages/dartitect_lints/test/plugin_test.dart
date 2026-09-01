@@ -67,6 +67,11 @@ void main() {
         'dartitect_ecosystem_exception',
         'dartitect_invalid_configuration',
         'dartitect_temporary_disposable_host_value',
+        'dartitect_sensitive_log_interpolation',
+        'dartitect_dio_log_interceptor_conflict',
+        'dartitect_production_risk_acceptance',
+        'dartitect_unclassified_custom_capture',
+        'dartitect_legacy_sentry_prepared_registration',
       ],
     );
     expect(
