@@ -1,0 +1,57 @@
+= ADR 0046: Destination-aware observability privacy
+:status: accepted
+:date: 2026-09-01
+
+== Context
+
+The `1.0.0` observability runtime provides provider-neutral logging, error
+reporting, tracing, redaction, sampling, and bounded dispatch. A single
+redaction boundary is insufficient when the same fact may be acceptable for a
+local developer destination but prohibited for a remote provider. Raw events,
+arbitrary object conversion, shared queues, and implicit provider capture also
+make it difficult to prove that sensitive values never cross a destination
+boundary.
+
+== Decision
+
+The existing runtime remains source compatible. New compositions may opt into
+`ObservabilityRuntime.withPrivacy` and a destination-aware policy with
+`strict`, `balanced`, or `diagnostic` profiles. Values carry explicit privacy
+classifications. Rules are found through each leaf classification's ancestry;
+decisions for multiple classifications combine as `deny > mask > allow`.
+Overrides may apply globally, to local or remote destination classes, or to a
+validated named destination. Releasing a high-risk classification remotely
+requires an explicit `ObservabilityRiskAcceptance`.
+
+The new sanitizer uses only explicit safe projections. It never calls
+`toString()` on unknown values or arbitrary keys. It detects identity cycles,
+handles masked-key collisions, truncates by Unicode code point, validates URI,
+HTTP, error, stack, and W3C trace fields, and enforces deterministic budgets for
+depth, collection size, total nodes, text, frames, and classification work.
+`tracestate` retains its own validation and policy and is never converted into
+an attribute, tag, or baggage item.
+
+Only immutable prepared logs, errors, and spans can enter destination queues.
+Prepared constructors are not public, so a caller cannot merely assert that
+raw input is sanitized. Each validated destination has independent sampling,
+queueing, failure isolation, diagnostics, and detailed flush results. A queue
+stores prepared events, not closures retaining raw events. Diagnostics and the
+separate DevTools privacy extension contain counters and effective actions,
+never payload samples.
+
+Dio keeps metadata-only capture as its default. Diagnostic request or response
+capture accepts explicitly classified JSON-safe structures and never consumes
+streams, multipart bodies, bytes, or files. Sentry's prepared adapters consume
+runtime-prepared values without a second redaction pass; the legacy adapters
+remain defensive. The sync adapter lives in the separate
+`dartitect_observability_sync.dart` entrypoint, preserving the rule that
+`dartitect_sync` does not depend on observability.
+
+== Consequences
+
+Raw values cannot reach a destination queue, Sentry, or DevTools through the
+new path. A slow or failing remote destination cannot block or fail a local
+destination. Policy decisions are explainable without exposing classified
+values. Structural limits are mandatory correctness gates; time benchmarks are
+calibrated evidence rather than unstable CI thresholds. Existing `1.0.0` APIs
+remain available without deprecation.

@@ -73,6 +73,9 @@ Future<void> main() async {
 - `IsolateWorkerContractHarness` exercises a real isolate protocol.
 - `RecordingLogSink`, `RecordingErrorReporter`, `RecordingTracer`, and
   `RecordingSpan` expose observability assertions.
+- Privacy policy harnesses and prepared recording destinations exercise the
+  local/remote/named profile matrix, destination ownership, isolated queue
+  failures, and raw-secret absence. Sentinel helpers reject retained raw values.
 - `DiagnosticsTopologyHarness` reconstructs protocol-v2 lifecycle using only
   opaque payload-free events.
 - `collectStreamEvents`, `waitForStreamEvent`, `TestingMatrix`, and
@@ -110,7 +113,8 @@ resource cleanup.
 
 Run `dart test` for this package. Its own suite covers deterministic time/IDs,
 harness expected/unexpected paths, cancellation, disposal order, overflow,
-isolation, topology, and zero residual resources. Consumers should add real
+isolation, privacy precedence and structural budgets, topology, and zero
+residual resources. Consumers should add real
 generated Drift/ObjectBox fixtures, a deterministic Dio adapter, and a fake
 Sentry Hub as appropriate.
 

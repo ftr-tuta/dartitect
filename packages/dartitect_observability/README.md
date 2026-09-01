@@ -28,9 +28,11 @@ narrower platform set.
 ## Mental model and data flow
 
 Producers emit provider-neutral logs, unexpected-error events, and spans into an
-`ObservabilityRuntime` created at a visible composition root. The runtime applies
-allowlisting, redaction, sampling, bounded dispatch, and destination isolation.
-Each provider adapter is registered as owned or borrowed explicitly.
+`ObservabilityRuntime` created at a visible composition root. Existing `1.0.0`
+graphs keep their compatible redaction path. New graphs use
+`ObservabilityRuntime.withPrivacy` to classify, sanitize, and prepare immutable
+events independently for each named local or remote destination. Each provider
+adapter is registered as owned or borrowed explicitly.
 
 Expected application failures stay in `Result`/command/resource state. Only
 unexpected crashes cross the error-reporting boundary. Trace context uses
@@ -51,13 +53,24 @@ Future<void> main() async {
 }
 ```
 
-The default destination is local developer logging. Register remote sinks,
-reporters, or tracers only at composition after policy review.
+The compatible runtime keeps local developer logging as its default. New
+scaffolds use a `balanced` policy and an explicitly registered local
+`PreparedDeveloperLogSink`. Register remote sinks, reporters, or tracers only
+at composition after policy review.
 
 ## Public API tour
 
 - `ObservabilityRuntime` owns registrations and coordinates bounded dispatch,
   flush, and disposal.
+- `ObservabilityPrivacyPolicy`, its `strict`, `balanced`, and `diagnostic`
+  profiles, hierarchical `ObservabilityDataClass` values, masking, overrides,
+  explanations, and explicit remote risk acceptance define destination policy.
+- `ObservabilitySanitizer` enforces cycle-safe, Unicode-safe, deterministic
+  node/text/frame/classification budgets without calling `toString()` on
+  unknown values or keys.
+- `DestinationAwareObservabilityRuntime`, prepared-only registrations,
+  independent destination queues, immutable diagnostic snapshots, and
+  `flushDetailed` keep raw input out of retained or provider-facing state.
 - `DartitectLogger`, `LogEvent`, `LogSink`, `DeveloperLogSink`,
   `CallbackLogSink`, filters, lazy messages, and registration types define logs.
 - `ErrorReporter`, `ErrorEvent`, severities/mechanisms, callback/no-op reporters,
@@ -118,6 +131,10 @@ borrowed Sentry Hub, and `dartitect_testing` for recording destinations. Read
 [observability](../../docs/guides/observability.md),
 [adapters](../../docs/guides/adapters.md), and
 [custom integrations](../../docs/guides/custom-integrations.md).
+
+Import `package:dartitect_observability/dartitect_observability_sync.dart` only
+for the optional payload-free sync adapter. This package depends on sync for
+that entrypoint; `dartitect_sync` never depends on observability.
 
 ## Availability
 

@@ -23,7 +23,7 @@ void main() {
     ) as Map<String, Object?>;
     contract['topology'] = <String, Object?>{
       'packages': 24,
-      'publicEntrypoints': 32,
+      'publicEntrypoints': 33,
     };
     final file = File('${root.path}/tool/ui_quality_contract.json');
     await file.parent.create(recursive: true);

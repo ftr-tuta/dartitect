@@ -31,11 +31,20 @@ Before committing, review the complete diff, authorship, generated artifacts,
 and working tree. Do not publish packages or create tags unless separately
 authorized.
 
+Treat the lockstep workspace cohort, release channel, latest distributed stable
+cohort, derivable candidate tag, and materialized-tag state as distinct facts.
+An untagged prerelease workspace does not authorize a remote tag, `Release`
+workflow run, GitHub Release, publication, or stable promotion. Candidate
+canaries may use only a local disposable tag, and release workflows must reject
+prerelease cohorts before external writes.
+
 For documentation and skill work, update
 `packages/dartitect_cli/lib/src/codex/skill_catalog.dart`, regenerate rather than
 hand-edit the twelve managed skills, and update the local skill directly. Keep
 all 25 changelogs on the same non-empty `Unreleased` entry and keep `1.0.0` as
-the first numbered version. Run documentation classification/link checks,
+the first numbered version. The current source cohort may be newer than the
+public version; consumption guidance stays on the latest materialized stable
+tag. Run documentation classification/link checks,
 skill coverage/reference/snapshot checks, the package release contract, managed
 skill validation, and generated-catalog freshness before committing.
 

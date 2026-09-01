@@ -98,6 +98,7 @@ void main() {
         ObservabilityLogEvent(
           name: ObservabilityEventName('privacy.probe'),
           level: LogLevel.info,
+          // dartitect-ignore: DT1050 -- verifies sanitizer payload exclusion
           message: () => 'authorization=$secret',
           context: ObservabilityContext(
             attributes: <String, Object?>{

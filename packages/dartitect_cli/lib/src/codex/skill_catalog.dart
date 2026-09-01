@@ -40,7 +40,8 @@ const String dartitectSkillInclusionGate = '''## Dartitect inclusion gate
 
 Before adding a capability, answer:
 
-> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+> Is it business-neutral, difficult to implement correctly, and a source of
+> repetitive infrastructure in consumer applications?
 
 All three answers must be “yes”. Otherwise reusable infrastructure belongs in
 a typed project-local extension and business behavior stays in the application.
@@ -138,13 +139,13 @@ stable packages so an omitted package is an explicit decision.
 | `dartitect_resilience` | Bounded retry, single-flight, breaker, bulkhead, or rate limiting | `$dartitect-runtime`, `$dartitect-testing` |
 | `dartitect_jobs` | Versioned job envelopes, bounded dispatch, deadlines, receipts, and fencing ports | `$dartitect-offline-first`, `$dartitect-testing` |
 | `dartitect_transfer` | Resumable chunks or attachment staging with durable checkpoints | `$dartitect-adapters`, `$dartitect-testing` |
-| `dartitect_devtools` | Development-only, read-only, payload-free service extensions | `$dartitect-observability`, `$dartitect-testing` |
+| `dartitect_devtools` | Diagnostics v2 plus a separate development-only, read-only, payload-free privacy extension | `$dartitect-observability`, `$dartitect-testing` |
 | `dartitect_isolates` | Versioned worker ACK/readiness/heartbeat/deadline lifecycle | `$dartitect-runtime`, `$dartitect-testing` |
-| `dartitect_observability` | Provider-neutral logs, errors, tracing, and diagnostics | `$dartitect-observability` |
-| `dartitect_dio` | Explicit Dio ownership, typed transport failures, and safe instrumentation | `$dartitect-adapters` |
+| `dartitect_observability` | Destination-aware privacy, prepared logs/errors/tracing, and payload-free diagnostics | `$dartitect-observability` |
+| `dartitect_dio` | Explicit Dio ownership, typed transport failures, and metadata-only or classified capture | `$dartitect-adapters` |
 | `dartitect_drift` | Lifecycle and operational adapters around a consumer-generated Drift database | `$dartitect-adapters`, `$dartitect-offline-first` |
 | `dartitect_objectbox` | Native Store/query/watch/projection lifecycle around a consumer-generated model | `$dartitect-adapters`, `$dartitect-offline-first` |
-| `dartitect_sentry` | Borrowed-Hub telemetry after the consumer selects and initializes Sentry | `$dartitect-adapters`, `$dartitect-observability` |
+| `dartitect_sentry` | Borrowed-Hub legacy or prepared telemetry after the consumer selects and initializes Sentry | `$dartitect-adapters`, `$dartitect-observability` |
 | `dartitect_testing` | Deterministic failure, lifecycle, provider, and residual-resource harnesses | `$dartitect-testing` |
 | `dartitect_cli` | Config v3, inspect/scan/doctor, generators, fleet, contracts, and Codex sync | `$dartitect-tooling` |
 | `dartitect_lints` | Analyzer-host Native Strict and modeling diagnostics | `$dartitect-tooling` |
@@ -653,16 +654,18 @@ ETag, Range, auth, and idempotency remain consumer policy.
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-observability
-description: Configure Dartitect provider-neutral logging, reporting, W3C tracing, redaction, Flutter bindings, and payload-free reactive events. Use for telemetry contracts and policy; use the adapters skill for provider-specific wiring.
+description: Configure Dartitect destination-aware privacy, provider-neutral logging/reporting/tracing, bounded sanitization, prepared destinations, and payload-free diagnostics. Use for telemetry contracts and policy; use the adapters skill for provider-specific wiring.
 ---
 
 # Configure Dartitect observability
 
 ## When to use
 
-Use this skill for `ObservabilityRuntime`, redaction/sampling/dispatch policy,
-error reporting, W3C propagation, Flutter error capture, or reactive diagnostic
-events and the versioned payload-free topology/lifecycle protocol.
+Use this skill for `ObservabilityRuntime.withPrivacy`, profiles,
+classifications, masking, bounded sanitization, prepared destination queues,
+error reporting, W3C propagation, Flutter error capture, or payload-free
+runtime diagnostics. Use the compatible runtime only when preserving a 1.0
+composition.
 
 ## When not to use
 
@@ -671,18 +674,23 @@ Do not add remote telemetry merely because observability contracts exist.
 
 ## Invariants
 
-Create the runtime explicitly; local developer logging is the safe default and
-remote destinations are opt-in. Sanitize before every destination. Never record
-credentials, authorization, cookies, bodies, headers, query strings, DSNs,
-identity, identifying paths, domain payloads, or dynamic error text in reactive
-events. Errors/fatal are never sampled away. Destination failure stays isolated.
+Create the runtime explicitly; generated graphs start with the `balanced`
+profile and a prepared local developer destination. Remote destinations are
+opt-in. Resolve each leaf classification through its hierarchy, then combine
+multiple decisions as `deny > mask > allow`. High-risk remote allows require
+explicit risk acceptance. Only immutable prepared events enter independent
+destination queues; never retain raw input or call `toString()` on unknown
+objects/keys. Errors/fatal are never sampled away. Destination failure stays
+isolated.
 
 ## Workflow
 
-Define the data policy first, then choose owned/borrowed sinks, reporter, tracer,
-propagator, Flutter binding, reactive observers, and diagnostic detail. End every
-span exactly once and define reverse flush/disposal. Use only emitter-owned
-opaque IDs; keep buffers bounded and clear them on dispose.
+Define the data classes and local/remote/named policy first, then choose
+owned/borrowed prepared sinks, reporter, tracer, propagator, Flutter binding,
+reactive observers, and diagnostic detail. Bound depth, collections, total
+nodes, text, frames, and classification work. End every span exactly once and
+define reverse flush/disposal. Use only emitter-owned opaque IDs; keep buffers
+bounded and clear them on dispose.
 
 Read [references/telemetry-contract.md](references/telemetry-contract.md),
 [references/flutter-and-providers.md](references/flutter-and-providers.md), or
@@ -691,29 +699,37 @@ being configured.
 
 ## Validate
 
-Test redaction at every destination, unsampled error/fatal delivery, sink
-isolation, queue bounds, exact-once span end, trace-context validation,
-handler chaining/restoration/recursion, borrowed provider lifetime, and absence
-of payload or identity in reactive events.
+Test the profile/local/remote/named matrix, precedence, raw-secret sentinels,
+cycles, key collisions, Unicode masking, structural budgets, unsampled
+error/fatal delivery, destination isolation, detailed flush, exact-once span
+end, `traceparent`/`tracestate` validation, borrowed provider lifetime, and
+payload-free diagnostics.
 ''',
       'references/telemetry-contract.md': r'''# Telemetry contract
 
-Accept only valid W3C `traceparent`, forward optional `tracestate`, and keep
-baggage off by default. Transfer only validated context between isolates. End
-operation spans exactly once in `finally`.
+Accept only valid W3C `traceparent`. Validate `tracestate` under its own policy;
+never convert it into an attribute, tag, or baggage item. Keep baggage off by
+default. Transfer only validated context between isolates. End operation spans
+exactly once in `finally`.
 
 Expected `Err<F>` remains command state and is not automatically reported.
 Unexpected crashes may be reported once with sanitized mechanism, handled state,
 fingerprint, and allowlisted attributes, then are rethrown with the original
-stack. Errors and fatal events bypass sampling. Bounded destination queues must
-have explicit overflow behavior, and one destination failure cannot affect the
-application or another destination.
+stack. Errors and fatal events bypass sampling. Every destination has
+independent sampling and a bounded queue containing only private-constructor
+prepared events, with explicit overflow behavior. It never stores a closure
+retaining raw input. One destination failure cannot affect the application or
+another destination. `flushDetailed` reports outcomes by destination while
+compatible `flush(Duration)` remains available.
 
 Diagnostics protocol v2 permits only fixed enums, opaque process-local IDs,
 counters, generations, revisions, and monotonic time. It rejects metadata,
 URLs, domain keys, dynamic errors, stacks, and user identifiers. Optional
-DevTools registration is explicit, isolate-local, development-only, and exposes
-capabilities, snapshot, and event-delta reads only; disposal clears the ring.
+Diagnostics-v2 DevTools registration is explicit, isolate-local,
+development-only, and exposes exactly capabilities, snapshot, and event-delta
+reads; disposal clears the ring. The separate
+`ext.dartitect.observabilityPrivacy` RPC exposes only profile, effective actions,
+queue/failure counts, and sanitizer counts—never values, samples, or reasons.
 ''',
       'references/flutter-and-providers.md': r'''# Flutter and providers
 
@@ -755,9 +771,10 @@ failure. Off detail allocates no subject ID; lifecycle detail retains every
 failure/crash terminal; topology detail supports
 `DiagnosticsTopologyHarness`. Construction/reporting APIs are stable under ADR
 0044 and install no remote destination or global Flutter hook.
-The optional DevTools bridge registers exactly `capabilities`, `snapshot`, and
-`events` RPCs per isolate; it has no mutation surface and is absent from product
-builds.
+The diagnostics-v2 bridge registers exactly `capabilities`, `snapshot`, and
+`events` RPCs per isolate. The observability privacy RPC is a separate
+registration and does not alter v2. Both have no mutation surface and are
+absent from product builds.
 ''',
     },
   ),
@@ -835,11 +852,14 @@ concurrent 401 logout. Authenticated replay stays disabled unless the consumer
 supplies both a retry client and an explicit semantic idempotency policy. Permit
 at most one replay and never repeat streams or multipart/upload bodies.
 
-Record only allowlisted method/protocol/status facts—never body, headers, query,
-credentials, or identifying path. Propagate only through the configured W3C
-propagator. Reject duplicate tracing/capture between Dartitect and `sentry_dio`.
-Test with Dio's real interceptor/adapter boundary and deterministic no-network
-responses. Dispose an owned Dio only after requests and instrumentation drain.
+Use `DioObservabilityCapturePolicy.metadataOnly()` by default for fixed
+method/protocol/status/error-type facts and zero payload. Diagnostic capture is
+explicit, requires classifications, and accepts only already-materialized
+JSON-safe structures; never consume streams, multipart values, bytes, or files.
+Remove `LogInterceptor`, propagate only through the configured W3C propagator,
+and reject duplicate Dartitect/`sentry_dio` capture. Test with Dio's real
+interceptor/adapter boundary and deterministic no-network responses. Dispose an
+owned Dio only after requests and instrumentation drain.
 ''',
       'references/objectbox.md': r'''# ObjectBox adapter
 
@@ -904,15 +924,19 @@ The consumer initializes and configures Sentry, supplies the DSN through its own
 secure configuration, and closes the SDK. Dartitect adapters borrow an injected
 Hub and never initialize, reconfigure, or close it.
 
-Map only sanitized logs, errors, spans, mechanisms, fingerprints, and allowlisted
-attributes. Avoid duplicate Flutter error, Dio, or tracing capture. Test through
-a fake Hub with zero network, including destination failure and borrowed
-lifetime. Dispose Dartitect sinks/reporters/tracers before the consumer closes
-the Hub.
+Legacy adapters remain defensive and redact direct compatible-runtime input.
+For `ObservabilityRuntime.withPrivacy`, use only
+`SentryLogSink.sanitizedInput`, `SentryErrorReporter.sanitizedInput`, and
+`SentryTracer.sanitizedInput`; prepared input is not redacted twice. Map only
+approved bounded context/extra data, limit tags, and never create a `SentryUser`.
+Avoid duplicate Flutter error, Dio, or tracing capture. Test through a fake Hub
+with zero network, including destination failure and borrowed lifetime. Dispose
+Dartitect adapters before the consumer closes the Hub.
 ''',
       'references/privacy-and-media.md': r'''# Privacy and media adapters
 
-`dartitect_privacy` is an iOS ATT status/request boundary. Construction and
+`dartitect_privacy` is only an iOS ATT status/request boundary, not an
+observability classification or destination-sanitization contract. Construction and
 status reads are prompt-free; only a consumer-owned interaction calls
 `request()`. Preserve every native state, return typed not-supported outcomes
 without channel calls elsewhere, emit no telemetry, and keep disclosure text,
@@ -1229,7 +1253,13 @@ session recovery that does not auto-deliver uncertain records.
   transactions, same-path locking, cleanup, and isolate attachment on supported
   native hosts.
 - Sentry: use a fake Hub, no DSN and zero network; test sanitized mapping,
-  destination failure, duplicate capture prevention, and borrowed lifetime.
+  prepared-input no-double-redaction, defensive legacy mapping, no automatic
+  `SentryUser`, destination failure, duplicate capture prevention, and borrowed
+  lifetime.
+- Observability privacy: run strict/balanced/diagnostic matrices across local,
+  remote, and named destinations; assert `deny > mask > allow`, raw-secret
+  absence, cycles, key collisions, Unicode bounds, structural budgets,
+  independent slow/failing queues, ownership, snapshots, and detailed flush.
 - Custom providers: pair deterministic contract tests with at least one real SDK
 boundary fixture that proves version and lifecycle compatibility.
 ''',
@@ -1256,9 +1286,10 @@ boundary fixture that proves version and lifecycle compatibility.
   timers, or requests after supervisor disposal.
 - Resilience: inject clock, scheduler, randomness, and failure classification;
   cover bounds and never retry an uncertain mutation or an unexpected crash.
-- DevTools: register exactly the three read-only service extensions in
-  development mode, reject mutation methods and payload-bearing facts, isolate
-  registrations by runtime isolate, and prove product builds register nothing.
+- DevTools: keep diagnostics v2 at exactly three read-only service extensions;
+  test `ext.dartitect.observabilityPrivacy` as a separate registration. Reject
+  mutation methods and payload-bearing facts, isolate registrations by runtime
+  isolate, and prove product builds register nothing.
 ''',
       'references/tooling.md': r'''# Tooling tests
 
@@ -1423,6 +1454,7 @@ Keep `inspect`, `scan`, and ordinary `doctor` read-only. Deep doctor is explicit
 and bounded. Accept exactly config v3 with `native_strict`; migrate v2 through
 the versioned transactional migration chain and reject
 experimental versions, unknown keys, credentials, and opaque plugin data.
+Destination-aware observability is additive and introduces no config v4.
 The target-aware `features` section declares `local`, `online`, `cache`,
 `replica`, or `offline-full`, typed factory sources, ownership scopes, and exact
 contract operations. Semantic compilation resolves annotations and concrete
@@ -1440,10 +1472,15 @@ owner, reason, and expiry, and release doctor rejects all suppressions. Keep CLI
 and official analyzer-plugin diagnostics semantically aligned
 through the versioned true/false-positive corpus while respecting their
 different hosts and entrypoints. Prefer element/library identity when resolved.
-Sensitive metadata needs a recognized telemetry sink. Generated fallback needs
-both a reviewed header and configured suffix. Invalid analyzer config is an
-explicit diagnostic, never a silent strict-default outcome. Enforce scanner and
-analyzer performance budgets with stable machine-readable schemas.
+Sensitive metadata needs a recognized telemetry sink. Keep analyzer/CLI parity
+for `DT1050` sensitive logger interpolation, `DT1051` Dio `LogInterceptor`,
+`DT1052` production risk acceptance, `DT1053` unclassified custom capture, and
+`DT1054` legacy Sentry registration in a prepared runtime. Generated fallback
+needs both a reviewed header and configured suffix. Invalid analyzer config is
+an explicit diagnostic, never a silent strict-default outcome. Generated
+developer observability wiring selects `balanced` and a prepared local sink;
+Sentry wiring accepts a prepared runtime callback. Enforce scanner and analyzer
+performance budgets with stable machine-readable schemas.
 
 `fleet report`, `fleet inventory`, and `fleet impact` stay read-only. Upgrade
 uses a versioned migration chain whose preview records apply/no-op, recovery,
@@ -1478,16 +1515,19 @@ proportion to the change and as required by the repository workflow.
 
 Pin external Actions by full commit SHA. OSV exceptions are exact advisory IDs
 with justification, analysis link, and short expiry; package-wide ignores and
-PackageOverrides are forbidden. Distribution is GitHub-only; validation uses
-clean archives and exact-tag Git canaries, and no registry workflow exists. A
-source-validation preview never authorizes a tag or GitHub Release. Platform-specific evidence
-must run on its supported host, and builds must leave tracked files unchanged.
+PackageOverrides are forbidden. Distribution is GitHub-only. Distinguish the
+workspace cohort/channel from the latest distributed stable cohort and whether
+a derivable candidate tag is materialized. Candidate validation uses clean
+archives and a local disposable-tag canary; it never authorizes a remote tag,
+workflow run, GitHub Release, publication, or promotion. Release rejects
+prerelease cohorts before external writes. Platform-specific evidence must run
+on its supported host, and builds must leave tracked files unchanged.
 
 For documentation and skill changes, require the documentation classification,
 link/include, changelog-cohort, skill-reference, managed snapshot/hash, and MCP
 catalog gates. Normal config accepts v3 only; v1/v2 are transactional fleet
-migration inputs. Keep `sdkVersion` at the released cohort until a separately
-authorized release changes it.
+migration inputs. `sdkVersion` follows the workspace cohort; public consumption
+continues to use the latest materialized distributed stable cohort.
 ''',
     },
   ),
@@ -1555,6 +1595,9 @@ package metadata, diagnostics, canonical English guides, and credential-free
 config v3. There is no free-form file resource. Results include structured
 content plus compatible JSON text. Read tools/previews are annotated read-only;
 only apply is mutable/destructive.
+Privacy-bypass diagnostics `DT1050` through `DT1054` are catalog resources.
+Route destination policy to `$dartitect-observability`; MCP never reads runtime
+telemetry payloads or exposes the DevTools privacy RPC.
 ''',
       'references/reviewed-writes.md': r'''# Reviewed writes
 

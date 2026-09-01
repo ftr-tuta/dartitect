@@ -86,7 +86,7 @@ document their own `--dry-run`/apply form in `example/README.md`.
 - `DartitectFleetCanaryService` is a separate opt-in boundary that archives an
   exact candidate commit, runs a closed command allowlist only in a temporary
   consumer copy, sanitizes receipts, and verifies both originals are unchanged.
-- `CodexSkillSynchronizer` synchronizes eleven canonical managed templates while
+- `CodexSkillSynchronizer` synchronizes twelve canonical managed templates while
   preserving consumer-owned skill directories.
 - `DartitectVerificationService` and `DartitectCliRunner` map services to stable
   JSON and exit codes.
@@ -95,6 +95,8 @@ document their own `--dry-run`/apply form in `example/README.md`.
   session, feature runtime/host, and typed harness outputs. Absent capabilities
   generate no field. Generated graphs own construction, rollback, and reverse
   teardown; consumers do not implement a module-wide disposal callback.
+  Generated observability wiring uses a balanced destination-aware runtime and
+  a prepared local sink; Sentry wiring requires a prepared runtime callback.
 
 ## Ownership and lifecycle
 

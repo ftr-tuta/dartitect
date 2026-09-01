@@ -31,7 +31,8 @@ The host owns stdin/stdout and chooses allowed canonical roots.
 `DartitectMcpPolicy` bounds roots, result size, time, and write permission.
 `DartitectMcpServer` maps MCP tools to the typed `DartitectProjectService`; it
 never shells out or parses CLI text. Resources come from generated package
-metadata, diagnostics, English guides, config v3, and the reviewed API snapshot.
+metadata, diagnostics (including `DT1050` through `DT1054`), English guides,
+config v3, and the reviewed API snapshot.
 
 Writes are off by default. When enabled, a preview produces an opaque,
 short-lived, single-use plan ID. Apply requires explicit confirmation and client
@@ -113,6 +114,10 @@ Use the `dartitect-mcp` managed skill for agent workflows. Read
 [MCP](../../docs/guides/mcp.md),
 [getting started](../../docs/guides/getting-started.md), and
 [model generation](../../docs/guides/model-generation.md).
+
+Destination privacy questions route to the managed observability skill. MCP
+does not read running telemetry payloads or expose the separate DevTools
+privacy RPC.
 
 ## Availability
 

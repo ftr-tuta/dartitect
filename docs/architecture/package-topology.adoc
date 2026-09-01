@@ -1,4 +1,4 @@
-= Stable v1 package topology
+= 1.1 candidate package topology
 
 [source,text]
 ----
@@ -11,13 +11,13 @@ dartitect
 ├── dartitect_sync
 ├── dartitect_isolates
 ├── dartitect_flutter
-├── dartitect_observability
+├── dartitect_observability (+ sync)
 │   ├── dartitect_dio (+ transfer)
-│   └── dartitect_sentry
+│   ├── dartitect_sentry
+│   └── dartitect_devtools
 ├── dartitect_drift (+ observability, sync)
 ├── dartitect_objectbox (+ flutter, observability, sync)
 ├── dartitect_media
-├── dartitect_devtools
 └── dartitect_testing (+ flutter, isolates, jobs, modeling, observability,
     resilience, sync, transfer)
 
@@ -57,6 +57,7 @@ Public entrypoints:
 * +package:dartitect_flutter/dartitect_flutter_queries.dart+
 * +package:dartitect/dartitect_credentials.dart+
 * +package:dartitect_transfer/dartitect_attachments.dart+
+* +package:dartitect_observability/dartitect_observability_sync.dart+
 * +package:dartitect_workmanager/dartitect_workmanager.dart+
 * one same-named entrypoint for observability, Dio, Drift, ObjectBox, Sentry, testing,
   privacy, media, locale BR, geometry, CLI, lints, and MCP.
@@ -100,3 +101,8 @@ dependencies are available. The exact deterministic
 order and lockstep constraint are checked from
 +tool/package_release_contract.json+; directory/alphabetical order is not a
 publication contract.
+
+The source DAG above belongs to the untagged `1.1.0-rc.1` candidate cohort.
+The latest distributed stable DAG remains the immutable `1.0.0` / `v1.0.0`
+release. This topology statement does not materialize a candidate tag or
+authorize publication.

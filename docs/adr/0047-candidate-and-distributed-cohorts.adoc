@@ -1,0 +1,33 @@
+= ADR 0047: Candidate and distributed cohorts
+:status: accepted
+:date: 2026-09-01
+
+== Context
+
+Lockstep source development and public distribution previously shared one
+version concept. That makes an untagged prerelease workspace appear publishable
+and encourages current sources, historical release evidence, and consumer
+installation guidance to disagree.
+
+== Decision
+
+The release contract distinguishes the workspace cohort, channel, latest
+stable distribution, derivable candidate tag, and whether that tag is
+materialized. For this change the workspace cohort is `1.1.0-rc.1`, the channel
+is `candidate`, the latest distributed stable cohort is `1.0.0` / `v1.0.0`,
+the derivable candidate tag is `v1.1.0-rc.1`, and candidate tag materialization
+is false.
+
+Current source manifests and declared derivatives follow the workspace cohort.
+Historical release documents, fixtures, and recorded evidence retain their
+original versions. Consumer guidance continues to recommend the latest
+materialized stable distribution. The `Release` workflow reads the contract
+and rejects prerelease workspace cohorts before any external write.
+
+== Consequences
+
+An RC branch can be verified without implying publication. Creating or moving
+a tag, running `Release`, creating a GitHub Release, promoting to `1.1.0`, or
+changing publication policy requires separate authority. Changelogs keep a
+non-empty `Unreleased` section; the first numbered version remains `1.0.0`
+until a future release is authorized.

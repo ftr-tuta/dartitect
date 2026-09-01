@@ -2,7 +2,9 @@
 
 ## Scope
 
-`dartitect_mcp 1.0.0` is local and STDIO-only. It uses
+The distributed `dartitect_mcp 1.0.0` is local and STDIO-only. The source
+workspace is the untagged `1.1.0-rc.1` candidate and retains the same transport
+boundary. It uses
 `dart_mcp 0.5.2`. Streamable HTTP, OAuth/authorization, remote ChatGPT plugins,
 MCP UI, arbitrary shell/files, scaffolding `create`, and access to running
 applications are out of scope. The bounded `dartitect_preview_create_feature`
@@ -93,6 +95,9 @@ Resources are generated from maintained project sources:
 - `dartitect://config/v3`.
 
 There is no free-form file resource.
+The candidate catalog includes the privacy-bypass diagnostics `DT1050` through
+`DT1054` and routes destination-policy questions to the observability skill.
+MCP still cannot read runtime payloads or invoke the DevTools privacy RPC.
 The guide catalog includes the ecosystem selection matrix and implementation
 recipes. Use the managed `$dartitect-mcp` skill for MCP configuration and
 protocol work; use `$dartitect-tooling` and the CLI directly for scripts or CI.

@@ -1,6 +1,7 @@
 # Privacy and media adapters
 
-`dartitect_privacy` is an iOS ATT status/request boundary. Construction and
+`dartitect_privacy` is only an iOS ATT status/request boundary, not an
+observability classification or destination-sanitization contract. Construction and
 status reads are prompt-free; only a consumer-owned interaction calls
 `request()`. Preserve every native state, return typed not-supported outcomes
 without channel calls elsewhere, emit no telemetry, and keep disclosure text,

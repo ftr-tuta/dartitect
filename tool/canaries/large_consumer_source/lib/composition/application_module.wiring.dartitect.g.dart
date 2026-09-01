@@ -26,7 +26,7 @@ final class ApplicationGraph {
   final SessionRuntimeController<SessionGraph, DartitectSessionDescription>
   sessions;
   final DartitectWorkmanagerScheduler scheduler;
-  final ObservabilityRuntime observability;
+  final DestinationAwareObservabilityRuntime observability;
 }
 
 /// Tooling-materialized application composition module.
@@ -54,7 +54,20 @@ abstract final class ApplicationModule {
       );
       final scheduler = DartitectWorkmanagerScheduler();
       final observability = transaction.own(
-        ObservabilityRuntime(),
+        ObservabilityRuntime.withPrivacy(
+          privacyPolicy: ObservabilityPrivacyPolicy.fromProfile(
+            profile: ObservabilityPrivacyProfile.balanced,
+          ),
+          destinations: <ObservabilityDestinationRegistration>[
+            ObservabilityDestinationRegistration.local(
+              logSinks: <PreparedLogSinkRegistration>[
+                const PreparedLogSinkRegistration.owned(
+                  PreparedDeveloperLogSink(),
+                ),
+              ],
+            ),
+          ],
+        ),
         (runtime) => runtime.disposeAsync(),
         label: 'application.observability',
       );

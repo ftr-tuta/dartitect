@@ -172,6 +172,7 @@ void main() {
 
   test('attach rejects LogInterceptor and duplicate capture', () {
     final logger = _RecordingLogger();
+    // dartitect-ignore: DT1051 -- verifies the unsafe interceptor is rejected
     final unsafe = Dio()..interceptors.add(LogInterceptor());
     expect(
       () => DioObservabilityInterceptor.attach(

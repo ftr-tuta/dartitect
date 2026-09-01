@@ -47,7 +47,7 @@ Future<void> main(List<String> arguments) async {
     require(contract['releaseVersion'] == '1.0.0', 'Wrong cohort version.');
     final topology = _map(contract['topology']);
     require(topology['packages'] == 25, 'Expected 25 packages.');
-    require(topology['publicEntrypoints'] == 32, 'Expected 32 entrypoints.');
+    require(topology['publicEntrypoints'] == 33, 'Expected 33 entrypoints.');
     require(
       _same(_strings(contract['entrypoints']), _entrypoints),
       'UI entrypoint evidence is incomplete.',
@@ -219,7 +219,7 @@ Future<void> main(List<String> arguments) async {
       throw StateError(failures.join('\n'));
     }
     stdout.writeln(
-      'ui-quality-v1 passed: 25 packages, 32 entrypoints, five paired '
+      'ui-quality-v1 passed: 25 packages, 33 entrypoints, five paired '
       'scenarios, CLI/analyzer parity, canary, and six hosted builds.',
     );
   } on Object catch (error) {

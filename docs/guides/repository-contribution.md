@@ -49,6 +49,14 @@ Platform builds must finish with `git diff --exit-code -- .` clean.
 Review the full diff and `git diff --check` before each commit. Do not mix
 unrelated cleanup, generated Dartdoc HTML, publication, or tags into a change.
 
+Release tooling distinguishes the lockstep workspace cohort from the latest
+distributed stable cohort. An untagged candidate version in 25 pubspecs does
+not imply that its derivable tag exists. Verification may use only a local
+disposable tag for a canary; creating or moving a remote tag, running the
+`Release` workflow, creating a GitHub Release, publishing, or promoting a
+candidate requires separate explicit authorization. Release workflows reject
+prerelease workspace cohorts before external writes.
+
 ## Open and complete the pull request
 
 Push only the topic branch. Use a Conventional Commit PR title suitable for the

@@ -81,15 +81,15 @@ void main() {
       expect(entrypoint, contains('\n## Dartitect inclusion gate\n'));
       expect(
         entrypoint,
-        contains(
-          'É business-neutral, difícil de implementar corretamente e gera '
-          'infraestrutura repetitiva no consumidor?',
+        allOf(
+          contains('Is it business-neutral, difficult to implement correctly'),
+          contains('repetitive infrastructure in consumer applications?'),
         ),
       );
       expect(metadata, contains('default_prompt: "Use \$$name '));
       expect(metadata, contains('allow_implicit_invocation: true'));
       expect(manifest['schemaVersion'], 1);
-      expect(manifest['sdkVersion'], '1.0.0');
+      expect(manifest['sdkVersion'], '1.1.0-rc.1');
       expect(manifest['contentHash'], matches(RegExp(r'^[0-9a-f]{8}$')));
     }
   }, timeout: const Timeout(Duration(minutes: 2)));

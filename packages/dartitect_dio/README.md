@@ -70,6 +70,10 @@ client.
 - `DartitectHeadersInterceptor` propagates configured W3C context.
   `DioTelemetryInterceptor`, `DioInstrumentation`, events, and observer types
   emit fixed minimal facts and reject duplicate instrumentation.
+- `DioObservabilityInterceptor` separates transport capture from destination
+  privacy. `DioObservabilityCapturePolicy.metadataOnly()` is the zero-payload
+  default; `.diagnostic()` requires explicit classifications and accepts only
+  JSON-safe structures.
 - `DioCredentialsInterceptor` attaches a generation-fenced credential lease,
   binds waiting to `CancelToken`, and invalidates only the generation rejected
   by the provider. Replay requires an explicit `DioCredentialReplayPolicy` and
@@ -105,8 +109,12 @@ with `sentry_dio` is rejected to avoid double capture.
 - No default authenticated replay, caching, schema validation, or offline
   transaction. One replay exists only behind consumer idempotency policy.
 - No duplicate tracing/capture interceptors.
+- No Dio `LogInterceptor` beside classified capture.
 - No telemetry containing bodies, headers, query values, credentials, tokens,
   identity, or identifying paths.
+
+Diagnostic capture never consumes streams, multipart values, byte payloads, or
+files. Metadata-only remains the production default.
 
 Route templates validate shape but do not define an application's endpoint or
 authorization policy.

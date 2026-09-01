@@ -1,9 +1,10 @@
 # Dartitect documentation
 
 This is the canonical task-oriented entrypoint for Dartitect documentation.
-Public guidance is maintained in English and describes the stable `1.0.0`
-GitHub-only distribution unless a page is explicitly classified as migration
-input or historical evidence.
+Public guidance is maintained in English. The workspace is the untagged
+`1.1.0-rc.1` candidate cohort, while the latest public distribution remains
+the stable GitHub-only `1.0.0` / `v1.0.0` release. Candidate source guidance
+does not authorize a tag, GitHub Release, publication, or stable promotion.
 
 ## Adopt Dartitect in a greenfield project
 
@@ -90,6 +91,8 @@ input or historical evidence.
 - [Release evidence](release/) records the completed `1.0.0` release and its
   pre-release handoffs. RC handoffs and the executed publication runbook are
   historical, not reusable release instructions.
+- [1.1.0-rc.1 readiness](release/1.1.0-rc.1-readiness.adoc) records candidate
+  evidence only. It is not a reusable release runbook or publication authority.
 - [Research](research/) and [work records](work/) preserve the evidence,
   assumptions, and status that applied when each record was written. They may
   contain superseded RC terminology and must not be read as current guidance.

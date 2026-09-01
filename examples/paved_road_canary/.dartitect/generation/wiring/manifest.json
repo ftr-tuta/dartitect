@@ -7,7 +7,7 @@
       "path": "lib/composition/application_module.wiring.dartitect.g.dart",
       "source": "dartitect.json",
       "rendererId": "wiring.application",
-      "rendererVersion": 3,
+      "rendererVersion": 4,
       "semanticSchemaVersion": 2,
       "inputDigest": "c8691c1748fde3b930c6dadf8e63b8295b8e120f8f4e26f95f1ba68eec52cf53",
       "outputDigest": "d007f633f0f515faedea3d2736906edb8fecc2f216a2df140e3f41b2b7b345cd"

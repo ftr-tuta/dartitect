@@ -16,6 +16,8 @@ interaction.
 
 Do not use it for LGPD/GDPR consent, analytics policy, SDK initialization,
 privacy-manifest generation, disclosure copy, or automatic bootstrap prompts.
+It is also not the observability classification/sanitization boundary; ATT and
+telemetry destination privacy remain independent contracts.
 
 ## Platforms and entrypoints
 

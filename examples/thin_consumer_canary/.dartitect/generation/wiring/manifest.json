@@ -7,10 +7,10 @@
       "path": "lib/composition/application_module.wiring.dartitect.g.dart",
       "source": "dartitect.json",
       "rendererId": "wiring.application",
-      "rendererVersion": 3,
+      "rendererVersion": 4,
       "semanticSchemaVersion": 2,
       "inputDigest": "9b3f589e9c1642d0a7fbd25df894fd7b285686fd5bbbd5372dd9cf7b995fdbc4",
-      "outputDigest": "1a4f673683ef87dce6604ed65307f35d63ec076d54ec4a4b3aec9d9d3735adf6"
+      "outputDigest": "82311356a1a134c47f509427791c033e3fb883ac6512cbb525c60168d55e1dc1"
     },
     {
       "path": "lib/composition/session_module.wiring.dartitect.g.dart",

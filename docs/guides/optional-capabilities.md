@@ -25,6 +25,11 @@ save requests permission automatically.
 fails with the stable `invalid_status` code and does not retain the native
 payload.
 
+ATT is unrelated to observability value classification and destination
+sanitization. `dartitect_privacy` remains exclusively the optional Apple
+tracking-authorization boundary; it neither configures telemetry policy nor
+records consent for a local or remote destination.
+
 `dartitect_media` freezes this platform behavior:
 
 | Host | Status/request | Save contract |

@@ -12,13 +12,13 @@ stable packages so an omitted package is an explicit decision.
 | `dartitect_resilience` | Bounded retry, single-flight, breaker, bulkhead, or rate limiting | `$dartitect-runtime`, `$dartitect-testing` |
 | `dartitect_jobs` | Versioned job envelopes, bounded dispatch, deadlines, receipts, and fencing ports | `$dartitect-offline-first`, `$dartitect-testing` |
 | `dartitect_transfer` | Resumable chunks or attachment staging with durable checkpoints | `$dartitect-adapters`, `$dartitect-testing` |
-| `dartitect_devtools` | Development-only, read-only, payload-free service extensions | `$dartitect-observability`, `$dartitect-testing` |
+| `dartitect_devtools` | Diagnostics v2 plus a separate development-only, read-only, payload-free privacy extension | `$dartitect-observability`, `$dartitect-testing` |
 | `dartitect_isolates` | Versioned worker ACK/readiness/heartbeat/deadline lifecycle | `$dartitect-runtime`, `$dartitect-testing` |
-| `dartitect_observability` | Provider-neutral logs, errors, tracing, and diagnostics | `$dartitect-observability` |
-| `dartitect_dio` | Explicit Dio ownership, typed transport failures, and safe instrumentation | `$dartitect-adapters` |
+| `dartitect_observability` | Destination-aware privacy, prepared logs/errors/tracing, and payload-free diagnostics | `$dartitect-observability` |
+| `dartitect_dio` | Explicit Dio ownership, typed transport failures, and metadata-only or classified capture | `$dartitect-adapters` |
 | `dartitect_drift` | Lifecycle and operational adapters around a consumer-generated Drift database | `$dartitect-adapters`, `$dartitect-offline-first` |
 | `dartitect_objectbox` | Native Store/query/watch/projection lifecycle around a consumer-generated model | `$dartitect-adapters`, `$dartitect-offline-first` |
-| `dartitect_sentry` | Borrowed-Hub telemetry after the consumer selects and initializes Sentry | `$dartitect-adapters`, `$dartitect-observability` |
+| `dartitect_sentry` | Borrowed-Hub legacy or prepared telemetry after the consumer selects and initializes Sentry | `$dartitect-adapters`, `$dartitect-observability` |
 | `dartitect_testing` | Deterministic failure, lifecycle, provider, and residual-resource harnesses | `$dartitect-testing` |
 | `dartitect_cli` | Config v3, inspect/scan/doctor, generators, fleet, contracts, and Codex sync | `$dartitect-tooling` |
 | `dartitect_lints` | Analyzer-host Native Strict and modeling diagnostics | `$dartitect-tooling` |
