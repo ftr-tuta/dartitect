@@ -70,6 +70,21 @@ void main() {
       'contents: read',
       'contents: write',
     ),
+    'Repository Administration call in Release': (fixture) => fixture.append(
+      '.github/workflows/release.yaml',
+      '\n# /immutable-releases\n',
+    ),
+    'wrong public ruleset gate': (fixture) => fixture.replace(
+      '.github/workflows/release.yaml',
+      '/rulesets/21525640',
+      '/rulesets/99999999',
+    ),
+    'missing post-publication immutability gate': (fixture) =>
+        fixture.replaceAll(
+          '.github/workflows/release.yaml',
+          '.immutable == true',
+          '.immutable == false',
+        ),
     'generated Dartitect override': (fixture) => fixture.append(
       'tool/generated_project_matrix.dart',
       '\n// dependency_overrides:\n',
@@ -138,6 +153,13 @@ final class _Fixture {
     final source = await file.readAsString();
     if (!source.contains(before)) throw StateError('$path lacks $before');
     await file.writeAsString(source.replaceFirst(before, after));
+  }
+
+  Future<void> replaceAll(String path, String before, String after) async {
+    final file = File('${root.path}/$path');
+    final source = await file.readAsString();
+    if (!source.contains(before)) throw StateError('$path lacks $before');
+    await file.writeAsString(source.replaceAll(before, after));
   }
 
   Future<void> replacePattern(String path, RegExp before, String after) async {

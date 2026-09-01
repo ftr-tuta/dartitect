@@ -17,11 +17,31 @@ the new remote `main` HEAD. The operator manually starts `Release` with exactly:
 There is no channel selector, registry token, PAT, GitHub App, or environment
 secret. `Release` is the only workflow with `contents: write`.
 
+=== Administrative operator preflight
+
+Immediately before every dispatch, an administrator must verify through an
+authenticated local `gh` session that:
+
+* `GET /repos/ftr-tuta/dartitect/immutable-releases` returns `enabled: true`;
+* ruleset `21525640` is active, targets tags, includes only `refs/tags/v*`, has
+  deletion and non-fast-forward protection, and has an empty `bypass_actors`;
+* tag and Release `v1.0.0` are absent, or are the exact retry state described
+  below.
+
+These checks use the operator's existing repository administration authority;
+its credential is never passed to Actions. GitHub's workflow `GITHUB_TOKEN`
+cannot be granted Repository Administration permission, which the immutable
+Release settings endpoint requires. The workflow therefore revalidates the
+public portion of the tag ruleset before writing and proves `immutable: true`
+plus the Release attestation immediately after publication.
+
 == Read-only preflight
 
 Before any repository write the workflow proves all of the following:
 
 . `source_sha` equals the current remote `main` HEAD;
+. the public view of ruleset `21525640` has the required name, target,
+  enforcement, ref conditions, deletion rule, and non-fast-forward rule;
 . `ci_run_id` is a successful `CI` push run for that exact SHA and has one
   successful `CI / Required` job;
 . the unexpired `actions-readiness-v1` manifest matches the SHA, source tree,
@@ -30,7 +50,8 @@ Before any repository write the workflow proves all of the following:
 . `v1.0.0` and Release `v1.0.0` are absent, or their existing state exactly
   matches the authorized source and immutable asset contract.
 
-Any ambiguity or divergence fails closed before a write.
+Any ambiguity or divergence observable by the operator or workflow fails closed
+before a write.
 
 == Deterministic assets
 

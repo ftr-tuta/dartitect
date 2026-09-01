@@ -17,6 +17,9 @@
     "annotatedTag": true,
     "signedTag": false,
     "immutable": true,
+    "administrativePreflight": true,
+    "releaseTagRulesetId": 21525640,
+    "postPublicationVerification": true,
     "registryPublication": false
   },
   "activeDocuments": [
