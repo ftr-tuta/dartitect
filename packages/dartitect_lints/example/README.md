@@ -2,8 +2,14 @@
 
 Add the plugin as a development dependency:
 
-```console
-dart pub add --dev dartitect_lints:^1.0.0-rc.8
+```yaml
+dev_dependencies:
+  dartitect_lints:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_lints
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
 ```
 
 Enable it at the top level of `analysis_options.yaml`:

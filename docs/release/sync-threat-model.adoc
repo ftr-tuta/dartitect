@@ -3,6 +3,7 @@
 
 Status:: Reviewed for `1.0.0`
 Review date:: 2026-08-24
+Document status:: Historical evidence completed by released `v1.0.0`
 
 == Assets and trust boundaries
 

@@ -1,6 +1,7 @@
 = RC and stable validation in GitHub Actions
 
-Status:: ACTIONS POLICY READY
+Status:: COMPLETED FOR RELEASED `v1.0.0`
+Document status:: Historical release evidence
 Goal:: V1S-17
 Machine contract:: `tool/rc_validation_contract.json`
 

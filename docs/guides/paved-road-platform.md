@@ -1,11 +1,9 @@
 # Greenfield vertical platform
 
-RC10 makes concrete generated application, session, and feature graphs the
-normal route. Config v3 factories are checked semantically, contexts are opened
-once by their declared owner, and generated `FeatureHost` widgets own feature
-runtime/ViewModel startup and teardown. This source delivery does not create a
-tag, release, or stable `1.0.0`; promotion is release-only and remains blocked
-on the separate business-neutral UI/UX gate.
+Stable `1.0.0` uses concrete generated application, session, and feature graphs
+as the normal route. Config v3 factories are checked semantically, contexts are
+opened once by their declared owner, and generated `FeatureHost` widgets own
+feature runtime/ViewModel startup and teardown.
 
 ## Canonical creation
 
@@ -45,7 +43,7 @@ policy, ViewModel behavior, and UI.
 
 `FeatureHost` and `CommandStateBuilder` are mechanical, Material-neutral
 widgets. They select no text, color, layout, route, style, or design-system
-component. Those UI/UX decisions remain consumer-owned in RC10.
+component. Those UI/UX decisions remain consumer-owned.
 
 ## Stable opt-in workflows
 

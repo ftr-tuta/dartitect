@@ -1,6 +1,6 @@
 interface:
   display_name: "Repository Contribution"
-  short_description: "Safely deliver Dartitect changes by PR"
+  short_description: "Deliver Dartitect changes through required gates and PR"
   default_prompt: "Use $repository-contribution to deliver this Dartitect change through the required PR workflow."
 policy:
   allow_implicit_invocation: true

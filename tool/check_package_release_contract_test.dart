@@ -94,6 +94,27 @@ void main() {
     expect(result.exitCode, 1);
     expect(result.stderr, contains('Independent-patch'));
   });
+
+  test('rejects a partial Unreleased changelog cohort', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+    final changelog = File(
+      '${fixture.root.path}/packages/dartitect_sync/CHANGELOG.md',
+    );
+    await changelog.writeAsString(
+      (await changelog.readAsString()).replaceFirst(
+        '## Unreleased\n\n'
+            '- Complete developer documentation, managed skill guidance, and '
+            'documentation quality gates.\n\n',
+        '',
+      ),
+    );
+
+    final result = await fixture.check();
+
+    expect(result.exitCode, 1);
+    expect(result.stderr, contains('Unreleased changelog cohort is partial'));
+  });
 }
 
 final class _Fixture {

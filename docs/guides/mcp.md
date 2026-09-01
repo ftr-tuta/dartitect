@@ -74,7 +74,7 @@ provider status. Deep doctor is opt-in and time-bounded.
 development or a supported SDK upgrade. It uses the strict scan as evidence
 and never returns an application-conversion plan.
 
-RC10 retains the confined, closed-schema tools and adds config-v3/fleet
+Stable `1.0.0` provides the confined, closed-schema tools and config-v3/fleet
 metadata:
 
 - `dartitect_preview_create_feature`;

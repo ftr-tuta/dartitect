@@ -1,6 +1,6 @@
 interface:
   display_name: "Dartitect Audit"
-  short_description: "Audit Native Strict conformance read-only"
+  short_description: "Audit Native Strict conformance without writes"
   default_prompt: "Use $dartitect-audit to audit Native Strict conformance."
 policy:
   allow_implicit_invocation: true

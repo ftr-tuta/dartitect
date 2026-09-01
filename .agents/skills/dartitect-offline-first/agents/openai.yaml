@@ -1,6 +1,6 @@
 interface:
   display_name: "Dartitect Offline First"
-  short_description: "Build local-authority pages and outboxes"
+  short_description: "Build durable local authority, outbox, and sync"
   default_prompt: "Use $dartitect-offline-first to implement a durable local-first flow."
 policy:
   allow_implicit_invocation: true

@@ -3,6 +3,7 @@
 
 Snapshot:: 2026-08-25
 Release cohort:: `1.0.0`
+Document status:: Historical evidence completed by released `v1.0.0`
 
 == Supported boundaries
 

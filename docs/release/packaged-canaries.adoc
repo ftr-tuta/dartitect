@@ -1,6 +1,7 @@
 = Packaged and Git candidate canary contract
 
-Status:: Implemented for the RC10 candidate; final tag/publication are outside this delivery
+Status:: Completed for the released `v1.0.0` source
+Document status:: Historical release evidence
 Machine authority:: `tool/canaries/canary_contract.json`
 Development gate:: `dart run tool/check_canaries.dart --allow-dirty`
 
@@ -14,9 +15,9 @@ archive digest mismatch, symlinks, and workspace-root leakage. A shared pub
 cache is only transport; each requested archive digest remains authoritative.
 
 The Git variant requires one annotated tag and resolves the complete transitive
-Dartitect closure from one URL/ref. It remains release infrastructure, but this
-RC10 delivery creates no tag, GitHub Release, or publication. Both runners use
-the same nine-canary machine contract and command order.
+Dartitect closure from one URL/ref. The stable release created that tag and its
+GitHub Release after this canary evidence completed. Both runners use the same
+nine-canary machine contract and command order.
 
 == Modeling and thin consumer
 

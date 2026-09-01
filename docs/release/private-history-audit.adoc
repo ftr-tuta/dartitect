@@ -4,7 +4,8 @@ Audit date:: 2026-08-26
 Scope:: the one-commit Git candidate tree
 
 Gate:: `dart run tool/audit_root_candidate.dart`
-Decision:: Local tree policy ready; final remote attestation pending
+Decision:: Completed for released tag `v1.0.0`
+Document status:: Historical release evidence
 
 `.gitignore` excludes `.private/`, planning directories, credentials, private
 keys, caches, generated API HTML, and build products. Candidate assembly starts

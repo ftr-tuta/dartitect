@@ -74,6 +74,24 @@ Every scope follows the same terminal sequence:
 Construction failure rolls back only acquisitions that completed. A failure
 during rollback is preserved separately from the original construction error.
 
+```dart
+Future<OwnedGraph<SessionRuntime>> openSession(SessionId id) {
+  return ResourceTransaction.create<SessionRuntime>((transaction) async {
+    final database = transaction.own(
+      await openDatabase(id),
+      (value) => value.close(),
+      label: 'database',
+    );
+    final http = transaction.own(
+      createHttp(id),
+      (value) => value.close(),
+      label: 'http',
+    );
+    return SessionRuntime(database, http);
+  }, label: 'SessionRuntime');
+}
+```
+
 ## Isolates
 
 Transfer immutable configuration, messages, and validated W3C trace context.
@@ -99,6 +117,20 @@ For ObjectBox, `ObjectBoxProjectionExecutor` borrows the original Store and uses
 and close every query and background graph inside that callback. Dispose the
 collection first, then the executor, then close the original Store. Never send
 a `Store`, query, owner, client, or closure capturing one across the boundary.
+
+Every receiver entrypoint owns its graph and closes it in `finally`:
+
+```dart
+@pragma('vm:entry-point')
+Future<void> backgroundMain(Map<String, Object?> message) async {
+  final runtime = await BackgroundRuntime.create(message);
+  try {
+    await runtime.execute();
+  } finally {
+    await runtime.disposeAsync();
+  }
+}
+```
 
 ## Review checklist
 

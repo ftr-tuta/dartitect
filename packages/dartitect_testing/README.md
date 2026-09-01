@@ -64,7 +64,7 @@ Future<void> main() async {
   restart, and teardown facts are derived from actual events, revisions,
   acknowledgements, store counters, and the matrix-owned census.
 - Host, resilience, jobs, transfer, local-history, restoration, and read-only
-  DevTools harnesses cover the RC10 paved road without provider substitution.
+  DevTools harnesses cover the stable paved road without provider substitution.
 - `RepositoryContractHarness` runs consumer-supplied repository cases.
 - `ProjectionContractHarness` and `MapperContractHarness` record selector,
   expected-failure, and bidirectional round-trip evidence.

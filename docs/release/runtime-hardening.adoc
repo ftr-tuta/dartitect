@@ -1,6 +1,7 @@
 = V1S-12 runtime and offline-first hardening
 
-Status:: IMPLEMENTED_LOCAL
+Status:: COMPLETED FOR RELEASED `v1.0.0`
+Document status:: Historical release evidence
 Authority:: `tool/runtime_hardening_contract.json`
 Gate:: `dart run tool/verify.dart --skip-get --native-objectbox`
 

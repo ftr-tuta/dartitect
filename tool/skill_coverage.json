@@ -1,5 +1,32 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "designPackages": [
+    "dartitect",
+    "dartitect_cli",
+    "dartitect_devtools",
+    "dartitect_dio",
+    "dartitect_drift",
+    "dartitect_flutter",
+    "dartitect_flutter_testing",
+    "dartitect_geometry",
+    "dartitect_isolates",
+    "dartitect_jobs",
+    "dartitect_lints",
+    "dartitect_locale_br",
+    "dartitect_mcp",
+    "dartitect_media",
+    "dartitect_modeling",
+    "dartitect_modeling_analyzer",
+    "dartitect_objectbox",
+    "dartitect_observability",
+    "dartitect_privacy",
+    "dartitect_resilience",
+    "dartitect_sentry",
+    "dartitect_sync",
+    "dartitect_testing",
+    "dartitect_transfer",
+    "dartitect_workmanager"
+  ],
   "skills": {
     "dartitect-design": [
       "packages/dartitect/lib/dartitect.dart",
@@ -127,6 +154,66 @@
     ],
     "dartitect-mcp": [
       "packages/dartitect_mcp/lib/dartitect_mcp.dart"
+    ]
+  },
+  "referenceRequirements": {
+    "dartitect-design": [
+      "references/selection-matrix.md"
+    ],
+    "dartitect-audit": [
+      "references/conformance-audit.md",
+      "references/inventory.md"
+    ],
+    "dartitect-runtime": [
+      "references/basic-flutter.md",
+      "references/ownership-and-isolates.md",
+      "references/results-and-commands.md"
+    ],
+    "dartitect-reactive": [
+      "references/families-and-collections.md",
+      "references/lifecycle-and-resources.md",
+      "references/selectors-and-builders.md"
+    ],
+    "dartitect-offline-first": [
+      "references/local-first-pagination.md",
+      "references/mutations-and-outbox.md",
+      "references/sync-execution.md"
+    ],
+    "dartitect-observability": [
+      "references/flutter-and-providers.md",
+      "references/reactive-events.md",
+      "references/telemetry-contract.md"
+    ],
+    "dartitect-adapters": [
+      "references/coexistence.md",
+      "references/custom-provider.md",
+      "references/dio.md",
+      "references/drift.md",
+      "references/objectbox.md",
+      "references/privacy-and-media.md",
+      "references/sentry.md",
+      "references/transfer-and-workmanager.md"
+    ],
+    "dartitect-ui": [
+      "references/presentation.md",
+      "references/verification.md"
+    ],
+    "dartitect-testing": [
+      "references/platform-and-background.md",
+      "references/provider-fixtures.md",
+      "references/runtime-and-reactive.md",
+      "references/sync.md",
+      "references/tooling.md"
+    ],
+    "dartitect-modeling": [],
+    "dartitect-tooling": [
+      "references/cli-scan-and-lints.md",
+      "references/generation-and-native.md",
+      "references/release-gates.md"
+    ],
+    "dartitect-mcp": [
+      "references/reviewed-writes.md",
+      "references/setup-and-surface.md"
     ]
   },
   "routingScenarios": {

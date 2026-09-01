@@ -82,6 +82,8 @@ void main(List<String> arguments) {
     }
 
     final packages = <String, _Package>{};
+    final changelogsWithUnreleased = <String>{};
+    String? unreleasedBody;
     for (final entry in packagePaths.entries) {
       final name = entry.key;
       final path = entry.value;
@@ -119,15 +121,39 @@ void main(List<String> arguments) {
         errors.add('$name does not match its stable release metadata.');
       }
       final changelog = File('${root.path}/$path/CHANGELOG.md');
-      final firstRelease = changelog.existsSync()
-          ? RegExp(
-              r'^##\s+([^\s]+)',
-              multiLine: true,
-            ).firstMatch(changelog.readAsStringSync())?.group(1)
-          : null;
-      if (firstRelease != version) {
-        errors.add('$name changelog does not begin with version $version.');
+      final changelogSource = changelog.existsSync()
+          ? changelog.readAsStringSync()
+          : '';
+      final changelogLines = changelogSource.split(RegExp(r'\r?\n'));
+      if (changelogLines.isEmpty || changelogLines.first != '# Changelog') {
+        errors.add('$name changelog must begin with "# Changelog".');
       }
+      final headings = RegExp(
+        r'^##\s+([^\s]+)',
+        multiLine: true,
+      ).allMatches(changelogSource).map((match) => match.group(1)!).toList();
+      if (headings.isNotEmpty && headings.first == 'Unreleased') {
+        changelogsWithUnreleased.add(name);
+        final body = _changelogSection(changelogLines, '## Unreleased');
+        if (body.isEmpty) {
+          errors.add('$name changelog has an empty Unreleased section.');
+        } else if (unreleasedBody == null) {
+          unreleasedBody = body;
+        } else if (unreleasedBody != body) {
+          errors.add('Unreleased changelog entries must be uniform.');
+        }
+      }
+      final firstRelease = headings.where(_isNumberedVersion).firstOrNull;
+      if (firstRelease != version) {
+        errors.add('$name changelog first numbered version must be $version.');
+      }
+    }
+
+    if (changelogsWithUnreleased.length != manifestNames.length) {
+      errors.add(
+        'Unreleased changelog cohort is partial: '
+        '${changelogsWithUnreleased.length}/${manifestNames.length}.',
+      );
     }
 
     final actualPackageNames = Directory('${root.path}/packages')
@@ -251,6 +277,20 @@ Map<String, Object?>? _yamlObjectOrNull(Object? value) {
 
 bool _isDartitectPackage(String name) =>
     RegExp(r'^dartitect(?:_[a-z0-9_]+)?$').hasMatch(name);
+
+bool _isNumberedVersion(String value) =>
+    RegExp(r'^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$').hasMatch(value);
+
+String _changelogSection(List<String> lines, String heading) {
+  final start = lines.indexOf(heading);
+  if (start < 0) return '';
+  final body = <String>[];
+  for (final line in lines.skip(start + 1)) {
+    if (line.startsWith('## ')) break;
+    if (line.trim().isNotEmpty) body.add(line.trim());
+  }
+  return body.join('\n');
+}
 
 String _basename(String path) =>
     path.split(Platform.pathSeparator).where((part) => part.isNotEmpty).last;

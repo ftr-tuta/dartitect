@@ -1,6 +1,7 @@
 = Dependency advisory audit
 
-Status:: LOCAL POLICY GREEN; `CI / Required` RESULT PENDING
+Status:: COMPLETED FOR RELEASED `v1.0.0`
+Document status:: Historical release evidence
 Snapshot:: 2026-08-27
 
 The coordinated `CI` workflow pins the official OSV-Scanner 2.5.1 direct action
@@ -26,7 +27,7 @@ switches, and vulnerability exceptions without an exact ID, a substantive
 justification, an HTTPS analysis link, and a non-expired `ignoreUntil` date no
 more than 30 days away. There are currently no exceptions.
 
-The local configuration and policy validator pass. Formal readiness is recorded
-only when the successful main `CI / Required` run and its
-`actions-readiness-v1` artifact exist; diagnostic SARIF is not a branch or
+The local configuration and policy validator passed. Formal readiness was
+recorded when the successful main `CI / Required` run and its
+`actions-readiness-v1` artifact existed; diagnostic SARIF was not a branch or
 release gate.

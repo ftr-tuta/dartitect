@@ -8,20 +8,31 @@ Store, Hub, or provider configuration belongs in Dartitect.
 
 ## Dio
 
+Use `DioOwner.create` when the composition root owns and closes the real client;
+use `.value` for a borrowed client. Header callbacks run for every request.
 Expose cancellation, transport, HTTP, and configuration failures as distinct
-types. Instrument method/protocol/status only. Propagate through the configured
-W3C propagator and reject duplicate Dartitect/`sentry_dio` instrumentation.
+types, and map only `DioException`; programming errors continue to throw. A
+`CancelToken` is cooperative and does not prove transport preemption.
+
+Instrument method/protocol/status only. Never record headers, bodies, query
+strings, credentials, or user information. Propagate through the configured W3C
+propagator and reject duplicate Dartitect/`sentry_dio` instrumentation.
 
 ## ObjectBox
 
-The consumer owns entities and generated model. Close watchers and queries
-before Store. Use a generated native fixture for tests. Never edit generated
+The consumer supplies its generated `openStore` callback and owns entities,
+model JSON, generated Dart, migrations, transactions, and repositories.
+Register subscriptions, timers, watchers, and queries with
+`ObjectBoxObservationOwner`; drain that registry before closing Store.
+Temporary cleanup removes only a directory created and validated by the same
+invocation. Use a generated native fixture for tests. Never edit generated
 files, assume web support, or transfer a Store object across isolates.
 
 ## Sentry
 
-Borrow an injected, consumer-initialized Hub. Never initialize, configure, or
-close it. Test with a fake Hub and zero network.
+Borrow an injected, consumer-initialized Hub in `SentryLogSink`,
+`SentryErrorReporter`, and `SentryTracer`. Never set DSN, environment, identity,
+or sampling, and never close the Hub. Test with a fake Hub and zero network.
 
 ## Reusable adapters
 
