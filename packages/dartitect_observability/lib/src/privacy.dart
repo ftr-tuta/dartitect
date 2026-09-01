@@ -882,6 +882,7 @@ final Map<String, ObservabilityPrivacyAction> _strictLocal = _ruleTable(
     'http.header',
     'http.path',
     'http.query',
+    'error.stack_trace',
     'storage',
     'file',
   ],
@@ -945,6 +946,7 @@ final Map<String, ObservabilityPrivacyAction> _diagnosticLocal = _ruleTable(
     'http.header',
     'http.path',
     'http.query',
+    'error.stack_trace',
   ],
   mask: const <String>['operation', 'identity', 'error'],
   deny: const <String>[
@@ -963,6 +965,7 @@ final Map<String, ObservabilityPrivacyAction> _diagnosticRemote =
         ..._diagnosticLocal,
         'http.path': ObservabilityPrivacyAction.mask,
         'http.query': ObservabilityPrivacyAction.mask,
+        'error.stack_trace': ObservabilityPrivacyAction.mask,
       },
     );
 

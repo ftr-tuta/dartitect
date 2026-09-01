@@ -187,6 +187,19 @@ void main() {
       }),
       isNull,
     );
+    expect(
+      propagator.extract(<String, String>{
+        'traceparent': context.traceParent,
+        'tracestate': 'duplicate=one,duplicate=two',
+      })?.traceState,
+      isNull,
+    );
+    final discardHeaders = <String, String>{};
+    const W3CTracePropagator(
+      traceStatePolicy: TraceStatePropagationPolicy.discard,
+    ).inject(discardHeaders, context);
+    expect(discardHeaders, isNot(contains('tracestate')));
+    expect(discardHeaders, isNot(contains('baggage')));
   });
 
   test('configured spans are sanitized and end exactly once', () async {
