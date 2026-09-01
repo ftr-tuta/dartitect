@@ -42,7 +42,7 @@ Future<void> main(List<String> arguments) async {
     }
     if (options.manifest != null && errors.isEmpty) {
       final result = await Process.run(Platform.resolvedExecutable, <String>[
-        '${root.path}/tool/check_rc_readiness.dart',
+        '${root.path}/tool/check_actions_readiness.dart',
         '--root=${root.path}',
         '--manifest=${options.manifest!.path}',
       ], workingDirectory: root.path);

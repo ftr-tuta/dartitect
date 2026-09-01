@@ -49,7 +49,7 @@ Future<void> main(List<String> arguments) async {
     final artifact = <String, Object?>{
       'schemaVersion': 2,
       'recordedAt': DateTime.now().toUtc().toIso8601String(),
-      'targetVersion': '1.0.0-rc.10',
+      'targetVersion': '1.0.0',
       'policy': <String, Object?>{
         'coldRuns': _coldRuns,
         'coldStatistic': 'median',

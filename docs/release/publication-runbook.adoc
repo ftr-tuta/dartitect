@@ -1,55 +1,70 @@
-= Compatible-cohort 1.0 publication runbook
+= Immutable GitHub Release runbook
 
-Status:: Manual trigger; technical evidence fully automated
-Machine authority:: `tool/actions_readiness_policy.json`
-Workflow:: `.github/workflows/publish.yaml`
+Version:: `1.0.0`
+Tag:: `v1.0.0` (annotated, unsigned, protected)
+Workflow:: `.github/workflows/release.yaml`
+Distribution:: GitHub-only
 
-== Inputs
+== Authorization
 
-The actor starts `Publish` with exactly:
+After the release PR is squash-merged, wait for the successful `CI` push run on
+the new remote `main` HEAD. The operator manually starts `Release` with exactly:
 
-* `source_sha`: full lowercase SHA already contained in `main`;
-* `ci_run_id`: successful `CI` push run for that SHA;
-* `channel`: `github-release`, `pub-dev-prerelease`, or `pub-dev-stable`.
+* `source_sha`: the full lowercase SHA at remote `main` HEAD;
+* `ci_run_id`: the successful `CI` run that produced
+  `actions-readiness-v1` for that SHA.
 
-This choice is the only human release decision. It supplies no missing test,
-security, native, canary, benchmark, or audit evidence.
+There is no channel selector, registry token, PAT, GitHub App, or environment
+secret. `Release` is the only workflow with `contents: write`.
 
-== Fail-closed verification
+== Read-only preflight
 
-Before any external write, the workflow:
+Before any repository write the workflow proves all of the following:
 
-. validates input shapes and checks out `source_sha` exactly;
-. queries the GitHub Actions API and requires a successful `CI` push on `main`
-  whose head SHA is `source_sha`;
-. downloads `actions-readiness-v1` from `ci_run_id` (an expired artifact fails);
-. requires `CI / Required`, the matching SHA/tree/run ID and attempt, and
-  successful conclusions for every coordinated job;
-. recomputes every native and repository artifact SHA-256;
-. validates that prerelease/stable channel selection matches the cohort;
-. records `GITHUB_ACTOR`, source SHA, CI run, channel, and publication run URL.
+. `source_sha` equals the current remote `main` HEAD;
+. `ci_run_id` is a successful `CI` push run for that exact SHA and has one
+  successful `CI / Required` job;
+. the unexpired `actions-readiness-v1` manifest matches the SHA, source tree,
+  run ID, run attempt, eight required jobs, and every copied artifact hash;
+. the stable-candidate, package-release, and distribution-policy gates pass;
+. `v1.0.0` and Release `v1.0.0` are absent, or their existing state exactly
+  matches the authorized source and immutable asset contract.
 
-Any missing, skipped, cancelled, failed, expired, cross-run, cross-SHA,
-cross-tree, or altered input stops before tag, Release, or package publication.
+Any ambiguity or divergence fails closed before a write.
 
-== Publication order
+== Deterministic assets
 
-pub.dev uses the exact `publicationOrder` in
-`tool/package_release_contract.json`. The generated
-`docs/release/package-cohorts.adoc` records all 25 packages, five publication
-cohorts, and the current baseline without duplicating a hand-maintained order.
+The workflow generates and uploads:
 
-The workflow stops on the first publication failure. pub.dev versions are
-immutable, so a partial cohort is never overwritten or completed from another
-source SHA; prepare a new version after diagnosing the failure.
+* `actions-readiness-v1.json`;
+* `release-provenance.json`;
+* `dartitect-git-manifest.json`;
+* `dependency-snippets.zip`, with one descriptor per package and core,
+  Flutter, Drift, ObjectBox, and tooling profiles;
+* `sbom.spdx.json`;
+* `dependency-licenses.json`;
+* `SHA256SUMS`.
 
-== Channels
+`SHA256SUMS` covers every other uploaded asset. The workflow uploads to a draft,
+downloads all assets again, validates names and SHA-256 digests, and publishes
+only after the round trip succeeds.
 
-`github-release` creates the version tag/Release at `source_sha` and attaches
-publication provenance plus the readiness manifest. A pub.dev channel creates
-the exact version tag, configures the repository secret token, and publishes
-the cohort sequentially. The GitHub run itself remains the durable actor and
-operation record.
+== Tag and Release transaction
 
-No phone, tablet, iPhone, USB device, or private runner participates in this
-workflow. Local dry-runs are useful feedback but never publication authority.
+The workflow creates an annotated Git tag object through the GitHub API, then
+creates `refs/tags/v1.0.0`, and verifies that the peeled ref equals
+`source_sha`. It creates the draft with `gh release create --verify-tag`, uploads
+the assets, verifies them after download, and then publishes the Release as
+stable and latest.
+
+Retries are idempotent:
+
+* an exact existing annotated tag continues;
+* an exact existing draft may replace only its draft assets before revalidation;
+* an already published Release succeeds only after exact identity, immutability,
+  asset, checksum, and attestation verification;
+* every divergent tag, Release, or asset fails without deletion, movement, or
+  overwrite.
+
+After publication, any correction requires `v1.0.1`. The immutable `v1.0.0`
+Release is never edited or recreated.

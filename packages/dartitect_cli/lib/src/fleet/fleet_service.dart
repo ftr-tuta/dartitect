@@ -431,14 +431,14 @@ final class DartitectFleetService {
     );
   }
 
-  /// Applies the registered migration chain to the RC10 source cohort.
+  /// Applies the registered migration chain from RC10 to stable 1.0.0.
   Future<DartitectFleetReport> applyUpgrade(
     Iterable<String> roots, {
     required String targetCohort,
   }) async {
-    if (targetCohort != '1.0.0-rc.10') {
+    if (targetCohort != '1.0.0') {
       throw const FormatException(
-        'Fleet apply supports only the exact RC10 source migration chain.',
+        'Fleet apply supports only the exact RC10-to-1.0.0 migration chain.',
       );
     }
     final projects = await _projects(roots);
@@ -503,10 +503,8 @@ final class DartitectFleetService {
     _FleetProject project,
     String targetCohort,
   ) async {
-    if (targetCohort != '1.0.0-rc.10') {
-      throw const FormatException(
-        'Fleet upgrade accepts only --to=1.0.0-rc.10.',
-      );
+    if (targetCohort != '1.0.0') {
+      throw const FormatException('Fleet upgrade accepts only --to=1.0.0.');
     }
     final pubspec = await File(_join(project.directory.path, 'pubspec.yaml'))
         .readAsString();
@@ -738,28 +736,10 @@ final class DartitectFleetService {
         .where((dependency) => dependency['section'] != 'dependency_overrides');
     if (dependencies.isEmpty) {
       throw const FormatException(
-        'Fleet RC10 migration requires at least one Dartitect dependency.',
+        'Fleet stable migration requires at least one Dartitect dependency.',
       );
     }
-    for (final dependency in dependencies) {
-      final constraint = dependency['declaredConstraint'];
-      if (constraint is! String ||
-          !const <String>{
-            '1.0.0-rc.6',
-            '^1.0.0-rc.6',
-            '>=1.0.0-rc.6 <1.0.0',
-            '1.0.0-rc.8',
-            '^1.0.0-rc.8',
-            '>=1.0.0-rc.8 <1.0.0',
-            '1.0.0-rc.10',
-            '^1.0.0-rc.10',
-            '>=1.0.0-rc.10 <1.0.0',
-          }.contains(constraint)) {
-        throw FormatException(
-          'Dependency ${dependency['package']} is outside the RC6/RC8/RC10 chain.',
-        );
-      }
-    }
+    DartitectProjectService.renderDependencyUpgradeSource(pubspec, '1.0.0');
   }
 
   Future<T> _withFleetLocks<T>(

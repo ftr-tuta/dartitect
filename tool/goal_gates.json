@@ -1,7 +1,7 @@
 {
   "schemaVersion": 7,
   "roadmap": {
-    "id": "dartitect-1.0-stabilization-and-rc-readiness",
+    "id": "dartitect-1.0-stabilization-and-github-release-readiness",
     "status": "active",
     "requiredGoalIds": [
       "V1S-00", "V1S-01", "V1S-02", "V1S-03", "V1S-04",
@@ -119,17 +119,17 @@
       "id": "V1S-09", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": ["V1S-04"],
       "owner": "Dartitect maintainers", "affectedPackages": [],
       "coveredPaths": ["packages/*/pubspec.yaml", "packages/*/CHANGELOG.md", "VERSIONING.adoc", "docs/architecture/package-topology.adoc", "docs/release/publication-runbook.adoc", "tool/package_release_contract.json", "tool/check_package_release_contract.dart", "tool/check_package_release_contract_test.dart", "tool/release_audit.dart", "tool/verify.dart"],
-      "acceptance": ["Freeze lockstep 1.0.x versioning, internal constraints, compatibility, topological publication, partial-failure recovery, and reproducible artifacts."],
-      "gateCommands": ["dart run tool/check_package_topology.dart", "dart run tool/check_package_release_contract.dart", "dart test tool/check_package_release_contract_test.dart", "dart run tool/release_audit.dart --publish-dry-run"],
-      "evidence": ["VERSIONING.adoc", "docs/release/package-cohorts.adoc", "docs/release/publication-runbook.adoc", "tool/package_release_contract.json", "tool/generate_release_artifacts.dart", "tool/check_package_release_contract_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "acceptance": ["Freeze permanent 1.0.x lockstep, canonical internal Git descriptors, GitHub-only distribution, and reproducible immutable Release artifacts."],
+      "gateCommands": ["dart run tool/check_package_topology.dart", "dart run tool/check_package_release_contract.dart", "dart run tool/check_distribution_policy.dart", "dart test tool/check_package_release_contract_test.dart tool/check_distribution_policy_test.dart"],
+      "evidence": ["VERSIONING.adoc", "docs/release/package-cohorts.adoc", "docs/release/publication-runbook.adoc", "tool/package_release_contract.json", "tool/distribution_policy.json", "tool/generate_release_artifacts.dart", "tool/check_package_release_contract_test.dart", "tool/check_distribution_policy_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-10", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": ["V1S-06", "V1S-07", "V1S-08", "V1S-09"],
       "owner": "Dartitect maintainers", "affectedPackages": [],
-      "coveredPaths": ["tool/git_dependency_overrides.dart", "tool/git_dependency_overrides_test.dart", "tool/run_git_canaries.dart", "tool/canaries/**", "examples/**", "docs/release/**"],
+      "coveredPaths": ["tool/dependency_snippets.dart", "tool/dependency_snippets_test.dart", "tool/run_git_canaries.dart", "tool/canaries/**", "examples/**", "docs/release/**"],
       "acceptance": ["Validate modeling, thin-consumer, minimal, offline-first, Drift-provider, and native-capability canaries from the exact source candidate with isolated resolution and no local-path or hosted Dartitect dependency."],
-      "gateCommands": ["dart run tool/check_canaries.dart"],
-      "evidence": ["tool/check_canaries.dart", "tool/git_dependency_overrides.dart", "tool/run_git_canaries.dart", "tool/canaries/canary_contract.json", "docs/release/packaged-canaries.adoc", "examples/reference_app/test/native_objectbox_workload_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "gateCommands": ["dart run tool/check_canaries.dart --validate-only", "dart test tool/dependency_snippets_test.dart"],
+      "evidence": ["tool/check_canaries.dart", "tool/dependency_snippets.dart", "tool/run_git_canaries.dart", "tool/canaries/canary_contract.json", "docs/release/packaged-canaries.adoc", "examples/reference_app/test/native_objectbox_workload_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-11", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": ["V1S-02", "V1S-07", "V1S-09", "V1S-10"],
@@ -158,34 +158,34 @@
     {
       "id": "V1S-14", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-11", "V1S-12", "V1S-13"],
       "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_devtools", "dartitect_dio", "dartitect_drift", "dartitect_flutter", "dartitect_flutter_testing", "dartitect_geometry", "dartitect_isolates", "dartitect_jobs", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_modeling", "dartitect_modeling_analyzer", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_resilience", "dartitect_sentry", "dartitect_sync", "dartitect_testing", "dartitect_transfer", "dartitect_workmanager"],
-      "coveredPaths": ["README*", ".github/ISSUE_TEMPLATE/bug_report.yml", ".agents/skills/**/.dartitect-skill.json", "docs/**", "examples/**", "packages/**/README*", "packages/**/CHANGELOG.md", "packages/**/pubspec.yaml", "pubspec.yaml", "tool/api_surface.snapshot.json", "tool/sdk_inventory.json", "tool/package_release_contract.json", "tool/rc_candidate_contract.json", "tool/check_rc_candidate.dart", "tool/check_pub_dev_identity.dart", "tool/run_clean_clone_release_audit.dart", "tool/release_audit.dart", "tool/generate_supply_chain.dart"],
-      "acceptance": ["Finish English docs, API review, examples, clean clone, dry-runs, Dartdoc, SBOM, licenses, advisories, ownership checks, changelogs, and the rc.N candidate."],
-      "gateCommands": ["dart run tool/release_audit.dart --docs --publish-dry-run"],
-      "evidence": ["tool/rc_candidate_contract.json", "tool/check_rc_candidate.dart", "tool/check_pub_dev_identity.dart", "tool/run_clean_clone_release_audit.dart", "docs/release/rc10-handoff.adoc", "docs/release/pub-dev-identity-audit.adoc", "docs/release/public-api-review.adoc", "docs/release/sbom.spdx.json", "docs/release/dependency-licenses.json"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "coveredPaths": ["README*", ".github/ISSUE_TEMPLATE/bug_report.yml", ".agents/skills/**/.dartitect-skill.json", "docs/**", "examples/**", "packages/**/README*", "packages/**/CHANGELOG.md", "packages/**/pubspec.yaml", "pubspec.yaml", "tool/api_surface.snapshot.json", "tool/sdk_inventory.json", "tool/package_release_contract.json", "tool/distribution_policy.json", "tool/run_clean_clone_release_audit.dart", "tool/release_audit.dart", "tool/generate_supply_chain.dart"],
+      "acceptance": ["Finish stable documentation, API review, examples, clean-clone audit, Dartdoc, SBOM, licenses, advisories, ownership checks, changelogs, and the GitHub-only candidate."],
+      "gateCommands": ["dart run tool/release_audit.dart --docs"],
+      "evidence": ["tool/package_release_contract.json", "tool/distribution_policy.json", "tool/run_clean_clone_release_audit.dart", "docs/release/public-api-review.adoc", "docs/release/sbom.spdx.json", "docs/release/dependency-licenses.json"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-15", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-14"],
       "owner": "Dartitect maintainers", "affectedPackages": [],
-      "coveredPaths": [".github/workflows/**", "docs/release/**", "tool/goal_gates.json", "tool/actions_readiness_policy.json", "tool/create_actions_readiness.dart", "tool/check_rc_readiness.dart", "tool/check_rc_readiness_test.dart", "tool/release_audit.dart", "tool/verify.dart"],
+      "coveredPaths": [".github/workflows/**", "docs/release/**", "tool/goal_gates.json", "tool/actions_readiness_policy.json", "tool/create_actions_readiness.dart", "tool/check_actions_readiness.dart", "tool/check_actions_readiness_test.dart", "tool/release_audit.dart", "tool/verify.dart"],
       "acceptance": ["Generate one immutable actions-readiness-v1 artifact for an exact successful main CI run; local structural checks cannot declare readiness."],
-      "gateCommands": ["dart run tool/check_rc_readiness.dart --contract-only"],
-      "evidence": ["tool/actions_readiness_policy.json", "tool/create_actions_readiness.dart", "tool/check_rc_readiness.dart", "tool/check_rc_readiness_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "gateCommands": ["dart run tool/check_actions_readiness.dart --contract-only"],
+      "evidence": ["tool/actions_readiness_policy.json", "tool/create_actions_readiness.dart", "tool/check_actions_readiness.dart", "tool/check_actions_readiness_test.dart"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-16", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-15"],
       "owner": "Dartitect maintainers", "affectedPackages": [],
-      "coveredPaths": [".github/workflows/publish.yaml", "docs/release/**", "tool/goal_gates.json", "tool/actions_readiness_policy.json", "tool/check_publication_readiness.dart", "tool/release_audit.dart", "tool/verify.dart"],
-      "acceptance": ["Allow a human to trigger only tag, GitHub Release, or topological publication after source_sha, ci_run_id, main CI conclusion, and artifact hashes pass."],
-      "gateCommands": ["dart run tool/check_rc_readiness.dart --contract-only"],
-      "evidence": [".github/workflows/publish.yaml", "tool/actions_readiness_policy.json", "tool/check_publication_readiness.dart", "docs/release/publication-runbook.adoc"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "coveredPaths": [".github/workflows/release.yaml", "docs/release/**", "tool/goal_gates.json", "tool/actions_readiness_policy.json", "tool/check_release_readiness.dart", "tool/build_release_assets.dart", "tool/release_audit.dart", "tool/verify.dart"],
+      "acceptance": ["Allow a human to trigger only the annotated tag and immutable GitHub Release after source_sha, ci_run_id, main CI conclusion, policy checks, and artifact hashes pass."],
+      "gateCommands": ["dart run tool/check_actions_readiness.dart --contract-only", "dart test tool/check_release_readiness_test.dart tool/build_release_assets_test.dart"],
+      "evidence": [".github/workflows/release.yaml", "tool/actions_readiness_policy.json", "tool/check_release_readiness.dart", "tool/build_release_assets.dart", "docs/release/publication-runbook.adoc"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-17", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-16"],
       "owner": "Dartitect maintainers", "affectedPackages": [],
-      "coveredPaths": [".github/workflows/ci.yaml", "docs/release/**", "tool/canaries/**", "tool/goal_gates.json", "tool/check_canaries.dart", "tool/rc_validation_contract.json", "tool/check_rc_validation.dart", "tool/check_rc_validation_test.dart", "tool/release_audit.dart", "tool/verify.dart"],
-      "acceptance": ["Validate RC canaries, the nominal five native cells, and zero residuals on GitHub-hosted emulator/simulator jobs within the coordinated Actions run."],
-      "gateCommands": ["dart run tool/check_rc_validation.dart --contract-only"],
-      "evidence": ["tool/rc_validation_contract.json", "tool/check_rc_validation.dart", "tool/check_rc_validation_test.dart", "docs/release/installed-rc-validation.adoc"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "coveredPaths": [".github/workflows/ci.yaml", "docs/release/**", "tool/canaries/**", "tool/goal_gates.json", "tool/check_canaries.dart", "tool/run_git_canaries.dart", "tool/native_evidence_contract.json", "tool/check_native_evidence.dart", "tool/release_audit.dart", "tool/verify.dart"],
+      "acceptance": ["Validate Git consumers without overrides, CLI installation, the nominal five native cells, and zero residuals on GitHub-hosted jobs within the coordinated Actions run."],
+      "gateCommands": ["dart run tool/check_canaries.dart --validate-only", "dart run tool/check_native_evidence.dart --contract-only"],
+      "evidence": ["tool/canaries/canary_contract.json", "tool/check_canaries.dart", "tool/run_git_canaries.dart", "tool/native_evidence_contract.json", "tool/check_native_evidence.dart", ".github/workflows/ci.yaml"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     },
     {
       "id": "V1S-18", "required": true, "status": "IMPLEMENTED_LOCAL", "dependsOn": ["V1S-17"],
@@ -199,9 +199,9 @@
       "id": "V1-18", "required": true, "status": "IN_PROGRESS", "dependsOn": ["V1S-18"],
       "owner": "Dartitect maintainers", "affectedPackages": ["dartitect", "dartitect_cli", "dartitect_devtools", "dartitect_dio", "dartitect_drift", "dartitect_flutter", "dartitect_geometry", "dartitect_isolates", "dartitect_jobs", "dartitect_lints", "dartitect_locale_br", "dartitect_mcp", "dartitect_media", "dartitect_modeling", "dartitect_modeling_analyzer", "dartitect_objectbox", "dartitect_observability", "dartitect_privacy", "dartitect_resilience", "dartitect_sentry", "dartitect_sync", "dartitect_testing", "dartitect_transfer"],
       "coveredPaths": ["packages/**/pubspec.yaml", "packages/**/CHANGELOG.md", ".github/workflows/**", "docs/release/**", "tool/goal_gates.json", "tool/stable_candidate_contract.json", "tool/check_stable_candidate.dart", "tool/check_stable_candidate_test.dart", "tool/check_public_docs.dart", "tool/check_api_snapshot.dart", "tool/check_sdk_inventory.dart", "tool/check_skill_coverage.dart", "tool/generate_supply_chain.dart", "tool/release_audit.dart", "tool/verify.dart"],
-      "acceptance": ["Validate the stable candidate through CI / Required and actions-readiness-v1, then leave the human role limited to selecting the manual publication channel."],
-      "gateCommands": ["dart run tool/check_stable_candidate.dart --contract-only", "dart run tool/release_audit.dart --docs --publish-dry-run"],
-      "evidence": ["tool/stable_candidate_contract.json", "tool/check_stable_candidate.dart", "tool/check_stable_candidate_test.dart", ".github/workflows/publish.yaml"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
+      "acceptance": ["Validate the stable candidate through CI / Required and actions-readiness-v1, then leave the human role limited to dispatching the exact immutable Release transaction."],
+      "gateCommands": ["dart run tool/check_stable_candidate.dart --contract-only", "dart run tool/release_audit.dart --docs"],
+      "evidence": ["tool/stable_candidate_contract.json", "tool/check_stable_candidate.dart", "tool/check_stable_candidate_test.dart", ".github/workflows/release.yaml"], "sourceSha": null, "workflowRuns": [], "artifactDigests": [], "reviewedBy": [], "completedAt": null
     }
   ]
 }

@@ -1,3 +1,7 @@
+## 1.0.0
+
+- Promote the validated RC10 source cohort to the stable GitHub-only release.
+
 ## 1.0.0-rc.10
 
 - Join the RC10 business-neutral UI quality and evidence cohort.

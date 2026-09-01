@@ -1,11 +1,18 @@
 = Configuration compatibility
 
-The stable contract starts at +configVersion: 1+ with
-+profile: native_strict+. Experimental development configurations are not
-public predecessors and have no upgrade path.
+The stable contract starts at +configVersion: 3+ with
++profile: native_strict+. Normal configuration loading accepts only version 3.
 
-Run +dartitect init --dry-run+, review the complete v1 document, and recreate an
-older local file explicitly. The parser rejects every other version without
-modifying the project and preserves uninterpreted v1 extension fields.
-Generated-once consumer source is never a
-configuration migration target.
+Versions 1 and 2 are accepted only by the explicit, transactional migration
+commands. Preview first, then apply the reviewed stable migration:
+
+[source,console]
+----
+dartitect fleet upgrade . --to=1.0.0 --dry-run --json
+dartitect fleet upgrade . --to=1.0.0 --apply --json
+----
+
+Ordinary parsing rejects versions 1 and 2 without modifying the project.
+Migration preserves supported extension fields, journals every write, validates
+the upgraded project, and rolls back on failure. Generated-once consumer source
+is never a configuration migration target.

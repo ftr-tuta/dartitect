@@ -1,6 +1,7 @@
 name: dartitect_flutter_testing
 description: Paired responsive and accessibility test harnesses for Dartitect Flutter consumers.
-version: 1.0.0-rc.10
+version: 1.0.0
+publish_to: none
 repository: https://github.com/ftr-tuta/dartitect
 issue_tracker: https://github.com/ftr-tuta/dartitect/issues
 topics: [testing, flutter, accessibility, responsive]
@@ -11,7 +12,12 @@ environment:
   flutter: '>=3.47.1'
 
 dependencies:
-  dartitect_flutter: '>=1.0.0-rc.10 <1.0.0'
+  dartitect_flutter:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_flutter
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
   flutter:
     sdk: flutter
   flutter_test:

@@ -4,9 +4,13 @@ import 'dart:io';
 Future<void> main(List<String> arguments) async {
   final options = ReleaseAuditOptions.parse(arguments);
   final root = File.fromUri(Platform.script).parent.parent.absolute;
-  final stableCohort = _cohortVersion(root) == '1.0.0';
   final commands = <_Command>[
     const _Command('dart', <String>['run', 'tool/check_goal_gates.dart']),
+    const _Command('dart', <String>[
+      'run',
+      'tool/check_canaries.dart',
+      '--validate-only',
+    ]),
     const _Command('dart', <String>['run', 'tool/check_package_topology.dart']),
     const _Command('dart', <String>[
       'run',
@@ -18,12 +22,13 @@ Future<void> main(List<String> arguments) async {
     ]),
     const _Command('dart', <String>[
       'run',
+      'tool/check_distribution_policy.dart',
+    ]),
+    const _Command('dart', <String>[
+      'run',
       'tool/generate_release_artifacts.dart',
       '--check',
     ]),
-    if (!stableCohort)
-      const _Command('dart', <String>['run', 'tool/check_rc_candidate.dart']),
-    const _Command('dart', <String>['run', 'tool/check_pub_dev_identity.dart']),
     const _Command('dart', <String>['run', 'tool/check_ecosystem_policy.dart']),
     const _Command('dart', <String>[
       'run',
@@ -47,18 +52,6 @@ Future<void> main(List<String> arguments) async {
     ]),
     const _Command('dart', <String>['run', 'tool/check_skill_coverage.dart']),
     const _Command('dart', <String>['run', 'tool/check_public_docs.dart']),
-    if (!stableCohort)
-      const _Command('dart', <String>[
-        'run',
-        'tool/check_rc_readiness.dart',
-        '--contract-only',
-      ]),
-    if (!stableCohort)
-      const _Command('dart', <String>[
-        'run',
-        'tool/check_rc_validation.dart',
-        '--contract-only',
-      ]),
     const _Command('dart', <String>['run', 'tool/check_ui_quality.dart']),
     const _Command('dart', <String>[
       'run',
@@ -88,23 +81,25 @@ Future<void> main(List<String> arguments) async {
     'docs/release/sbom.spdx.json',
     'docs/release/dependency-licenses.json',
     'docs/release/advisory-audit.adoc',
-    'docs/release/pub-dev-identity-audit.adoc',
-    'docs/release/publish-exceptions.adoc',
     'docs/release/publication-runbook.adoc',
     'docs/release/package-cohorts.adoc',
     'docs/release/rc10-handoff.adoc',
     'tool/api_surface.snapshot.json',
     'tool/package_release_contract.json',
     'tool/provider_constructor_evidence.json',
-    'tool/rc_candidate_contract.json',
     'tool/actions_readiness_policy.json',
     'tool/create_actions_readiness.dart',
-    'tool/check_publication_readiness.dart',
+    'tool/check_release_readiness.dart',
+    'tool/distribution_policy.json',
+    'tool/dependency_snippets.dart',
+    'tool/build_release_assets.dart',
+    'tool/github_ruleset_policy.json',
+    'tool/github_release_ruleset_policy.json',
     'tool/rc_validation_contract.json',
     'tool/stable_candidate_contract.json',
     'tool/ui_quality_contract.json',
     'tool/check_ui_quality.dart',
-    '.github/workflows/publish.yaml',
+    '.github/workflows/release.yaml',
   ]) {
     if (!await File('${root.path}/$path').exists()) {
       throw StateError('Required release artifact is missing: $path');
@@ -127,14 +122,14 @@ Future<void> main(List<String> arguments) async {
       packages.add(entity);
     }
   }
-  final publicationOrder = packagePublicationOrder(root);
-  final publicationPositions = <String, int>{
-    for (var index = 0; index < publicationOrder.length; index += 1)
-      publicationOrder[index]: index,
+  final dependencyOrder = packageDependencyOrder(root);
+  final dependencyPositions = <String, int>{
+    for (var index = 0; index < dependencyOrder.length; index += 1)
+      dependencyOrder[index]: index,
   };
   packages.sort(
-    (left, right) => publicationPositions[_basename(left.path)]!.compareTo(
-      publicationPositions[_basename(right.path)]!,
+    (left, right) => dependencyPositions[_basename(left.path)]!.compareTo(
+      dependencyPositions[_basename(right.path)]!,
     ),
   );
   if (options.docs) {
@@ -150,38 +145,21 @@ Future<void> main(List<String> arguments) async {
       );
     }
   }
-  if (options.publishDryRun) {
-    for (final package in packages) {
-      await _runPublishDryRun(package);
-    }
-  }
-  stdout.writeln(
-    'Local release audit passed${options.publishDryRun ? ' with publish dry-runs' : ''}.',
-  );
+  stdout.writeln('Local GitHub-only release audit passed.');
 }
 
-String _cohortVersion(Directory root) {
-  final value = jsonDecode(
-    File('${root.path}/tool/package_release_contract.json').readAsStringSync(),
-  );
-  if (value is! Map<String, Object?> || value['cohortVersion'] is! String) {
-    throw const FormatException('Invalid package release cohort.');
-  }
-  return value['cohortVersion']! as String;
-}
-
-List<String> packagePublicationOrder(Directory root) {
+List<String> packageDependencyOrder(Directory root) {
   final contract = jsonDecode(
     File('${root.path}/tool/package_release_contract.json').readAsStringSync(),
   );
   if (contract is! Map<String, Object?> ||
-      contract['schemaVersion'] != 2 ||
-      contract['publicationOrder'] is! List<Object?>) {
+      contract['schemaVersion'] != 3 ||
+      contract['dependencyOrder'] is! List<Object?>) {
     throw const FormatException('Invalid package release contract.');
   }
-  final order = contract['publicationOrder']! as List<Object?>;
+  final order = contract['dependencyOrder']! as List<Object?>;
   if (order.any((value) => value is! String)) {
-    throw const FormatException('Invalid package publication order.');
+    throw const FormatException('Invalid package dependency order.');
   }
   return order.cast<String>();
 }
@@ -189,14 +167,12 @@ List<String> packagePublicationOrder(Directory root) {
 final class ReleaseAuditOptions {
   const ReleaseAuditOptions({
     required this.docs,
-    required this.publishDryRun,
     required this.authorRevision,
     required this.excludeMergeCommits,
   });
 
   factory ReleaseAuditOptions.parse(List<String> arguments) {
     var docs = false;
-    var publishDryRun = false;
     var excludeMergeCommits = false;
     String? authorRevision;
     for (final argument in arguments) {
@@ -204,11 +180,6 @@ final class ReleaseAuditOptions {
         case '--docs':
           if (docs) throw ArgumentError('Duplicate argument: --docs');
           docs = true;
-        case '--publish-dry-run':
-          if (publishDryRun) {
-            throw ArgumentError('Duplicate argument: --publish-dry-run');
-          }
-          publishDryRun = true;
         case '--exclude-merge-commits':
           if (excludeMergeCommits) {
             throw ArgumentError('Duplicate argument: --exclude-merge-commits');
@@ -235,14 +206,12 @@ final class ReleaseAuditOptions {
     }
     return ReleaseAuditOptions(
       docs: docs,
-      publishDryRun: publishDryRun,
       authorRevision: authorRevision,
       excludeMergeCommits: excludeMergeCommits,
     );
   }
 
   final bool docs;
-  final bool publishDryRun;
   final String? authorRevision;
   final bool excludeMergeCommits;
 }
@@ -291,56 +260,6 @@ Future<void> verifyCanonicalAuthors(
       'invalid commits: ${invalid.join(', ')}',
     );
   }
-}
-
-Future<void> _runPublishDryRun(Directory package) async {
-  const command = _Command('dart', <String>['pub', 'publish', '--dry-run']);
-  stdout.writeln('> ${command.executable} ${command.arguments.join(' ')}');
-  final result = await Process.run(
-    command.executable,
-    command.arguments,
-    workingDirectory: package.path,
-  ).timeout(const Duration(minutes: 8));
-  stdout.write(result.stdout);
-  stderr.write(result.stderr);
-  if (result.exitCode == 0) return;
-
-  final output = '${result.stdout}\n${result.stderr}';
-  final issueLines = const LineSplitter()
-      .convert(output)
-      .where((line) => line.startsWith('* '))
-      .toList(growable: false);
-  final packageName = _basename(package.path);
-  final approvedPluginWarning =
-      packageName == 'dartitect_lints' &&
-      result.exitCode == 65 &&
-      issueLines.length == 1 &&
-      issueLines.single.contains(
-        'The name of "lib/main.dart", "main", should match the name of the package',
-      ) &&
-      output.contains('Package has 1 warning.');
-  if (approvedPluginWarning) {
-    stdout.writeln(
-      'Accepted documented upstream analyzer-plugin entrypoint warning.',
-    );
-    return;
-  }
-  final approvedExperimentalMcpPin =
-      packageName == 'dartitect_mcp' &&
-      result.exitCode == 65 &&
-      issueLines.length == 1 &&
-      issueLines.single.contains(
-        'dependency on "dart_mcp" should allow more than one version',
-      ) &&
-      output.contains('Package has 1 warning.');
-  if (approvedExperimentalMcpPin) {
-    stdout.writeln('Accepted documented experimental MCP pin warning.');
-    return;
-  }
-  throw StateError(
-    '${command.executable} ${command.arguments.join(' ')} '
-    'failed with ${result.exitCode}.',
-  );
 }
 
 Future<void> _run(Directory directory, _Command command) async {

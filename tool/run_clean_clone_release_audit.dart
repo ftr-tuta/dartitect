@@ -43,7 +43,6 @@ Future<void> main() async {
       'run',
       'tool/release_audit.dart',
       '--docs',
-      '--publish-dry-run',
       '--author-revision=$revision',
     ]);
     final cloneStatus = await _git(clone, const <String>[
@@ -63,8 +62,8 @@ Future<void> main() async {
         'schemaVersion': 1,
         'sourceSha': revision,
         'tree': tree,
-        'cohortVersion': '1.0.0-rc.10',
-        'commands': <String>['flutter pub get', 'dart run tool/release_audit.dart --docs --publish-dry-run --author-revision=$revision'],
+        'releaseVersion': '1.0.0',
+        'commands': <String>['flutter pub get', 'dart run tool/release_audit.dart --docs --author-revision=$revision'],
         'trackedTreeClean': true,
         'result': 'PASS',
         'recordedAtUtc': DateTime.now().toUtc().toIso8601String(),

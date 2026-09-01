@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "source": "tool/package_release_contract.json",
   "packages": {
     "dartitect": {
@@ -8,13 +8,13 @@
         "Flutter",
         "web"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_cli": {
       "platforms": [
         "Dart VM"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_devtools": {
       "platforms": [
@@ -22,13 +22,13 @@
         "Flutter development",
         "DevTools web"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_dio": {
       "platforms": [
         "Dio platforms"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_drift": {
       "platforms": [
@@ -36,20 +36,20 @@
         "Flutter",
         "web"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_flutter": {
       "platforms": [
         "Flutter"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_flutter_testing": {
       "platforms": [
         "Flutter test VM",
         "Chrome"
       ],
-      "stability": "release candidate dev-only"
+      "stability": "stable dev-only"
     },
     "dartitect_geometry": {
       "platforms": [
@@ -57,14 +57,14 @@
         "Flutter",
         "web"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_isolates": {
       "platforms": [
         "Dart VM",
         "Flutter native"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_jobs": {
       "platforms": [
@@ -72,13 +72,13 @@
         "Flutter",
         "web"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_lints": {
       "platforms": [
         "Dart analyzer"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_locale_br": {
       "platforms": [
@@ -86,14 +86,14 @@
         "Flutter",
         "web"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_mcp": {
       "platforms": [
         "Dart VM",
         "STDIO"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_media": {
       "platforms": [
@@ -101,7 +101,7 @@
         "iOS",
         "Flutter other notSupported"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_modeling": {
       "platforms": [
@@ -109,14 +109,14 @@
         "Flutter",
         "web"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_modeling_analyzer": {
       "platforms": [
         "Dart VM",
         "Dart analyzer"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_objectbox": {
       "platforms": [
@@ -126,7 +126,7 @@
         "macOS",
         "Windows"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_observability": {
       "platforms": [
@@ -134,14 +134,14 @@
         "Flutter",
         "web"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_privacy": {
       "platforms": [
         "iOS",
         "Flutter non-iOS notSupported"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_resilience": {
       "platforms": [
@@ -149,14 +149,14 @@
         "Flutter",
         "web"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_sentry": {
       "platforms": [
         "Dart",
         "Flutter"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_sync": {
       "platforms": [
@@ -164,7 +164,7 @@
         "Flutter",
         "web"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_testing": {
       "platforms": [
@@ -172,7 +172,7 @@
         "Flutter",
         "web"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_transfer": {
       "platforms": [
@@ -180,7 +180,7 @@
         "Flutter",
         "web"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     },
     "dartitect_workmanager": {
       "platforms": [
@@ -191,7 +191,7 @@
         "Linux preview",
         "Windows unsupported"
       ],
-      "stability": "release candidate"
+      "stability": "stable"
     }
   }
 }

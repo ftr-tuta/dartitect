@@ -1,143 +1,157 @@
 import 'dart:io';
 
+import 'package:yaml/yaml.dart';
+
 import 'generated_release_manifest.dart';
 
-/// One installed Dartitect package outside its declared compatible range.
+/// One installed Dartitect package outside the canonical Git release graph.
 final class DartitectLockIncompatibility {
   /// Creates an incompatibility from one lockfile entry.
   const DartitectLockIncompatibility({
     required this.package,
     required this.version,
     required this.expectedRange,
+    required this.reason,
   });
 
   /// Resolved package name.
   final String package;
 
-  /// Resolved semantic version.
+  /// Resolved semantic version, or `missing`.
   final String version;
 
-  /// Range declared by the generated compatibility manifest.
+  /// Canonical lockfile expectation retained for stable reporting.
   final String expectedRange;
+
+  /// Exact source invariant that failed.
+  final String reason;
 }
 
-/// Validates resolved packages against the generated compatibility manifest.
+/// Validates resolved packages against the immutable GitHub release manifest.
 abstract final class DartitectLockCompatibility {
-  /// Returns incompatible Dartitect entries from [lockfile].
+  /// Returns non-canonical Dartitect entries from [lockfile].
   static Future<List<DartitectLockIncompatibility>> inspect(
     File lockfile,
   ) async {
-    if (!await lockfile.exists()) return const <DartitectLockIncompatibility>[];
-    final resolved = _resolvedVersions(await lockfile.readAsString());
+    if (!await lockfile.exists()) {
+      return const <DartitectLockIncompatibility>[];
+    }
+    final yaml = loadYaml(await lockfile.readAsString());
+    if (yaml is! Map<Object?, Object?>) {
+      return const <DartitectLockIncompatibility>[
+        DartitectLockIncompatibility(
+          package: 'dartitect',
+          version: 'missing',
+          expectedRange: 'canonical Git lockfile graph',
+          reason: 'pubspec.lock is not a YAML map',
+        ),
+      ];
+    }
+    final packages = _map(yaml['packages']);
+    if (packages == null) return const <DartitectLockIncompatibility>[];
+    final developmentWorkspace = _isDevelopmentWorkspace(lockfile.parent);
     final findings = <DartitectLockIncompatibility>[];
-    for (final entry in resolved.entries) {
-      final expected = DartitectReleaseManifest.compatibleRanges[entry.key];
-      if (expected == null || !_contains(expected, entry.value)) {
+    final refs = <String, String>{};
+    for (final entry in packages.entries) {
+      final package = entry.key;
+      if (!_isDartitectPackage(package)) continue;
+      final locked = _map(entry.value);
+      final version = '${locked?['version'] ?? 'missing'}';
+      if (developmentWorkspace && locked?['source'] == 'root') continue;
+      final expectedPath = DartitectReleaseManifest.packagePaths[package];
+      if (expectedPath == null) {
         findings.add(
-          DartitectLockIncompatibility(
-            package: entry.key,
-            version: entry.value,
-            expectedRange: expected ?? 'not present in the release manifest',
+          _finding(package, version, 'package is absent from release manifest'),
+        );
+        continue;
+      }
+      if (version != DartitectReleaseManifest.releaseVersion) {
+        findings.add(
+          _finding(
+            package,
+            version,
+            'version must be ${DartitectReleaseManifest.releaseVersion}',
+          ),
+        );
+      }
+      if (locked?['source'] != 'git') {
+        findings.add(_finding(package, version, 'source must be git'));
+        continue;
+      }
+      final description = _map(locked?['description']);
+      final resolvedRef = description?['resolved-ref'];
+      if (description?['url'] != DartitectReleaseManifest.repository) {
+        findings.add(_finding(package, version, 'Git URL is not canonical'));
+      }
+      if (description?['path'] != expectedPath) {
+        findings.add(
+          _finding(package, version, 'Git path must be $expectedPath'),
+        );
+      }
+      if (description?['tag-pattern'] != DartitectReleaseManifest.tagPattern) {
+        findings.add(
+          _finding(
+            package,
+            version,
+            'tag-pattern must be ${DartitectReleaseManifest.tagPattern}',
+          ),
+        );
+      }
+      if (resolvedRef is! String ||
+          !RegExp(r'^[0-9a-f]{40}$').hasMatch(resolvedRef)) {
+        findings.add(
+          _finding(package, version, 'resolved-ref must be a full Git SHA'),
+        );
+      } else {
+        refs[package] = resolvedRef;
+      }
+    }
+    final uniqueRefs = refs.values.toSet();
+    if (uniqueRefs.length > 1) {
+      for (final entry in refs.entries) {
+        findings.add(
+          _finding(
+            entry.key,
+            DartitectReleaseManifest.releaseVersion,
+            'resolved-ref ${entry.value} differs from the lockstep graph',
           ),
         );
       }
     }
-    findings.sort((left, right) => left.package.compareTo(right.package));
+    findings.sort((left, right) {
+      final package = left.package.compareTo(right.package);
+      return package != 0 ? package : left.reason.compareTo(right.reason);
+    });
     return findings;
   }
 
-  static Map<String, String> _resolvedVersions(String source) {
-    final versions = <String, String>{};
-    String? current;
-    for (final line in source.split(RegExp(r'\r?\n'))) {
-      final package = RegExp(r'^  (dartitect(?:_[A-Za-z0-9_]+)?):\s*$')
-          .firstMatch(line);
-      if (package != null) {
-        current = package.group(1);
-        continue;
-      }
-      if (current == null) continue;
-      final version = RegExp(r'''^    version:\s*['"]?([^'"\s]+)['"]?\s*$''')
-          .firstMatch(line);
-      if (version != null) {
-        versions[current] = version.group(1)!;
-        current = null;
-      } else if (line.isNotEmpty && !line.startsWith('    ')) {
-        current = null;
-      }
-    }
-    return versions;
-  }
+  static DartitectLockIncompatibility _finding(
+    String package,
+    String version,
+    String reason,
+  ) => DartitectLockIncompatibility(
+    package: package,
+    version: version,
+    expectedRange:
+        '${DartitectReleaseManifest.releaseVersion} from '
+        '${DartitectReleaseManifest.releaseTag}',
+    reason: reason,
+  );
 
-  static bool _contains(String range, String version) {
-    final match = RegExp(r'^>=([^\s]+) <([^\s]+)$').firstMatch(range);
-    final candidate = _Version.tryParse(version);
-    final lower = _Version.tryParse(match?.group(1));
-    final upper = _Version.tryParse(match?.group(2));
-    return match != null &&
-        candidate != null &&
-        lower != null &&
-        upper != null &&
-        candidate.compareTo(lower) >= 0 &&
-        candidate.compareTo(upper) < 0;
-  }
+  static bool _isDevelopmentWorkspace(Directory root) =>
+      File('${root.path}/tool/distribution_policy.json').existsSync() &&
+      File('${root.path}/packages/dartitect/pubspec.yaml').existsSync();
 }
 
-final class _Version implements Comparable<_Version> {
-  const _Version(this.major, this.minor, this.patch, this.prerelease);
-
-  final int major;
-  final int minor;
-  final int patch;
-  final List<String> prerelease;
-
-  static _Version? tryParse(String? source) {
-    if (source == null) return null;
-    final match = RegExp(
-      r'^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z.-]+))?$',
-    ).firstMatch(source);
-    if (match == null) return null;
-    return _Version(
-      int.parse(match.group(1)!),
-      int.parse(match.group(2)!),
-      int.parse(match.group(3)!),
-      match.group(4)?.split('.') ?? const <String>[],
-    );
+Map<String, Object?>? _map(Object? value) {
+  if (value is! Map<Object?, Object?>) return null;
+  final result = <String, Object?>{};
+  for (final entry in value.entries) {
+    if (entry.key is! String) return null;
+    result[entry.key! as String] = entry.value;
   }
-
-  @override
-  int compareTo(_Version other) {
-    for (final comparison in <int>[
-      major.compareTo(other.major),
-      minor.compareTo(other.minor),
-      patch.compareTo(other.patch),
-    ]) {
-      if (comparison != 0) return comparison;
-    }
-    if (prerelease.isEmpty || other.prerelease.isEmpty) {
-      return prerelease.isEmpty == other.prerelease.isEmpty
-          ? 0
-          : prerelease.isEmpty
-          ? 1
-          : -1;
-    }
-    final length = prerelease.length < other.prerelease.length
-        ? prerelease.length
-        : other.prerelease.length;
-    for (var index = 0; index < length; index += 1) {
-      final left = prerelease[index];
-      final right = other.prerelease[index];
-      final leftNumber = int.tryParse(left);
-      final rightNumber = int.tryParse(right);
-      final comparison = leftNumber != null && rightNumber != null
-          ? leftNumber.compareTo(rightNumber)
-          : leftNumber != null
-          ? -1
-          : rightNumber != null
-          ? 1
-          : left.compareTo(right);
-      if (comparison != 0) return comparison;
-    }
-    return prerelease.length.compareTo(other.prerelease.length);
-  }
+  return result;
 }
+
+bool _isDartitectPackage(String name) =>
+    RegExp(r'^dartitect(?:_[a-z0-9_]+)?$').hasMatch(name);

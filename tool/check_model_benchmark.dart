@@ -21,7 +21,7 @@ void main() {
   final baseline = _object(artifact['baseline']);
   final candidate = _object(artifact['candidate']);
   if (artifact['schemaVersion'] != 2 ||
-      artifact['targetVersion'] != '1.0.0-rc.10' ||
+      artifact['targetVersion'] != '1.0.0' ||
       policy['coldRuns'] != 5 ||
       policy['warmRuns'] != 20 ||
       policy['maxRegressionPercent'] != 10.0 ||

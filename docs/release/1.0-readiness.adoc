@@ -1,8 +1,8 @@
 = Dartitect 1.0 Actions readiness
 
-The currently assembled RC10 baseline across five publication cohorts is
-`1.0.0-rc.10`. This policy must
-authorize that exact source before the publication workflow can act on it.
+The validated RC10 source is promoted directly to the permanent lockstep
+`1.0.0` cohort. This policy must authorize the exact merged source before the
+GitHub-only Release workflow can act on it.
 
 Status:: ACTIONS READINESS PENDING
 Authority:: `tool/actions_readiness_policy.json`
@@ -13,7 +13,7 @@ Retention:: 90 days
 == Technical authority
 
 GitHub Actions owns all tests, security checks, native evidence, clean-clone
-audits, benchmarks, canaries, and release dry-runs. The coordinated `CI`
+audits, benchmarks, and Git-without-overrides canaries. The coordinated `CI`
 workflow runs on pull requests, merge queue candidates, and pushes to `main`.
 The `Security` workflow is diagnostic-only; merge-candidate OSV scanning runs
 inside `CI` and therefore contributes to the single required result.
@@ -31,11 +31,12 @@ durations.
 
 Only a successful `push` run on `main` creates `actions-readiness-v1`. The
 artifact contains the exact source SHA and Git tree, workflow run ID and
-attempt, all required job conclusions, the five native manifests, and SHA-256
-digests for every included artifact. Pull requests validate the implementation
-but do not create release authorization.
+attempt, all eight required job conclusions, the five native manifests, and
+SHA-256 digests for every included policy and deterministic Release input.
+Pull requests validate the implementation but do not create release
+authorization.
 
-`dart run tool/check_rc_readiness.dart --contract-only` validates structure and
+`dart run tool/check_actions_readiness.dart --contract-only` validates structure and
 explicitly cannot declare readiness. Formal mode runs only inside the hosted
 main CI execution and accepts only the artifact from that current run. Missing,
 expired, cross-run, cross-SHA, cross-tree, skipped, cancelled, or altered input
@@ -56,7 +57,7 @@ Local runs are optional development feedback only.
 
 == Stable UI-quality evidence
 
-RC10 includes the business-neutral responsive entrypoint, exhaustive borrowed
+Version 1.0.0 includes the business-neutral responsive entrypoint, exhaustive borrowed
 builders, and the dev-only paired UI matrix without owning product controls,
 themes, strings, locales, navigation, or visual identity. The machine-readable
 `ui-quality-v1` contract verifies API and inventory freshness, CLI/analyzer
@@ -78,11 +79,13 @@ both prove migration, CRUD, commit/rollback, watch propagation, persistence,
 safe multi-context storage, and foreground resume. There is no in-memory,
 unsafe IndexedDB, missing-Chrome, or WebDriver fallback.
 
-== Publication
+== Release
 
-The `Publish` workflow is the sole human decision point. Its actor supplies
-`source_sha`, `ci_run_id`, and `channel`. The workflow verifies that the CI run
-is a successful `main` run for the SHA, downloads the corresponding unexpired
-artifact, validates its hashes, and only then creates the selected tag, GitHub
-Release, or pub.dev publication. The actor is provenance, not technical
-evidence.
+The manual `Release` workflow is the sole human decision point. Its actor
+supplies only `source_sha` and `ci_run_id`. Before any write, the workflow proves
+that the SHA is the current remote `main` HEAD, the CI push run and
+`CI / Required` succeeded for it, and the unexpired readiness artifact matches
+the run attempt, source tree, eight jobs, and all hashes. It then creates the
+annotated `v1.0.0` tag and an immutable stable/latest GitHub Release using the
+idempotent transaction in the release runbook. The actor is provenance, not
+technical evidence; there is no Dartitect registry channel.

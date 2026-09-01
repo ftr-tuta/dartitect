@@ -96,7 +96,7 @@ final class _Fixture {
     }
     for (final path in const <String>[
       '.github/workflows/ci.yaml',
-      '.github/workflows/publish.yaml',
+      '.github/workflows/release.yaml',
     ]) {
       final file = File('${root.path}/$path');
       await file.parent.create(recursive: true);
@@ -183,7 +183,7 @@ final class _Fixture {
 
   Future<ProcessResult> check({bool contractOnly = false, int runId = 123}) {
     final checker = File(
-      '${Directory.current.path}/tool/check_rc_readiness.dart',
+      '${Directory.current.path}/tool/check_actions_readiness.dart',
     );
     return Process.run(
       Platform.resolvedExecutable,

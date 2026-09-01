@@ -260,12 +260,23 @@ The workspace requires Dart `^3.13.0`; Flutter packages require Flutter
 READMEs. Drift accepts consumer-owned native and web executors. ObjectBox has no
 web support. The CLI, modeling analyzer, and MCP server run on the Dart VM.
 
-All packages currently share the `1.0.0-rc.10` source cohort. Do not copy Git
-coordinates from this README. Experimental Git consumption is supported only
-for a tag that has a corresponding published GitHub Release, using the complete
-compatible cohort and dependency coordinates from that Release's notes. If no
-such Release exists, there is no supported consumption path. See the
-[Git candidate consumption guide](docs/guides/git-candidate-consumption.md).
+All 25 packages permanently share one lockstep version and are distributed only
+through the immutable GitHub Release for `v1.0.0`. Declare only direct packages;
+transitive Dartitect packages resolve from the same tag without overrides:
+
+```yaml
+dependencies:
+  dartitect:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+```
+
+External dependencies continue to use their normal registries. See the
+[Git release consumption guide](docs/guides/git-release-consumption.md) and the
+[release page](https://github.com/ftr-tuta/dartitect/releases/tag/v1.0.0).
 
 ## Security, contribution, and license
 

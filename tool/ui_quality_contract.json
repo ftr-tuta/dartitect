@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "artifact": "ui-quality-v1",
   "goal": "V1S-18",
-  "cohortVersion": "1.0.0-rc.10",
+  "releaseVersion": "1.0.0",
   "topology": {"packages": 25, "publicEntrypoints": 32},
   "entrypoints": [
     "package:dartitect_flutter/dartitect_flutter_ui.dart",

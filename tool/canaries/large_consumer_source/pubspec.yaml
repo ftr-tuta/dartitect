@@ -1,6 +1,6 @@
 name: large_consumer_canary
 description: Workspace source for the isolated 30-feature scale canary.
-version: 1.0.0-rc.10
+version: 1.0.0
 publish_to: none
 
 environment:
@@ -9,19 +9,64 @@ environment:
 resolution: workspace
 
 dependencies:
-  dartitect: ^1.0.0-rc.10
-  dartitect_dio: ^1.0.0-rc.10
-  dartitect_drift: ^1.0.0-rc.10
-  dartitect_flutter: ^1.0.0-rc.10
-  dartitect_observability: ^1.0.0-rc.10
-  dartitect_sync: ^1.0.0-rc.10
-  dartitect_workmanager: ^1.0.0-rc.10
+  dartitect:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+  dartitect_dio:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_dio
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+  dartitect_drift:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_drift
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+  dartitect_flutter:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_flutter
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+  dartitect_observability:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_observability
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+  dartitect_sync:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_sync
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+  dartitect_workmanager:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_workmanager
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
   flutter:
     sdk: flutter
 
 dev_dependencies:
-  dartitect_cli: ^1.0.0-rc.10
-  dartitect_testing: ^1.0.0-rc.10
+  dartitect_cli:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_cli
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+  dartitect_testing:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_testing
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter

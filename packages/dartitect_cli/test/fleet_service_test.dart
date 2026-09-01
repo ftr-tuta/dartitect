@@ -228,10 +228,10 @@ Result<int, StateError> load() => const Ok<int>(1);
   });
 
   test(
-    'fleet CLI previews RC10 upgrade and writes nothing by default',
+    'fleet CLI previews stable Git upgrade and writes nothing by default',
     () async {
       final fleet = await _fleet();
-      final app = await _project(fleet, 'app', '^1.0.0-rc.6');
+      final app = await _project(fleet, 'app', '^1.0.0-rc.10');
       final before = await File('${app.path}/pubspec.yaml').readAsString();
       final output = StringBuffer();
       final errors = StringBuffer();
@@ -247,7 +247,7 @@ Result<int, StateError> load() => const Ok<int>(1);
           'upgrade',
           'app',
           '--dry-run',
-          '--to=1.0.0-rc.10',
+          '--to=1.0.0',
           '--json',
         ]),
         0,
@@ -263,12 +263,7 @@ Result<int, StateError> load() => const Ok<int>(1);
 
       output.clear();
       expect(
-        await runner.run(<String>[
-          'fleet',
-          'upgrade',
-          'app',
-          '--to=1.0.0-rc.10',
-        ]),
+        await runner.run(<String>['fleet', 'upgrade', 'app', '--to=1.0.0']),
         0,
       );
       expect(await File('${app.path}/pubspec.yaml').readAsString(), before);
@@ -276,24 +271,25 @@ Result<int, StateError> load() => const Ok<int>(1);
   );
 
   test(
-    'fleet upgrade validates declarations and ignores Git overrides',
+    'fleet upgrade validates RC10 and removes only Dartitect overrides',
     () async {
       final fleet = await _fleet();
-      final app = await _project(fleet, 'app', '^1.0.0-rc.8');
+      final app = await _project(fleet, 'app', '^1.0.0-rc.10');
       final pubspec = File('${app.path}/pubspec.yaml');
       await pubspec.writeAsString('''name: app
 dependencies:
-  dartitect: ^1.0.0-rc.8
+  dartitect: ^1.0.0-rc.10
 dependency_overrides:
   dartitect:
     git:
       url: /tmp/dartitect-candidate
       ref: v1.0.0-rc.10
       path: packages/dartitect
+  meta: ^1.0.0
 ''');
 
       final report = await DartitectFleetService(fleet)
-          .previewUpgrade(<String>['app'], targetCohort: '1.0.0-rc.10');
+          .previewUpgrade(<String>['app'], targetCohort: '1.0.0');
       final plan = report.projects.single['plan']! as Map<String, Object?>;
 
       expect(plan['operations'], contains('UPDATE pubspec.yaml'));
@@ -301,6 +297,12 @@ dependency_overrides:
         await pubspec.readAsString(),
         contains('url: /tmp/dartitect-candidate'),
       );
+      final rendered = DartitectProjectService.renderDependencyUpgradeSource(
+        await pubspec.readAsString(),
+        '1.0.0',
+      );
+      expect(rendered, isNot(contains('/tmp/dartitect-candidate')));
+      expect(rendered, contains('  meta: ^1.0.0'));
     },
   );
 
@@ -308,7 +310,7 @@ dependency_overrides:
     'fleet records every renderer migration including no-op steps',
     () async {
       final fleet = await _fleet();
-      final app = await _project(fleet, 'app', '^1.0.0-rc.8');
+      final app = await _project(fleet, 'app', '^1.0.0-rc.10');
       final manifest = File(
         '${app.path}/.dartitect/generation/wiring/manifest.json',
       );
@@ -330,7 +332,7 @@ dependency_overrides:
       );
 
       final report = await DartitectFleetService(fleet)
-          .previewUpgrade(<String>['app'], targetCohort: '1.0.0-rc.10');
+          .previewUpgrade(<String>['app'], targetCohort: '1.0.0');
       final plan = report.projects.single['plan']! as Map<String, Object?>;
 
       expect(plan['migrations'], <Object?>[
@@ -343,7 +345,7 @@ dependency_overrides:
 
   test('fleet apply commits only after allowlisted gates pass', () async {
     final fleet = await _fleet();
-    final app = await _project(fleet, 'app', '^1.0.0-rc.6');
+    final app = await _project(fleet, 'app', '^1.0.0-rc.10');
     final commands = <String>[];
     final service = DartitectFleetService(
       fleet,
@@ -355,12 +357,12 @@ dependency_overrides:
 
     final report = await service.applyUpgrade(<String>[
       'app',
-    ], targetCohort: '1.0.0-rc.10');
+    ], targetCohort: '1.0.0');
 
     expect(report.exitCode, 0);
     expect(
       await File('${app.path}/pubspec.yaml').readAsString(),
-      contains('^1.0.0-rc.10'),
+      contains("tag_pattern: 'v{{version}}'"),
     );
     expect(commands, <String>['dart pub get', 'dart analyze', 'dart test']);
     expect(
@@ -371,8 +373,8 @@ dependency_overrides:
 
   test('fleet failure restores every project and validates digests', () async {
     final fleet = await _fleet();
-    final alpha = await _project(fleet, 'alpha', '^1.0.0-rc.6');
-    final beta = await _project(fleet, 'beta', '^1.0.0-rc.6');
+    final alpha = await _project(fleet, 'alpha', '^1.0.0-rc.10');
+    final beta = await _project(fleet, 'beta', '^1.0.0-rc.10');
     final beforeAlpha = await File('${alpha.path}/pubspec.yaml').readAsBytes();
     final beforeBeta = await File('${beta.path}/pubspec.yaml').readAsBytes();
     final service = DartitectFleetService(
@@ -386,10 +388,7 @@ dependency_overrides:
     );
 
     await expectLater(
-      service.applyUpgrade(<String>[
-        'beta',
-        'alpha',
-      ], targetCohort: '1.0.0-rc.10'),
+      service.applyUpgrade(<String>['beta', 'alpha'], targetCohort: '1.0.0'),
       throwsFormatException,
     );
     expect(await File('${alpha.path}/pubspec.yaml').readAsBytes(), beforeAlpha);

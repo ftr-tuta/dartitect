@@ -65,7 +65,7 @@ void main() {
           .readAsStringSync(),
     ),
   );
-  final packages = _strings(release['publicationOrder'], errors);
+  final packages = _strings(release['dependencyOrder'], errors);
   if (packages.contains('dartitect_state')) {
     errors.add('Deferred slices must not create dartitect_state.');
   }

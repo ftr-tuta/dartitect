@@ -81,6 +81,8 @@ zero active or retained resources after shutdown.
 
 ## Availability
 
-The workspace contains the `1.0.0-rc.10` source candidate. Supported Git use
-requires coordinates from a matching tagged GitHub Release; otherwise there is
-no supported consumption path.
+Dartitect `1.0.0` is distributed only by the annotated `v1.0.0` tag and
+its immutable GitHub Release. Declare this package directly with the canonical
+Git descriptor; its transitive Dartitect dependencies resolve from the same tag
+without overrides. See the
+[Git release consumption guide](../../docs/guides/git-release-consumption.md).

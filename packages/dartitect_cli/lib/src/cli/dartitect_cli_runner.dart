@@ -641,44 +641,26 @@ final class DartitectCliRunner {
   }) async {
     final pubspec = File(_join(project.path, 'pubspec.yaml'));
     var source = await pubspec.readAsString();
-    final localSdk = _findLocalSdkRoot();
     final sdkPackages = <String>{'dartitect', 'dartitect_flutter'}.toList()
       ..sort();
     final devSdkPackages = <String>{
       'dartitect_flutter_testing',
       if (example == 'tasks') 'dartitect_testing',
     }.toList()..sort();
-    final localOverridePackages = _localSdkPackageClosure(<String>[
-      ...sdkPackages,
-      ...devSdkPackages,
-    ]);
-    final dependencyBlock = localSdk == null || workspaceMember
-        ? '${sdkPackages.map((package) => '  $package: ^1.0.0-rc.10\n').join()}'
-              '  flutter_localizations:\n'
-              '    sdk: flutter\n'
-        : sdkPackages
-                  .map(
-                    (package) =>
-                        '  $package:\n'
-                        '    path: ${_yamlQuote(_join(localSdk.path, 'packages/$package'))}\n',
-                  )
-                  .join() +
-              '  flutter_localizations:\n'
-                  '    sdk: flutter\n';
+    final dependencyBlock =
+        '${sdkPackages.map(_gitDependencyDescriptor).join()}'
+        '  flutter_localizations:\n'
+        '    sdk: flutter\n';
     source = source.replaceFirst(
       'dev_dependencies:\n',
       '${dependencyBlock}dev_dependencies:\n'
-          '${localSdk == null || workspaceMember ? devSdkPackages.map((package) => '  $package: ^1.0.0-rc.10\n').join() : devSdkPackages.map((package) => '  $package:\n    path: ${_yamlQuote(_join(localSdk.path, 'packages/$package'))}\n').join()}',
+          '${devSdkPackages.map(_gitDependencyDescriptor).join()}',
     );
     if (workspaceMember) {
       source = source.replaceFirst(
         'environment:\n',
         'resolution: workspace\n\nenvironment:\n',
       );
-    } else if (localSdk != null) {
-      source =
-          '$source\ndependency_overrides:\n${localOverridePackages.map((package) => '  $package:\n'
-              '    path: ${_yamlQuote(_join(localSdk.path, 'packages/$package'))}\n').join()}';
     }
     await pubspec.writeAsString(source, flush: true);
 
@@ -1289,9 +1271,7 @@ final class _AppStringsDelegate extends LocalizationsDelegate<_AppStrings> {
           );
         }
         if (arguments.options['to'] == null) {
-          throw const _UsageException(
-            'fleet upgrade requires --to=1.0.0-rc.10.',
-          );
+          throw const _UsageException('fleet upgrade requires --to=1.0.0.');
         }
         report = arguments.flags.contains('apply')
             ? await service.applyUpgrade(
@@ -1475,48 +1455,13 @@ final class _AppStringsDelegate extends LocalizationsDelegate<_AppStrings> {
     }
   }
 
-  static List<String> _localSdkPackageClosure(Iterable<String> packages) {
-    final closure = <String>{...packages};
-    const dependencies = <String, Set<String>>{
-      'dartitect_flutter': {'dartitect'},
-      'dartitect_flutter_testing': {'dartitect_flutter'},
-      'dartitect_observability': {'dartitect'},
-      'dartitect_jobs': {'dartitect'},
-      'dartitect_resilience': {'dartitect'},
-      'dartitect_transfer': {'dartitect'},
-      'dartitect_sync': {'dartitect', 'dartitect_jobs', 'dartitect_resilience'},
-      'dartitect_dio': {
-        'dartitect',
-        'dartitect_observability',
-        'dartitect_transfer',
-      },
-      'dartitect_drift': {
-        'dartitect',
-        'dartitect_observability',
-        'dartitect_sync',
-      },
-      'dartitect_objectbox': {
-        'dartitect',
-        'dartitect_flutter',
-        'dartitect_observability',
-        'dartitect_sync',
-      },
-      'dartitect_sentry': {'dartitect_observability'},
-      'dartitect_workmanager': {'dartitect', 'dartitect_jobs'},
-    };
-    var changed = true;
-    while (changed) {
-      changed = false;
-      for (final package in closure.toList(growable: false)) {
-        for (final dependency in dependencies[package] ?? const <String>{}) {
-          changed = closure.add(dependency) || changed;
-        }
-      }
-    }
-    return closure.toList()..sort();
-  }
-
-  static String _yamlQuote(String value) => "'${value.replaceAll("'", "''")}'";
+  static String _gitDependencyDescriptor(String package) =>
+      '  $package:\n'
+      '    git:\n'
+      '      url: https://github.com/ftr-tuta/dartitect.git\n'
+      '      path: packages/$package\n'
+      "      tag_pattern: 'v{{version}}'\n"
+      '    version: 1.0.0\n';
 
   static String _firstLine(String output) {
     final sanitized = output.trim().split(RegExp(r'\r?\n')).firstOrNull ?? '';
@@ -1578,8 +1523,8 @@ Read-only commands:
   fleet check <root...>            Scan explicit fleet roots without writes.
   fleet policy <root...> --bundle=PATH --sha256=DIGEST
                                     Audit with a pinned local policy bundle.
-  fleet upgrade <root...> --to=1.0.0-rc.10 --apply [--json]
-                                    Upgrade a cohort transactionally.
+  fleet upgrade <root...> --to=1.0.0 --apply [--json]
+                                    Migrate RC10 to GitHub-only stable lockstep.
 
 Convergent synchronizers (preview by default):
   model sync [--dry-run|--apply] [--json]

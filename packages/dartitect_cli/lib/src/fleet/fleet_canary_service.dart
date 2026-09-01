@@ -141,6 +141,8 @@ final class DartitectFleetCanaryService {
   /// Boundary containing consumer projects.
   final Directory fleetRoot;
 
+  static const _repository = 'https://github.com/ftr-tuta/dartitect.git';
+
   /// Archives [candidateCommit], copies [projectRoot], and runs [commands].
   Future<DartitectFleetCanaryReceipt> run({
     required String projectRoot,
@@ -206,20 +208,44 @@ final class DartitectFleetCanaryService {
         candidateCommit,
       ], candidateBoundary);
       archiveDigest = sha256.convert(await archive.readAsBytes()).toString();
-      await _runRequired('tar', <String>[
-        '-xf',
-        archive.path,
-        '-C',
-        temporary.path,
+      final remote = Directory(_join(temporary.path, 'dartitect.git'));
+      await _runRequired('git', <String>[
+        'clone',
+        '--bare',
+        candidateBoundary,
+        remote.path,
       ], temporary.path);
+      await _runRequired('git', <String>[
+        '-c',
+        'user.name=ftr',
+        '-c',
+        'user.email=ftr@tuta.com',
+        '--git-dir=${remote.path}',
+        'tag',
+        '--annotate',
+        '--force',
+        'v1.0.0',
+        candidateCommit,
+        '--message=Dartitect fleet Git canary',
+      ], temporary.path);
+      final taggedCommit = await _runRequired('git', <String>[
+        '--git-dir=${remote.path}',
+        'rev-parse',
+        'refs/tags/v1.0.0^{}',
+      ], temporary.path);
+      if ('${taggedCommit.stdout}'.trim() != candidateCommit) {
+        throw StateError('Fleet canary tag did not peel to the candidate.');
+      }
       final copy = Directory(_join(temporary.path, 'project'));
       await copy.create();
       await _copyProject(Directory(projectResolved), copy);
-      await _injectCandidate(
-        project: copy,
-        candidate: Directory(_join(temporary.path, 'candidate')),
-        commit: candidateCommit,
-      );
+      await _injectCandidate(project: copy, commit: candidateCommit);
+      final gitEnvironment = <String, String>{
+        ...Platform.environment,
+        'GIT_CONFIG_COUNT': '1',
+        'GIT_CONFIG_KEY_0': 'url.${remote.uri}.insteadOf',
+        'GIT_CONFIG_VALUE_0': _repository,
+      };
       for (final command in selected) {
         final stopwatch = Stopwatch()..start();
         final result = await Process.run(
@@ -227,6 +253,7 @@ final class DartitectFleetCanaryService {
           command.args,
           workingDirectory: copy.path,
           runInShell: false,
+          environment: gitEnvironment,
         );
         stopwatch.stop();
         final combined = '${result.stdout}\n${result.stderr}';
@@ -296,29 +323,39 @@ final class DartitectFleetCanaryService {
 
   static Future<void> _injectCandidate({
     required Directory project,
-    required Directory candidate,
     required String commit,
   }) async {
-    final pubspec = await File(_join(project.path, 'pubspec.yaml'))
-        .readAsString();
+    final pubspecFile = File(_join(project.path, 'pubspec.yaml'));
+    final pubspec = await pubspecFile.readAsString();
     final packages = _declaredDartitectPackages(pubspec);
     if (packages.isEmpty) {
       throw const FormatException(
         'Canary project declares no Dartitect package dependency.',
       );
     }
-    final overrides = StringBuffer('dependency_overrides:\n');
-    for (final package in packages) {
-      final packageRoot = Directory(_join(candidate.path, 'packages/$package'));
-      if (!await File(_join(packageRoot.path, 'pubspec.yaml')).exists()) {
-        throw FormatException('Candidate archive has no package $package.');
+    final lineEnding = pubspec.contains('\r\n') ? '\r\n' : '\n';
+    final rendered = <String>[];
+    for (final line in pubspec.split(RegExp(r'\r?\n'))) {
+      final match = RegExp(
+        r'^  (dartitect(?:_[a-z0-9_]+)?):\s*[^#\s]+\s*(#.*)?$',
+      ).firstMatch(line);
+      if (match == null) {
+        rendered.add(line);
+        continue;
       }
-      overrides
-        ..writeln('  $package:')
-        ..writeln("    path: '${packageRoot.path.replaceAll("'", "''")}'");
+      final package = match.group(1)!;
+      rendered.addAll(<String>[
+        '  $package:${match.group(2) == null ? '' : ' ${match.group(2)}'}',
+        '    git:',
+        '      url: $_repository',
+        '      path: packages/$package',
+        "      tag_pattern: 'v{{version}}'",
+        '    version: 1.0.0',
+      ]);
     }
-    await File(_join(project.path, 'pubspec_overrides.yaml'))
-        .writeAsString(overrides.toString());
+    await pubspecFile.writeAsString(rendered.join(lineEnding), flush: true);
+    final overrides = File(_join(project.path, 'pubspec_overrides.yaml'));
+    if (await overrides.exists()) await overrides.delete();
     final metadata = Directory(_join(project.path, '.dartitect'));
     await metadata.create(recursive: true);
     await File(_join(metadata.path, 'candidate.json')).writeAsString(
@@ -391,7 +428,7 @@ final class DartitectFleetCanaryService {
     return '${result.stdout}'.trimRight();
   }
 
-  static Future<void> _runRequired(
+  static Future<ProcessResult> _runRequired(
     String executable,
     List<String> args,
     String root,
@@ -405,6 +442,7 @@ final class DartitectFleetCanaryService {
     if (result.exitCode != 0) {
       throw FormatException('Canary preparation failed: $executable.');
     }
+    return result;
   }
 
   static String _sanitize(String source, Iterable<String> paths) {

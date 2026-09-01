@@ -1,6 +1,7 @@
 name: dartitect_dio
 description: Optional explicit ownership and observability integration for Dio.
-version: 1.0.0-rc.10
+version: 1.0.0
+publish_to: none
 repository: https://github.com/ftr-tuta/dartitect
 issue_tracker: https://github.com/ftr-tuta/dartitect/issues
 topics: [dio, architecture, observability, http]
@@ -10,9 +11,24 @@ environment:
   sdk: ^3.13.0
 
 dependencies:
-  dartitect: '>=1.0.0-rc.10 <1.0.0'
-  dartitect_observability: '>=1.0.0-rc.10 <1.0.0'
-  dartitect_transfer: '>=1.0.0-rc.10 <1.0.0'
+  dartitect:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+  dartitect_observability:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_observability
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
+  dartitect_transfer:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_transfer
+      tag_pattern: 'v{{version}}'
+    version: 1.0.0
   dio: ^5.11.0
 
 dev_dependencies:

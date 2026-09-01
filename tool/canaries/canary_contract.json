@@ -1,20 +1,12 @@
 {
-  "schemaVersion": 2,
-  "cohortVersion": "1.0.0-rc.10",
-  "artifactSource": "git-archive-exact-head",
-  "digestAlgorithm": "sha256",
-  "installation": {
-    "source": "ephemeral-hosted-repository",
-    "isolatedConsumerDirectories": true,
-    "sharedCacheRequiresDigestProof": true,
-    "monorepoPathResolution": false,
-    "dependencyOverrides": false
-  },
+  "schemaVersion": 3,
+  "releaseVersion": "1.0.0",
   "gitInstallation": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "ref": "v1.0.0-rc.10",
+    "ref": "v1.0.0",
+    "tagPattern": "v{{version}}",
     "annotatedTagRequired": true,
-    "dependencyOverrides": true,
+    "dependencyOverrides": false,
     "transitiveClosureRequired": true,
     "localPathResolution": false,
     "hostedDartitectResolution": false
@@ -129,7 +121,7 @@
         "flutter build web --release",
         "flutter build web --release",
         "flutter build linux --release",
-        "dart run dartitect_cli:dartitect fleet upgrade . --to=1.0.0-rc.10 --apply --json"
+        "dart run dartitect_cli:dartitect fleet upgrade . --to=1.0.0 --apply --json"
       ],
       "coverage": [
         "large_30_feature_matrix",

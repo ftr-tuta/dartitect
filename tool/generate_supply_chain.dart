@@ -7,10 +7,11 @@ Future<void> main(List<String> arguments) async {
   final release = jsonDecode(
     File('${root.path}/tool/package_release_contract.json').readAsStringSync(),
   );
-  if (release is! Map<String, Object?> || release['cohortVersion'] is! String) {
+  if (release is! Map<String, Object?> ||
+      release['releaseVersion'] is! String) {
     throw const FormatException('Invalid package release cohort.');
   }
-  final cohort = release['cohortVersion']! as String;
+  final cohort = release['releaseVersion']! as String;
   final result = await Process.run('dart', const <String>[
     'pub',
     'deps',

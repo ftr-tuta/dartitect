@@ -69,29 +69,19 @@ void main() {
     expect(result.stderr, contains('does not match source_sha and ci_run_id'));
   });
 
-  test(
-    'accepts stable publication after the UI quality gate is evidenced',
-    () async {
-      final fixture = await _Fixture.create();
-      addTearDown(fixture.dispose);
-
-      final result = await fixture.check(channel: 'pub-dev-stable');
-
-      expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
-      expect(result.stdout, contains('pub-dev-stable'));
-    },
-  );
-
-  test('rejects stable publication when UI quality evidence fails', () async {
+  test('rejects Release when stable candidate evidence fails', () async {
     final fixture = await _Fixture.create();
     addTearDown(fixture.dispose);
-    await File('${fixture.root.path}/tool/check_ui_quality.dart')
+    await File('${fixture.root.path}/tool/check_stable_candidate.dart')
         .writeAsString('void main() => throw StateError("stale evidence");\n');
 
-    final result = await fixture.check(channel: 'pub-dev-stable');
+    final result = await fixture.check();
 
     expect(result.exitCode, 1);
-    expect(result.stderr, contains('rejected ui-quality-v1 evidence'));
+    expect(
+      result.stderr,
+      contains('Stable release rejected candidate evidence'),
+    );
   });
 }
 
@@ -105,20 +95,13 @@ final class _Fixture {
 
   static Future<_Fixture> create() async {
     final sourceRoot = Directory.current.absolute;
-    final root = await Directory.systemTemp.createTemp(
-      'publication-readiness-',
-    );
+    final root = await Directory.systemTemp.createTemp('release-readiness-');
     final policyFile = File('${root.path}/tool/actions_readiness_policy.json');
     await policyFile.parent.create(recursive: true);
     await File('${sourceRoot.path}/tool/actions_readiness_policy.json')
         .copy(policyFile.path);
-    await File('${sourceRoot.path}/tool/stable_candidate_contract.json')
-        .copy('${root.path}/tool/stable_candidate_contract.json');
-    await File('${sourceRoot.path}/tool/check_stable_candidate.dart')
-        .copy('${root.path}/tool/check_stable_candidate.dart');
-    await File(
-      '${root.path}/tool/check_ui_quality.dart',
-    ).writeAsString("void main() => print('ui-quality-v1 fixture passed');\n");
+    await File('${root.path}/tool/check_stable_candidate.dart')
+        .writeAsString("void main() => print('stable fixture passed');\n");
     await File('${root.path}/README.md').writeAsString('fixture\n');
     await _run(root, 'git', const <String>['init', '-q']);
     await _run(root, 'git', const <String>['config', 'user.name', 'fixture']);
@@ -196,13 +179,9 @@ final class _Fixture {
       File('${artifactRoot.path}/actions-readiness-v1.json')
           .writeAsString(jsonEncode(value));
 
-  Future<ProcessResult> check({
-    int runId = 123,
-    int runAttempt = 1,
-    String channel = 'github-release',
-  }) {
+  Future<ProcessResult> check({int runId = 123, int runAttempt = 1}) {
     final checker = File(
-      '${Directory.current.path}/tool/check_publication_readiness.dart',
+      '${Directory.current.path}/tool/check_release_readiness.dart',
     );
     return Process.run(
       Platform.resolvedExecutable,
@@ -211,14 +190,13 @@ final class _Fixture {
         '--root=${root.path}',
         '--source-sha=$sha',
         '--ci-run-id=$runId',
-        '--channel=$channel',
         '--manifest=${artifactRoot.path}/actions-readiness-v1.json',
       ],
       environment: <String, String>{
         ...Platform.environment,
         'GITHUB_ACTIONS': 'true',
         'RUNNER_ENVIRONMENT': 'github-hosted',
-        'GITHUB_WORKFLOW': 'Publish',
+        'GITHUB_WORKFLOW': 'Release',
         'GITHUB_EVENT_NAME': 'workflow_dispatch',
         'GITHUB_ACTOR': 'release-operator',
         'CI_RUN_ATTEMPT': '$runAttempt',

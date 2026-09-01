@@ -1,7 +1,7 @@
 = Offline, sync, isolate, and telemetry threat model
 :toc:
 
-Status:: Locally reviewed for `1.0.0-rc.10`; `CI / Required` evidence pending
+Status:: Reviewed for `1.0.0`; final `CI / Required` evidence is bound by `actions-readiness-v1`
 Review date:: 2026-08-27
 
 == Offline mutation and outbox

@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
 
 Future<void> main(List<String> arguments) async {
   final root = File.fromUri(Platform.script).parent.parent.absolute;
-  final stableCohort = _cohortVersion(root) == '1.0.0';
   final skipGet = arguments.contains('--skip-get');
   final web = arguments.contains('--web');
   final nativeObjectBox = arguments.contains('--native-objectbox');
@@ -41,6 +39,11 @@ Future<void> main(List<String> arguments) async {
     ]),
     const _Command('dart', <String>['run', 'tool/check_goal_gates.dart']),
     const _Command('dart', <String>['run', 'tool/check_optional_slices.dart']),
+    const _Command('dart', <String>[
+      'run',
+      'tool/check_canaries.dart',
+      '--validate-only',
+    ]),
     const _Command('dart', <String>['run', 'tool/check_goal09_evidence.dart']),
     const _Command('dart', <String>[
       'run',
@@ -57,12 +60,13 @@ Future<void> main(List<String> arguments) async {
     ]),
     const _Command('dart', <String>[
       'run',
+      'tool/check_distribution_policy.dart',
+    ]),
+    const _Command('dart', <String>[
+      'run',
       'tool/generate_release_artifacts.dart',
       '--check',
     ]),
-    if (!stableCohort)
-      const _Command('dart', <String>['run', 'tool/check_rc_candidate.dart']),
-    const _Command('dart', <String>['run', 'tool/check_pub_dev_identity.dart']),
     const _Command('dart', <String>['run', 'tool/check_ecosystem_policy.dart']),
     const _Command('dart', <String>[
       'run',
@@ -136,18 +140,6 @@ Future<void> main(List<String> arguments) async {
     ]),
     const _Command('dart', <String>['run', 'tool/check_skill_coverage.dart']),
     const _Command('dart', <String>['run', 'tool/check_public_docs.dart']),
-    if (!stableCohort)
-      const _Command('dart', <String>[
-        'run',
-        'tool/check_rc_readiness.dart',
-        '--contract-only',
-      ]),
-    if (!stableCohort)
-      const _Command('dart', <String>[
-        'run',
-        'tool/check_rc_validation.dart',
-        '--contract-only',
-      ]),
     const _Command('dart', <String>['run', 'tool/check_ui_quality.dart']),
     const _Command('dart', <String>[
       'run',
@@ -178,7 +170,9 @@ Future<void> main(List<String> arguments) async {
     ]),
     const _Command('dart', <String>[
       'test',
-      'tool/git_dependency_overrides_test.dart',
+      'tool/dependency_snippets_test.dart',
+      'tool/check_distribution_policy_test.dart',
+      'tool/build_release_assets_test.dart',
     ]),
     const _Command('dart', <String>[
       'test',
@@ -187,8 +181,8 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>['test', 'tool/check_ui_quality_test.dart']),
     const _Command('dart', <String>[
       'test',
-      'tool/check_rc_readiness_test.dart',
-      'tool/check_publication_readiness_test.dart',
+      'tool/check_actions_readiness_test.dart',
+      'tool/check_release_readiness_test.dart',
     ]),
     const _Command('dart', <String>[
       'test',
@@ -439,16 +433,6 @@ Future<void> main(List<String> arguments) async {
     }
   }
   stdout.writeln('\nDartitect workspace verification passed.');
-}
-
-String _cohortVersion(Directory root) {
-  final value = jsonDecode(
-    File('${root.path}/tool/package_release_contract.json').readAsStringSync(),
-  );
-  if (value is! Map<String, Object?> || value['cohortVersion'] is! String) {
-    throw const FormatException('Invalid package release cohort.');
-  }
-  return value['cohortVersion']! as String;
 }
 
 Map<String, String> _nativeObjectBoxEnvironment(Directory root) {
