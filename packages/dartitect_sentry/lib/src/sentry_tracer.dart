@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:dartitect_observability/dartitect_observability.dart';
 import 'package:sentry/sentry.dart' as sentry;
 
+import 'prepared_sentry_adapters.dart';
+
 /// Creates Sentry transactions through a consumer-initialized, borrowed Hub.
 final class SentryTracer extends Tracer {
   /// Creates an adapter borrowing [hub].
@@ -13,6 +15,12 @@ final class SentryTracer extends Tracer {
   }) : _hub = hub,
        _redactor = redactor,
        _fallbackIds = fallbackIds ?? SecureTraceIdGenerator();
+
+  /// Creates the no-second-redaction tracer with prepared-only input.
+  static SentryPreparedTracer sanitizedInput({
+    required sentry.Hub hub,
+    TraceIdGenerator? fallbackIds,
+  }) => SentryPreparedTracer(hub: hub, fallbackIds: fallbackIds);
 
   final sentry.Hub _hub;
   final Redactor _redactor;

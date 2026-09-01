@@ -1,6 +1,8 @@
 import 'package:dartitect_observability/dartitect_observability.dart';
 import 'package:sentry/sentry.dart';
 
+import 'prepared_sentry_adapters.dart';
+
 /// Sends sanitized Dartitect logs through a consumer-initialized Sentry [Hub].
 ///
 /// Debug through warning logs become breadcrumbs. Error and fatal logs become
@@ -10,6 +12,10 @@ final class SentryLogSink extends LogSink {
   SentryLogSink({required Hub hub, Redactor redactor = const Redactor()})
     : _hub = hub,
       _redactor = redactor;
+
+  /// Creates the no-second-redaction adapter with prepared-only input.
+  static SentryPreparedLogSink sanitizedInput({required Hub hub}) =>
+      SentryPreparedLogSink(hub: hub);
 
   final Hub _hub;
   final Redactor _redactor;

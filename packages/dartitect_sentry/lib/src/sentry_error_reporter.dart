@@ -1,6 +1,8 @@
 import 'package:dartitect_observability/dartitect_observability.dart';
 import 'package:sentry/sentry.dart';
 
+import 'prepared_sentry_adapters.dart';
+
 /// Reports sanitized errors through a consumer-initialized Sentry [Hub].
 ///
 /// The Hub is borrowed: [dispose] is intentionally a no-op and never disables
@@ -10,6 +12,10 @@ final class SentryErrorReporter extends ErrorReporter {
   SentryErrorReporter({required Hub hub, Redactor redactor = const Redactor()})
     : _hub = hub,
       _redactor = redactor;
+
+  /// Creates the no-second-redaction adapter with prepared-only input.
+  static SentryPreparedErrorReporter sanitizedInput({required Hub hub}) =>
+      SentryPreparedErrorReporter(hub: hub);
 
   final Hub _hub;
   final Redactor _redactor;
