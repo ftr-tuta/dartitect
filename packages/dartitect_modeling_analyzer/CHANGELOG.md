@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Complete developer documentation, managed skill guidance, and documentation quality gates.
+- Version-only lockstep candidate; the shared semantic compiler contract remains unchanged.
 
 ## 1.0.0
 

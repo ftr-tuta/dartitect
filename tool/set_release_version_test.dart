@@ -9,7 +9,7 @@ void main() {
     addTearDown(fixture.dispose);
     final before = await fixture.contract.readAsString();
 
-    final result = await fixture.run('1.1.0-rc.1');
+    final result = await fixture.run('1.1.0-rc.2');
 
     expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
     expect(result.stdout, contains('Previewing workspace cohort'));
@@ -25,8 +25,13 @@ void main() {
     () async {
       final fixture = await _Fixture.create();
       addTearDown(fixture.dispose);
+      final contractLines = await fixture.contract.readAsLines();
+      final canary = File(
+        '${fixture.root.path}/tool/canaries/canary_contract.json',
+      );
+      final canaryLines = await canary.readAsLines();
 
-      final result = await fixture.run('1.1.0-rc.1', apply: true);
+      final result = await fixture.run('1.1.0-rc.2', apply: true);
 
       expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
       final contract = jsonDecode(
@@ -34,7 +39,7 @@ void main() {
       ) as Map<String, Object?>;
       expect(
         contract['workspaceCohort'],
-        containsPair('version', '1.1.0-rc.1'),
+        containsPair('version', '1.1.0-rc.2'),
       );
       expect(contract['workspaceCohort'], containsPair('channel', 'candidate'));
       expect(
@@ -46,18 +51,19 @@ void main() {
         await File(
           '${fixture.root.path}/packages/dartitect_observability/pubspec.yaml',
         ).readAsString(),
-        contains('version: 1.1.0-rc.1'),
+        contains('version: 1.1.0-rc.2'),
       );
-      expect(
-        await File('${fixture.root.path}/tool/canaries/canary_contract.json')
-            .readAsString(),
-        contains('v1.1.0-rc.1'),
-      );
+      expect(await canary.readAsString(), contains('v1.1.0-rc.2'));
       expect(
         await File('${fixture.root.path}/tool/api_surface.snapshot.json')
             .readAsString(),
-        contains('"sdkVersion": "1.1.0-rc.1"'),
+        contains('"sdkVersion": "1.1.0-rc.2"'),
       );
+      expect(
+        await fixture.contract.readAsLines(),
+        hasLength(contractLines.length),
+      );
+      expect(await canary.readAsLines(), hasLength(canaryLines.length));
     },
   );
 
@@ -81,7 +87,7 @@ void main() {
       '${fixture.root.path}/tool/dartitect_devtools_extension/pubspec.yaml',
     ).delete();
 
-    final result = await fixture.run('1.1.0-rc.1', apply: true);
+    final result = await fixture.run('1.1.0-rc.2', apply: true);
 
     expect(result.exitCode, 1);
     expect(result.stderr, contains('Missing version source'));

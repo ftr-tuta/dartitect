@@ -119,6 +119,18 @@ final class _Fixture {
       await target.parent.create(recursive: true);
       await File('${Directory.current.path}/$path').copy(target.path);
     }
+    final contractFile = File(
+      '${root.path}/tool/package_release_contract.json',
+    );
+    final contract =
+        jsonDecode(await contractFile.readAsString()) as Map<String, Object?>;
+    final workspace = contract['workspaceCohort']! as Map<String, Object?>;
+    workspace
+      ..['version'] = '1.0.0'
+      ..['channel'] = 'stable'
+      ..['derivedTag'] = 'v1.0.0'
+      ..['tagMaterialized'] = true;
+    await contractFile.writeAsString(jsonEncode(contract));
     final readiness = File('${root.path}/actions-readiness-v1.json');
     await readiness.writeAsString(
       jsonEncode(<String, Object?>{

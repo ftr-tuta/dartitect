@@ -38,8 +38,8 @@ void main() {
     );
     await pubspec.writeAsString(
       (await pubspec.readAsString()).replaceFirst(
-        'version: 1.0.0',
-        'version: 1.0.1',
+        'version: 1.1.0-rc.1',
+        'version: 1.1.0-rc.2',
       ),
     );
 
@@ -139,9 +139,7 @@ void main() {
     );
     await changelog.writeAsString(
       (await changelog.readAsString()).replaceFirst(
-        '## Unreleased\n\n'
-            '- Complete developer documentation, managed skill guidance, and '
-            'documentation quality gates.\n\n',
+        RegExp(r'## Unreleased\n\n.*?\n\n(?=## )', dotAll: true),
         '',
       ),
     );

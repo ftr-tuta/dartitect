@@ -3,10 +3,10 @@
 // ignore_for_file: public_member_api_docs
 
 abstract final class DartitectReleaseManifest {
-  static const String workspaceVersion = '1.0.0';
-  static const String workspaceChannel = 'stable';
-  static const String candidateTag = 'v1.0.0';
-  static const bool candidateTagMaterialized = true;
+  static const String workspaceVersion = '1.1.0-rc.1';
+  static const String workspaceChannel = 'candidate';
+  static const String candidateTag = 'v1.1.0-rc.1';
+  static const bool candidateTagMaterialized = false;
   static const String distributedVersion = '1.0.0';
   static const String distributedTag = 'v1.0.0';
   static const String repository = 'https://github.com/ftr-tuta/dartitect.git';
@@ -39,30 +39,30 @@ abstract final class DartitectReleaseManifest {
     'dartitect_mcp': 'packages/dartitect_mcp',
   };
   static const Map<String, String> workspacePackageVersions = <String, String>{
-    'dartitect': '1.0.0',
-    'dartitect_geometry': '1.0.0',
-    'dartitect_locale_br': '1.0.0',
-    'dartitect_privacy': '1.0.0',
-    'dartitect_devtools': '1.0.0',
-    'dartitect_flutter': '1.0.0',
-    'dartitect_isolates': '1.0.0',
-    'dartitect_jobs': '1.0.0',
-    'dartitect_media': '1.0.0',
-    'dartitect_modeling': '1.0.0',
-    'dartitect_observability': '1.0.0',
-    'dartitect_resilience': '1.0.0',
-    'dartitect_transfer': '1.0.0',
-    'dartitect_flutter_testing': '1.0.0',
-    'dartitect_modeling_analyzer': '1.0.0',
-    'dartitect_sentry': '1.0.0',
-    'dartitect_sync': '1.0.0',
-    'dartitect_workmanager': '1.0.0',
-    'dartitect_dio': '1.0.0',
-    'dartitect_drift': '1.0.0',
-    'dartitect_objectbox': '1.0.0',
-    'dartitect_testing': '1.0.0',
-    'dartitect_cli': '1.0.0',
-    'dartitect_lints': '1.0.0',
-    'dartitect_mcp': '1.0.0',
+    'dartitect': '1.1.0-rc.1',
+    'dartitect_geometry': '1.1.0-rc.1',
+    'dartitect_locale_br': '1.1.0-rc.1',
+    'dartitect_privacy': '1.1.0-rc.1',
+    'dartitect_devtools': '1.1.0-rc.1',
+    'dartitect_flutter': '1.1.0-rc.1',
+    'dartitect_isolates': '1.1.0-rc.1',
+    'dartitect_jobs': '1.1.0-rc.1',
+    'dartitect_media': '1.1.0-rc.1',
+    'dartitect_modeling': '1.1.0-rc.1',
+    'dartitect_observability': '1.1.0-rc.1',
+    'dartitect_resilience': '1.1.0-rc.1',
+    'dartitect_transfer': '1.1.0-rc.1',
+    'dartitect_flutter_testing': '1.1.0-rc.1',
+    'dartitect_modeling_analyzer': '1.1.0-rc.1',
+    'dartitect_sentry': '1.1.0-rc.1',
+    'dartitect_sync': '1.1.0-rc.1',
+    'dartitect_workmanager': '1.1.0-rc.1',
+    'dartitect_dio': '1.1.0-rc.1',
+    'dartitect_drift': '1.1.0-rc.1',
+    'dartitect_objectbox': '1.1.0-rc.1',
+    'dartitect_testing': '1.1.0-rc.1',
+    'dartitect_cli': '1.1.0-rc.1',
+    'dartitect_lints': '1.1.0-rc.1',
+    'dartitect_mcp': '1.1.0-rc.1',
   };
 }

@@ -116,8 +116,12 @@ void main() {
   final canary = _object(
     jsonDecode(read('tool/canaries/canary_contract.json')),
   );
+  final release = _object(
+    jsonDecode(read('tool/package_release_contract.json')),
+  );
+  final workspaceCohort = _object(release['workspaceCohort']);
   final canaries = _objects(canary['canaries']);
-  const requiredCoverage = <String>{
+  final requiredCoverage = <String>{
     'pure_dart_modeling',
     'json',
     'projection',
@@ -134,7 +138,6 @@ void main() {
     'large_30_feature_matrix',
     'application_session_context_ownership',
     'web_linux_incremental_builds',
-    'fleet_upgrade_zero_residual',
     'openapi_feature_selection',
     'typed_openapi_operation_runtime',
     'renderer_migration_chain',
@@ -167,6 +170,9 @@ void main() {
     'openapi_renderer',
     'tooling_commands',
   };
+  if (workspaceCohort['channel'] == 'stable') {
+    requiredCoverage.add('fleet_upgrade_zero_residual');
+  }
   final coverage = <String>{
     for (final entry in canaries) ..._strings(entry['coverage']),
   };

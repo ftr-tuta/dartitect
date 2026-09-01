@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Complete developer documentation, managed skill guidance, and documentation quality gates.
+- Add destination-aware privacy profiles, masking, bounded structured sanitization, prepared telemetry, isolated destinations, diagnostics, safe tracing, and subsystem adapters while preserving every `1.0.0` API.
 
 ## 1.0.0
 

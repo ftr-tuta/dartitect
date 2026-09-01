@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Complete developer documentation, managed skill guidance, and documentation quality gates.
+- Refresh package/API catalogs and privacy-aware observability routing without adding remote or write authority.
 
 ## 1.0.0
 

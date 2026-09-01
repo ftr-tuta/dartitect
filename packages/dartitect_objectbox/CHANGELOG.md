@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Complete developer documentation, managed skill guidance, and documentation quality gates.
+- Version-only lockstep candidate; ObjectBox telemetry remains payload-free with no automatic path, ID, or query capture.
 
 ## 1.0.0
 

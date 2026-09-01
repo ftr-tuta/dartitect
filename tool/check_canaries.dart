@@ -68,6 +68,19 @@ void main(List<String> arguments) {
         errors,
       );
     }
+    if (workspace['channel'] != 'stable') {
+      final candidateUpgradeCommands = <String>[
+        for (final canary in canaries)
+          for (final command in _strings(canary['commands']))
+            if (command.contains(' fleet upgrade ')) command,
+      ];
+      if (candidateUpgradeCommands.isNotEmpty) {
+        errors.add(
+          'Candidate Git canaries must not exercise stable-only fleet '
+          'upgrade commands.',
+        );
+      }
+    }
     final catalog = _object(contract['catalog']);
     final packages = _object(catalog['packages']).keys.toSet();
     final releasePackages = _object(release['packages']).keys.toSet();

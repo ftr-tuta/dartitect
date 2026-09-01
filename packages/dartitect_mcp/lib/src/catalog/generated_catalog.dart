@@ -46,7 +46,7 @@ abstract final class DartitectGeneratedCatalog {
   static const String _source = r'''{
   "packages": {
     "dartitect": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Native-first lifecycle, ownership, architecture events, and typed Result primitives.",
       "documentation": "Pure-Dart primitives for typed expected failures, explicit resource ownership, cooperative cancellation, bounded command lanes, optional isolate projections, immutable snapshots, value equality, architecture events, and local diagnostic protocols. The package has no runtime dependency outside the Dart SDK.",
       "platforms": [
@@ -57,7 +57,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_cli": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Semantic architecture scanner, diagnostics, and safe generators for Dartitect projects.",
       "documentation": "Local Dart VM inspection, architecture scanning, diagnostics, stable config, strict greenfield scans, modeling generation, dependency/fleet policy, managed Codex skill synchronization, and transactional filesystem changes.",
       "platforms": [
@@ -66,7 +66,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_devtools": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Optional read-only DevTools service extensions for Dartitect diagnostics.",
       "documentation": "An optional development-only bridge from Dartitect diagnostics protocol v2 to three isolate-local read-only VM service extensions, plus a bundled Flutter Web DevTools inspector.",
       "platforms": [
@@ -77,7 +77,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_dio": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Optional explicit ownership and observability integration for Dio.",
       "documentation": "Optional ownership, typed failure mapping, cancellation binding, route-template validation, JSON transport, W3C propagation, and minimal telemetry around the real Dio API.",
       "platforms": [
@@ -86,7 +86,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_drift": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Consumer-owned Drift lifecycle, transaction, and sync integration for Dartitect.",
       "documentation": "Explicit lifecycle, typed transaction rollback, checkpoint, journal, and sanitized instrumentation adapters around a consumer-generated Drift database. The package does not define a database, table, migration, executor, or query abstraction. Config-v3 generation exposes one `<Context>DartitectDriftFragment` whose operational `tables` are explicitly included by the consumer-owned database. The fragment versions only SDK-owned operational tables; domain migrations remain consumer-owned.",
       "platforms": [
@@ -97,7 +97,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_flutter": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Native Flutter lifecycle, command, selector, and scope primitives for Dartitect.",
       "documentation": "Flutter primitives for owned or borrowed ViewModels, bounded asynchronous commands, selected rebuilds, explicit scope identity, one-shot effects, session state, foreground error binding, forms, queries, space-based layout, and an opt-in owned reactive runtime.",
       "platforms": [
@@ -106,7 +106,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_flutter_testing": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Paired responsive and accessibility test harnesses for Dartitect Flutter consumers.",
       "documentation": "Dev-only Flutter UI scenario, accessibility, and cleanup harnesses for Dartitect consumers. The package owns no themes, locales, text, navigation, screens, controls, or goldens.",
       "platforms": [
@@ -116,7 +116,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable dev-only"
     },
     "dartitect_geometry": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Dependency-free typed two-dimensional geometry and deterministic pole-of-inaccessibility calculation.",
       "documentation": "Dependency-free finite Cartesian 2D points, immutable validated polygons with holes, and deterministic pole-of-inaccessibility subdivision for a label anchor.",
       "platforms": [
@@ -127,7 +127,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_isolates": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Typed isolate readiness, request, heartbeat, and safe-stop lifecycle for Dartitect.",
       "documentation": "Typed, generation-scoped isolate workers with explicit readiness, correlated acceptance, heartbeats, per-request deadlines, crash/exit handling, and cooperative safe stop.",
       "platforms": [
@@ -137,7 +137,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_jobs": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Provider-neutral bounded headless job execution contracts for Dart applications.",
       "documentation": "Provider-neutral contracts and a bounded dispatcher for versioned headless work. Every accepted job gets a fresh owned graph, cancellation, an absolute deadline, an execution ID, and typed progress.",
       "platforms": [
@@ -148,7 +148,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_lints": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Official analyzer-plugin integration for Dartitect architecture rules.",
       "documentation": "Official Dartitect architecture diagnostics implemented with Dart's `analysis_server_plugin` API and the shared semantic modeling compiler.",
       "platforms": [
@@ -157,7 +157,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_locale_br": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Dependency-free Brazilian locale value types, starting with strict CEP parsing and formatting.",
       "documentation": "One dependency-free immutable Brazilian postal-code (CEP) value with strict structural parsing and formatting. The package intentionally contains no network lookup, widgets, or other Brazilian document/value types.",
       "platforms": [
@@ -168,7 +168,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_mcp": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Local MCP server for safe Dartitect project inspection and reviewed changes.",
       "documentation": "A local MCP server exposing bounded Dartitect project inspection, diagnostics, conformance, reviewed change previews/application, and a generated English documentation catalog over STDIO.",
       "platforms": [
@@ -178,7 +178,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_media": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Explicit Android and iOS gallery permission and image-save boundary with typed failures for Flutter.",
       "documentation": "A removable Flutter plugin for Android/iOS gallery authorization status, explicit authorization requests, one image save, optional album association, and cleanup of the plugin's one owned metadata bit.",
       "platforms": [
@@ -189,7 +189,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_modeling": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Immutable values, explicit codecs, projections, and boundary mapping primitives for Dartitect.",
       "documentation": "Pure-Dart, web-compatible immutable modeling primitives: value annotations, copied immutable collections, bounded JSON codecs, projections/lenses, and lossless boundary mappers. Capabilities are opt-in and do not select a provider schema or runtime architecture.",
       "platforms": [
@@ -200,7 +200,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_modeling_analyzer": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Shared read-only semantic compiler for Dartitect modeling tools and analyzer integrations.",
       "documentation": "Read-only Analyzer-backed semantic compilation shared by the Dartitect CLI and official analyzer plugin. It produces renderer-neutral modeling IR, stable diagnostics, compatibility decisions, and semantic source edits.",
       "platforms": [
@@ -210,7 +210,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_objectbox": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Optional explicit Store and observation lifecycle integration for ObjectBox.",
       "documentation": "Native ObjectBox adapters for explicit Store/query/watcher ownership, reactive query and Store-watch sources, versioned projections, `Store.runAsync` projection, typed transactions, sync checkpoints/journals, and sanitized instrumentation. Consumer entities and generated ObjectBox models remain consumer-owned. Config-v3 generation exposes one `<Context>DartitectObjectBoxFragment` and a frozen operational UID map. Adding or removing a feature registration does not renumber operational entities or properties; domain entities and the generated consumer model remain consumer-owned.",
       "platforms": [
@@ -223,7 +223,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_observability": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Explicit logging, error reporting, tracing, redaction, and runtime ownership for Dartitect.",
       "documentation": "Provider-neutral structured logging, error reporting, W3C trace propagation, redaction, sampling, bounded dispatch, and explicit runtime ownership. Local developer logging is the safe default; remote destinations are opt-in.",
       "platforms": [
@@ -234,7 +234,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_privacy": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Explicit consumer-owned iOS tracking authorization status and request boundary for Flutter applications.",
       "documentation": "A removable Flutter boundary for Apple App Tracking Transparency (ATT) status and an explicit authorization request. Construction and status reads never prompt. The package is not a consent engine and makes no legal-compliance claim.",
       "platforms": [
@@ -244,7 +244,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_resilience": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Bounded retry, single-flight, circuit breaker, bulkhead, and rate limiting for Dartitect.",
       "documentation": "Pure-Dart, provider-neutral resilience primitives with explicit bounds, failure classification, time budgets, cancellation, and injectable execution dependencies. The package depends only on `dartitect`.",
       "platforms": [
@@ -255,7 +255,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_sentry": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Consumer-owned Sentry adapters for Dartitect logs, errors, and tracing.",
       "documentation": "Adapters from Dartitect's provider-neutral logs, unexpected errors, and spans to an injected Sentry `Hub`. The consumer initializes, configures, consents to, flushes, and closes Sentry.",
       "platforms": [
@@ -265,7 +265,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_sync": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Provider-neutral datasets, checkpoints, leases, and headless sync orchestration for Dart.",
       "documentation": "Provider-neutral primitives for four separate offline/background concerns: durable mutation plus outbox delivery, ordered dataset synchronization, and headless synchronization commands, plus explicit trigger coordination. The package imports no Flutter, HTTP, database, or platform scheduler.",
       "platforms": [
@@ -276,7 +276,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_testing": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Framework-neutral probes, clocks, and contract harnesses for Dartitect consumers.",
       "documentation": "Framework-neutral deterministic clocks, identifiers, schedulers, lifecycle probes, recording telemetry, stream helpers, and contract harnesses for Dartitect runtimes. It exports no `package:test` API.",
       "platforms": [
@@ -287,7 +287,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_transfer": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Provider-neutral resumable chunk transfer contracts and bounded orchestration for Dart.",
       "documentation": "Provider-neutral contracts for bounded resumable chunk transfer with durable checkpoints, optional checksums, typed progress, pause/resume, cancellation, and deadlines.",
       "platforms": [
@@ -298,7 +298,7 @@ abstract final class DartitectGeneratedCatalog {
       "stability": "stable"
     },
     "dartitect_workmanager": {
-      "version": "1.0.0",
+      "version": "1.1.0-rc.1",
       "description": "Stable Workmanager adapter for Dartitect job and headless-sync graphs.",
       "documentation": "Stable, opt-in adaptation between Workmanager callbacks and Dartitect's versioned `JobDispatcher` contract. Every callback constructs and disposes a fresh consumer graph while keeping credentials and business payloads outside the scheduler boundary.",
       "platforms": [
@@ -635,6 +635,6 @@ abstract final class DartitectGeneratedCatalog {
     },
     "extensionSources": []
   },
-  "apiSnapshotHash": "60261540"
+  "apiSnapshotHash": "f5f3fe50"
 }''';
 }

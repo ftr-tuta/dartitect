@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Complete developer documentation, managed skill guidance, and documentation quality gates.
+- Version-only lockstep candidate; job diagnostics remain payload-free.
 
 ## 1.0.0
 

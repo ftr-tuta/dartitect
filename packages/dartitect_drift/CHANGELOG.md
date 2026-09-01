@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Complete developer documentation, managed skill guidance, and documentation quality gates.
+- Version-only lockstep candidate; Drift telemetry remains payload-free with no automatic SQL or value capture.
 
 ## 1.0.0
 

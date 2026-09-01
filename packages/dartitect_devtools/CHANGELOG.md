@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Complete developer documentation, managed skill guidance, and documentation quality gates.
+- Add the separate read-only, payload-free observability privacy service extension without changing diagnostics v2.
 
 ## 1.0.0
 

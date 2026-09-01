@@ -5,6 +5,7 @@
     "current": [
       "AGENTS.md",
       "CODE_OF_CONDUCT.md",
+      "CHANGELOG.md",
       "CONTRIBUTING.md",
       "DEPENDENCIES.adoc",
       "README.md",
@@ -80,5 +81,8 @@
     ]
   },
   "excluded": ["packages/*/THIRD_PARTY_NOTICES.md"],
-  "activeReleaseCandidateExclusions": ["packages/*/CHANGELOG.md"]
+  "activeReleaseCandidateExclusions": [
+    "CHANGELOG.md",
+    "packages/*/CHANGELOG.md"
+  ]
 }

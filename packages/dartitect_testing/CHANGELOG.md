@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Complete developer documentation, managed skill guidance, and documentation quality gates.
+- Add privacy policy, destination, raw-data absence, and ownership harnesses for observability consumers.
 
 ## 1.0.0
 

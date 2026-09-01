@@ -137,8 +137,15 @@ final class _VersionPlan {
     if (api['sdkVersion'] != currentVersion) {
       throw StateError('$apiPath does not match $currentVersion.');
     }
-    api['sdkVersion'] = targetVersion;
-    _record(updates, apiPath, apiSource, _json(api));
+    _record(
+      updates,
+      apiPath,
+      apiSource,
+      apiSource.replaceFirst(
+        '"sdkVersion": "$currentVersion"',
+        '"sdkVersion": "$targetVersion"',
+      ),
+    );
 
     const canaryPath = 'tool/canaries/canary_contract.json';
     if (!derivatives.remove(canaryPath) || derivatives.isNotEmpty) {
@@ -149,14 +156,18 @@ final class _VersionPlan {
     if (canary['workspaceVersion'] != currentVersion) {
       throw StateError('$canaryPath does not match $currentVersion.');
     }
-    final installation = releaseObject(
-      canary['gitInstallation'],
-      'gitInstallation',
-    );
-    canary['workspaceVersion'] = targetVersion;
-    installation['ref'] = targetTag;
-    final canaryUpdated = _json(canary)
-        .replaceAll('--to=$currentVersion', '--to=$targetVersion');
+    releaseObject(canary['gitInstallation'], 'gitInstallation');
+    final canaryUpdated =
+        _replaceJsonObjectFields(
+              canarySource,
+              'gitInstallation',
+              <String, String>{'ref': '"$targetTag"'},
+            )
+            .replaceFirst(
+              '"workspaceVersion": "$currentVersion"',
+              '"workspaceVersion": "$targetVersion"',
+            )
+            .replaceAll('--to=$currentVersion', '--to=$targetVersion');
     _record(updates, canaryPath, canarySource, canaryUpdated);
 
     workspace
@@ -180,11 +191,40 @@ final class _VersionPlan {
     for (final metadata in packages.values) {
       releaseObject(metadata, 'package metadata')['version'] = targetVersion;
     }
+    var updatedContract = _replaceJsonObjectFields(
+      contractSource,
+      'workspaceCohort',
+      <String, String>{
+        'version': '"$targetVersion"',
+        'channel': '"$channel"',
+        'derivedTag': '"$targetTag"',
+        'tagMaterialized': workspace['tagMaterialized'].toString(),
+      },
+    );
+    updatedContract = _replaceJsonObjectFields(
+      updatedContract,
+      'lockstep',
+      <String, String>{
+        'version': '"$targetVersion"',
+        'derivedTag': '"$targetTag"',
+      },
+    );
+    updatedContract = _replaceJsonObjectFields(
+      updatedContract,
+      'workspaceInternalDependency',
+      <String, String>{'version': '"$targetVersion"'},
+    );
+    updatedContract = _replaceJsonObjectValues(
+      updatedContract,
+      'packages',
+      '"version": "$currentVersion"',
+      '"version": "$targetVersion"',
+    );
     _record(
       updates,
       'tool/package_release_contract.json',
       contractSource,
-      _json(contract),
+      updatedContract,
     );
 
     final ordered = <String, String>{};
@@ -307,6 +347,79 @@ String _read(Directory root, String path) {
   return file.readAsStringSync();
 }
 
+String _replaceJsonObjectFields(
+  String source,
+  String objectName,
+  Map<String, String> replacements,
+) {
+  final range = _jsonObjectRange(source, objectName);
+  var object = source.substring(range.$1, range.$2);
+  for (final entry in replacements.entries) {
+    final pattern = RegExp(
+      '^(\\s*"${RegExp.escape(entry.key)}":\\s*)[^,\\n]+(,?)\$',
+      multiLine: true,
+    );
+    if (!pattern.hasMatch(object)) {
+      throw StateError('$objectName lacks JSON field ${entry.key}.');
+    }
+    object = object.replaceFirstMapped(
+      pattern,
+      (match) => '${match.group(1)}${entry.value}${match.group(2)}',
+    );
+  }
+  return source.replaceRange(range.$1, range.$2, object);
+}
+
+String _replaceJsonObjectValues(
+  String source,
+  String objectName,
+  String before,
+  String after,
+) {
+  final range = _jsonObjectRange(source, objectName);
+  final object = source.substring(range.$1, range.$2);
+  if (!object.contains(before)) {
+    throw StateError('$objectName does not contain $before.');
+  }
+  return source.replaceRange(
+    range.$1,
+    range.$2,
+    object.replaceAll(before, after),
+  );
+}
+
+(int, int) _jsonObjectRange(String source, String objectName) {
+  final marker = '"$objectName": {';
+  final markerIndex = source.indexOf(marker);
+  if (markerIndex < 0) throw StateError('Missing JSON object $objectName.');
+  final start = source.indexOf('{', markerIndex);
+  var depth = 0;
+  var inString = false;
+  var escaped = false;
+  for (var index = start; index < source.length; index += 1) {
+    final unit = source.codeUnitAt(index);
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (unit == 0x5c) {
+        escaped = true;
+      } else if (unit == 0x22) {
+        inString = false;
+      }
+      continue;
+    }
+    if (unit == 0x22) {
+      inString = true;
+    } else if (unit == 0x7b) {
+      depth += 1;
+    } else if (unit == 0x7d) {
+      depth -= 1;
+      if (depth == 0) return (start, index + 1);
+    }
+  }
+  throw StateError('Unterminated JSON object $objectName.');
+}
+
 void _record(
   Map<String, String> updates,
   String path,
@@ -327,6 +440,3 @@ String _string(Object? value, String label) {
   if (value is! String) throw FormatException('$label must be a string.');
   return value;
 }
-
-String _json(Map<String, Object?> value) =>
-    '${const JsonEncoder.withIndent('  ').convert(value)}\n';

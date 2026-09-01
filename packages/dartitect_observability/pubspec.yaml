@@ -1,6 +1,6 @@
 name: dartitect_observability
 description: Explicit logging, error reporting, tracing, redaction, and runtime ownership for Dartitect.
-version: 1.0.0
+version: 1.1.0-rc.1
 publish_to: none
 repository: https://github.com/ftr-tuta/dartitect
 issue_tracker: https://github.com/ftr-tuta/dartitect/issues
@@ -16,6 +16,6 @@ dependencies:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0-rc.1
 dev_dependencies:
   test: ^1.26.3
