@@ -7,6 +7,8 @@
 - Add the opt-in `dartitect_incremental.dart` entrypoint with cold sync/async
   producers, bounded admission, backpressured consume/fold/collect operations,
   explicit closeable sync sources, reports, and fixed-capacity ring buffers.
+- Validate every command queue/concurrency/key bound at lane construction in
+  runtime builds instead of relying on asserts.
 
 ## 1.0.0
 

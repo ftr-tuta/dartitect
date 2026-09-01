@@ -6,6 +6,8 @@
   reentrant dispatch across reactive primitives.
 - Replace quadratic computed ordering and form-history shifts with stable
   dependency indexing and ring-backed retention.
+- Route all progress command execution context through one internal runtime
+  while preserving the existing shared command-lane admission policies.
 
 ## 1.0.0
 

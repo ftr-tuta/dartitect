@@ -53,8 +53,7 @@ final class CommandConcurrency {
 
   /// Runs FIFO with a queue bounded by [maxQueue].
   const CommandConcurrency.sequential({this.maxQueue = 64})
-    : assert(maxQueue > 0),
-      kind = CommandConcurrencyKind.sequential,
+    : kind = CommandConcurrencyKind.sequential,
       maxConcurrent = 1,
       perKey = null;
 
@@ -67,8 +66,7 @@ final class CommandConcurrency {
 
   /// Runs at most [maxConcurrent] executions simultaneously.
   const CommandConcurrency.concurrent({this.maxConcurrent = 4})
-    : assert(maxConcurrent > 0),
-      kind = CommandConcurrencyKind.concurrent,
+    : kind = CommandConcurrencyKind.concurrent,
       maxQueue = 0,
       perKey = null;
 
@@ -76,8 +74,7 @@ final class CommandConcurrency {
   const CommandConcurrency.keyed({
     this.perKey = const CommandConcurrency.sequential(),
     this.maxConcurrent = 4,
-  }) : assert(maxConcurrent > 0),
-       kind = CommandConcurrencyKind.keyed,
+  }) : kind = CommandConcurrencyKind.keyed,
        maxQueue = 0;
 
   /// Policy category.
@@ -209,6 +206,7 @@ final class CommandLane<T, F extends Object> {
   }) : _action = action,
        _reporter = reporter,
        _onChanged = onChanged {
+    _validateCommandConcurrency(concurrency);
     if (concurrency.kind == CommandConcurrencyKind.keyed) {
       throw ArgumentError.value(
         concurrency,
@@ -506,6 +504,7 @@ final class KeyedCommandLane<K, A, T, F extends Object> {
   }) : _action = action,
        _reporter = reporter,
        _onChanged = onChanged {
+    _validateCommandConcurrency(concurrency);
     if (concurrency.kind != CommandConcurrencyKind.keyed ||
         concurrency.perKey?.kind == CommandConcurrencyKind.keyed) {
       throw ArgumentError.value(
@@ -869,6 +868,52 @@ final class KeyedCommandLane<K, A, T, F extends Object> {
       // State observation cannot alter scheduling behavior.
       return;
     }
+  }
+}
+
+void _validateCommandConcurrency(CommandConcurrency concurrency) {
+  switch (concurrency.kind) {
+    case CommandConcurrencyKind.sequential:
+      if (concurrency.maxQueue <= 0) {
+        throw ArgumentError.value(
+          concurrency.maxQueue,
+          'concurrency.maxQueue',
+          'Must be positive for sequential scheduling.',
+        );
+      }
+      return;
+    case CommandConcurrencyKind.concurrent:
+      if (concurrency.maxConcurrent <= 0) {
+        throw ArgumentError.value(
+          concurrency.maxConcurrent,
+          'concurrency.maxConcurrent',
+          'Must be positive for concurrent scheduling.',
+        );
+      }
+      return;
+    case CommandConcurrencyKind.keyed:
+      if (concurrency.maxConcurrent <= 0) {
+        throw ArgumentError.value(
+          concurrency.maxConcurrent,
+          'concurrency.maxConcurrent',
+          'Must be positive for keyed scheduling.',
+        );
+      }
+      final perKey = concurrency.perKey;
+      if (perKey == null || perKey.kind == CommandConcurrencyKind.keyed) {
+        throw ArgumentError.value(
+          perKey,
+          'concurrency.perKey',
+          'Must be one non-keyed policy.',
+        );
+      }
+      _validateCommandConcurrency(perKey);
+      return;
+    case CommandConcurrencyKind.reject ||
+        CommandConcurrencyKind.join ||
+        CommandConcurrencyKind.drop ||
+        CommandConcurrencyKind.restartLatest:
+      return;
   }
 }
 
