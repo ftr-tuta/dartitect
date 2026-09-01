@@ -9,7 +9,7 @@ void main() {
     addTearDown(fixture.dispose);
     final before = await fixture.contract.readAsString();
 
-    final result = await fixture.run('1.1.0-rc.2');
+    final result = await fixture.run('1.1.0-rc.3');
 
     expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
     expect(result.stdout, contains('Previewing workspace cohort'));
@@ -31,7 +31,7 @@ void main() {
       );
       final canaryLines = await canary.readAsLines();
 
-      final result = await fixture.run('1.1.0-rc.2', apply: true);
+      final result = await fixture.run('1.1.0-rc.3', apply: true);
 
       expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
       final contract = jsonDecode(
@@ -39,7 +39,7 @@ void main() {
       ) as Map<String, Object?>;
       expect(
         contract['workspaceCohort'],
-        containsPair('version', '1.1.0-rc.2'),
+        containsPair('version', '1.1.0-rc.3'),
       );
       expect(contract['workspaceCohort'], containsPair('channel', 'candidate'));
       expect(
@@ -51,13 +51,13 @@ void main() {
         await File(
           '${fixture.root.path}/packages/dartitect_observability/pubspec.yaml',
         ).readAsString(),
-        contains('version: 1.1.0-rc.2'),
+        contains('version: 1.1.0-rc.3'),
       );
-      expect(await canary.readAsString(), contains('v1.1.0-rc.2'));
+      expect(await canary.readAsString(), contains('v1.1.0-rc.3'));
       expect(
         await File('${fixture.root.path}/tool/api_surface.snapshot.json')
             .readAsString(),
-        contains('"sdkVersion": "1.1.0-rc.2"'),
+        contains('"sdkVersion": "1.1.0-rc.3"'),
       );
       expect(
         await fixture.contract.readAsLines(),
@@ -87,7 +87,7 @@ void main() {
       '${fixture.root.path}/tool/dartitect_devtools_extension/pubspec.yaml',
     ).delete();
 
-    final result = await fixture.run('1.1.0-rc.2', apply: true);
+    final result = await fixture.run('1.1.0-rc.3', apply: true);
 
     expect(result.exitCode, 1);
     expect(result.stderr, contains('Missing version source'));

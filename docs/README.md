@@ -2,7 +2,7 @@
 
 This is the canonical task-oriented entrypoint for Dartitect documentation.
 Public guidance is maintained in English. The workspace is the untagged
-`1.1.0-rc.1` candidate cohort, while the latest public distribution remains
+`1.1.0-rc.2` candidate cohort, while the latest public distribution remains
 the stable GitHub-only `1.0.0` / `v1.0.0` release. Candidate source guidance
 does not authorize a tag, GitHub Release, publication, or stable promotion.
 

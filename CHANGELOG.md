@@ -10,10 +10,10 @@ truth for cross-package changes and migration guidance.
 
 ### Candidate state
 
-- Workspace cohort: `1.1.0-rc.1`.
+- Workspace cohort: `1.1.0-rc.2`.
 - Channel: `candidate`.
 - Latest stable distribution: `1.0.0` / `v1.0.0`.
-- Derivable candidate tag: `v1.1.0-rc.1`.
+- Derivable candidate tag: `v1.1.0-rc.2`.
 - Candidate tag materialized: `false`.
 - No tag, GitHub Release, publication, or stable promotion is authorized by
   this changelog.
@@ -134,7 +134,7 @@ truth for cross-package changes and migration guidance.
   privacy.
 - The `dartitect_sync` interface remains unchanged; its observability adapter
   is exposed from a separate observability entrypoint.
-- All Dartitect packages move together to `1.1.0-rc.1`; packages without a
+- All Dartitect packages move together to `1.1.0-rc.2`; packages without a
   functional change receive a version-only lockstep candidate entry.
 
 ### Migration from 1.0.0

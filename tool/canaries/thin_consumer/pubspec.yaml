@@ -8,23 +8,23 @@ environment:
   flutter: '>=3.47.1'
 
 dependencies:
-  dartitect: 1.1.0-rc.1
-  dartitect_dio: 1.1.0-rc.1
-  dartitect_drift: 1.1.0-rc.1
-  dartitect_flutter: 1.1.0-rc.1
-  dartitect_jobs: 1.1.0-rc.1
-  dartitect_observability: 1.1.0-rc.1
-  dartitect_resilience: 1.1.0-rc.1
-  dartitect_sync: 1.1.0-rc.1
-  dartitect_transfer: 1.1.0-rc.1
-  dartitect_workmanager: 1.1.0-rc.1
+  dartitect: 1.1.0-rc.2
+  dartitect_dio: 1.1.0-rc.2
+  dartitect_drift: 1.1.0-rc.2
+  dartitect_flutter: 1.1.0-rc.2
+  dartitect_jobs: 1.1.0-rc.2
+  dartitect_observability: 1.1.0-rc.2
+  dartitect_resilience: 1.1.0-rc.2
+  dartitect_sync: 1.1.0-rc.2
+  dartitect_transfer: 1.1.0-rc.2
+  dartitect_workmanager: 1.1.0-rc.2
   flutter:
     sdk: flutter
 
 dev_dependencies:
-  dartitect_cli: 1.1.0-rc.1
-  dartitect_flutter_testing: 1.1.0-rc.1
-  dartitect_testing: 1.1.0-rc.1
+  dartitect_cli: 1.1.0-rc.2
+  dartitect_flutter_testing: 1.1.0-rc.2
+  dartitect_testing: 1.1.0-rc.2
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter

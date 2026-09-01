@@ -28,11 +28,19 @@ Future<void> main(List<String> arguments) async {
     ),
   );
   final cohort = _object(release['workspaceCohort']);
+  final installation = _object(contract['gitInstallation']);
+  final canonicalRepository = installation['repository'];
   if (contract['schemaVersion'] != 4 ||
       contract['workspaceVersion'] != cohort['version'] ||
+      canonicalRepository is! String ||
       options.ref != cohort['derivedTag']) {
     throw StateError('Git tag and canary release cohorts differ.');
   }
+  final gitEnvironment = gitCanaryRepositoryRedirectEnvironment(
+    canonicalRepository: canonicalRepository,
+    candidateRepository: options.repository,
+    inheritedEnvironment: Platform.environment,
+  );
   final temporary = await Directory.systemTemp.createTemp(
     'dartitect-git-tag-canaries-',
   );
@@ -48,6 +56,8 @@ Future<void> main(List<String> arguments) async {
           releaseVersion: cohort['version']! as String,
           dependencyOrder: _strings(release['dependencyOrder']),
           contract: canary,
+          canonicalRepository: canonicalRepository,
+          gitEnvironment: gitEnvironment,
         ),
       );
     }
@@ -82,6 +92,8 @@ Future<Map<String, Object?>> _runCanary({
   required String releaseVersion,
   required List<String> dependencyOrder,
   required Map<String, Object?> contract,
+  required String canonicalRepository,
+  required Map<String, String> gitEnvironment,
 }) async {
   final id = contract['id']! as String;
   final source = Directory('${workspace.path}/${contract['source']}');
@@ -90,7 +102,7 @@ Future<Map<String, Object?>> _runCanary({
   await _copyConsumer(source, consumer);
   final renderedPubspec = _renderGitDependencies(
     pubspec.readAsStringSync(),
-    repository: options.repository,
+    repository: canonicalRepository,
     version: releaseVersion,
   );
   if (RegExp(
@@ -119,6 +131,7 @@ Future<Map<String, Object?>> _runCanary({
       arguments,
       environment: <String, String>{
         ...Platform.environment,
+        ...gitEnvironment,
         ...extraEnvironment,
       },
       timeout: const Duration(minutes: 15),
@@ -323,6 +336,7 @@ Future<Map<String, Object?>> _runCanary({
     workspace: workspace,
     consumer: consumer,
     repository: options.repository,
+    allowedRepositories: <String>{canonicalRepository},
     ref: options.ref,
     resolvedCommit: tag.commit,
     releaseVersion: releaseVersion,
@@ -346,6 +360,27 @@ Future<Map<String, Object?>> _runCanary({
 /// candidate downgrade.
 bool gitCanaryRunsLegacyStableUpgrade(String workspaceVersion) =>
     workspaceVersion == '1.0.0';
+
+/// Redirects canonical internal Git dependencies to a disposable candidate
+/// repository without changing the dependency descriptors recorded in source.
+Map<String, String> gitCanaryRepositoryRedirectEnvironment({
+  required String canonicalRepository,
+  required String candidateRepository,
+  Map<String, String> inheritedEnvironment = const <String, String>{},
+}) {
+  if (canonicalRepository == candidateRepository)
+    return const <String, String>{};
+  final rawCount = inheritedEnvironment['GIT_CONFIG_COUNT'];
+  final count = rawCount == null ? 0 : int.tryParse(rawCount);
+  if (count == null || count < 0) {
+    throw StateError('Inherited GIT_CONFIG_COUNT is invalid.');
+  }
+  return <String, String>{
+    'GIT_CONFIG_COUNT': '${count + 1}',
+    'GIT_CONFIG_KEY_$count': 'url.$candidateRepository.insteadOf',
+    'GIT_CONFIG_VALUE_$count': canonicalRepository,
+  };
+}
 
 String _renderGitDependencies(
   String source, {
@@ -444,6 +479,7 @@ Future<List<Map<String, Object?>>> _validateResolvedGraph({
   required Directory workspace,
   required Directory consumer,
   required String repository,
+  required Set<String> allowedRepositories,
   required String ref,
   required String resolvedCommit,
   required String releaseVersion,
@@ -477,7 +513,7 @@ Future<List<Map<String, Object?>>> _validateResolvedGraph({
     final locked = _lockEntry(lock, package);
     if (locked['source'] != 'git' ||
         locked['version'] != releaseVersion ||
-        locked['url'] != repository ||
+        !allowedRepositories.contains(locked['url']) ||
         locked['tag-pattern'] != 'v{{version}}' ||
         locked['resolved-ref'] != resolvedCommit ||
         locked['path'] != 'packages/$package') {
