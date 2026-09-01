@@ -99910,6 +99910,145 @@
           ]
         },
         {
+          "name": "SyncCheckpointProgressEvent",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class SyncCheckpointProgressEvent<K>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "K",
+              "declaration": "K",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "SyncCheckpointProgressEvent<K>({required String runId, required int sequence, required K key, required int confirmedStepCount, required DateTime timestamp})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "SyncCheckpointProgressEvent<K>",
+              "parameters": [
+                {
+                  "name": "runId",
+                  "declaration": "{required String runId}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "sequence",
+                  "declaration": "{required int sequence}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "key",
+                  "declaration": "{required K key}",
+                  "type": "K",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "confirmedStepCount",
+                  "declaration": "{required int confirmedStepCount}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "timestamp",
+                  "declaration": "{required DateTime timestamp}",
+                  "type": "DateTime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "confirmedStepCount",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int confirmedStepCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "key",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "K key",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "K"
+            },
+            {
+              "name": "runId",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "String runId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "sequence",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int sequence",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "timestamp",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DateTime timestamp",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DateTime"
+            }
+          ]
+        },
+        {
           "name": "SyncCheckpointStore",
           "kind": "class",
           "audience": "application-facing",
@@ -100700,6 +100839,37 @@
           "interfaces": [],
           "members": [
             {
+              "name": "incremental",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "SyncDataset<K, C, F>.incremental({required K key, required IncrementalOperation<SyncDatasetOutcome<C>, F> Function(SyncDatasetContext<K, C>) synchronize})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "factory"
+              ],
+              "typeParameters": [],
+              "returnType": "SyncDataset<K, C, F>",
+              "parameters": [
+                {
+                  "name": "key",
+                  "declaration": "{required K key}",
+                  "type": "K",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "synchronize",
+                  "declaration": "{required IncrementalOperation<SyncDatasetOutcome<C>, F> Function(SyncDatasetContext<K, C>) synchronize}",
+                  "type": "IncrementalOperation<SyncDatasetOutcome<C>, F> Function(SyncDatasetContext<K, C>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
               "name": "new",
               "kind": "constructor",
               "audience": "application-facing",
@@ -100753,6 +100923,30 @@
                 "final"
               ],
               "type": "Future<Result<SyncDatasetOutcome<C>, F>> Function(SyncDatasetContext<K, C>)"
+            },
+            {
+              "name": "synchronizeIncrementally",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalOperation<SyncDatasetOutcome<C>, F> Function(SyncDatasetContext<K, C>)? synchronizeIncrementally",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "IncrementalOperation<SyncDatasetOutcome<C>, F> Function(SyncDatasetContext<K, C>)?"
+            },
+            {
+              "name": "isIncremental",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get isIncremental",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
             }
           ]
         },
@@ -101044,7 +101238,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "application-facing",
-              "declaration": "SyncDatasetReport<K, C, F>({required K key, required SyncDatasetStatus status, F? failure, StackTrace? failureStackTrace, SyncDatasetStopReason? stopReason, C? confirmedCheckpoint, bool hasConfirmedCheckpoint = false, SyncBoundaryReceipt application = const SyncBoundaryReceipt.notAttempted(), SyncBoundaryReceipt checkpoint = const SyncBoundaryReceipt.notAttempted()})",
+              "declaration": "SyncDatasetReport<K, C, F>({required K key, required SyncDatasetStatus status, F? failure, StackTrace? failureStackTrace, SyncDatasetStopReason? stopReason, C? confirmedCheckpoint, bool hasConfirmedCheckpoint = false, int confirmedStepCount = 0, SyncBoundaryReceipt application = const SyncBoundaryReceipt.notAttempted(), SyncBoundaryReceipt checkpoint = const SyncBoundaryReceipt.notAttempted()})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [
@@ -101110,6 +101304,14 @@
                   "annotations": []
                 },
                 {
+                  "name": "confirmedStepCount",
+                  "declaration": "{int confirmedStepCount = 0}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "0",
+                  "annotations": []
+                },
+                {
                   "name": "application",
                   "declaration": "{SyncBoundaryReceipt application = const SyncBoundaryReceipt.notAttempted()}",
                   "type": "SyncBoundaryReceipt",
@@ -101162,6 +101364,18 @@
                 "final"
               ],
               "type": "C?"
+            },
+            {
+              "name": "confirmedStepCount",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int confirmedStepCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
             },
             {
               "name": "failure",
@@ -101501,7 +101715,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "application-facing",
-              "declaration": "SyncEngine<K, C, F>({required Iterable<SyncDataset<K, C, F>> datasets, required SyncDependencyGraph<K> graph, required SyncCheckpointStore<K, C> checkpoints, SyncLeaseStore? leases, SyncRunJournal<K>? journal, SyncRunCleanup? cleanup, SyncClock clock = const SystemSyncClock(), IdGenerator? ids, SyncObserver<K> observer = const NoOpSyncObserver(), Duration leaseTtl = const Duration(minutes: 5), int maxRecentProgressEvents = 256, DartitectDiagnosticSubject? diagnostics})",
+              "declaration": "SyncEngine<K, C, F>({required Iterable<SyncDataset<K, C, F>> datasets, required SyncDependencyGraph<K> graph, required SyncCheckpointStore<K, C> checkpoints, SyncLeaseStore? leases, SyncRunJournal<K>? journal, SyncRunCleanup? cleanup, SyncClock clock = const SystemSyncClock(), IdGenerator? ids, SyncObserver<K> observer = const NoOpSyncObserver(), Duration leaseTtl = const Duration(minutes: 5), int maxRecentProgressEvents = 256, SyncExecutionPolicy executionPolicy = const SyncExecutionPolicy.sequential(), DartitectDiagnosticSubject? diagnostics})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -101597,6 +101811,14 @@
                   "annotations": []
                 },
                 {
+                  "name": "executionPolicy",
+                  "declaration": "{SyncExecutionPolicy executionPolicy = const SyncExecutionPolicy.sequential()}",
+                  "type": "SyncExecutionPolicy",
+                  "kind": "optionalNamed",
+                  "default": "const SyncExecutionPolicy.sequential()",
+                  "annotations": []
+                },
+                {
                   "name": "diagnostics",
                   "declaration": "{DartitectDiagnosticSubject? diagnostics}",
                   "type": "DartitectDiagnosticSubject?",
@@ -101629,6 +101851,18 @@
                 "final"
               ],
               "type": "SyncRunCleanup?"
+            },
+            {
+              "name": "executionPolicy",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "SyncExecutionPolicy executionPolicy",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "SyncExecutionPolicy"
             },
             {
               "name": "graph",
@@ -101765,6 +101999,84 @@
                   "annotations": []
                 }
               ]
+            }
+          ]
+        },
+        {
+          "name": "SyncExecutionPolicy",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class SyncExecutionPolicy",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "boundedParallel",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "SyncExecutionPolicy.boundedParallel(int maxConcurrent)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "SyncExecutionPolicy",
+              "parameters": [
+                {
+                  "name": "maxConcurrent",
+                  "declaration": "int maxConcurrent",
+                  "type": "int",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "sequential",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "SyncExecutionPolicy.sequential()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "SyncExecutionPolicy",
+              "parameters": []
+            },
+            {
+              "name": "kind",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "SyncExecutionPolicyKind kind",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "SyncExecutionPolicyKind"
+            },
+            {
+              "name": "maxConcurrent",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maxConcurrent",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
             }
           ]
         },
@@ -102910,6 +103222,18 @@
               "modifiers": [],
               "typeParameters": [],
               "returnType": "CancellationSignal",
+              "parameters": []
+            },
+            {
+              "name": "checkpointProgress",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "Stream<SyncCheckpointProgressEvent<K>> get checkpointProgress",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Stream<SyncCheckpointProgressEvent<K>>",
               "parameters": []
             },
             {
@@ -104626,6 +104950,76 @@
                 "static"
               ],
               "type": "List<SyncDatasetStopReason>"
+            }
+          ]
+        },
+        {
+          "name": "SyncExecutionPolicyKind",
+          "kind": "enum",
+          "audience": "application-facing",
+          "declaration": "enum SyncExecutionPolicyKind",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "SyncExecutionPolicyKind()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "SyncExecutionPolicyKind",
+              "parameters": []
+            },
+            {
+              "name": "boundedParallel",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "SyncExecutionPolicyKind boundedParallel",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "SyncExecutionPolicyKind"
+            },
+            {
+              "name": "sequential",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "SyncExecutionPolicyKind sequential",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "SyncExecutionPolicyKind"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "List<SyncExecutionPolicyKind> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<SyncExecutionPolicyKind>"
             }
           ]
         },

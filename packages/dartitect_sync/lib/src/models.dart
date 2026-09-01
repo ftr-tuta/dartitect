@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:dartitect/dartitect.dart';
+import 'package:dartitect/dartitect_incremental.dart';
 
 import 'ports.dart';
 
@@ -60,7 +60,27 @@ final class SyncDatasetOutcome<C> {
 /// One typed provider-neutral dataset selected by a consumer graph.
 final class SyncDataset<K, C, F extends Object> {
   /// Creates a dataset operation.
-  const SyncDataset({required this.key, required this.synchronize});
+  const SyncDataset({required this.key, required this.synchronize})
+    : synchronizeIncrementally = null;
+
+  /// Creates a dataset that confirms every incremental successful outcome.
+  factory SyncDataset.incremental({
+    required K key,
+    required IncrementalOperation<SyncDatasetOutcome<C>, F> Function(
+      SyncDatasetContext<K, C> context,
+    )
+    synchronize,
+  }) => SyncDataset<K, C, F>._incremental(
+    key: key,
+    synchronizeIncrementally: synchronize,
+  );
+
+  SyncDataset._incremental({
+    required this.key,
+    required this.synchronizeIncrementally,
+  }) : synchronize = ((_) => throw StateError(
+         'Use synchronizeIncrementally for an incremental dataset.',
+       ));
 
   /// Static dataset identifier used by dependency and progress facts.
   final K key;
@@ -70,6 +90,42 @@ final class SyncDataset<K, C, F extends Object> {
     SyncDatasetContext<K, C> context,
   )
   synchronize;
+
+  /// Creates a cold incremental operation for this dataset, when configured.
+  final IncrementalOperation<SyncDatasetOutcome<C>, F> Function(
+    SyncDatasetContext<K, C> context,
+  )?
+  synchronizeIncrementally;
+
+  /// Whether this dataset uses incremental checkpoint confirmation.
+  bool get isIncremental => synchronizeIncrementally != null;
+}
+
+/// Execution scheduling category for a dataset DAG.
+enum SyncExecutionPolicyKind {
+  /// Runs one planned dataset at a time.
+  sequential,
+
+  /// Runs only dependency-independent ready datasets concurrently.
+  boundedParallel,
+}
+
+/// Stable dataset scheduling policy.
+final class SyncExecutionPolicy {
+  /// Preserves the 1.0 sequential execution behavior.
+  const SyncExecutionPolicy.sequential()
+    : kind = SyncExecutionPolicyKind.sequential,
+      maxConcurrent = 1;
+
+  /// Runs at most [maxConcurrent] independent ready datasets.
+  const SyncExecutionPolicy.boundedParallel(this.maxConcurrent)
+    : kind = SyncExecutionPolicyKind.boundedParallel;
+
+  /// Policy category.
+  final SyncExecutionPolicyKind kind;
+
+  /// Maximum simultaneous dataset operations.
+  final int maxConcurrent;
 }
 
 /// Terminal state of one dataset within a report.
@@ -173,6 +229,7 @@ final class SyncDatasetReport<K, C, F extends Object> {
     this.stopReason,
     this.confirmedCheckpoint,
     this.hasConfirmedCheckpoint = false,
+    this.confirmedStepCount = 0,
     this.application = const SyncBoundaryReceipt.notAttempted(),
     this.checkpoint = const SyncBoundaryReceipt.notAttempted(),
   });
@@ -197,6 +254,9 @@ final class SyncDatasetReport<K, C, F extends Object> {
 
   /// Whether [confirmedCheckpoint] is present.
   final bool hasConfirmedCheckpoint;
+
+  /// Number of incremental or one-shot steps durably confirmed.
+  final int confirmedStepCount;
 
   /// Consumer dataset-application boundary.
   final SyncBoundaryReceipt application;
@@ -377,4 +437,31 @@ final class SyncProgressController<K> {
 
   /// Closes the stream idempotently.
   Future<void> close() => _controller.close();
+}
+
+/// Payload-free notification that one dataset step checkpoint was confirmed.
+final class SyncCheckpointProgressEvent<K> {
+  /// Creates one monotonic checkpoint progress event.
+  const SyncCheckpointProgressEvent({
+    required this.runId,
+    required this.sequence,
+    required this.key,
+    required this.confirmedStepCount,
+    required this.timestamp,
+  });
+
+  /// Consumer-safe run identifier.
+  final String runId;
+
+  /// One-based run-wide checkpoint event sequence.
+  final int sequence;
+
+  /// Static dataset identifier.
+  final K key;
+
+  /// One-based confirmed step count within [key].
+  final int confirmedStepCount;
+
+  /// UTC confirmation instant.
+  final DateTime timestamp;
 }

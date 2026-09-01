@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add `SyncDataset.incremental`, confirmed-step progress, and strict
+  checkpoint-before-next-pull backpressure with partial receipts.
+- Add sequential and bounded-parallel DAG execution policies with stable report
+  order, independent-branch continuation, and crash draining.
+- Serialize borrowed checkpoint, lease, journal, and cleanup ports, and coalesce
+  concurrent lease renewal.
 - Retain recent sync progress in an O(1) bounded deque while preserving the
   existing stream contract.
 

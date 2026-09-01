@@ -301,7 +301,7 @@
       "entrypoints": [
         "dartitect_sync.dart"
       ],
-      "publicSymbolCount": 70
+      "publicSymbolCount": 73
     },
     {
       "name": "dartitect_testing",

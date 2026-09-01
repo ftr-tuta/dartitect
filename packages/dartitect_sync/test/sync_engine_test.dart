@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dartitect/dartitect.dart';
+import 'package:dartitect/dartitect_incremental.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
 import 'package:test/test.dart';
 
@@ -663,6 +664,463 @@ void main() {
       await engine.disposeAsync();
     },
   );
+
+  test('incremental checkpoints complete before the next pull', () async {
+    final checkpoints = _GatedCheckpoints<String, int>();
+    final trace = <String>[];
+    Stream<Result<SyncDatasetOutcome<int>, _Failure>> produce() async* {
+      trace.add('yield-1');
+      yield const Ok<SyncDatasetOutcome<int>>(
+        SyncDatasetOutcome<int>.checkpoint(1),
+      );
+      trace.add('yield-2');
+      yield const Ok<SyncDatasetOutcome<int>>(
+        SyncDatasetOutcome<int>.checkpoint(2),
+      );
+    }
+
+    final engine = SyncEngine<String, int, _Failure>(
+      datasets: <SyncDataset<String, int, _Failure>>[
+        SyncDataset<String, int, _Failure>.incremental(
+          key: 'notes',
+          synchronize: (_) => IncrementalOperation.async(produce),
+        ),
+      ],
+      graph: SyncDependencyGraph<String>(keys: const <String>['notes']),
+      checkpoints: checkpoints,
+    );
+    final run = engine.start();
+    final checkpointProgress = <SyncCheckpointProgressEvent<String>>[];
+    final subscription = run.checkpointProgress.listen(checkpointProgress.add);
+
+    await checkpoints.firstWriteStarted.future;
+    expect(trace, <String>['yield-1']);
+    checkpoints.allowFirstWrite.complete();
+    final report = await run.done;
+
+    expect(trace, <String>['yield-1', 'yield-2']);
+    expect(checkpoints.values['notes'], 2);
+    expect(report.datasets.single.confirmedStepCount, 2);
+    expect(report.datasets.single.confirmedCheckpoint, 2);
+    expect(checkpointProgress.map((event) => event.confirmedStepCount), <int>[
+      1,
+      2,
+    ]);
+    await subscription.cancel();
+    await engine.disposeAsync();
+  });
+
+  test(
+    'incremental typed failure retains confirmed partial progress',
+    () async {
+      final failureStack = StackTrace.current;
+      final engine = SyncEngine<String, int, _Failure>(
+        datasets: <SyncDataset<String, int, _Failure>>[
+          SyncDataset<String, int, _Failure>.incremental(
+            key: 'notes',
+            synchronize: (_) => IncrementalOperation.sync(
+              () => <Result<SyncDatasetOutcome<int>, _Failure>>[
+                const Ok<SyncDatasetOutcome<int>>(
+                  SyncDatasetOutcome<int>.checkpoint(4),
+                ),
+                Err<_Failure>(const _Failure(), failureStack),
+                const Ok<SyncDatasetOutcome<int>>(
+                  SyncDatasetOutcome<int>.checkpoint(9),
+                ),
+              ],
+            ),
+          ),
+        ],
+        graph: SyncDependencyGraph<String>(keys: const <String>['notes']),
+        checkpoints: _MemoryCheckpoints<String, int>(),
+      );
+
+      final report = await engine.start().done;
+      final dataset = report.datasets.single;
+
+      expect(dataset.status, SyncDatasetStatus.failed);
+      expect(dataset.confirmedStepCount, 1);
+      expect(dataset.confirmedCheckpoint, 4);
+      expect(dataset.failureStackTrace, same(failureStack));
+      await engine.disposeAsync();
+    },
+  );
+
+  test(
+    'incremental cancellation drains the producer before terminal',
+    () async {
+      late StreamController<Result<SyncDatasetOutcome<int>, _Failure>> source;
+      final sourceCancelled = Completer<void>();
+      final checkpoints = _MemoryCheckpoints<String, int>();
+      final engine = SyncEngine<String, int, _Failure>(
+        datasets: <SyncDataset<String, int, _Failure>>[
+          SyncDataset<String, int, _Failure>.incremental(
+            key: 'notes',
+            synchronize: (_) {
+              source =
+                  StreamController<Result<SyncDatasetOutcome<int>, _Failure>>(
+                    onListen: () {
+                      source.add(
+                        const Ok<SyncDatasetOutcome<int>>(
+                          SyncDatasetOutcome<int>.checkpoint(1),
+                        ),
+                      );
+                    },
+                    onCancel: () {
+                      if (!sourceCancelled.isCompleted)
+                        sourceCancelled.complete();
+                    },
+                  );
+              return IncrementalOperation.async(() => source.stream);
+            },
+          ),
+        ],
+        graph: SyncDependencyGraph<String>(keys: const <String>['notes']),
+        checkpoints: checkpoints,
+      );
+      final run = engine.start();
+      await run.checkpointProgress.first;
+
+      run.cancel('test');
+      final report = await run.done;
+
+      expect(sourceCancelled.isCompleted, isTrue);
+      expect(report.datasets.single.status, SyncDatasetStatus.incomplete);
+      expect(report.datasets.single.confirmedStepCount, 1);
+      await source.close();
+      await engine.disposeAsync();
+    },
+  );
+
+  test('incremental runs resume from the last confirmed checkpoint', () async {
+    final checkpoints = _MemoryCheckpoints<String, int>();
+    final received = <int?>[];
+    final engine = SyncEngine<String, int, _Failure>(
+      datasets: <SyncDataset<String, int, _Failure>>[
+        SyncDataset<String, int, _Failure>.incremental(
+          key: 'notes',
+          synchronize: (context) {
+            received.add(context.checkpoint);
+            return IncrementalOperation.sync(
+              () => <Result<SyncDatasetOutcome<int>, _Failure>>[
+                Ok<SyncDatasetOutcome<int>>(
+                  SyncDatasetOutcome<int>.checkpoint(
+                    (context.checkpoint ?? 0) + 1,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ],
+      graph: SyncDependencyGraph<String>(keys: const <String>['notes']),
+      checkpoints: checkpoints,
+    );
+
+    await engine.start().done;
+    await engine.start().done;
+
+    expect(received, <int?>[null, 1]);
+    expect(checkpoints.values['notes'], 2);
+    await engine.disposeAsync();
+  });
+
+  test('incremental checkpoint failure stops before the next pull', () async {
+    final pulled = <int>[];
+    Iterable<Result<SyncDatasetOutcome<int>, _Failure>> produce() sync* {
+      pulled.add(1);
+      yield const Ok<SyncDatasetOutcome<int>>(
+        SyncDatasetOutcome<int>.checkpoint(1),
+      );
+      pulled.add(2);
+      yield const Ok<SyncDatasetOutcome<int>>(
+        SyncDatasetOutcome<int>.checkpoint(2),
+      );
+    }
+
+    final engine = SyncEngine<String, int, _Failure>(
+      datasets: <SyncDataset<String, int, _Failure>>[
+        SyncDataset<String, int, _Failure>.incremental(
+          key: 'notes',
+          synchronize: (_) => IncrementalOperation.sync(produce),
+        ),
+      ],
+      graph: SyncDependencyGraph<String>(keys: const <String>['notes']),
+      checkpoints: _MemoryCheckpoints<String, int>(
+        writeError: StateError('checkpoint failed'),
+      ),
+    );
+
+    final terminal = await _terminalFailure(engine.start().done);
+    final report = terminal.report.datasets.single;
+
+    expect(pulled, <int>[1]);
+    expect(report.status, SyncDatasetStatus.incomplete);
+    expect(report.confirmedStepCount, 0);
+    expect(report.application.status, SyncBoundaryStatus.succeeded);
+    expect(report.checkpoint.status, SyncBoundaryStatus.failed);
+    await engine.disposeAsync();
+  });
+
+  test(
+    'bounded DAG admits ready datasets in plan order and reuses capacity',
+    () async {
+      final gates = <String, Completer<void>>{
+        for (final key in const <String>['a', 'b', 'c']) key: Completer<void>(),
+      };
+      final entered = <String, Completer<void>>{
+        for (final key in const <String>['a', 'b', 'c']) key: Completer<void>(),
+      };
+      final startOrder = <String>[];
+      var active = 0;
+      var maxActive = 0;
+      SyncDataset<String, int, _Failure> dataset(String key) =>
+          SyncDataset<String, int, _Failure>(
+            key: key,
+            synchronize: (_) async {
+              startOrder.add(key);
+              active += 1;
+              if (active > maxActive) maxActive = active;
+              entered[key]!.complete();
+              await gates[key]!.future;
+              active -= 1;
+              return const Ok<SyncDatasetOutcome<int>>(
+                SyncDatasetOutcome<int>.unchanged(),
+              );
+            },
+          );
+      final engine = SyncEngine<String, int, _Failure>(
+        datasets: <SyncDataset<String, int, _Failure>>[
+          dataset('a'),
+          dataset('b'),
+          dataset('c'),
+        ],
+        graph: SyncDependencyGraph<String>(
+          keys: const <String>['a', 'b', 'c'],
+          dependencies: const <String, List<String>>{
+            'c': <String>['a'],
+          },
+        ),
+        checkpoints: _MemoryCheckpoints<String, int>(),
+        executionPolicy: const SyncExecutionPolicy.boundedParallel(2),
+      );
+      final run = engine.start();
+
+      await Future.wait(<Future<void>>[
+        entered['a']!.future,
+        entered['b']!.future,
+      ]);
+      expect(startOrder, <String>['a', 'b']);
+      expect(entered['c']!.isCompleted, isFalse);
+      gates['a']!.complete();
+      await entered['c']!.future;
+      expect(active, 2);
+      gates['b']!.complete();
+      gates['c']!.complete();
+      final report = await run.done;
+
+      expect(maxActive, 2);
+      expect(startOrder, <String>['a', 'b', 'c']);
+      expect(report.datasets.map((dataset) => dataset.key), <String>[
+        'a',
+        'b',
+        'c',
+      ]);
+      expect(
+        report.datasets.map((dataset) => dataset.status),
+        everyElement(SyncDatasetStatus.succeeded),
+      );
+      await engine.disposeAsync();
+    },
+  );
+
+  test(
+    'parallel typed failure blocks descendants but not other branches',
+    () async {
+      final calls = <String>[];
+      final engine = SyncEngine<String, int, _Failure>(
+        datasets: <SyncDataset<String, int, _Failure>>[
+          SyncDataset<String, int, _Failure>(
+            key: 'a',
+            synchronize: (_) async {
+              calls.add('a');
+              return Err<_Failure>(const _Failure(), StackTrace.current);
+            },
+          ),
+          SyncDataset<String, int, _Failure>(
+            key: 'b',
+            synchronize: (_) async {
+              calls.add('b');
+              return const Ok<SyncDatasetOutcome<int>>(
+                SyncDatasetOutcome<int>.unchanged(),
+              );
+            },
+          ),
+          SyncDataset<String, int, _Failure>(
+            key: 'c',
+            synchronize: (_) async {
+              calls.add('c');
+              return const Ok<SyncDatasetOutcome<int>>(
+                SyncDatasetOutcome<int>.unchanged(),
+              );
+            },
+          ),
+        ],
+        graph: SyncDependencyGraph<String>(
+          keys: const <String>['a', 'b', 'c'],
+          dependencies: const <String, List<String>>{
+            'c': <String>['a'],
+          },
+        ),
+        checkpoints: _MemoryCheckpoints<String, int>(),
+        executionPolicy: const SyncExecutionPolicy.boundedParallel(2),
+      );
+
+      final report = await engine.start().done;
+
+      expect(calls, containsAll(<String>['a', 'b']));
+      expect(calls, isNot(contains('c')));
+      expect(
+        report.datasets.map((dataset) => dataset.status),
+        <SyncDatasetStatus>[
+          SyncDatasetStatus.failed,
+          SyncDatasetStatus.succeeded,
+          SyncDatasetStatus.skipped,
+        ],
+      );
+      await engine.disposeAsync();
+    },
+  );
+
+  test('parallel crash cancels and drains already admitted work', () async {
+    final bothEntered = Completer<void>();
+    var enteredCount = 0;
+    var siblingDrained = false;
+    void entered() {
+      enteredCount += 1;
+      if (enteredCount == 2) bothEntered.complete();
+    }
+
+    final engine = SyncEngine<String, int, _Failure>(
+      datasets: <SyncDataset<String, int, _Failure>>[
+        SyncDataset<String, int, _Failure>(
+          key: 'crash',
+          synchronize: (_) async {
+            entered();
+            await bothEntered.future;
+            throw StateError('parallel crash');
+          },
+        ),
+        SyncDataset<String, int, _Failure>(
+          key: 'sibling',
+          synchronize: (context) async {
+            entered();
+            await context.cancellation.whenCancelled;
+            siblingDrained = true;
+            context.cancellation.throwIfCancelled();
+            return const Ok<SyncDatasetOutcome<int>>(
+              SyncDatasetOutcome<int>.unchanged(),
+            );
+          },
+        ),
+      ],
+      graph: SyncDependencyGraph<String>(
+        keys: const <String>['crash', 'sibling'],
+      ),
+      checkpoints: _MemoryCheckpoints<String, int>(),
+      executionPolicy: const SyncExecutionPolicy.boundedParallel(2),
+    );
+
+    final terminal = await _terminalFailure(engine.start().done);
+
+    expect(terminal.cause, isA<StateError>());
+    expect(siblingDrained, isTrue);
+    expect(terminal.report.datasets, hasLength(2));
+    expect(terminal.report.datasets[1].status, SyncDatasetStatus.cancelled);
+    await engine.disposeAsync();
+  });
+
+  test(
+    'parallel execution serializes borrowed checkpoint and journal ports',
+    () async {
+      final checkpoints = _SingleFlightCheckpoints<String, int>();
+      final journal = _SingleFlightJournal<String>();
+      final engine = SyncEngine<String, int, _Failure>(
+        datasets: <SyncDataset<String, int, _Failure>>[
+          for (final key in const <String>['a', 'b', 'c', 'd'])
+            SyncDataset<String, int, _Failure>(
+              key: key,
+              synchronize: (_) async => const Ok<SyncDatasetOutcome<int>>(
+                SyncDatasetOutcome<int>.checkpoint(1),
+              ),
+            ),
+        ],
+        graph: SyncDependencyGraph<String>(
+          keys: const <String>['a', 'b', 'c', 'd'],
+        ),
+        checkpoints: checkpoints,
+        journal: journal,
+        executionPolicy: const SyncExecutionPolicy.boundedParallel(4),
+      );
+
+      final report = await engine.start().done;
+
+      expect(report.succeeded, isTrue);
+      expect(checkpoints.maxActive, 1);
+      expect(journal.maxActive, 1);
+      await engine.disposeAsync();
+    },
+  );
+
+  test('parallel lease renewal is coalesced and serialized', () async {
+    final clock = _Clock(DateTime.utc(2026, 8, 24));
+    final lease = _SingleFlightLease(clock.now());
+    final engine = SyncEngine<String, int, _Failure>(
+      datasets: <SyncDataset<String, int, _Failure>>[
+        for (final key in const <String>['a', 'b', 'c', 'd'])
+          SyncDataset<String, int, _Failure>(
+            key: key,
+            synchronize: (_) async => const Ok<SyncDatasetOutcome<int>>(
+              SyncDatasetOutcome<int>.unchanged(),
+            ),
+          ),
+      ],
+      graph: SyncDependencyGraph<String>(
+        keys: const <String>['a', 'b', 'c', 'd'],
+      ),
+      checkpoints: _MemoryCheckpoints<String, int>(),
+      leases: _LeaseStore(lease),
+      clock: clock,
+      executionPolicy: const SyncExecutionPolicy.boundedParallel(4),
+    );
+
+    final report = await engine.start().done;
+
+    expect(report.succeeded, isTrue);
+    expect(lease.renewCount, 1);
+    expect(lease.maxActive, 1);
+    expect(lease.releaseCount, 1);
+    await engine.disposeAsync();
+  });
+
+  test('execution policy rejects non-positive bounds without asserts', () {
+    expect(
+      () => SyncEngine<String, int, _Failure>(
+        datasets: <SyncDataset<String, int, _Failure>>[
+          SyncDataset<String, int, _Failure>(
+            key: 'a',
+            synchronize: (_) async => const Ok<SyncDatasetOutcome<int>>(
+              SyncDatasetOutcome<int>.unchanged(),
+            ),
+          ),
+        ],
+        graph: SyncDependencyGraph<String>(keys: const <String>['a']),
+        checkpoints: _MemoryCheckpoints<String, int>(),
+        executionPolicy: const SyncExecutionPolicy.boundedParallel(0),
+      ),
+      throwsArgumentError,
+    );
+  });
 }
 
 Future<Result<SyncDatasetOutcome<int>, _Failure>> _crash() async {
@@ -712,6 +1170,87 @@ final class _MemoryCheckpoints<K, C> implements SyncCheckpointStore<K, C> {
     fencingTokens.add(fencingToken);
     values[key] = checkpoint;
   }
+}
+
+final class _GatedCheckpoints<K, C> implements SyncCheckpointStore<K, C> {
+  final Map<K, C> values = <K, C>{};
+  final Completer<void> firstWriteStarted = Completer<void>();
+  final Completer<void> allowFirstWrite = Completer<void>();
+  var _writeCount = 0;
+
+  @override
+  Future<C?> read(K key, CancellationSignal signal) async => values[key];
+
+  @override
+  Future<void> remove(K key, CancellationSignal signal) async {
+    values.remove(key);
+  }
+
+  @override
+  Future<void> write(
+    K key,
+    C checkpoint,
+    CancellationSignal signal, {
+    int? fencingToken,
+  }) async {
+    _writeCount += 1;
+    if (_writeCount == 1) {
+      firstWriteStarted.complete();
+      await allowFirstWrite.future;
+    }
+    signal.throwIfCancelled();
+    values[key] = checkpoint;
+  }
+}
+
+base class _SingleFlightPort {
+  var active = 0;
+  var maxActive = 0;
+
+  Future<T> guard<T>(FutureOr<T> Function() action) async {
+    active += 1;
+    if (active > maxActive) maxActive = active;
+    try {
+      await Future<void>.delayed(Duration.zero);
+      return await action();
+    } finally {
+      active -= 1;
+    }
+  }
+}
+
+final class _SingleFlightCheckpoints<K, C> extends _SingleFlightPort
+    implements SyncCheckpointStore<K, C> {
+  final Map<K, C> values = <K, C>{};
+
+  @override
+  Future<C?> read(K key, CancellationSignal signal) => guard(() => values[key]);
+
+  @override
+  Future<void> remove(K key, CancellationSignal signal) => guard(() {
+    values.remove(key);
+  });
+
+  @override
+  Future<void> write(
+    K key,
+    C checkpoint,
+    CancellationSignal signal, {
+    int? fencingToken,
+  }) => guard(() {
+    signal.throwIfCancelled();
+    values[key] = checkpoint;
+  });
+}
+
+final class _SingleFlightJournal<K> extends _SingleFlightPort
+    implements SyncRunJournal<K> {
+  @override
+  Future<void> append(SyncJournalEntry<K> entry) => guard(() {});
+
+  @override
+  Future<List<IncompleteSyncAttempt<K>>> loadIncompleteAttempts() =>
+      guard(() => <IncompleteSyncAttempt<K>>[]);
 }
 
 final class _FencedDatasetStore {
@@ -826,6 +1365,34 @@ final class _Lease implements SyncLease {
     expiresAt = expiresAt.add(ttl);
     return true;
   }
+}
+
+final class _SingleFlightLease extends _SingleFlightPort implements SyncLease {
+  _SingleFlightLease(this.expiresAt);
+
+  @override
+  final int fencingToken = 11;
+
+  @override
+  DateTime expiresAt;
+
+  @override
+  String get ownerId => 'single-flight-lease';
+
+  var renewCount = 0;
+  var releaseCount = 0;
+
+  @override
+  Future<void> release() => guard(() {
+    releaseCount += 1;
+  });
+
+  @override
+  Future<bool> renew(Duration ttl) => guard(() {
+    renewCount += 1;
+    expiresAt = expiresAt.add(ttl);
+    return true;
+  });
 }
 
 final class _Handler implements HeadlessSyncHandler<int, int, _Failure> {
