@@ -8,10 +8,14 @@ Future<void> main(List<String> arguments) async {
     File('${root.path}/tool/package_release_contract.json').readAsStringSync(),
   );
   if (release is! Map<String, Object?> ||
-      release['releaseVersion'] is! String) {
+      release['workspaceCohort'] is! Map<String, Object?>) {
     throw const FormatException('Invalid package release cohort.');
   }
-  final cohort = release['releaseVersion']! as String;
+  final workspace = release['workspaceCohort']! as Map<String, Object?>;
+  final cohort = workspace['version'];
+  if (cohort is! String) {
+    throw const FormatException('Invalid workspace release cohort.');
+  }
   final result = await Process.run('dart', const <String>[
     'pub',
     'deps',

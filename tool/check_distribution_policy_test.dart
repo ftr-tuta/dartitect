@@ -85,6 +85,11 @@ void main() {
           '.immutable == true',
           '.immutable == false',
         ),
+    'missing prerelease refusal gate': (fixture) => fixture.replace(
+      '.github/workflows/release.yaml',
+      'Release refuses workspace cohort',
+      'Release contract rejected',
+    ),
     'generated Dartitect override': (fixture) => fixture.append(
       'tool/generated_project_matrix.dart',
       '\n// dependency_overrides:\n',
@@ -115,6 +120,7 @@ final class _Fixture {
     ) as Map<String, Object?>;
     final paths = <String>{
       'tool/distribution_policy.json',
+      'tool/package_release_contract.json',
       'tool/generated_project_matrix.dart',
       'pubspec.yaml',
       'tool/dartitect_devtools_extension/pubspec.yaml',

@@ -3,8 +3,12 @@
 // ignore_for_file: public_member_api_docs
 
 abstract final class DartitectReleaseManifest {
-  static const String releaseVersion = '1.0.0';
-  static const String releaseTag = 'v1.0.0';
+  static const String workspaceVersion = '1.0.0';
+  static const String workspaceChannel = 'stable';
+  static const String candidateTag = 'v1.0.0';
+  static const bool candidateTagMaterialized = true;
+  static const String distributedVersion = '1.0.0';
+  static const String distributedTag = 'v1.0.0';
   static const String repository = 'https://github.com/ftr-tuta/dartitect.git';
   static const String tagPattern = 'v{{version}}';
   static const Map<String, String> packagePaths = <String, String>{
@@ -34,7 +38,7 @@ abstract final class DartitectReleaseManifest {
     'dartitect_lints': 'packages/dartitect_lints',
     'dartitect_mcp': 'packages/dartitect_mcp',
   };
-  static const Map<String, String> packageVersions = <String, String>{
+  static const Map<String, String> workspacePackageVersions = <String, String>{
     'dartitect': '1.0.0',
     'dartitect_geometry': '1.0.0',
     'dartitect_locale_br': '1.0.0',

@@ -295,7 +295,7 @@ void main() {
 }
 ''', flush: true);
   }
-  await _addGitSdkDependencies(project, <String>{
+  await _addGitSdkDependencies(workspace, project, <String>{
     if (scenario.observability != 'none') 'dartitect_observability',
     if (scenario.observability == 'sentry') 'dartitect_sentry',
     if (feature?.transport ?? false) 'dartitect_dio',
@@ -328,9 +328,20 @@ final _sentryHub = Hub(
     ..transport = _DiscardingSentryTransport(),
 );
 
-ObservabilityRuntime _createObservability() => ObservabilityRuntime(
-  logSinks: <LogSinkRegistration>[
-    LogSinkRegistration.borrowed(SentryLogSink(hub: _sentryHub)),
+DestinationAwareObservabilityRuntime _createObservability() =>
+    ObservabilityRuntime.withPrivacy(
+  privacyPolicy: ObservabilityPrivacyPolicy.fromProfile(
+    profile: ObservabilityPrivacyProfile.balanced,
+  ),
+  destinations: <ObservabilityDestinationRegistration>[
+    ObservabilityDestinationRegistration.remote(
+      name: 'sentry',
+      logSinks: <PreparedLogSinkRegistration>[
+        PreparedLogSinkRegistration.borrowed(
+          SentryLogSink.sanitizedInput(hub: _sentryHub),
+        ),
+      ],
+    ),
   ],
 );
 
@@ -415,11 +426,18 @@ final class SessionFactory {
 }
 
 Future<void> _addGitSdkDependencies(
+  Directory workspace,
   Directory project,
   Set<String> selected,
 ) async {
   if (selected.isEmpty) return;
   final direct = selected.toList()..sort();
+  final contract = jsonDecode(
+    await File('${workspace.path}/tool/package_release_contract.json')
+        .readAsString(),
+  ) as Map<String, Object?>;
+  final cohort = contract['workspaceCohort']! as Map<String, Object?>;
+  final version = cohort['version']! as String;
   final pubspec = File('${project.path}/pubspec.yaml');
   var source = await pubspec.readAsString();
   const marker = 'dev_dependencies:\n';
@@ -433,9 +451,22 @@ Future<void> _addGitSdkDependencies(
         '      url: https://github.com/ftr-tuta/dartitect.git\n'
         '      path: packages/$package\n'
         "      tag_pattern: 'v{{version}}'\n"
-        '    version: 1.0.0\n').join()}'
+        '    version: $version\n').join()}'
     '$marker',
   );
+  final sdkDescriptor = RegExp(
+    r'(      path: packages/dartitect(?:_[a-z0-9_]+)?\n'
+    r"      tag_pattern: 'v\{\{version\}\}'\n"
+    r'    version: )\S+',
+  );
+  var alignedDescriptors = 0;
+  source = source.replaceAllMapped(sdkDescriptor, (match) {
+    alignedDescriptors += 1;
+    return '${match.group(1)}$version';
+  });
+  if (alignedDescriptors == 0) {
+    throw StateError('Generated pubspec lacks Dartitect Git descriptors.');
+  }
   await pubspec.writeAsString(source, flush: true);
 }
 

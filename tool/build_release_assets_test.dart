@@ -77,6 +77,29 @@ void main() {
     expect(result.exitCode, 1);
     expect(result.stderr, contains('Readiness identity differs'));
   });
+
+  test('rejects a candidate workspace before creating assets', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+    final contract = File(
+      '${fixture.root.path}/tool/package_release_contract.json',
+    );
+    final source = jsonDecode(await contract.readAsString());
+    final workspace =
+        (source as Map<String, Object?>)['workspaceCohort']!
+            as Map<String, Object?>;
+    workspace
+      ..['version'] = '1.1.0-rc.1'
+      ..['channel'] = 'candidate'
+      ..['derivedTag'] = 'v1.1.0-rc.1'
+      ..['tagMaterialized'] = false;
+    await contract.writeAsString(jsonEncode(source));
+
+    final result = await fixture.build(Directory('${fixture.root.path}/out'));
+
+    expect(result.exitCode, 1);
+    expect(result.stderr, contains('Release assets reject the candidate'));
+  });
 }
 
 final class _Fixture {
@@ -87,6 +110,15 @@ final class _Fixture {
 
   static Future<_Fixture> create({String sourceSha = _sha}) async {
     final root = await Directory.systemTemp.createTemp('release-assets-');
+    for (final path in const <String>[
+      'tool/package_release_contract.json',
+      'docs/release/sbom.spdx.json',
+      'docs/release/dependency-licenses.json',
+    ]) {
+      final target = File('${root.path}/$path');
+      await target.parent.create(recursive: true);
+      await File('${Directory.current.path}/$path').copy(target.path);
+    }
     final readiness = File('${root.path}/actions-readiness-v1.json');
     await readiness.writeAsString(
       jsonEncode(<String, Object?>{
@@ -108,6 +140,7 @@ final class _Fixture {
         '--source-tree=$_tree',
         '--ci-run-id=123',
         '--ci-run-attempt=2',
+        '--root=${root.path}',
       ], workingDirectory: Directory.current.path);
 
   Future<void> dispose() => root.delete(recursive: true);

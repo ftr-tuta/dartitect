@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:yaml/yaml.dart';
 
+import 'release_contract.dart';
+
 /// Verifies the permanent lockstep cohort, package paths, and dependency order.
 void main(List<String> arguments) {
   try {
@@ -13,35 +15,75 @@ void main(List<String> arguments) {
             .readAsStringSync(),
       ),
     );
+    final cohorts = ReleaseCohortContract.read(root);
     final errors = <String>[];
     const forbiddenLegacyFields = <String>{
       'compatibility',
+      'internalDependency',
       'publicationCohorts',
       'publicationLayers',
       'publicationOrder',
       'partialFailurePolicy',
+      'releaseTag',
+      'releaseVersion',
     };
-    if (contract['schemaVersion'] != 3 || contract['series'] != '1.x') {
+    if (contract['schemaVersion'] != 4 || contract['series'] != '1.x') {
       errors.add('Package release contract has an unsupported schema/series.');
     }
     if (contract.keys.toSet().intersection(forbiddenLegacyFields).isNotEmpty) {
       errors.add('Independent-patch or registry-publication fields remain.');
     }
 
-    final version = contract['releaseVersion'];
-    final tag = contract['releaseTag'];
+    final version = cohorts.workspace.version;
+    final tag = cohorts.workspace.tag;
+    final distributedVersion = cohorts.distributed.version;
+    final distributedTag = cohorts.distributed.tag;
     final declaredCount = contract['packageCount'];
-    if (version != '1.0.0' || tag != 'v$version' || declaredCount is! int) {
-      errors.add('Release version, tag, or package count is invalid.');
+    if (cohorts.workspace.semanticVersion.major != 1 ||
+        tag != 'v$version' ||
+        declaredCount is! int) {
+      errors.add(
+        'Workspace version, derived tag, or package count is invalid.',
+      );
+    }
+    final expectedChannel = cohorts.workspace.isPrerelease
+        ? 'candidate'
+        : 'stable';
+    if (cohorts.workspace.channel != expectedChannel ||
+        (cohorts.workspace.isPrerelease && cohorts.workspace.tagMaterialized)) {
+      errors.add('Workspace channel or tag materialization is invalid.');
+    }
+    if (cohorts.distributed.semanticVersion.major != 1 ||
+        cohorts.distributed.isPrerelease ||
+        cohorts.distributed.channel != 'stable' ||
+        distributedTag != 'v$distributedVersion' ||
+        !cohorts.distributed.available ||
+        cohorts.workspace.semanticVersion.compareTo(
+              cohorts.distributed.semanticVersion,
+            ) <
+            0) {
+      errors.add('Distributed stable cohort is invalid.');
     }
     final lockstep = _objectOrNull(contract['lockstep']);
     if (lockstep == null ||
         lockstep['enabled'] != true ||
         lockstep['version'] != version ||
-        lockstep['tag'] != tag ||
+        lockstep['derivedTag'] != tag ||
         lockstep['futurePatchRule'] is! String) {
       errors.add('Permanent lockstep policy is incomplete.');
     }
+    _validateDependency(
+      contract['workspaceInternalDependency'],
+      version,
+      errors,
+      'Workspace',
+    );
+    _validateDependency(
+      contract['distributedInternalDependency'],
+      distributedVersion,
+      errors,
+      'Distributed',
+    );
     final distribution = _objectOrNull(contract['distribution']);
     if (distribution == null ||
         distribution['kind'] != 'github-release' ||
@@ -83,7 +125,6 @@ void main(List<String> arguments) {
 
     final packages = <String, _Package>{};
     final changelogsWithUnreleased = <String>{};
-    String? unreleasedBody;
     for (final entry in packagePaths.entries) {
       final name = entry.key;
       final path = entry.value;
@@ -137,15 +178,14 @@ void main(List<String> arguments) {
         final body = _changelogSection(changelogLines, '## Unreleased');
         if (body.isEmpty) {
           errors.add('$name changelog has an empty Unreleased section.');
-        } else if (unreleasedBody == null) {
-          unreleasedBody = body;
-        } else if (unreleasedBody != body) {
-          errors.add('Unreleased changelog entries must be uniform.');
         }
       }
       final firstRelease = headings.where(_isNumberedVersion).firstOrNull;
-      if (firstRelease != version) {
-        errors.add('$name changelog first numbered version must be $version.');
+      if (firstRelease != distributedVersion) {
+        errors.add(
+          '$name changelog first numbered version must be '
+          '$distributedVersion.',
+        );
       }
     }
 
@@ -186,7 +226,8 @@ void main(List<String> arguments) {
         }
       }
     }
-    _validateArtifactPolicy(contract, errors);
+    _validateArtifactPolicy(contract, cohorts, errors);
+    _validateVersionSources(root, contract, errors);
 
     if (errors.isNotEmpty) {
       stderr.writeln(errors.toSet().join('\n'));
@@ -195,7 +236,8 @@ void main(List<String> arguments) {
     }
     stdout.writeln(
       'Package release contract passed for ${packages.length} packages in '
-      'the permanent $version GitHub-only lockstep cohort.',
+      'the permanent $version workspace lockstep cohort; stable distribution '
+      'remains $distributedTag.',
     );
   } on Object catch (error) {
     stderr.writeln('Package release contract could not be read: $error');
@@ -203,8 +245,53 @@ void main(List<String> arguments) {
   }
 }
 
+void _validateVersionSources(
+  Directory root,
+  Map<String, Object?> contract,
+  List<String> errors,
+) {
+  final sources = _objectOrNull(contract['workspaceVersionSources']);
+  if (sources == null ||
+      sources.keys.toSet().difference(const <String>{
+        'manifests',
+        'nativeManifests',
+        'structuredDerivatives',
+      }).isNotEmpty) {
+    errors.add('Workspace version source inventory is invalid.');
+    return;
+  }
+  final paths = <String>[];
+  for (final key in const <String>[
+    'manifests',
+    'nativeManifests',
+    'structuredDerivatives',
+  ]) {
+    final value = sources[key];
+    if (value is! List<Object?> || value.any((item) => item is! String)) {
+      errors.add('Workspace version source list $key is invalid.');
+      continue;
+    }
+    paths.addAll(value.cast<String>());
+  }
+  if (paths.length != paths.toSet().length ||
+      paths.any(
+        (path) =>
+            path.startsWith('/') ||
+            path.split('/').contains('..') ||
+            path.startsWith('docs/'),
+      )) {
+    errors.add('Workspace version sources must be unique and current-only.');
+  }
+  for (final path in paths) {
+    if (!File('${root.path}/$path').existsSync()) {
+      errors.add('Workspace version source is missing: $path.');
+    }
+  }
+}
+
 void _validateArtifactPolicy(
   Map<String, Object?> contract,
+  ReleaseCohortContract cohorts,
   List<String> errors,
 ) {
   final artifact = _objectOrNull(contract['artifactContract']);
@@ -219,13 +306,30 @@ void _validateArtifactPolicy(
   }
   final release = _objectOrNull(contract['gitRelease']);
   if (release == null ||
-      release['tag'] != contract['releaseTag'] ||
+      release['tag'] != cohorts.distributed.tag ||
+      release['materialized'] != cohorts.distributed.available ||
       release['annotated'] != true ||
       release['signed'] != false ||
       release['transitiveOverrides'] != false ||
       release['registryPublication'] != false ||
       release['immutable'] != true) {
     errors.add('Git release policy is incomplete.');
+  }
+}
+
+void _validateDependency(
+  Object? value,
+  String version,
+  List<String> errors,
+  String label,
+) {
+  final dependency = _objectOrNull(value);
+  if (dependency == null ||
+      dependency['url'] != 'https://github.com/ftr-tuta/dartitect.git' ||
+      dependency['pathPrefix'] != 'packages/' ||
+      dependency['tagPattern'] != 'v{{version}}' ||
+      dependency['version'] != version) {
+    errors.add('$label internal dependency contract is invalid.');
   }
 }
 

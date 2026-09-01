@@ -153,7 +153,7 @@ List<String> packageDependencyOrder(Directory root) {
     File('${root.path}/tool/package_release_contract.json').readAsStringSync(),
   );
   if (contract is! Map<String, Object?> ||
-      contract['schemaVersion'] != 3 ||
+      contract['schemaVersion'] != 4 ||
       contract['dependencyOrder'] is! List<Object?>) {
     throw const FormatException('Invalid package release contract.');
   }

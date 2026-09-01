@@ -40,10 +40,14 @@ Future<void> main(List<String> arguments) async {
         .readAsString(),
   );
   if (release is! Map<String, Object?> ||
-      release['releaseVersion'] is! String) {
+      release['workspaceCohort'] is! Map<String, Object?>) {
     throw const FormatException('Invalid package release cohort.');
   }
-  final cohort = release['releaseVersion']! as String;
+  final workspace = release['workspaceCohort']! as Map<String, Object?>;
+  final cohort = workspace['version'];
+  if (cohort is! String) {
+    throw const FormatException('Invalid workspace release cohort.');
+  }
   final releasePackages = release['packages'];
   if (releasePackages is! Map<String, Object?>) {
     throw const FormatException('Invalid release package inventory.');

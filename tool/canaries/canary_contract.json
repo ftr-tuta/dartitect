@@ -1,11 +1,13 @@
 {
-  "schemaVersion": 3,
-  "releaseVersion": "1.0.0",
+  "schemaVersion": 4,
+  "workspaceVersion": "1.0.0",
   "gitInstallation": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
     "ref": "v1.0.0",
     "tagPattern": "v{{version}}",
     "annotatedTagRequired": true,
+    "localDisposableTag": true,
+    "remoteTagRequired": false,
     "dependencyOverrides": false,
     "transitiveClosureRequired": true,
     "localPathResolution": false,

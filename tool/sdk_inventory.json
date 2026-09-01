@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
-  "status": "STABLE_CANDIDATE",
+  "workspaceVersion": "1.0.0",
+  "channel": "stable",
+  "status": "STABLE",
   "packages": [
     {
       "name": "dartitect",

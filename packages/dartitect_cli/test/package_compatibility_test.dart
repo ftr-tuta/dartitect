@@ -16,6 +16,31 @@ void main() {
     expect(await DartitectLockCompatibility.inspect(lock), isEmpty);
   });
 
+  test('accepts one workspace candidate cohort for local canaries', () async {
+    final lock = await _temporaryLock(<String, _Locked>{
+      'dartitect': const _Locked(version: '1.1.0-rc.1'),
+      'dartitect_cli': const _Locked(version: '1.1.0-rc.1'),
+      'dartitect_observability': const _Locked(version: '1.1.0-rc.1'),
+    });
+
+    expect(await DartitectLockCompatibility.inspect(lock), isEmpty);
+  });
+
+  test('rejects mixed stable and workspace candidate cohorts', () async {
+    final lock = await _temporaryLock(<String, _Locked>{
+      'dartitect': const _Locked(),
+      'dartitect_observability': const _Locked(version: '1.1.0-rc.1'),
+    });
+
+    final findings = await DartitectLockCompatibility.inspect(lock);
+
+    expect(findings, hasLength(2));
+    expect(
+      findings.map((finding) => finding.reason),
+      everyElement('versions must use one lockstep cohort'),
+    );
+  });
+
   test('rejects every non-canonical Git coordinate', () async {
     final lock = await _temporaryLock(<String, _Locked>{
       'dartitect': const _Locked(version: '1.0.1'),

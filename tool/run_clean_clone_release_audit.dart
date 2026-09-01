@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'release_contract.dart';
+
 /// Runs the complete release audit from a disposable clone of exact `HEAD`.
 Future<void> main() async {
   final source = File.fromUri(Platform.script).parent.parent.absolute;
+  final cohorts = ReleaseCohortContract.read(source);
   final status = await _git(source, const <String>['status', '--porcelain']);
   if (status.trim().isNotEmpty) {
     throw StateError(
@@ -62,7 +65,9 @@ Future<void> main() async {
         'schemaVersion': 1,
         'sourceSha': revision,
         'tree': tree,
-        'releaseVersion': '1.0.0',
+        'workspaceVersion': cohorts.workspace.version,
+        'channel': cohorts.workspace.channel,
+        'distributedVersion': cohorts.distributed.version,
         'commands': <String>['flutter pub get', 'dart run tool/release_audit.dart --docs --author-revision=$revision'],
         'trackedTreeClean': true,
         'result': 'PASS',

@@ -1,8 +1,18 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "series": "1.x",
-  "releaseVersion": "1.0.0",
-  "releaseTag": "v1.0.0",
+  "workspaceCohort": {
+    "version": "1.0.0",
+    "channel": "stable",
+    "derivedTag": "v1.0.0",
+    "tagMaterialized": true
+  },
+  "distributedCohort": {
+    "version": "1.0.0",
+    "channel": "stable",
+    "tag": "v1.0.0",
+    "available": true
+  },
   "packageCount": 25,
   "publicEntrypointCount": 32,
   "distribution": {
@@ -18,13 +28,54 @@
   "lockstep": {
     "enabled": true,
     "version": "1.0.0",
-    "tag": "v1.0.0",
+    "derivedTag": "v1.0.0",
     "futurePatchRule": "every release updates all packages to the tag version"
   },
-  "internalDependency": {
+  "workspaceInternalDependency": {
     "url": "https://github.com/ftr-tuta/dartitect.git",
+    "pathPrefix": "packages/",
     "tagPattern": "v{{version}}",
     "version": "1.0.0"
+  },
+  "distributedInternalDependency": {
+    "url": "https://github.com/ftr-tuta/dartitect.git",
+    "pathPrefix": "packages/",
+    "tagPattern": "v{{version}}",
+    "version": "1.0.0"
+  },
+  "workspaceVersionSources": {
+    "manifests": [
+      "pubspec.yaml",
+      "examples/adapters_app/pubspec.yaml",
+      "examples/api_compatibility_fixture/pubspec.yaml",
+      "examples/model_generator_fixture/pubspec.yaml",
+      "examples/paved_road_canary/pubspec.yaml",
+      "examples/reference_app/pubspec.yaml",
+      "examples/thin_consumer_canary/pubspec.yaml",
+      "tool/analyzer_plugin_fixture/dependencies/dartitect/pubspec.yaml",
+      "tool/analyzer_plugin_fixture/dependencies/dartitect_flutter/pubspec.yaml",
+      "tool/analyzer_plugin_workspace/dartitect_lints/pubspec.yaml",
+      "tool/analyzer_plugin_workspace/dartitect_modeling_analyzer/pubspec.yaml",
+      "tool/canaries/adapters/pubspec.yaml",
+      "tool/canaries/drift_provider/pubspec.yaml",
+      "tool/canaries/large_consumer/pubspec.yaml",
+      "tool/canaries/large_consumer_source/pubspec.yaml",
+      "tool/canaries/minimal/pubspec.yaml",
+      "tool/canaries/modeling/pubspec.yaml",
+      "tool/canaries/native_capabilities/pubspec.yaml",
+      "tool/canaries/offline_first/pubspec.yaml",
+      "tool/canaries/thin_consumer/pubspec.yaml",
+      "tool/canaries/tooling/pubspec.yaml",
+      "tool/dartitect_devtools_extension/pubspec.yaml"
+    ],
+    "nativeManifests": [
+      "packages/dartitect_media/ios/dartitect_media.podspec",
+      "packages/dartitect_privacy/ios/dartitect_privacy.podspec"
+    ],
+    "structuredDerivatives": [
+      "tool/api_surface.snapshot.json",
+      "tool/canaries/canary_contract.json"
+    ]
   },
   "inventoryDecisions": {
     "dartitect": "keep-minimal-core",
@@ -125,7 +176,7 @@
   "gitRelease": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
     "tag": "v1.0.0",
-    "materialized": false,
+    "materialized": true,
     "annotated": true,
     "signed": false,
     "protected": true,

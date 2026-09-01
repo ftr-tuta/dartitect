@@ -29,8 +29,6 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       SOURCE_SHA: ${{ inputs.source_sha }}
       CI_RUN_ID: ${{ inputs.ci_run_id }}
-      RELEASE_TAG: v1.0.0
-      RELEASE_TITLE: Dartitect 1.0.0
       GITHUB_API_VERSION: "2026-03-10"
     steps:
       - name: Validate input shapes
@@ -51,6 +49,25 @@ jobs:
           ref: ${{ inputs.source_sha }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Load stable release contract and reject prereleases
+        shell: bash
+        run: |
+          set -euo pipefail
+          workspace_version="$(jq -er '.workspaceCohort.version' tool/package_release_contract.json)"
+          channel="$(jq -er '.workspaceCohort.channel' tool/package_release_contract.json)"
+          release_tag="$(jq -er '.workspaceCohort.derivedTag' tool/package_release_contract.json)"
+          [[ "$channel" == "stable" && "$workspace_version" != *-* ]] || {
+            echo "Release refuses workspace cohort ${workspace_version} on channel ${channel}." >&2
+            exit 1
+          }
+          [[ "$release_tag" == "v${workspace_version}" ]] || {
+            echo "Derived release tag differs from the stable workspace version." >&2
+            exit 1
+          }
+          {
+            echo "RELEASE_TAG=${release_tag}"
+            echo "RELEASE_TITLE=Dartitect ${workspace_version}"
+          } >>"$GITHUB_ENV"
       - name: Install Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
