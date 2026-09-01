@@ -65,6 +65,7 @@ void main(List<String> arguments) {
     _checkRootMetadata(root, policy['releaseVersion']! as String, errors);
     _checkWorkflows(root, release['workflow']! as String, errors);
     _checkForbiddenMechanisms(root, errors);
+    _checkGeneratedConsumer(root, policy, errors);
     _checkActiveDocuments(root, policy, errors);
 
     if (errors.isNotEmpty) {
@@ -248,6 +249,34 @@ void _checkForbiddenMechanisms(Directory root, List<String> errors) {
     if (File('${root.path}/$removed').existsSync()) {
       errors.add('$removed must be removed from the active release surface.');
     }
+  }
+}
+
+void _checkGeneratedConsumer(
+  Directory root,
+  Map<String, Object?> policy,
+  List<String> errors,
+) {
+  final file = File('${root.path}/tool/generated_project_matrix.dart');
+  if (!file.existsSync()) {
+    errors.add('Generated-project matrix is missing.');
+    return;
+  }
+  final source = file.readAsStringSync();
+  for (final required in <String>[
+    'url: ${policy['repository']}',
+    r'path: packages/$package',
+    "tag_pattern: 'v{{version}}'",
+    'version: ${policy['releaseVersion']}',
+  ]) {
+    if (!source.contains(required)) {
+      errors.add('Generated-project matrix lacks canonical Git descriptors.');
+      break;
+    }
+  }
+  if (source.contains('dependency_overrides:') ||
+      source.contains('_addLocalSdkDependencies')) {
+    errors.add('Generated-project matrix must not create Dartitect overrides.');
   }
 }
 

@@ -70,6 +70,10 @@ void main() {
       'contents: read',
       'contents: write',
     ),
+    'generated Dartitect override': (fixture) => fixture.append(
+      'tool/generated_project_matrix.dart',
+      '\n// dependency_overrides:\n',
+    ),
   }.entries) {
     test('rejects ${mutation.key}', () async {
       final fixture = await _Fixture.create();
@@ -96,6 +100,7 @@ final class _Fixture {
     ) as Map<String, Object?>;
     final paths = <String>{
       'tool/distribution_policy.json',
+      'tool/generated_project_matrix.dart',
       'pubspec.yaml',
       'tool/dartitect_devtools_extension/pubspec.yaml',
       'packages/dartitect_media/ios/dartitect_media.podspec',

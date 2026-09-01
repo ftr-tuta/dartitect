@@ -107,7 +107,17 @@ jobs:
           dart run tool/release_audit.dart "${arguments[@]}"
       - name: Validate generated projects and builds
         if: matrix.flutter == '3.47.1'
-        run: dart run tool/generated_project_matrix.dart --builds
+        env:
+          GIT_CONFIG_COUNT: 1
+          GIT_CONFIG_KEY_0: url.file://${{ runner.temp }}/dartitect-generated-projects.git.insteadOf
+          GIT_CONFIG_VALUE_0: https://github.com/ftr-tuta/dartitect.git
+        run: |
+          git config user.name ftr
+          git config user.email ftr@tuta.com
+          git tag --delete v1.0.0 2>/dev/null || true
+          git tag --annotate v1.0.0 --message "Dartitect 1.0.0 generated-project canary"
+          git clone --bare . "${RUNNER_TEMP:?}/dartitect-generated-projects.git"
+          dart run tool/generated_project_matrix.dart --builds
       - name: Verify pinned shared UI goldens
         if: matrix.flutter == '3.47.1'
         run: flutter test examples/paved_road_canary/test/shared_layout_golden_test.dart

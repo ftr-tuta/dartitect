@@ -295,7 +295,7 @@ void main() {
 }
 ''', flush: true);
   }
-  await _addLocalSdkDependencies(workspace, project, <String>{
+  await _addGitSdkDependencies(project, <String>{
     if (scenario.observability != 'none') 'dartitect_observability',
     if (scenario.observability == 'sentry') 'dartitect_sentry',
     if (feature?.transport ?? false) 'dartitect_dio',
@@ -414,56 +414,27 @@ final class SessionFactory {
   }
 }
 
-Future<void> _addLocalSdkDependencies(
-  Directory workspace,
+Future<void> _addGitSdkDependencies(
   Directory project,
   Set<String> selected,
 ) async {
   if (selected.isEmpty) return;
-  const dependencies = <String, Set<String>>{
-    'dartitect_observability': {'dartitect'},
-    'dartitect_jobs': {'dartitect'},
-    'dartitect_resilience': {'dartitect'},
-    'dartitect_transfer': {'dartitect'},
-    'dartitect_sync': {'dartitect', 'dartitect_jobs', 'dartitect_resilience'},
-    'dartitect_dio': {
-      'dartitect',
-      'dartitect_observability',
-      'dartitect_transfer',
-    },
-    'dartitect_drift': {
-      'dartitect',
-      'dartitect_observability',
-      'dartitect_sync',
-    },
-    'dartitect_sentry': {'dartitect_observability'},
-  };
-  final closure = <String>{...selected};
-  var changed = true;
-  while (changed) {
-    changed = false;
-    for (final package in closure.toList(growable: false)) {
-      for (final dependency in dependencies[package] ?? const <String>{}) {
-        changed = closure.add(dependency) || changed;
-      }
-    }
-  }
   final direct = selected.toList()..sort();
-  final overrides = closure.difference(const <String>{'dartitect'}).toList()
-    ..sort();
   final pubspec = File('${project.path}/pubspec.yaml');
   var source = await pubspec.readAsString();
+  const marker = 'dev_dependencies:\n';
+  if (!source.contains(marker)) {
+    throw StateError('Generated pubspec lacks dev_dependencies.');
+  }
   source = source.replaceFirst(
-    'dev_dependencies:\n',
+    marker,
     '${direct.map((package) => '  $package:\n'
-            '    path: ${_yamlPath('${workspace.path}/packages/$package')}\n').join()}'
-        'dev_dependencies:\n',
-  );
-  source = source.replaceFirst(
-    'dependency_overrides:\n',
-    'dependency_overrides:\n'
-        '${overrides.map((package) => '  $package:\n'
-            '    path: ${_yamlPath('${workspace.path}/packages/$package')}\n').join()}',
+        '    git:\n'
+        '      url: https://github.com/ftr-tuta/dartitect.git\n'
+        '      path: packages/$package\n'
+        "      tag_pattern: 'v{{version}}'\n"
+        '    version: 1.0.0\n').join()}'
+    '$marker',
   );
   await pubspec.writeAsString(source, flush: true);
 }
