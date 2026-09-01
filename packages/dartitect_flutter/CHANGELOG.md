@@ -8,6 +8,10 @@
   dependency indexing and ring-backed retention.
 - Route all progress command execution context through one internal runtime
   while preserving the existing shared command-lane admission policies.
+- Add the Material-neutral `dartitect_flutter_incremental.dart` entrypoint with
+  bounded no-argument incremental commands, exhaustive partial-aggregate
+  states, payload-free receipts, notification coalescing, and a static-child
+  state builder.
 
 ## 1.0.0
 

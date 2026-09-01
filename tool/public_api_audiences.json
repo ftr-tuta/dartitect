@@ -18,6 +18,7 @@
     "packages/dartitect_drift/lib/dartitect_drift.dart": {"defaultAudience": "adapter-author"},
     "packages/dartitect_flutter/lib/dartitect_flutter.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_flutter/lib/dartitect_flutter_forms.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_flutter/lib/dartitect_flutter_incremental.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_flutter/lib/dartitect_flutter_queries.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_flutter/lib/dartitect_flutter_ui.dart": {"defaultAudience": "application-facing"},

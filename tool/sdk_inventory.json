@@ -88,11 +88,12 @@
       "entrypoints": [
         "dartitect_flutter.dart",
         "dartitect_flutter_forms.dart",
+        "dartitect_flutter_incremental.dart",
         "dartitect_flutter_queries.dart",
         "dartitect_flutter_reactive.dart",
         "dartitect_flutter_ui.dart"
       ],
-      "publicSymbolCount": 241
+      "publicSymbolCount": 295
     },
     {
       "name": "dartitect_flutter_testing",

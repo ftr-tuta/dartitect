@@ -49384,6 +49384,5336 @@
         }
       ]
     },
+    "packages/dartitect_flutter/lib/dartitect_flutter_incremental.dart": {
+      "defaultAudience": "application-facing",
+      "symbols": [
+        {
+          "name": "BoundedRingBuffer",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class BoundedRingBuffer<T>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "BoundedRingBuffer<T>(int capacity)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BoundedRingBuffer<T>",
+              "parameters": [
+                {
+                  "name": "capacity",
+                  "declaration": "int capacity",
+                  "type": "int",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "capacity",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int capacity",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "droppedCount",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "int get droppedCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "isEmpty",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get isEmpty",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "isFull",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get isFull",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "length",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "int get length",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "values",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "List<T> get values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "List<T>",
+              "parameters": []
+            },
+            {
+              "name": "add",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void add(T value)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "value",
+                  "declaration": "T value",
+                  "type": "T",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "clear",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void clear()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "CancellationException",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class CancellationException implements Exception",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "Exception"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CancellationException(Object? reason)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CancellationException",
+              "parameters": [
+                {
+                  "name": "reason",
+                  "declaration": "Object? reason",
+                  "type": "Object?",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "reason",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Object? reason",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Object?"
+            },
+            {
+              "name": "toString",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "String toString()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "CancellationRegistration",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class CancellationRegistration implements Disposable",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "Disposable"
+          ],
+          "members": [
+            {
+              "name": "isDisposed",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get isDisposed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "dispose",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void dispose()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "CancellationSignal",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class CancellationSignal",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "isCancelled",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get isCancelled",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "reason",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "Object? get reason",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Object?",
+              "parameters": []
+            },
+            {
+              "name": "whenCancelled",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "Future<Object?> get whenCancelled",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<Object?>",
+              "parameters": []
+            },
+            {
+              "name": "register",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "CancellationRegistration register(void Function(Object?) listener)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "CancellationRegistration",
+              "parameters": [
+                {
+                  "name": "listener",
+                  "declaration": "void Function(Object?) listener",
+                  "type": "void Function(Object?)",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "throwIfCancelled",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void throwIfCancelled()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "CancellationSource",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class CancellationSource implements Disposable",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "Disposable"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CancellationSource()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "CancellationSource",
+              "parameters": []
+            },
+            {
+              "name": "signal",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CancellationSignal signal",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "CancellationSignal"
+            },
+            {
+              "name": "cancel",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void cancel([Object? reason])",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "reason",
+                  "declaration": "[Object? reason]",
+                  "type": "Object?",
+                  "kind": "optionalPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "dispose",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void dispose()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "CloseableSyncIncrementalSource",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "abstract interface class CloseableSyncIncrementalSource<Item, Failure extends Object>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "interface"
+          ],
+          "typeParameters": [
+            {
+              "name": "Item",
+              "declaration": "Item",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CloseableSyncIncrementalSource<Item, Failure>()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "CloseableSyncIncrementalSource<Item, Failure>",
+              "parameters": []
+            },
+            {
+              "name": "iterator",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "Iterator<Result<Item, Failure>> get iterator",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "Iterator<Result<Item, Failure>>",
+              "parameters": []
+            },
+            {
+              "name": "close",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "FutureOr<void> close()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "FutureOr<void>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "CommandConcurrency",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class CommandConcurrency",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "concurrent",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrency.concurrent({int maxConcurrent = 4})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandConcurrency",
+              "parameters": [
+                {
+                  "name": "maxConcurrent",
+                  "declaration": "{int maxConcurrent = 4}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "4",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "drop",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrency.drop()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandConcurrency",
+              "parameters": []
+            },
+            {
+              "name": "join",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrency.join()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandConcurrency",
+              "parameters": []
+            },
+            {
+              "name": "keyed",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrency.keyed({CommandConcurrency? perKey = const CommandConcurrency.sequential(), int maxConcurrent = 4})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandConcurrency",
+              "parameters": [
+                {
+                  "name": "perKey",
+                  "declaration": "{CommandConcurrency? perKey = const CommandConcurrency.sequential()}",
+                  "type": "CommandConcurrency?",
+                  "kind": "optionalNamed",
+                  "default": "const CommandConcurrency.sequential()",
+                  "annotations": []
+                },
+                {
+                  "name": "maxConcurrent",
+                  "declaration": "{int maxConcurrent = 4}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "4",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "reject",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrency.reject()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandConcurrency",
+              "parameters": []
+            },
+            {
+              "name": "restartLatest",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrency.restartLatest()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandConcurrency",
+              "parameters": []
+            },
+            {
+              "name": "sequential",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrency.sequential({int maxQueue = 64})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandConcurrency",
+              "parameters": [
+                {
+                  "name": "maxQueue",
+                  "declaration": "{int maxQueue = 64}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "64",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "kind",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrencyKind kind",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "CommandConcurrencyKind"
+            },
+            {
+              "name": "maxConcurrent",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maxConcurrent",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "maxQueue",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maxQueue",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "perKey",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrency? perKey",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "CommandConcurrency?"
+            }
+          ]
+        },
+        {
+          "name": "CommandCrashReporter",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "abstract interface class CommandCrashReporter",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "interface"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandCrashReporter()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "CommandCrashReporter",
+              "parameters": []
+            },
+            {
+              "name": "report",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void report(Object error, StackTrace stackTrace)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "error",
+                  "declaration": "Object error",
+                  "type": "Object",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "stackTrace",
+                  "declaration": "StackTrace stackTrace",
+                  "type": "StackTrace",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CommandExecution",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "sealed class CommandExecution<T, F extends Object>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "sealed"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandExecution<T, F>()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandExecution<T, F>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "CommandExecutionCancelled",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class CommandExecutionCancelled<T, F extends Object> extends CommandExecution<T, F>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "CommandExecution<T, F>",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandExecutionCancelled<T, F>(Object? reason, {int executionId = 0})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandExecutionCancelled<T, F>",
+              "parameters": [
+                {
+                  "name": "reason",
+                  "declaration": "Object? reason",
+                  "type": "Object?",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "executionId",
+                  "declaration": "{int executionId = 0}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "0",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "executionId",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int executionId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "reason",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Object? reason",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Object?"
+            }
+          ]
+        },
+        {
+          "name": "CommandExecutionDropped",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class CommandExecutionDropped<T, F extends Object> extends CommandExecution<T, F>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "CommandExecution<T, F>",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandExecutionDropped<T, F>()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandExecutionDropped<T, F>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "CommandExecutionFailed",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class CommandExecutionFailed<T, F extends Object> extends CommandExecution<T, F>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "CommandExecution<T, F>",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandExecutionFailed<T, F>(F failure, StackTrace stackTrace, {int executionId = 0})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandExecutionFailed<T, F>",
+              "parameters": [
+                {
+                  "name": "failure",
+                  "declaration": "F failure",
+                  "type": "F",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "stackTrace",
+                  "declaration": "StackTrace stackTrace",
+                  "type": "StackTrace",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "executionId",
+                  "declaration": "{int executionId = 0}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "0",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "executionId",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int executionId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "failure",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "F failure",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "F"
+            },
+            {
+              "name": "stackTrace",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "StackTrace stackTrace",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "StackTrace"
+            }
+          ]
+        },
+        {
+          "name": "CommandExecutionRejected",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class CommandExecutionRejected<T, F extends Object> extends CommandExecution<T, F>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "CommandExecution<T, F>",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandExecutionRejected<T, F>(CommandRejectionReason reason)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandExecutionRejected<T, F>",
+              "parameters": [
+                {
+                  "name": "reason",
+                  "declaration": "CommandRejectionReason reason",
+                  "type": "CommandRejectionReason",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "reason",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandRejectionReason reason",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "CommandRejectionReason"
+            }
+          ]
+        },
+        {
+          "name": "CommandExecutionSucceeded",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class CommandExecutionSucceeded<T, F extends Object> extends CommandExecution<T, F>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "CommandExecution<T, F>",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandExecutionSucceeded<T, F>(T value, {int executionId = 0})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandExecutionSucceeded<T, F>",
+              "parameters": [
+                {
+                  "name": "value",
+                  "declaration": "T value",
+                  "type": "T",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "executionId",
+                  "declaration": "{int executionId = 0}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "0",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "executionId",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int executionId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "value",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "T value",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "T"
+            }
+          ]
+        },
+        {
+          "name": "Err",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class Err<F extends Object> extends Result<Never, F>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "Result<Never, F>",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "Err<F>(F failure, StackTrace stackTrace)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "Err<F>",
+              "parameters": [
+                {
+                  "name": "failure",
+                  "declaration": "F failure",
+                  "type": "F",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "stackTrace",
+                  "declaration": "StackTrace stackTrace",
+                  "type": "StackTrace",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "failure",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "F failure",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "F"
+            },
+            {
+              "name": "stackTrace",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "StackTrace stackTrace",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "StackTrace"
+            },
+            {
+              "name": "equalityFields",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "Iterable<Object?> get equalityFields",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Iterable<Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "FlutterSourceFrameScheduler",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class FlutterSourceFrameScheduler implements SourceFrameScheduler",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "SourceFrameScheduler"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "FlutterSourceFrameScheduler()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "FlutterSourceFrameScheduler",
+              "parameters": []
+            },
+            {
+              "name": "schedule",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void schedule(void Function() callback)",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "callback",
+                  "declaration": "void Function() callback",
+                  "type": "void Function()",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "IncrementalBroadcastStreamException",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalBroadcastStreamException implements Exception",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "Exception"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalBroadcastStreamException()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalBroadcastStreamException",
+              "parameters": []
+            },
+            {
+              "name": "toString",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "String toString()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "IncrementalCleanupException",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalCleanupException implements Exception",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "Exception"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalCleanupException({required Object error, required StackTrace stackTrace, Object? primaryError, StackTrace? primaryStackTrace})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalCleanupException",
+              "parameters": [
+                {
+                  "name": "error",
+                  "declaration": "{required Object error}",
+                  "type": "Object",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "stackTrace",
+                  "declaration": "{required StackTrace stackTrace}",
+                  "type": "StackTrace",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "primaryError",
+                  "declaration": "{Object? primaryError}",
+                  "type": "Object?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "primaryStackTrace",
+                  "declaration": "{StackTrace? primaryStackTrace}",
+                  "type": "StackTrace?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "error",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Object error",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Object"
+            },
+            {
+              "name": "primaryError",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Object? primaryError",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Object?"
+            },
+            {
+              "name": "primaryStackTrace",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "StackTrace? primaryStackTrace",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "StackTrace?"
+            },
+            {
+              "name": "stackTrace",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "StackTrace stackTrace",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "StackTrace"
+            },
+            {
+              "name": "toString",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "String toString()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "IncrementalCollectResult",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalCollectResult<Item, Failure extends Object>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Item",
+              "declaration": "Item",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalCollectResult<Item, Failure>({required List<Item> items, required int droppedItemCount, required Result<void, Failure> outcome, required IncrementalReport report})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalCollectResult<Item, Failure>",
+              "parameters": [
+                {
+                  "name": "items",
+                  "declaration": "{required List<Item> items}",
+                  "type": "List<Item>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "droppedItemCount",
+                  "declaration": "{required int droppedItemCount}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "outcome",
+                  "declaration": "{required Result<void, Failure> outcome}",
+                  "type": "Result<void, Failure>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "report",
+                  "declaration": "{required IncrementalReport report}",
+                  "type": "IncrementalReport",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "droppedItemCount",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int droppedItemCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "items",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "List<Item> items",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<Item>"
+            },
+            {
+              "name": "outcome",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Result<void, Failure> outcome",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Result<void, Failure>"
+            },
+            {
+              "name": "report",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalReport report",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "IncrementalReport"
+            }
+          ]
+        },
+        {
+          "name": "IncrementalCommand",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalCommand<Item, Aggregate, Failure extends Object, Progress> extends ChangeNotifier implements AsyncDisposable, ValueListenable<IncrementalCommandState<Aggregate, Failure, Progress>>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Item",
+              "declaration": "Item",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Aggregate",
+              "declaration": "Aggregate",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            },
+            {
+              "name": "Progress",
+              "declaration": "Progress",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "ChangeNotifier",
+          "mixins": [],
+          "interfaces": [
+            "AsyncDisposable",
+            "ValueListenable<IncrementalCommandState<Aggregate, Failure, Progress>>"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommand<Item, Aggregate, Failure, Progress>({required IncrementalOperation<Item, Failure> operation, required Aggregate Function() initialAggregate, required Aggregate Function(Aggregate, Item, IncrementalItemContext) reducer, required Progress Function(Item, Aggregate, IncrementalItemContext) progressOf, CommandConcurrency concurrency = const CommandConcurrency.reject(), IncrementalPublication publication = IncrementalPublication.everyEmission, SourceFrameScheduler frameScheduler = const FlutterSourceFrameScheduler(), CommandCrashReporter reporter = const NoOpCommandCrashReporter()})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "IncrementalCommand<Item, Aggregate, Failure, Progress>",
+              "parameters": [
+                {
+                  "name": "operation",
+                  "declaration": "{required IncrementalOperation<Item, Failure> operation}",
+                  "type": "IncrementalOperation<Item, Failure>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "initialAggregate",
+                  "declaration": "{required Aggregate Function() initialAggregate}",
+                  "type": "Aggregate Function()",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "reducer",
+                  "declaration": "{required Aggregate Function(Aggregate, Item, IncrementalItemContext) reducer}",
+                  "type": "Aggregate Function(Aggregate, Item, IncrementalItemContext)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "progressOf",
+                  "declaration": "{required Progress Function(Item, Aggregate, IncrementalItemContext) progressOf}",
+                  "type": "Progress Function(Item, Aggregate, IncrementalItemContext)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "concurrency",
+                  "declaration": "{CommandConcurrency concurrency = const CommandConcurrency.reject()}",
+                  "type": "CommandConcurrency",
+                  "kind": "optionalNamed",
+                  "default": "const CommandConcurrency.reject()",
+                  "annotations": []
+                },
+                {
+                  "name": "publication",
+                  "declaration": "{IncrementalPublication publication = IncrementalPublication.everyEmission}",
+                  "type": "IncrementalPublication",
+                  "kind": "optionalNamed",
+                  "default": "IncrementalPublication.everyEmission",
+                  "annotations": []
+                },
+                {
+                  "name": "frameScheduler",
+                  "declaration": "{SourceFrameScheduler frameScheduler = const FlutterSourceFrameScheduler()}",
+                  "type": "SourceFrameScheduler",
+                  "kind": "optionalNamed",
+                  "default": "const FlutterSourceFrameScheduler()",
+                  "annotations": []
+                },
+                {
+                  "name": "reporter",
+                  "declaration": "{CommandCrashReporter reporter = const NoOpCommandCrashReporter()}",
+                  "type": "CommandCrashReporter",
+                  "kind": "optionalNamed",
+                  "default": "const NoOpCommandCrashReporter()",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "concurrency",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrency concurrency",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "CommandConcurrency"
+            },
+            {
+              "name": "publication",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalPublication publication",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "IncrementalPublication"
+            },
+            {
+              "name": "isDisposed",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get isDisposed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "isRunning",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get isRunning",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "state",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandState<Aggregate, Failure, Progress> get state",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "IncrementalCommandState<Aggregate, Failure, Progress>",
+              "parameters": []
+            },
+            {
+              "name": "value",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandState<Aggregate, Failure, Progress> get value",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "IncrementalCommandState<Aggregate, Failure, Progress>",
+              "parameters": []
+            },
+            {
+              "name": "cancel",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "bool cancel([Object reason = 'Incremental command cancelled'])",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": [
+                {
+                  "name": "reason",
+                  "declaration": "[Object reason = 'Incremental command cancelled']",
+                  "type": "Object",
+                  "kind": "optionalPositional",
+                  "default": "'Incremental command cancelled'",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "dispose",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void dispose()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": []
+            },
+            {
+              "name": "disposeAsync",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Future<void> disposeAsync()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<void>",
+              "parameters": []
+            },
+            {
+              "name": "execute",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Future<CommandExecution<IncrementalCommandReceipt, Failure>> execute()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<CommandExecution<IncrementalCommandReceipt, Failure>>",
+              "parameters": []
+            },
+            {
+              "name": "reset",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "bool reset()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "resume",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void resume()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "IncrementalCommandCancelled",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalCommandCancelled<Aggregate, Failure extends Object, Progress> extends IncrementalCommandState<Aggregate, Failure, Progress>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Aggregate",
+              "declaration": "Aggregate",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            },
+            {
+              "name": "Progress",
+              "declaration": "Progress",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "IncrementalCommandState<Aggregate, Failure, Progress>",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandCancelled<Aggregate, Failure, Progress>({required Object? reason, required Aggregate aggregate, required int emissionCount, required int totalWeight, required int executionId, required bool hasProgress, required Progress? latestProgress, required IncrementalCommandReceipt receipt})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalCommandCancelled<Aggregate, Failure, Progress>",
+              "parameters": [
+                {
+                  "name": "reason",
+                  "declaration": "{required Object? reason}",
+                  "type": "Object?",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "aggregate",
+                  "declaration": "{required Aggregate aggregate}",
+                  "type": "Aggregate",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "emissionCount",
+                  "declaration": "{required int emissionCount}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "totalWeight",
+                  "declaration": "{required int totalWeight}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "executionId",
+                  "declaration": "{required int executionId}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "hasProgress",
+                  "declaration": "{required bool hasProgress}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "latestProgress",
+                  "declaration": "{required Progress? latestProgress}",
+                  "type": "Progress?",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "receipt",
+                  "declaration": "{required IncrementalCommandReceipt receipt}",
+                  "type": "IncrementalCommandReceipt",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "reason",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Object? reason",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Object?"
+            }
+          ]
+        },
+        {
+          "name": "IncrementalCommandCrashed",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalCommandCrashed<Aggregate, Failure extends Object, Progress> extends IncrementalCommandState<Aggregate, Failure, Progress>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Aggregate",
+              "declaration": "Aggregate",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            },
+            {
+              "name": "Progress",
+              "declaration": "Progress",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "IncrementalCommandState<Aggregate, Failure, Progress>",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandCrashed<Aggregate, Failure, Progress>({required Object error, required StackTrace stackTrace, required Aggregate aggregate, required int emissionCount, required int totalWeight, required int executionId, required bool hasProgress, required Progress? latestProgress, required IncrementalCommandReceipt receipt})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalCommandCrashed<Aggregate, Failure, Progress>",
+              "parameters": [
+                {
+                  "name": "error",
+                  "declaration": "{required Object error}",
+                  "type": "Object",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "stackTrace",
+                  "declaration": "{required StackTrace stackTrace}",
+                  "type": "StackTrace",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "aggregate",
+                  "declaration": "{required Aggregate aggregate}",
+                  "type": "Aggregate",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "emissionCount",
+                  "declaration": "{required int emissionCount}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "totalWeight",
+                  "declaration": "{required int totalWeight}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "executionId",
+                  "declaration": "{required int executionId}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "hasProgress",
+                  "declaration": "{required bool hasProgress}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "latestProgress",
+                  "declaration": "{required Progress? latestProgress}",
+                  "type": "Progress?",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "receipt",
+                  "declaration": "{required IncrementalCommandReceipt receipt}",
+                  "type": "IncrementalCommandReceipt",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "error",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Object error",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Object"
+            },
+            {
+              "name": "stackTrace",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "StackTrace stackTrace",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "StackTrace"
+            }
+          ]
+        },
+        {
+          "name": "IncrementalCommandFailed",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalCommandFailed<Aggregate, Failure extends Object, Progress> extends IncrementalCommandState<Aggregate, Failure, Progress>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Aggregate",
+              "declaration": "Aggregate",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            },
+            {
+              "name": "Progress",
+              "declaration": "Progress",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "IncrementalCommandState<Aggregate, Failure, Progress>",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandFailed<Aggregate, Failure, Progress>({required Failure failure, required StackTrace stackTrace, required Aggregate aggregate, required int emissionCount, required int totalWeight, required int executionId, required bool hasProgress, required Progress? latestProgress, required IncrementalCommandReceipt receipt})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalCommandFailed<Aggregate, Failure, Progress>",
+              "parameters": [
+                {
+                  "name": "failure",
+                  "declaration": "{required Failure failure}",
+                  "type": "Failure",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "stackTrace",
+                  "declaration": "{required StackTrace stackTrace}",
+                  "type": "StackTrace",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "aggregate",
+                  "declaration": "{required Aggregate aggregate}",
+                  "type": "Aggregate",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "emissionCount",
+                  "declaration": "{required int emissionCount}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "totalWeight",
+                  "declaration": "{required int totalWeight}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "executionId",
+                  "declaration": "{required int executionId}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "hasProgress",
+                  "declaration": "{required bool hasProgress}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "latestProgress",
+                  "declaration": "{required Progress? latestProgress}",
+                  "type": "Progress?",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "receipt",
+                  "declaration": "{required IncrementalCommandReceipt receipt}",
+                  "type": "IncrementalCommandReceipt",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "failure",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Failure failure",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Failure"
+            },
+            {
+              "name": "stackTrace",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "StackTrace stackTrace",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "StackTrace"
+            }
+          ]
+        },
+        {
+          "name": "IncrementalCommandIdle",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalCommandIdle<Aggregate, Failure extends Object, Progress> extends IncrementalCommandState<Aggregate, Failure, Progress>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Aggregate",
+              "declaration": "Aggregate",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            },
+            {
+              "name": "Progress",
+              "declaration": "Progress",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "IncrementalCommandState<Aggregate, Failure, Progress>",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandIdle<Aggregate, Failure, Progress>({required Aggregate aggregate})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalCommandIdle<Aggregate, Failure, Progress>",
+              "parameters": [
+                {
+                  "name": "aggregate",
+                  "declaration": "{required Aggregate aggregate}",
+                  "type": "Aggregate",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "IncrementalCommandReceipt",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalCommandReceipt",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandReceipt({required int executionId, required int emissionCount, required int totalWeight, required IncrementalCommandTerminalKind terminalKind})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalCommandReceipt",
+              "parameters": [
+                {
+                  "name": "executionId",
+                  "declaration": "{required int executionId}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "emissionCount",
+                  "declaration": "{required int emissionCount}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "totalWeight",
+                  "declaration": "{required int totalWeight}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "terminalKind",
+                  "declaration": "{required IncrementalCommandTerminalKind terminalKind}",
+                  "type": "IncrementalCommandTerminalKind",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "emissionCount",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int emissionCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "executionId",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int executionId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "terminalKind",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandTerminalKind terminalKind",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "IncrementalCommandTerminalKind"
+            },
+            {
+              "name": "totalWeight",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int totalWeight",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            }
+          ]
+        },
+        {
+          "name": "IncrementalCommandRunning",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalCommandRunning<Aggregate, Failure extends Object, Progress> extends IncrementalCommandState<Aggregate, Failure, Progress>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Aggregate",
+              "declaration": "Aggregate",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            },
+            {
+              "name": "Progress",
+              "declaration": "Progress",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "IncrementalCommandState<Aggregate, Failure, Progress>",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandRunning<Aggregate, Failure, Progress>({required Aggregate aggregate, required int emissionCount, required int totalWeight, required int executionId, required bool hasProgress, required Progress? latestProgress})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalCommandRunning<Aggregate, Failure, Progress>",
+              "parameters": [
+                {
+                  "name": "aggregate",
+                  "declaration": "{required Aggregate aggregate}",
+                  "type": "Aggregate",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "emissionCount",
+                  "declaration": "{required int emissionCount}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "totalWeight",
+                  "declaration": "{required int totalWeight}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "executionId",
+                  "declaration": "{required int executionId}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "hasProgress",
+                  "declaration": "{required bool hasProgress}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "latestProgress",
+                  "declaration": "{required Progress? latestProgress}",
+                  "type": "Progress?",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "IncrementalCommandState",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "sealed class IncrementalCommandState<Aggregate, Failure extends Object, Progress>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "sealed"
+          ],
+          "typeParameters": [
+            {
+              "name": "Aggregate",
+              "declaration": "Aggregate",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            },
+            {
+              "name": "Progress",
+              "declaration": "Progress",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandState<Aggregate, Failure, Progress>({required Aggregate aggregate, required int emissionCount, required int totalWeight, required int executionId, required bool hasProgress, required Progress? latestProgress, required IncrementalCommandReceipt? receipt})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalCommandState<Aggregate, Failure, Progress>",
+              "parameters": [
+                {
+                  "name": "aggregate",
+                  "declaration": "{required Aggregate aggregate}",
+                  "type": "Aggregate",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "emissionCount",
+                  "declaration": "{required int emissionCount}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "totalWeight",
+                  "declaration": "{required int totalWeight}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "executionId",
+                  "declaration": "{required int executionId}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "hasProgress",
+                  "declaration": "{required bool hasProgress}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "latestProgress",
+                  "declaration": "{required Progress? latestProgress}",
+                  "type": "Progress?",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "receipt",
+                  "declaration": "{required IncrementalCommandReceipt? receipt}",
+                  "type": "IncrementalCommandReceipt?",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "aggregate",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Aggregate aggregate",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Aggregate"
+            },
+            {
+              "name": "emissionCount",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int emissionCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "executionId",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int executionId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "hasProgress",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "bool hasProgress",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "latestProgress",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Progress? latestProgress",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Progress?"
+            },
+            {
+              "name": "receipt",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandReceipt? receipt",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "IncrementalCommandReceipt?"
+            },
+            {
+              "name": "totalWeight",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int totalWeight",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "match",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "R match<R>({required R Function(IncrementalCommandIdle<Aggregate, Failure, Progress>) idle, required R Function(IncrementalCommandRunning<Aggregate, Failure, Progress>) running, required R Function(IncrementalCommandSucceeded<Aggregate, Failure, Progress>) succeeded, required R Function(IncrementalCommandFailed<Aggregate, Failure, Progress>) failed, required R Function(IncrementalCommandCancelled<Aggregate, Failure, Progress>) cancelled, required R Function(IncrementalCommandCrashed<Aggregate, Failure, Progress>) crashed})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [
+                {
+                  "name": "R",
+                  "declaration": "R",
+                  "bound": null,
+                  "annotations": []
+                }
+              ],
+              "returnType": "R",
+              "parameters": [
+                {
+                  "name": "idle",
+                  "declaration": "{required R Function(IncrementalCommandIdle<Aggregate, Failure, Progress>) idle}",
+                  "type": "R Function(IncrementalCommandIdle<Aggregate, Failure, Progress>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "running",
+                  "declaration": "{required R Function(IncrementalCommandRunning<Aggregate, Failure, Progress>) running}",
+                  "type": "R Function(IncrementalCommandRunning<Aggregate, Failure, Progress>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "succeeded",
+                  "declaration": "{required R Function(IncrementalCommandSucceeded<Aggregate, Failure, Progress>) succeeded}",
+                  "type": "R Function(IncrementalCommandSucceeded<Aggregate, Failure, Progress>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "failed",
+                  "declaration": "{required R Function(IncrementalCommandFailed<Aggregate, Failure, Progress>) failed}",
+                  "type": "R Function(IncrementalCommandFailed<Aggregate, Failure, Progress>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cancelled",
+                  "declaration": "{required R Function(IncrementalCommandCancelled<Aggregate, Failure, Progress>) cancelled}",
+                  "type": "R Function(IncrementalCommandCancelled<Aggregate, Failure, Progress>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "crashed",
+                  "declaration": "{required R Function(IncrementalCommandCrashed<Aggregate, Failure, Progress>) crashed}",
+                  "type": "R Function(IncrementalCommandCrashed<Aggregate, Failure, Progress>)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "IncrementalCommandStateBuilder",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalCommandStateBuilder<Item, Aggregate, Failure extends Object, Progress> extends StatelessWidget",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Item",
+              "declaration": "Item",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Aggregate",
+              "declaration": "Aggregate",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            },
+            {
+              "name": "Progress",
+              "declaration": "Progress",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "StatelessWidget",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandStateBuilder<Item, Aggregate, Failure, Progress>({required IncrementalCommand<Item, Aggregate, Failure, Progress> command, required Widget Function(BuildContext, IncrementalCommandIdle<Aggregate, Failure, Progress>, Widget?) idle, required Widget Function(BuildContext, IncrementalCommandRunning<Aggregate, Failure, Progress>, Widget?) running, required Widget Function(BuildContext, IncrementalCommandSucceeded<Aggregate, Failure, Progress>, Widget?) succeeded, required Widget Function(BuildContext, IncrementalCommandFailed<Aggregate, Failure, Progress>, Widget?) failed, required Widget Function(BuildContext, IncrementalCommandCancelled<Aggregate, Failure, Progress>, Widget?) cancelled, required Widget Function(BuildContext, IncrementalCommandCrashed<Aggregate, Failure, Progress>, Widget?) crashed, Widget? child, Key? key})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalCommandStateBuilder<Item, Aggregate, Failure, Progress>",
+              "parameters": [
+                {
+                  "name": "command",
+                  "declaration": "{required IncrementalCommand<Item, Aggregate, Failure, Progress> command}",
+                  "type": "IncrementalCommand<Item, Aggregate, Failure, Progress>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "idle",
+                  "declaration": "{required Widget Function(BuildContext, IncrementalCommandIdle<Aggregate, Failure, Progress>, Widget?) idle}",
+                  "type": "Widget Function(BuildContext, IncrementalCommandIdle<Aggregate, Failure, Progress>, Widget?)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "running",
+                  "declaration": "{required Widget Function(BuildContext, IncrementalCommandRunning<Aggregate, Failure, Progress>, Widget?) running}",
+                  "type": "Widget Function(BuildContext, IncrementalCommandRunning<Aggregate, Failure, Progress>, Widget?)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "succeeded",
+                  "declaration": "{required Widget Function(BuildContext, IncrementalCommandSucceeded<Aggregate, Failure, Progress>, Widget?) succeeded}",
+                  "type": "Widget Function(BuildContext, IncrementalCommandSucceeded<Aggregate, Failure, Progress>, Widget?)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "failed",
+                  "declaration": "{required Widget Function(BuildContext, IncrementalCommandFailed<Aggregate, Failure, Progress>, Widget?) failed}",
+                  "type": "Widget Function(BuildContext, IncrementalCommandFailed<Aggregate, Failure, Progress>, Widget?)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cancelled",
+                  "declaration": "{required Widget Function(BuildContext, IncrementalCommandCancelled<Aggregate, Failure, Progress>, Widget?) cancelled}",
+                  "type": "Widget Function(BuildContext, IncrementalCommandCancelled<Aggregate, Failure, Progress>, Widget?)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "crashed",
+                  "declaration": "{required Widget Function(BuildContext, IncrementalCommandCrashed<Aggregate, Failure, Progress>, Widget?) crashed}",
+                  "type": "Widget Function(BuildContext, IncrementalCommandCrashed<Aggregate, Failure, Progress>, Widget?)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "child",
+                  "declaration": "{Widget? child}",
+                  "type": "Widget?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "key",
+                  "declaration": "{Key? key}",
+                  "type": "Key?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "cancelled",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, IncrementalCommandCancelled<Aggregate, Failure, Progress>, Widget?) cancelled",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, IncrementalCommandCancelled<Aggregate, Failure, Progress>, Widget?)"
+            },
+            {
+              "name": "child",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget? child",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget?"
+            },
+            {
+              "name": "command",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommand<Item, Aggregate, Failure, Progress> command",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "IncrementalCommand<Item, Aggregate, Failure, Progress>"
+            },
+            {
+              "name": "crashed",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, IncrementalCommandCrashed<Aggregate, Failure, Progress>, Widget?) crashed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, IncrementalCommandCrashed<Aggregate, Failure, Progress>, Widget?)"
+            },
+            {
+              "name": "failed",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, IncrementalCommandFailed<Aggregate, Failure, Progress>, Widget?) failed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, IncrementalCommandFailed<Aggregate, Failure, Progress>, Widget?)"
+            },
+            {
+              "name": "idle",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, IncrementalCommandIdle<Aggregate, Failure, Progress>, Widget?) idle",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, IncrementalCommandIdle<Aggregate, Failure, Progress>, Widget?)"
+            },
+            {
+              "name": "running",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, IncrementalCommandRunning<Aggregate, Failure, Progress>, Widget?) running",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, IncrementalCommandRunning<Aggregate, Failure, Progress>, Widget?)"
+            },
+            {
+              "name": "succeeded",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Widget Function(BuildContext, IncrementalCommandSucceeded<Aggregate, Failure, Progress>, Widget?) succeeded",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Widget Function(BuildContext, IncrementalCommandSucceeded<Aggregate, Failure, Progress>, Widget?)"
+            },
+            {
+              "name": "build",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Widget build(BuildContext context)",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Widget",
+              "parameters": [
+                {
+                  "name": "context",
+                  "declaration": "BuildContext context",
+                  "type": "BuildContext",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "IncrementalCommandSucceeded",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalCommandSucceeded<Aggregate, Failure extends Object, Progress> extends IncrementalCommandState<Aggregate, Failure, Progress>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Aggregate",
+              "declaration": "Aggregate",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            },
+            {
+              "name": "Progress",
+              "declaration": "Progress",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "IncrementalCommandState<Aggregate, Failure, Progress>",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandSucceeded<Aggregate, Failure, Progress>({required Aggregate aggregate, required int emissionCount, required int totalWeight, required int executionId, required bool hasProgress, required Progress? latestProgress, required IncrementalCommandReceipt receipt})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalCommandSucceeded<Aggregate, Failure, Progress>",
+              "parameters": [
+                {
+                  "name": "aggregate",
+                  "declaration": "{required Aggregate aggregate}",
+                  "type": "Aggregate",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "emissionCount",
+                  "declaration": "{required int emissionCount}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "totalWeight",
+                  "declaration": "{required int totalWeight}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "executionId",
+                  "declaration": "{required int executionId}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "hasProgress",
+                  "declaration": "{required bool hasProgress}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "latestProgress",
+                  "declaration": "{required Progress? latestProgress}",
+                  "type": "Progress?",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "receipt",
+                  "declaration": "{required IncrementalCommandReceipt receipt}",
+                  "type": "IncrementalCommandReceipt",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "IncrementalConsumeResult",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalConsumeResult<Failure extends Object>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalConsumeResult<Failure>({required Result<void, Failure> outcome, required IncrementalReport report})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalConsumeResult<Failure>",
+              "parameters": [
+                {
+                  "name": "outcome",
+                  "declaration": "{required Result<void, Failure> outcome}",
+                  "type": "Result<void, Failure>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "report",
+                  "declaration": "{required IncrementalReport report}",
+                  "type": "IncrementalReport",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "outcome",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Result<void, Failure> outcome",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Result<void, Failure>"
+            },
+            {
+              "name": "report",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalReport report",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "IncrementalReport"
+            }
+          ]
+        },
+        {
+          "name": "IncrementalEmissionLimitExceededException",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalEmissionLimitExceededException extends IncrementalLimitExceededException",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "IncrementalLimitExceededException",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalEmissionLimitExceededException({required int limit, required int attemptedSequence, required IncrementalReport report})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalEmissionLimitExceededException",
+              "parameters": [
+                {
+                  "name": "limit",
+                  "declaration": "{required int limit}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "attemptedSequence",
+                  "declaration": "{required int attemptedSequence}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "report",
+                  "declaration": "{required IncrementalReport report}",
+                  "type": "IncrementalReport",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "attemptedSequence",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int attemptedSequence",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "limit",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int limit",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "toString",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "String toString()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "IncrementalFoldResult",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalFoldResult<Aggregate, Failure extends Object>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Aggregate",
+              "declaration": "Aggregate",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalFoldResult<Aggregate, Failure>({required Aggregate aggregate, required Result<void, Failure> outcome, required IncrementalReport report})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalFoldResult<Aggregate, Failure>",
+              "parameters": [
+                {
+                  "name": "aggregate",
+                  "declaration": "{required Aggregate aggregate}",
+                  "type": "Aggregate",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "outcome",
+                  "declaration": "{required Result<void, Failure> outcome}",
+                  "type": "Result<void, Failure>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "report",
+                  "declaration": "{required IncrementalReport report}",
+                  "type": "IncrementalReport",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "aggregate",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Aggregate aggregate",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Aggregate"
+            },
+            {
+              "name": "outcome",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Result<void, Failure> outcome",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Result<void, Failure>"
+            },
+            {
+              "name": "report",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalReport report",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "IncrementalReport"
+            }
+          ]
+        },
+        {
+          "name": "IncrementalItemContext",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalItemContext",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalItemContext({required int executionId, required int sequence, required int weight, required int cumulativeWeight, required DateTime timestamp})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalItemContext",
+              "parameters": [
+                {
+                  "name": "executionId",
+                  "declaration": "{required int executionId}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "sequence",
+                  "declaration": "{required int sequence}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "weight",
+                  "declaration": "{required int weight}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cumulativeWeight",
+                  "declaration": "{required int cumulativeWeight}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "timestamp",
+                  "declaration": "{required DateTime timestamp}",
+                  "type": "DateTime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "cumulativeWeight",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int cumulativeWeight",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "executionId",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int executionId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "sequence",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int sequence",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "timestamp",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DateTime timestamp",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DateTime"
+            },
+            {
+              "name": "weight",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int weight",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            }
+          ]
+        },
+        {
+          "name": "IncrementalLimitExceededException",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "sealed class IncrementalLimitExceededException implements Exception",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "sealed"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "Exception"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalLimitExceededException(IncrementalReport report)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalLimitExceededException",
+              "parameters": [
+                {
+                  "name": "report",
+                  "declaration": "IncrementalReport report",
+                  "type": "IncrementalReport",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "report",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalReport report",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "IncrementalReport"
+            }
+          ]
+        },
+        {
+          "name": "IncrementalLimits",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalLimits",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalLimits({int maxEmissions = 100000, int maxWeight = 100000})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalLimits",
+              "parameters": [
+                {
+                  "name": "maxEmissions",
+                  "declaration": "{int maxEmissions = 100000}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "100000",
+                  "annotations": []
+                },
+                {
+                  "name": "maxWeight",
+                  "declaration": "{int maxWeight = 100000}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "100000",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "maxEmissions",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maxEmissions",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "maxWeight",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maxWeight",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            }
+          ]
+        },
+        {
+          "name": "IncrementalOperation",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalOperation<Item, Failure extends Object>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "Item",
+              "declaration": "Item",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "async",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalOperation<Item, Failure>.async(Stream<Result<Item, Failure>> Function() producer, {IncrementalLimits limits = const IncrementalLimits(), int Function(Item)? weightOf, DateTime Function()? now})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "factory"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalOperation<Item, Failure>",
+              "parameters": [
+                {
+                  "name": "producer",
+                  "declaration": "Stream<Result<Item, Failure>> Function() producer",
+                  "type": "Stream<Result<Item, Failure>> Function()",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "limits",
+                  "declaration": "{IncrementalLimits limits = const IncrementalLimits()}",
+                  "type": "IncrementalLimits",
+                  "kind": "optionalNamed",
+                  "default": "const IncrementalLimits()",
+                  "annotations": []
+                },
+                {
+                  "name": "weightOf",
+                  "declaration": "{int Function(Item)? weightOf}",
+                  "type": "int Function(Item)?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "now",
+                  "declaration": "{DateTime Function()? now}",
+                  "type": "DateTime Function()?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "sync",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalOperation<Item, Failure>.sync(Iterable<Result<Item, Failure>> Function() producer, {IncrementalLimits limits = const IncrementalLimits(), int Function(Item)? weightOf, DateTime Function()? now})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "factory"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalOperation<Item, Failure>",
+              "parameters": [
+                {
+                  "name": "producer",
+                  "declaration": "Iterable<Result<Item, Failure>> Function() producer",
+                  "type": "Iterable<Result<Item, Failure>> Function()",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "limits",
+                  "declaration": "{IncrementalLimits limits = const IncrementalLimits()}",
+                  "type": "IncrementalLimits",
+                  "kind": "optionalNamed",
+                  "default": "const IncrementalLimits()",
+                  "annotations": []
+                },
+                {
+                  "name": "weightOf",
+                  "declaration": "{int Function(Item)? weightOf}",
+                  "type": "int Function(Item)?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "now",
+                  "declaration": "{DateTime Function()? now}",
+                  "type": "DateTime Function()?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "syncCloseable",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalOperation<Item, Failure>.syncCloseable(CloseableSyncIncrementalSource<Item, Failure> Function() producer, {IncrementalLimits limits = const IncrementalLimits(), int Function(Item)? weightOf, DateTime Function()? now})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "factory"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalOperation<Item, Failure>",
+              "parameters": [
+                {
+                  "name": "producer",
+                  "declaration": "CloseableSyncIncrementalSource<Item, Failure> Function() producer",
+                  "type": "CloseableSyncIncrementalSource<Item, Failure> Function()",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "limits",
+                  "declaration": "{IncrementalLimits limits = const IncrementalLimits()}",
+                  "type": "IncrementalLimits",
+                  "kind": "optionalNamed",
+                  "default": "const IncrementalLimits()",
+                  "annotations": []
+                },
+                {
+                  "name": "weightOf",
+                  "declaration": "{int Function(Item)? weightOf}",
+                  "type": "int Function(Item)?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "now",
+                  "declaration": "{DateTime Function()? now}",
+                  "type": "DateTime Function()?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "limits",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalLimits limits",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "IncrementalLimits"
+            },
+            {
+              "name": "collectBounded",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Future<IncrementalCollectResult<Item, Failure>> collectBounded({required int capacity, CancellationSignal? cancellation, DateTime? deadline})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<IncrementalCollectResult<Item, Failure>>",
+              "parameters": [
+                {
+                  "name": "capacity",
+                  "declaration": "{required int capacity}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cancellation",
+                  "declaration": "{CancellationSignal? cancellation}",
+                  "type": "CancellationSignal?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "deadline",
+                  "declaration": "{DateTime? deadline}",
+                  "type": "DateTime?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "consume",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Future<IncrementalConsumeResult<Failure>> consume({required FutureOr<void> Function(Item, IncrementalItemContext) onValue, CancellationSignal? cancellation, DateTime? deadline})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<IncrementalConsumeResult<Failure>>",
+              "parameters": [
+                {
+                  "name": "onValue",
+                  "declaration": "{required FutureOr<void> Function(Item, IncrementalItemContext) onValue}",
+                  "type": "FutureOr<void> Function(Item, IncrementalItemContext)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cancellation",
+                  "declaration": "{CancellationSignal? cancellation}",
+                  "type": "CancellationSignal?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "deadline",
+                  "declaration": "{DateTime? deadline}",
+                  "type": "DateTime?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "fold",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Future<IncrementalFoldResult<Aggregate, Failure>> fold<Aggregate>({required Aggregate initial, required Aggregate Function(Aggregate, Item, IncrementalItemContext) reducer, CancellationSignal? cancellation, DateTime? deadline})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [
+                {
+                  "name": "Aggregate",
+                  "declaration": "Aggregate",
+                  "bound": null,
+                  "annotations": []
+                }
+              ],
+              "returnType": "Future<IncrementalFoldResult<Aggregate, Failure>>",
+              "parameters": [
+                {
+                  "name": "initial",
+                  "declaration": "{required Aggregate initial}",
+                  "type": "Aggregate",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "reducer",
+                  "declaration": "{required Aggregate Function(Aggregate, Item, IncrementalItemContext) reducer}",
+                  "type": "Aggregate Function(Aggregate, Item, IncrementalItemContext)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cancellation",
+                  "declaration": "{CancellationSignal? cancellation}",
+                  "type": "CancellationSignal?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "deadline",
+                  "declaration": "{DateTime? deadline}",
+                  "type": "DateTime?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "IncrementalReport",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalReport",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalReport({required int executionId, required int emissionCount, required int totalWeight, required DateTime startedAt, required DateTime finishedAt, required IncrementalTerminalKind terminalKind})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalReport",
+              "parameters": [
+                {
+                  "name": "executionId",
+                  "declaration": "{required int executionId}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "emissionCount",
+                  "declaration": "{required int emissionCount}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "totalWeight",
+                  "declaration": "{required int totalWeight}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "startedAt",
+                  "declaration": "{required DateTime startedAt}",
+                  "type": "DateTime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "finishedAt",
+                  "declaration": "{required DateTime finishedAt}",
+                  "type": "DateTime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "terminalKind",
+                  "declaration": "{required IncrementalTerminalKind terminalKind}",
+                  "type": "IncrementalTerminalKind",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "emissionCount",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int emissionCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "executionId",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int executionId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "finishedAt",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DateTime finishedAt",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DateTime"
+            },
+            {
+              "name": "startedAt",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DateTime startedAt",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DateTime"
+            },
+            {
+              "name": "terminalKind",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalTerminalKind terminalKind",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "IncrementalTerminalKind"
+            },
+            {
+              "name": "totalWeight",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int totalWeight",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "elapsed",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "Duration get elapsed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Duration",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "IncrementalWeightLimitExceededException",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IncrementalWeightLimitExceededException extends IncrementalLimitExceededException",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "IncrementalLimitExceededException",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalWeightLimitExceededException({required int limit, required int itemWeight, required int attemptedWeight, required IncrementalReport report})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalWeightLimitExceededException",
+              "parameters": [
+                {
+                  "name": "limit",
+                  "declaration": "{required int limit}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "itemWeight",
+                  "declaration": "{required int itemWeight}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "attemptedWeight",
+                  "declaration": "{required int attemptedWeight}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "report",
+                  "declaration": "{required IncrementalReport report}",
+                  "type": "IncrementalReport",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "attemptedWeight",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int attemptedWeight",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "itemWeight",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int itemWeight",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "limit",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int limit",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "toString",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "String toString()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "NoOpCommandCrashReporter",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class NoOpCommandCrashReporter implements CommandCrashReporter",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "CommandCrashReporter"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "NoOpCommandCrashReporter()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "NoOpCommandCrashReporter",
+              "parameters": []
+            },
+            {
+              "name": "report",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void report(Object error, StackTrace stackTrace)",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "error",
+                  "declaration": "Object error",
+                  "type": "Object",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "stackTrace",
+                  "declaration": "StackTrace stackTrace",
+                  "type": "StackTrace",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Ok",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class Ok<T> extends Result<T, Never>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "supertype": "Result<T, Never>",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "Ok<T>(T value)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "Ok<T>",
+              "parameters": [
+                {
+                  "name": "value",
+                  "declaration": "T value",
+                  "type": "T",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "value",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "T value",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "T"
+            },
+            {
+              "name": "equalityFields",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "Iterable<Object?> get equalityFields",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Iterable<Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "OperationDeadlineExceededException",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class OperationDeadlineExceededException implements Exception",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "Exception"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "OperationDeadlineExceededException(DateTime deadline)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "OperationDeadlineExceededException",
+              "parameters": [
+                {
+                  "name": "deadline",
+                  "declaration": "DateTime deadline",
+                  "type": "DateTime",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "deadline",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "DateTime deadline",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DateTime"
+            },
+            {
+              "name": "toString",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "String toString()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "Result",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "sealed class Result<T, F extends Object> extends ValueEquality",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "sealed"
+          ],
+          "typeParameters": [
+            {
+              "name": "T",
+              "declaration": "T",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "ValueEquality",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "Result<T, F>()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "Result<T, F>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "SourceFrameScheduler",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "abstract interface class SourceFrameScheduler",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "interface"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "SourceFrameScheduler()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "SourceFrameScheduler",
+              "parameters": []
+            },
+            {
+              "name": "schedule",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void schedule(void Function() callback)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "callback",
+                  "declaration": "void Function() callback",
+                  "type": "void Function()",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CommandConcurrencyKind",
+          "kind": "enum",
+          "audience": "application-facing",
+          "declaration": "enum CommandConcurrencyKind",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrencyKind()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandConcurrencyKind",
+              "parameters": []
+            },
+            {
+              "name": "concurrent",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrencyKind concurrent",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "CommandConcurrencyKind"
+            },
+            {
+              "name": "drop",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrencyKind drop",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "CommandConcurrencyKind"
+            },
+            {
+              "name": "join",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrencyKind join",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "CommandConcurrencyKind"
+            },
+            {
+              "name": "keyed",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrencyKind keyed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "CommandConcurrencyKind"
+            },
+            {
+              "name": "reject",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrencyKind reject",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "CommandConcurrencyKind"
+            },
+            {
+              "name": "restartLatest",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrencyKind restartLatest",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "CommandConcurrencyKind"
+            },
+            {
+              "name": "sequential",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandConcurrencyKind sequential",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "CommandConcurrencyKind"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "List<CommandConcurrencyKind> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<CommandConcurrencyKind>"
+            }
+          ]
+        },
+        {
+          "name": "CommandRejectionReason",
+          "kind": "enum",
+          "audience": "application-facing",
+          "declaration": "enum CommandRejectionReason",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "CommandRejectionReason()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "CommandRejectionReason",
+              "parameters": []
+            },
+            {
+              "name": "busy",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandRejectionReason busy",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "CommandRejectionReason"
+            },
+            {
+              "name": "concurrentLimit",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandRejectionReason concurrentLimit",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "CommandRejectionReason"
+            },
+            {
+              "name": "disposed",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandRejectionReason disposed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "CommandRejectionReason"
+            },
+            {
+              "name": "keyLimit",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandRejectionReason keyLimit",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "CommandRejectionReason"
+            },
+            {
+              "name": "laneStopped",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandRejectionReason laneStopped",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "CommandRejectionReason"
+            },
+            {
+              "name": "queueFull",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "CommandRejectionReason queueFull",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "CommandRejectionReason"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "List<CommandRejectionReason> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<CommandRejectionReason>"
+            }
+          ]
+        },
+        {
+          "name": "IncrementalCommandTerminalKind",
+          "kind": "enum",
+          "audience": "application-facing",
+          "declaration": "enum IncrementalCommandTerminalKind",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandTerminalKind()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalCommandTerminalKind",
+              "parameters": []
+            },
+            {
+              "name": "cancelled",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandTerminalKind cancelled",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "IncrementalCommandTerminalKind"
+            },
+            {
+              "name": "crashed",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandTerminalKind crashed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "IncrementalCommandTerminalKind"
+            },
+            {
+              "name": "failed",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandTerminalKind failed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "IncrementalCommandTerminalKind"
+            },
+            {
+              "name": "succeeded",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalCommandTerminalKind succeeded",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "IncrementalCommandTerminalKind"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "List<IncrementalCommandTerminalKind> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<IncrementalCommandTerminalKind>"
+            }
+          ]
+        },
+        {
+          "name": "IncrementalPublication",
+          "kind": "enum",
+          "audience": "application-facing",
+          "declaration": "enum IncrementalPublication",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalPublication()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalPublication",
+              "parameters": []
+            },
+            {
+              "name": "coalesceFrame",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalPublication coalesceFrame",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "IncrementalPublication"
+            },
+            {
+              "name": "coalesceMicrotask",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalPublication coalesceMicrotask",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "IncrementalPublication"
+            },
+            {
+              "name": "everyEmission",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalPublication everyEmission",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "IncrementalPublication"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "List<IncrementalPublication> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<IncrementalPublication>"
+            }
+          ]
+        },
+        {
+          "name": "IncrementalTerminalKind",
+          "kind": "enum",
+          "audience": "application-facing",
+          "declaration": "enum IncrementalTerminalKind",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IncrementalTerminalKind()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IncrementalTerminalKind",
+              "parameters": []
+            },
+            {
+              "name": "completed",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalTerminalKind completed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "IncrementalTerminalKind"
+            },
+            {
+              "name": "failed",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalTerminalKind failed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "IncrementalTerminalKind"
+            },
+            {
+              "name": "limitExceeded",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "IncrementalTerminalKind limitExceeded",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "IncrementalTerminalKind"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "List<IncrementalTerminalKind> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<IncrementalTerminalKind>"
+            }
+          ]
+        },
+        {
+          "name": "AsyncIncrementalProducer",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef AsyncIncrementalProducer<out Item, out Failure extends Object> = Stream<Result<Item, Failure>> Function()",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [
+            {
+              "name": "Item",
+              "declaration": "out Item",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "out Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "aliasedType": "Stream<Result<Item, Failure>> Function()"
+        },
+        {
+          "name": "CloseableSyncIncrementalProducer",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef CloseableSyncIncrementalProducer<out Item, out Failure extends Object> = CloseableSyncIncrementalSource<Item, Failure> Function()",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [
+            {
+              "name": "Item",
+              "declaration": "out Item",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "out Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "aliasedType": "CloseableSyncIncrementalSource<Item, Failure> Function()"
+        },
+        {
+          "name": "IncrementalProgressOf",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef IncrementalProgressOf<in Item, in Aggregate, out Progress> = Progress Function(Item, Aggregate, IncrementalItemContext)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [
+            {
+              "name": "Item",
+              "declaration": "in Item",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Aggregate",
+              "declaration": "in Aggregate",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Progress",
+              "declaration": "out Progress",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "aliasedType": "Progress Function(Item, Aggregate, IncrementalItemContext)"
+        },
+        {
+          "name": "IncrementalReducer",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef IncrementalReducer<inout Aggregate, in Item> = Aggregate Function(Aggregate, Item, IncrementalItemContext)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [
+            {
+              "name": "Aggregate",
+              "declaration": "inout Aggregate",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Item",
+              "declaration": "in Item",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "aliasedType": "Aggregate Function(Aggregate, Item, IncrementalItemContext)"
+        },
+        {
+          "name": "IncrementalWeightOf",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef IncrementalWeightOf<in Item> = int Function(Item)",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [
+            {
+              "name": "Item",
+              "declaration": "in Item",
+              "bound": null,
+              "annotations": []
+            }
+          ],
+          "aliasedType": "int Function(Item)"
+        },
+        {
+          "name": "SyncIncrementalProducer",
+          "kind": "type_alias",
+          "audience": "application-facing",
+          "declaration": "typedef SyncIncrementalProducer<out Item, out Failure extends Object> = Iterable<Result<Item, Failure>> Function()",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [
+            {
+              "name": "Item",
+              "declaration": "out Item",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "Failure",
+              "declaration": "out Failure extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "aliasedType": "Iterable<Result<Item, Failure>> Function()"
+        }
+      ]
+    },
     "packages/dartitect_flutter/lib/dartitect_flutter_queries.dart": {
       "defaultAudience": "application-facing",
       "symbols": [
