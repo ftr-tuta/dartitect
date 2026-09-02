@@ -2486,6 +2486,11 @@
     {
       "spdxElementId": "SPDXRef-Package-dartitect-mcp",
       "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-dartitect"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-mcp",
+      "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-dartitect-cli"
     },
     {

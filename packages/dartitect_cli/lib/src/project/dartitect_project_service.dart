@@ -210,6 +210,13 @@ final class DartitectProjectService {
   /// Scans architecture boundaries strictly.
   Future<CommandEnvelope> scanArchitecture() => _readOnly('scan');
 
+  /// Builds the canonical scan envelope from a progressive scanner terminal.
+  ///
+  /// This integration seam avoids analyzing the same project twice in hosts
+  /// that consume [ProjectScanner.scanEvents].
+  Future<CommandEnvelope> scanArchitectureFrom(ProjectScan scan) =>
+      _readOnlyFromScan('scan', scan);
+
   /// Validates configuration, toolchain, skills, and optional analyzer state.
   Future<CommandEnvelope> doctorProject({
     bool deep = false,
@@ -382,6 +389,15 @@ final class DartitectProjectService {
     bool release = false,
   }) async {
     final scan = await ProjectScanner(root).scan();
+    return _readOnlyFromScan(command, scan, deep: deep, release: release);
+  }
+
+  Future<CommandEnvelope> _readOnlyFromScan(
+    String command,
+    ProjectScan scan, {
+    bool deep = false,
+    bool release = false,
+  }) async {
     final findings = <DartitectFinding>[...scan.findings];
     final violations = <DartitectFinding>[...scan.violations];
     DartitectConfig? config;

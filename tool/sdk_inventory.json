@@ -175,6 +175,7 @@
       "runtimeDependencies": [
         "crypto",
         "dart_mcp",
+        "dartitect",
         "dartitect_cli"
       ],
       "entrypoints": [

@@ -19644,6 +19644,27 @@
               "typeParameters": [],
               "returnType": "Future<CommandEnvelope>",
               "parameters": []
+            },
+            {
+              "name": "scanArchitectureFrom",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Future<CommandEnvelope> scanArchitectureFrom(ProjectScan scan)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<CommandEnvelope>",
+              "parameters": [
+                {
+                  "name": "scan",
+                  "declaration": "ProjectScan scan",
+                  "type": "ProjectScan",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
             }
           ]
         },

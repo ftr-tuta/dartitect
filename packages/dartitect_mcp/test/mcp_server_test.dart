@@ -140,6 +140,59 @@ void main() {
     });
 
     test(
+      'streams only analyzed and total counts for scan progress tokens',
+      () async {
+        final project = await _project();
+        for (var index = 0; index < 5; index++) {
+          await File('${project.path}/lib/feature_$index.dart')
+              .writeAsString('final value$index = $index;\n');
+        }
+        final environment = _Environment(
+          DartitectMcpPolicy(allowedRoots: <Directory>[project]),
+        );
+        addTearDown(environment.close);
+        await environment.initialize();
+
+        final request = CallToolRequest(
+          name: 'dartitect_scan_architecture',
+          arguments: const <String, Object?>{'limit': 500},
+          meta: MetaWithProgressToken(progressToken: ProgressToken(7331)),
+        );
+        final notifications = <ProgressNotification>[];
+        final subscription = environment.connection
+            .onProgress(request)
+            .listen(notifications.add);
+        addTearDown(subscription.cancel);
+
+        final result = await environment.connection.callTool(request);
+        await pumpEventQueue();
+        final countAtTerminal = notifications.length;
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+
+        expect(result.isError, isNot(true));
+        expect(notifications, isNotEmpty);
+        expect(notifications.length, countAtTerminal);
+        expect(
+          notifications.map((notification) => notification.progress),
+          orderedEquals(<int>[1, 2, 3, 4, 5, 6]),
+        );
+        expect(
+          notifications.map((notification) => notification.total),
+          everyElement(6),
+        );
+        expect(
+          notifications.map((notification) => notification.message),
+          everyElement(isNull),
+        );
+        final encoded = jsonEncode(notifications);
+        expect(encoded, isNot(contains(project.path)));
+        expect(encoded, isNot(contains('feature_')));
+        expect(encoded, isNot(contains('finding')));
+        expect(encoded, isNot(contains('source')));
+      },
+    );
+
+    test(
       'verify tool is read-only and exposes model/provider status',
       () async {
         final project = await _project();
@@ -277,6 +330,36 @@ environment:
         jsonEncode(result.structuredContent),
         isNot(contains(project.path)),
       );
+    });
+
+    test('stops scan progress before a timeout response', () async {
+      final project = await _project();
+      final environment = _Environment(
+        DartitectMcpPolicy(
+          allowedRoots: <Directory>[project],
+          operationTimeout: const Duration(microseconds: 1),
+        ),
+      );
+      addTearDown(environment.close);
+      await environment.initialize();
+
+      final request = CallToolRequest(
+        name: 'dartitect_scan_architecture',
+        meta: MetaWithProgressToken(progressToken: ProgressToken('timeout')),
+      );
+      final notifications = <ProgressNotification>[];
+      final subscription = environment.connection
+          .onProgress(request)
+          .listen(notifications.add);
+      addTearDown(subscription.cancel);
+
+      final result = await environment.connection.callTool(request);
+      final countAtTerminal = notifications.length;
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+
+      expect(_errorCode(result), 'timeout');
+      expect(notifications.length, countAtTerminal);
+      expect(environment.diagnostics.toString(), isNot(contains(project.path)));
     });
 
     test(
