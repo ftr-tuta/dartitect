@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  checks: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -36,7 +37,7 @@ jobs:
       - name: Install Linux desktop build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install --yes clang cmake ninja-build pkg-config libgtk-3-dev libstdc++-12-dev
+          sudo apt-get install --yes clang cmake ninja-build pkg-config libgtk-3-dev libstdc++-12-dev xvfb
       - name: Install Flutter 3.47.1 floor
         if: matrix.flutter == '3.47.1'
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
@@ -76,6 +77,12 @@ jobs:
       - name: Exercise ObjectBox and Drift coexistence
         if: matrix.flutter == '3.47.1'
         run: flutter test tool/objectbox_native_fixture
+      - name: Validate executable Flutter quality contracts
+        if: matrix.flutter == '3.47.1'
+        run: |
+          dart run tool/check_ui_quality.dart
+          dart run tool/check_flutter_quality_performance.dart
+          dart run tool/check_agent_evals.dart
       - name: Verify workspace with native ObjectBox
         run: dart run tool/verify.dart --skip-get --native-objectbox
       - name: Reproduce the 12-scenario change-tax study
@@ -123,6 +130,16 @@ jobs:
       - name: Verify pinned shared UI goldens
         if: matrix.flutter == '3.47.1'
         run: flutter test examples/paved_road_canary/test/shared_layout_golden_test.dart
+      - name: Compile and discover Flutter widget previews in a disposable copy
+        run: dart run tool/check_flutter_previews.dart
+      - name: Exercise the paved-road Flutter quality journey
+        if: matrix.flutter == '3.47.1'
+        run: xvfb-run --auto-servernum flutter test -d linux integration_test/flutter_quality_journey_test.dart
+        working-directory: examples/paved_road_canary
+      - name: Exercise the reference-app Flutter quality journey
+        if: matrix.flutter == '3.47.1'
+        run: xvfb-run --auto-servernum flutter test -d linux integration_test/flutter_quality_journey_test.dart
+        working-directory: examples/reference_app
       - name: Build reference app for Web
         run: flutter build web
         working-directory: examples/reference_app
@@ -696,6 +713,32 @@ jobs:
           if ! jq -e 'all(.[]; .result == "success")' <<<"$DARTITECT_NEEDS_JSON" >/dev/null; then
             echo "At least one coordinated CI job did not conclude success." >&2
             jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<<"$DARTITECT_NEEDS_JSON" >&2
+            exit 1
+          fi
+      - name: Require the successful exact-HEAD Flutter quality evaluation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DARTITECT_EVAL_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          check_runs="$(
+            gh api --method GET \
+              "repos/${GITHUB_REPOSITORY}/commits/${DARTITECT_EVAL_SHA}/check-runs?per_page=100"
+          )"
+          if ! jq -e --arg sha "$DARTITECT_EVAL_SHA" '
+            [
+              .check_runs[]
+              | select(
+                  .name == "Flutter Quality Evals / Required"
+                  and .head_sha == $sha
+                  and .status == "completed"
+                )
+            ]
+            | sort_by(.completed_at)
+            | last
+            | .conclusion == "success"
+          ' <<<"$check_runs" >/dev/null; then
+            echo "No successful Flutter Quality Evals / Required check exists for ${DARTITECT_EVAL_SHA}." >&2
             exit 1
           fi
       - name: Download current-run native manifests

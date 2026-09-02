@@ -176,6 +176,7 @@ final class CodexSkillSynchronizer {
         );
       }
       final recordedHash = decoded['contentHash'];
+      final recordedVersion = decoded['sdkVersion'];
       final currentHash = await _hashDirectory(effective);
       if (recordedHash != currentHash && !overwriteManaged) {
         throw FileSystemException(
@@ -185,7 +186,8 @@ final class CodexSkillSynchronizer {
       }
       final desiredHash = _hashFiles(entry.value);
       operations.add(
-        desiredHash == currentHash
+        desiredHash == currentHash &&
+                recordedVersion == CommandEnvelope.sdkVersion
             ? 'NO-OP .agents/skills/${entry.key}'
             : 'UPDATE .agents/skills/${entry.key}',
       );

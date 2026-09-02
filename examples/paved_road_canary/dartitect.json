@@ -12,7 +12,7 @@
       "**/lib/src/dev/**"
     ]
   },
-  "compositionRoots": ["lib/main.dart", "test/**"],
+  "compositionRoots": ["lib/main.dart", "test/**", "integration_test/**"],
   "generatedInfrastructure": ["**/infrastructure/**/*.g.dart"],
   "generatedSuffixes": [".g.dart", ".dartitect.g.dart"],
   "suppressions": [],

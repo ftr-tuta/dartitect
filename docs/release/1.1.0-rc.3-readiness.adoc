@@ -1,0 +1,60 @@
+= 1.1.0-rc.3 candidate readiness record
+:status: in-review
+:date: 2026-09-02
+
+This document records the executable Flutter quality candidate. It is not a
+release runbook, publication authorization, or claim that RC3 is distributed.
+
+== Version state
+
+* Workspace cohort: `1.1.0-rc.3`
+* Channel: `candidate`
+* Packages: `25`
+* Public entrypoints: `35`
+* Managed Dartitect skills: `16` (`17` local with `repository-contribution`)
+* Latest stable distribution: `1.0.0` / `v1.0.0`
+* Derivable candidate tag: `v1.1.0-rc.3`
+* Candidate tag materialized: `false`
+
+Only `DartitectPreviewMatrix` is added to an existing public entrypoint. No
+package, runtime performance API, editor MCP file, or package dependency is
+added. Historical stable receipts and v1 quality documents remain unchanged.
+
+== Executable quality scope
+
+`ui-quality-v2` binds seven practices to evidence: constraint-driven
+responsiveness, DevTools runtime inspection, reusable widgets and previews,
+MVVM, provider-neutral repositories, multiplatform behavior, and tests. The
+contract requires Native Strict boundaries; semantic `DT3120`-`DT3145`
+analysis with syntax-only warning parity; disposable preview discovery;
+Memory, Drift, and ObjectBox repository behavior; responsive canary journeys;
+and structural performance invariants without timing or memory thresholds.
+
+The exact-SHA evaluation corpus fixes `flutter/evals` at
+`739c590ad0e028b1393a8604574463e287e5078e` and
+`flutter/agent-plugins` at
+`df9bebe7ec3c96f80f499e5d62ba1ebe81892500`. The required matrix contains 21
+evaluations; the manual trend matrix contains 63. Receipts retain identifiers,
+configuration, counts, scores, tool/skill usage, and digests only.
+
+== Required evidence
+
+Local and deterministic CI evidence includes formatting, Dart and Flutter
+analysis, all 25 package suites, analyzer parity, examples and canaries,
+preview compilation, Linux integration journeys, Chrome coverage, native
+provider fixtures, release/stable audits, generated catalogs, public API and
+topology checks, and Android/iOS/Linux/macOS/Windows/Web builds on their
+supported hosted runners.
+
+`CI / Required` is the only protected aggregate status. It may succeed only
+after every deterministic dependency and `Flutter Quality Evals / Required`
+have succeeded for the exact head. The required evaluation uses the protected
+`flutter-quality-evals` environment; after it completes, the aggregate is
+rerun. Security and the resulting `main` aggregate are confirmed separately.
+
+== Explicitly excluded
+
+This candidate does not create or push `v1.1.0-rc.3`, run the `Release`
+workflow, create a GitHub Release, publish packages, modify the immutable
+`1.0.0` stable release, or promote RC3 to stable. A passing gate does not grant
+that authority.

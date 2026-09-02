@@ -13,25 +13,25 @@ dependencies:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect
       tag_pattern: 'v{{version}}'
-    version: 1.1.0-rc.2
+    version: 1.1.0-rc.3
   dartitect_cli:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_cli
       tag_pattern: 'v{{version}}'
-    version: 1.1.0-rc.2
+    version: 1.1.0-rc.3
   dartitect_dio:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_dio
       tag_pattern: 'v{{version}}'
-    version: 1.1.0-rc.2
+    version: 1.1.0-rc.3
   dartitect_observability:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_observability
       tag_pattern: 'v{{version}}'
-    version: 1.1.0-rc.2
+    version: 1.1.0-rc.3
 
 dev_dependencies:
   test: ^1.31.1

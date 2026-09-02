@@ -21,13 +21,15 @@ Future<void> main(List<String> arguments) async {
         ? _strings(value['promotionBlockers'])
         : const <String>[];
     if (value is! Map<String, Object?> ||
-        value['schemaVersion'] != 3 ||
+        value['schemaVersion'] != 4 ||
         value['goal'] != 'V1-18' ||
         value['authority'] != 'github-actions' ||
         value['stableVersion'] != '1.0.0' ||
         value['requiresExactMainSha'] != true ||
         value['requiresReadinessArtifact'] != 'actions-readiness-v1' ||
         value['requiresUiQualityEvidence'] != 'ui-quality-v2' ||
+        value['requiresAgentEvaluationCheck'] !=
+            'Flutter Quality Evals / Required' ||
         value['requiresDistributionPolicy'] !=
             'tool/distribution_policy.json' ||
         value['requiredCheck'] != 'CI / Required' ||

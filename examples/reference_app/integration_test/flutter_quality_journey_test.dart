@@ -73,7 +73,10 @@ void main() {
       await mouse.moveTo(tester.getCenter(toggle));
       await mouse.down(tester.getCenter(toggle));
       await mouse.up();
-      await tester.pumpAndSettle();
+      await _pumpUntil(
+        tester,
+        () => find.text('Mark incomplete').evaluate().isNotEmpty,
+      );
       expect((await repository.store.findTask(1))?.completed, isTrue);
 
       final search = find.byKey(const ValueKey<String>('tasks-search'));

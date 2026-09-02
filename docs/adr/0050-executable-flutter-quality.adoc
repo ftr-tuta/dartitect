@@ -48,6 +48,13 @@ identifiers, configuration, counts, aggregate scores, tool/skill usage, and
 digests; transcripts, screenshots, semantics, and visible content are not
 retained.
 
+Keep `CI / Required` as the only protected aggregate status. It builds the
+GitHub merge candidate but queries the required evaluation for the exact PR
+head, or the exact push SHA on `main`, after every deterministic dependency has
+succeeded. Until that external check is successful the aggregate remains red;
+after the protected manual evaluation, rerun the failed aggregate job. The
+three-repetition trend suite is manual and never publishes the required check.
+
 == Consequences
 
 Flutter quality claims become reproducible through API tests, CLI output,

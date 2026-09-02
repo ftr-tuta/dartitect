@@ -166,6 +166,15 @@ void _auditWorkflows(Directory root, List<String> errors) {
     'DARTITECT_CI_RUNNER_ID: ubuntu-24.04-flutter-3.47.1',
     r'change-tax-${{ github.run_attempt }}',
     'name: CI / Required',
+    'checks: read',
+    'Require the successful exact-HEAD Flutter quality evaluation',
+    'github.event.pull_request.head.sha || github.sha',
+    'Flutter Quality Evals / Required',
+    'dart run tool/check_flutter_previews.dart',
+    'integration_test/flutter_quality_journey_test.dart',
+    'libstdc++-12-dev xvfb',
+    'dart run tool/check_flutter_quality_performance.dart',
+    'dart run tool/check_agent_evals.dart',
     'android-media-current-emulator',
     'Drift Web / Chrome 2.34.3',
     'dart run tool/run_drift_web_fixture.dart',
@@ -182,6 +191,15 @@ void _auditWorkflows(Directory root, List<String> errors) {
     if (!ci.contains(required)) {
       errors.add('CI authorship audit is missing required policy: $required');
     }
+  }
+  final headlessFlutterJourneys = RegExp(
+    r'run:\s+xvfb-run --auto-servernum flutter test -d linux '
+    r'integration_test/flutter_quality_journey_test\.dart',
+  ).allMatches(ci).length;
+  if (headlessFlutterJourneys != 2) {
+    errors.add(
+      'CI must run exactly two Linux Flutter quality journeys under Xvfb.',
+    );
   }
   for (final job in const <String>[
     'linux',
@@ -201,6 +219,25 @@ void _auditWorkflows(Directory root, List<String> errors) {
     errors.add(
       'CI must build the checked-out merge candidate, not the PR head.',
     );
+  }
+  final flutterQualityEvals = File(
+    '${workflowRoot.path}/flutter_quality_evals.yml',
+  ).readAsStringSync();
+  for (final required in const <String>[
+    'environment: flutter-quality-evals',
+    'flutter-version: "3.47.1"',
+    'dart run tool/check_agent_evals.dart',
+    r'--suite=${{ inputs.suite }}',
+    "inputs.suite == 'required'",
+    'Flutter Quality Evals / Required',
+    '739c590ad0e028b1393a8604574463e287e5078e',
+    'df9bebe7ec3c96f80f499e5d62ba1ebe81892500',
+  ]) {
+    if (!flutterQualityEvals.contains(required)) {
+      errors.add(
+        'Flutter quality eval workflow is missing required policy: $required',
+      );
+    }
   }
   final security = File('${workflowRoot.path}/security.yaml')
       .readAsStringSync();

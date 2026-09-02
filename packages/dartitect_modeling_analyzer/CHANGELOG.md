@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compile semantic identity for the shared `1.1.0-rc.3` `DT3120`–`DT3145`
+  Flutter quality diagnostics and safe-homonym negatives.
 - Version-only lockstep candidate; the shared semantic compiler contract remains unchanged.
 
 ## 1.0.0

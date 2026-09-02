@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add offline `codex doctor --flutter`, transactional Flutter skill setup, and
+  the seven-technique `inspect flutter-quality` evidence report for
+  `1.1.0-rc.3`.
 - Add Dart semantics, incremental execution, and runtime-performance skills,
   with catalog-derived managed-skill counts and routing validation.
 - Add deterministic progressive scan events, bounded four-file analysis,

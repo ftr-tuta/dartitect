@@ -393,7 +393,7 @@ Future<int> _checkDocumentationContract(
     if (classification == 'current' &&
         !rcExclusions.any((pattern) => _matchesGlob(relative, pattern)) &&
         RegExp(
-          r'\b(?:RC\.?3|RC10|1\.0\.0-rc\.\d+)\b',
+          r'\b(?:RC10|1\.0\.0-rc\.\d+)\b',
           caseSensitive: false,
         ).hasMatch(source)) {
       errors.add(

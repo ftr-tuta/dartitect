@@ -1,9 +1,9 @@
 {
   "schemaVersion": 4,
-  "workspaceVersion": "1.1.0-rc.2",
+  "workspaceVersion": "1.1.0-rc.3",
   "gitInstallation": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "ref": "v1.1.0-rc.2",
+    "ref": "v1.1.0-rc.3",
     "tagPattern": "v{{version}}",
     "annotatedTagRequired": true,
     "localDisposableTag": true,
@@ -182,6 +182,7 @@
         "dartitect_dio",
         "dartitect_drift",
         "dartitect_flutter",
+        "dartitect_flutter_testing",
         "dartitect_isolates",
         "dartitect_objectbox",
         "dartitect_observability",
@@ -204,6 +205,8 @@
         "mixed_dartitect_objectbox_drift",
         "outbox_sync",
         "desktop",
+        "dev_only_previews",
+        "flutter_integration_journey",
         "session_replacement"
       ],
       "residualResourceCensus": 0

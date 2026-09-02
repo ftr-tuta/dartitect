@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Route the `1.1.0-rc.3` Dartitect Flutter quality skill while requiring real
+  runtime MCP discovery and explicit missing-tool evidence.
 - Emit payload-free analyzed/total scan progress only when an MCP request
   supplies a progress token, while preserving the paginated terminal response.
 - Refresh package/API catalogs and privacy-aware observability routing without adding remote or write authority.

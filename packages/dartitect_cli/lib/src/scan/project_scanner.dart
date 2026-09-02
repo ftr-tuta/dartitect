@@ -828,11 +828,20 @@ final class ProjectScanner {
   }) async {
     cancellation.throwIfCancelled();
     final relativeDirectory = _relative(directory.path);
+    final normalizedDirectory = relativeDirectory.replaceAll('\\', '/');
+    if (normalizedDirectory == 'tool/agent_evals/fixtures' ||
+        normalizedDirectory == 'tool/agent_evals/scorers') {
+      // The evaluation corpus intentionally contains invalid Dart examples.
+      // Its dedicated checker validates these fixtures and scorers; treating
+      // them as project sources would make the general architecture scan
+      // report the failures that the corpus is designed to exercise.
+      return;
+    }
     if (relativeDirectory != '.' &&
         await File(_join(directory.path, 'pubspec.yaml')).exists()) {
       return;
     }
-    final segments = relativeDirectory.replaceAll('\\', '/').split('/');
+    final segments = normalizedDirectory.split('/');
     if (segments.any(
       const <String>{
         '.dart_tool',

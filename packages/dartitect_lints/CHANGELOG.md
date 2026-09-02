@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `1.1.0-rc.3` semantic presentation, preview, resource, and rendering
+  diagnostics `DT3120`–`DT3145` with shared CLI parity fixtures.
 - Add analyzer diagnostics for observability privacy bypasses with CLI scan parity.
 
 ## 1.0.0

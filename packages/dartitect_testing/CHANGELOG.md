@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add executable Flutter journey and zero-residual-resource evidence in the
+  `1.1.0-rc.3` lockstep cohort.
 - Add privacy policy, destination, raw-data absence, and ownership harnesses for observability consumers.
 
 ## 1.0.0

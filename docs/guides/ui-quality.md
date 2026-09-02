@@ -263,3 +263,26 @@ Flutter skills, and official skills plus Dartitect. Its receipt is payload-free:
 only the SHA, pins, model/configuration, counts, aggregate scores, tool/skill
 usage, and digests are retained. Transcripts, screenshots, semantics, and
 visible screen content are excluded.
+
+Repository validation runs the executable contracts directly:
+
+```console
+dart run tool/check_ui_quality.dart
+dart run tool/check_flutter_quality_performance.dart
+dart run tool/check_agent_evals.dart
+dart run tool/check_flutter_previews.dart
+```
+
+The preview check archives committed `HEAD` into a temporary directory, resolves
+from the existing package cache, and runs
+`flutter widget-preview start --no-launch-previewer` there. It requires all four
+reviewed preview functions to appear in the compiled scaffold and deletes the
+temporary evidence afterward.
+
+For a PR head, dispatch the protected `Flutter Quality Evals` workflow with the
+exact SHA, model, and `required` suite. It uses one repetition for all 21 cells
+and is the only suite allowed to publish `Flutter Quality Evals / Required`.
+The optional `trend` suite runs 63 cells with three repetitions and cannot
+satisfy the gate. Once the required check succeeds, rerun the failed
+`CI / Required` aggregate for that same head. The aggregate remains the only
+status configured in branch protection.

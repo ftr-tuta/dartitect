@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "sdkVersion": "1.1.0-rc.2",
+  "sdkVersion": "1.1.0-rc.3",
   "entrypoints": {
     "packages/dartitect/lib/dartitect.dart": {
       "defaultAudience": "application-facing",

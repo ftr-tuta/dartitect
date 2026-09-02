@@ -1,12 +1,13 @@
-= Dartitect 1.0 implementation and release status
+= Dartitect implementation and release status
 :toc:
 
-Snapshot:: 2026-09-01
+Snapshot:: 2026-09-02
 Release status:: *RELEASED*
 Release tag:: `v1.0.0`
 Release source:: `747e3f17cc20c0afd13d5702c17ddc5d7330f00c`
 Distribution:: Immutable GitHub Release; Git dependencies only
-Feature policy:: *FEATURE FREEZE*
+Workspace candidate:: `1.1.0-rc.3` / *IN REVIEW*
+Feature policy:: *RC3 QUALITY GATE*
 Toolchain floor:: Dart 3.13 / Flutter 3.47.1 stable
 Stable topology:: 25 packages / 32 public entrypoints
 Workspace candidate topology:: 25 packages / 35 public entrypoints
@@ -15,6 +16,20 @@ Workspace candidate topology:: 25 packages / 35 public entrypoints
 before publication; its `IN_PROGRESS` fields are historical and are not the
 current release status. GitHub Actions supplied the formal technical evidence.
 Local commands remain development feedback and do not authorize a release.
+
+== 1.1.0-rc.3 workspace candidate
+
+The untagged candidate preserves 25 packages and exposes 35 reviewed public
+entrypoints. `ui-quality-v2` makes responsive constraints, DevTools runtime
+inspection, reusable preview widgets, MVVM, repositories, multiplatform
+behavior, and tests executable through static diagnostics, preview compilation,
+canary journeys, structural performance evidence, and agent evaluations.
+
+`CI / Required` remains the only protected aggregate status. It fails closed
+unless all deterministic jobs succeed and `Flutter Quality Evals / Required`
+has succeeded for the exact candidate head. The latest stable distribution
+remains the immutable `1.0.0` / `v1.0.0`; RC3 creates no tag, Release, registry
+publication, or stable promotion.
 
 [cols="1,2,5",options="header"]
 |===

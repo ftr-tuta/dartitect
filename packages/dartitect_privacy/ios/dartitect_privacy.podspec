@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'dartitect_privacy'
-  s.version          = '1.1.0-rc.2'
+  s.version          = '1.1.0-rc.3'
   s.summary          = 'Explicit iOS tracking authorization for Dartitect.'
   s.description      = 'Reads and explicitly requests ATT without automatic prompts.'
   s.homepage         = 'https://github.com/ftr-tuta/dartitect'

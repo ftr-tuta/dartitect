@@ -18,9 +18,9 @@ void main() {
 
   test('accepts one workspace candidate cohort for local canaries', () async {
     final lock = await _temporaryLock(<String, _Locked>{
-      'dartitect': const _Locked(version: '1.1.0-rc.2'),
-      'dartitect_cli': const _Locked(version: '1.1.0-rc.2'),
-      'dartitect_observability': const _Locked(version: '1.1.0-rc.2'),
+      'dartitect': const _Locked(version: '1.1.0-rc.3'),
+      'dartitect_cli': const _Locked(version: '1.1.0-rc.3'),
+      'dartitect_observability': const _Locked(version: '1.1.0-rc.3'),
     });
 
     expect(await DartitectLockCompatibility.inspect(lock), isEmpty);
@@ -29,7 +29,7 @@ void main() {
   test('rejects mixed stable and workspace candidate cohorts', () async {
     final lock = await _temporaryLock(<String, _Locked>{
       'dartitect': const _Locked(),
-      'dartitect_observability': const _Locked(version: '1.1.0-rc.2'),
+      'dartitect_observability': const _Locked(version: '1.1.0-rc.3'),
     });
 
     final findings = await DartitectLockCompatibility.inspect(lock);

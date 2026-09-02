@@ -96,6 +96,7 @@ final class _Fixture {
     }
     for (final path in const <String>[
       '.github/workflows/ci.yaml',
+      '.github/workflows/flutter_quality_evals.yml',
       '.github/workflows/release.yaml',
     ]) {
       final file = File('${root.path}/$path');

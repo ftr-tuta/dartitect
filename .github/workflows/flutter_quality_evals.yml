@@ -11,13 +11,21 @@ on:
         description: Exact Codex model identifier
         required: true
         type: string
+      suite:
+        description: Required gate or three-repetition trend comparison
+        required: true
+        default: required
+        type: choice
+        options:
+          - required
+          - trend
 
 permissions:
   contents: read
   checks: write
 
 concurrency:
-  group: flutter-quality-evals-${{ inputs.sha }}-${{ inputs.model }}
+  group: flutter-quality-evals-${{ inputs.sha }}-${{ inputs.model }}-${{ inputs.suite }}
   cancel-in-progress: false
 
 jobs:
@@ -58,7 +66,19 @@ jobs:
           ref: df9bebe7ec3c96f80f499e5d62ba1ebe81892500
           path: flutter-agent-plugins
           persist-credentials: false
-      - name: Run the required 21-evaluation matrix
+      - name: Install Flutter 3.47.1
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: "3.47.1"
+          channel: stable
+          cache: true
+      - name: Resolve the candidate workspace
+        working-directory: source
+        run: flutter pub get
+      - name: Validate pinned agent evaluation contracts
+        working-directory: source
+        run: dart run tool/check_agent_evals.dart
+      - name: Run the selected evaluation matrix
         id: evaluate
         working-directory: source
         env:
@@ -69,7 +89,7 @@ jobs:
           --execute
           --sha=${{ inputs.sha }}
           --model=${{ inputs.model }}
-          --repetitions=1
+          --suite=${{ inputs.suite }}
           --flutter-evals=../flutter-evals
           --official-plugin=../flutter-agent-plugins
           --receipt=${{ runner.temp }}/flutter-quality-eval-receipt.json
@@ -77,12 +97,12 @@ jobs:
         if: always() && steps.evaluate.outcome == 'success'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: flutter-quality-eval-receipt-${{ inputs.sha }}
+          name: flutter-quality-eval-receipt-${{ inputs.suite }}-${{ inputs.sha }}
           path: ${{ runner.temp }}/flutter-quality-eval-receipt.json
           if-no-files-found: error
           retention-days: 90
       - name: Publish the exact-SHA required check
-        if: always()
+        if: always() && inputs.suite == 'required'
         env:
           GH_TOKEN: ${{ github.token }}
           DARTITECT_EVAL_OUTCOME: ${{ steps.evaluate.outcome }}

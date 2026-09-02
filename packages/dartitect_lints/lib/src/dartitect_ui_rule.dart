@@ -437,7 +437,9 @@ final class _UiVisitor extends SimpleAstVisitor<void> {
         element?.library.uri.toString() == 'dart:ui') {
       _report(node, DartitectUiRule.visualLiteral, 'DT3105');
     }
-    if (_insideBuild(node) && _isOwnedResource(node)) {
+    if (_insideBuild(node) &&
+        !_insideViewModelHostFactory(node) &&
+        _isOwnedResource(node)) {
       _report(node, DartitectUiRule.resourceCreatedInBuild, 'DT3126');
     }
     if (_isObservableOwner(node.staticType) &&
@@ -635,6 +637,33 @@ final class _UiVisitor extends SimpleAstVisitor<void> {
             _isWidgetOwner(owner);
       }
       if (cursor is FunctionDeclaration) return false;
+      cursor = cursor.parent;
+    }
+    return false;
+  }
+
+  bool _insideViewModelHostFactory(AstNode node) {
+    var cursor = node.parent;
+    while (cursor != null) {
+      if (cursor is FunctionExpression) {
+        final named = cursor.parent;
+        if (named is! NamedArgument || named.name.lexeme != 'create') {
+          return false;
+        }
+        final arguments = named.parent;
+        final host = arguments?.parent;
+        return arguments is ArgumentList &&
+            host is InstanceCreationExpression &&
+            host.constructorName.name?.name == 'create' &&
+            _isSubtype(
+              host.staticType,
+              package: 'dartitect_flutter',
+              name: 'ViewModelHost',
+            );
+      }
+      if (cursor is MethodDeclaration || cursor is FunctionDeclaration) {
+        return false;
+      }
       cursor = cursor.parent;
     }
     return false;

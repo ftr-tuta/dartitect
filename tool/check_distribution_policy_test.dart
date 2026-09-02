@@ -36,8 +36,8 @@ void main() {
     ),
     'divergent version': (fixture) => fixture.replace(
       'packages/dartitect/pubspec.yaml',
-      'version: 1.1.0-rc.2',
       'version: 1.1.0-rc.3',
+      'version: 1.1.0-rc.4',
     ),
     'wrong Git URL': (fixture) => fixture.replace(
       'packages/dartitect_dio/pubspec.yaml',
@@ -57,9 +57,9 @@ void main() {
     'hosted Dartitect dependency': (fixture) => fixture.replacePattern(
       'packages/dartitect_dio/pubspec.yaml',
       RegExp(
-        r'  dartitect:\n    git:\n      url: [^\n]+\n      path: [^\n]+\n      tag_pattern: [^\n]+\n    version: 1\.1\.0-rc\.2',
+        r'  dartitect:\n    git:\n      url: [^\n]+\n      path: [^\n]+\n      tag_pattern: [^\n]+\n    version: 1\.1\.0-rc\.3',
       ),
-      '  dartitect: 1.1.0-rc.2',
+      '  dartitect: 1.1.0-rc.3',
     ),
     'registry publication mechanism': (fixture) => fixture.append(
       '.github/workflows/release.yaml',

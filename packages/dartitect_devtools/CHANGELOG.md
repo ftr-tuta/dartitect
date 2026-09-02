@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Join the `1.1.0-rc.3` executable Flutter runtime-evidence cohort in lockstep.
 - Add the separate read-only, payload-free observability privacy service extension without changing diagnostics v2.
 
 ## 1.0.0

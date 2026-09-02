@@ -35,6 +35,11 @@ void main() {
 
       expect(accepted.exitCode, 0);
       expect(accepted.stdout, contains('ui-quality-v2'));
+      expect(
+        File('${Directory.current.path}/tool/stable_candidate_contract.json')
+            .readAsStringSync(),
+        contains('Flutter Quality Evals / Required'),
+      );
       expect(rejected.exitCode, 1);
     },
   );

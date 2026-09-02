@@ -81,10 +81,30 @@ void main() {
       expect(metadata, contains('default_prompt: "Use \$$name '));
       expect(metadata, contains('allow_implicit_invocation: true'));
       expect(manifest['schemaVersion'], 1);
-      expect(manifest['sdkVersion'], '1.1.0-rc.2');
+      expect(manifest['sdkVersion'], '1.1.0-rc.3');
       expect(manifest['contentHash'], matches(RegExp(r'^[0-9a-f]{8}$')));
     }
   }, timeout: const Timeout(Duration(minutes: 2)));
+
+  test('preview updates a managed manifest from an older SDK cohort', () async {
+    final root = await _temporaryRoot();
+    final synchronizer = CodexSkillSynchronizer(root);
+    await synchronizer.sync();
+    final manifest = File(
+      '${root.path}/.agents/skills/dartitect-design/.dartitect-skill.json',
+    );
+    final decoded =
+        jsonDecode(await manifest.readAsString()) as Map<String, Object?>;
+    decoded['sdkVersion'] = '1.1.0-rc.2';
+    await manifest.writeAsString(jsonEncode(decoded));
+
+    final preview = await synchronizer.preview();
+
+    expect(
+      preview.operations,
+      contains('UPDATE .agents/skills/dartitect-design'),
+    );
+  });
 
   test('preview protects locally modified managed skills', () async {
     final root = await _temporaryRoot();

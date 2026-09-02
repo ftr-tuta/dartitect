@@ -1,6 +1,6 @@
 # Getting started
 
-The source workspace is currently the untagged `1.1.0-rc.2` candidate cohort.
+The source workspace is currently the untagged `1.1.0-rc.3` candidate cohort.
 For public consumption, continue using the stable `1.0.0` / `v1.0.0` release;
 no candidate tag or GitHub Release exists.
 

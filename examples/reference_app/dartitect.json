@@ -19,6 +19,7 @@
     "lib/main.dart",
     "lib/app/**",
     "test/**",
+    "integration_test/**",
     "**/composition/**",
     "**/*_composition_root.dart"
   ],
