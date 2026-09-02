@@ -16,7 +16,9 @@ hosts, generated `FeatureHost`, versioned UI restoration, isolate graphs, and th
 
 Use `$dartitect-reactive` for `ReactiveOwner`, `LiveResource`, resource families,
 live collections, or advanced builders. Use `$dartitect-offline-first` for local
-authority, paging, durable mutations, or outbox recovery.
+authority, paging, durable mutations, or outbox recovery. Use
+`$dartitect-incremental` for cold incremental producers, partial aggregates,
+and bounded worker-pool sequences.
 
 ## Invariants
 

@@ -2,25 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dartitect_cli/dartitect_cli.dart';
+import 'package:dartitect_cli/src/codex/skill_catalog.dart';
 import 'package:test/test.dart';
 
-const _managedSkills = <String>[
-  'dartitect-adapters',
-  'dartitect-audit',
-  'dartitect-design',
-  'dartitect-mcp',
-  'dartitect-modeling',
-  'dartitect-observability',
-  'dartitect-offline-first',
-  'dartitect-reactive',
-  'dartitect-runtime',
-  'dartitect-testing',
-  'dartitect-tooling',
-  'dartitect-ui',
-];
+final _managedSkills = dartitectSkillCatalog.map((skill) => skill.name).toList()
+  ..sort();
 
 void main() {
-  test('sync installs twelve valid skills and is idempotent', () async {
+  test('sync installs every catalog skill and is idempotent', () async {
     final root = await _temporaryRoot();
     final localSkill = Directory(
       '${root.path}/.agents/skills/repository-contribution',
@@ -37,7 +26,7 @@ void main() {
       first.operations.where(
         (operation) => operation.startsWith('CREATE .agents/skills/'),
       ),
-      hasLength(12),
+      hasLength(_managedSkills.length),
     );
     expect(
       second.operations,
@@ -61,6 +50,7 @@ void main() {
       installed,
       <String>[..._managedSkills, 'repository-contribution']..sort(),
     );
+    expect(installed, hasLength(dartitectSkillCatalog.length + 1));
 
     for (final name in _managedSkills) {
       final directory = Directory('${root.path}/.agents/skills/$name');

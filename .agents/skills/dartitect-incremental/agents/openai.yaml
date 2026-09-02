@@ -1,0 +1,6 @@
+interface:
+  display_name: "Dartitect Incremental"
+  short_description: "Build bounded incremental Dartitect operations"
+  default_prompt: "Use $dartitect-incremental to build a bounded incremental flow."
+policy:
+  allow_implicit_invocation: true

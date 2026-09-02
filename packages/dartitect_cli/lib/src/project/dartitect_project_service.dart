@@ -31,7 +31,7 @@ enum DartitectChangeKind {
   /// Replace the reviewed architecture baseline.
   baseline,
 
-  /// Synchronize the ten managed Codex skills.
+  /// Synchronize the catalog-managed Codex skills.
   codexSync,
 
   /// Upgrade reviewed Dartitect dependency constraints as one cohort.

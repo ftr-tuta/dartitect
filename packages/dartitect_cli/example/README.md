@@ -41,7 +41,7 @@ Fleet report/check/policy commands never write. Upgrade previews by default;
 `--apply` acquires the fleet lock and ordered project locks, journals all bytes,
 runs only allowlisted validation, and commits the cohort atomically or restores
 and verifies every digest. Policy uses only a local, doubly pinned bundle.
-Codex sync distributes twelve manifest-owned `dartitect-*` skills, preserves
+Codex sync distributes the catalog-owned `dartitect-*` skills, preserves
 consumer-owned skills such as `repository-contribution`, and requires
 `--overwrite-managed` before replacing local changes to a managed skill.
 

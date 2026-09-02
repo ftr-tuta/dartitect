@@ -86,7 +86,7 @@ document their own `--dry-run`/apply form in `example/README.md`.
 - `DartitectFleetCanaryService` is a separate opt-in boundary that archives an
   exact candidate commit, runs a closed command allowlist only in a temporary
   consumer copy, sanitizes receipts, and verifies both originals are unchanged.
-- `CodexSkillSynchronizer` synchronizes twelve canonical managed templates while
+- `CodexSkillSynchronizer` synchronizes every canonical catalog template while
   preserving consumer-owned skill directories.
 - `DartitectVerificationService` and `DartitectCliRunner` map services to stable
   JSON and exit codes.

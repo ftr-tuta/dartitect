@@ -85,9 +85,9 @@ or provider boundary when the required Dartitect packages are not yet clear.
 ## When not to use
 
 Use `$dartitect-audit` to inspect a Dartitect-created project without changing it.
-Route detailed runtime, reactive, offline-first, telemetry, adapter, testing,
-CLI, or MCP work to the matching focused skill after suitability and the stack
-are decided.
+Route detailed Dart semantics, incremental execution, performance, runtime,
+reactive, offline-first, telemetry, adapter, testing, CLI, or MCP work to the
+matching focused skill after suitability and the stack are decided.
 
 ## Invariants
 
@@ -132,22 +132,22 @@ stable packages so an omitted package is an explicit decision.
 
 | Package | Select for | Route or boundary |
 | --- | --- | --- |
-| `dartitect` | Result, ownership, commands, credentials, and composition | `$dartitect-runtime` |
-| `dartitect_flutter` | Basic Flutter ViewModels, hosts, forms, queries, or opt-in reactive entrypoints | `$dartitect-runtime`, `$dartitect-reactive` |
+| `dartitect` | Result, ownership, commands, credentials, composition, and opt-in incremental operations | `$dartitect-runtime`, `$dartitect-incremental`, `$dartitect-dart` |
+| `dartitect_flutter` | Basic Flutter ViewModels, hosts, forms, queries, or opt-in reactive/incremental entrypoints | `$dartitect-runtime`, `$dartitect-reactive`, `$dartitect-incremental` |
 | `dartitect_flutter_testing` | Dev-only semantics, accessibility, contrast, tap-target, and paired UI matrices | `$dartitect-ui`, `$dartitect-testing` |
 | `dartitect_sync` | Durable mutation/outbox, dataset DAGs, checkpoints, leases, and headless sync | `$dartitect-offline-first` |
 | `dartitect_resilience` | Bounded retry, single-flight, breaker, bulkhead, or rate limiting | `$dartitect-runtime`, `$dartitect-testing` |
 | `dartitect_jobs` | Versioned job envelopes, bounded dispatch, deadlines, receipts, and fencing ports | `$dartitect-offline-first`, `$dartitect-testing` |
 | `dartitect_transfer` | Resumable chunks or attachment staging with durable checkpoints | `$dartitect-adapters`, `$dartitect-testing` |
 | `dartitect_devtools` | Diagnostics v2 plus a separate development-only, read-only, payload-free privacy extension | `$dartitect-observability`, `$dartitect-testing` |
-| `dartitect_isolates` | Versioned worker ACK/readiness/heartbeat/deadline lifecycle | `$dartitect-runtime`, `$dartitect-testing` |
+| `dartitect_isolates` | Versioned workers, bounded pools, ACK/readiness/heartbeat/deadline lifecycle | `$dartitect-runtime`, `$dartitect-incremental`, `$dartitect-dart`, `$dartitect-testing` |
 | `dartitect_observability` | Destination-aware privacy, prepared logs/errors/tracing, and payload-free diagnostics | `$dartitect-observability` |
 | `dartitect_dio` | Explicit Dio ownership, typed transport failures, and metadata-only or classified capture | `$dartitect-adapters` |
 | `dartitect_drift` | Lifecycle and operational adapters around a consumer-generated Drift database | `$dartitect-adapters`, `$dartitect-offline-first` |
 | `dartitect_objectbox` | Native Store/query/watch/projection lifecycle around a consumer-generated model | `$dartitect-adapters`, `$dartitect-offline-first` |
 | `dartitect_sentry` | Borrowed-Hub legacy or prepared telemetry after the consumer selects and initializes Sentry | `$dartitect-adapters`, `$dartitect-observability` |
 | `dartitect_testing` | Deterministic failure, lifecycle, provider, and residual-resource harnesses | `$dartitect-testing` |
-| `dartitect_cli` | Config v3, inspect/scan/doctor, generators, fleet, contracts, and Codex sync | `$dartitect-tooling` |
+| `dartitect_cli` | Config v3, inspect/scan/doctor, execution-model inspection, generators, fleet, contracts, and Codex sync | `$dartitect-tooling`, `$dartitect-performance` |
 | `dartitect_lints` | Analyzer-host Native Strict and modeling diagnostics | `$dartitect-tooling` |
 | `dartitect_locale_br` | Structural Brazilian postal-code value handling only | `$dartitect-design` |
 | `dartitect_geometry` | Finite planar polygon/polylabel values only | `$dartitect-design` |
@@ -288,7 +288,9 @@ hosts, generated `FeatureHost`, versioned UI restoration, isolate graphs, and th
 
 Use `$dartitect-reactive` for `ReactiveOwner`, `LiveResource`, resource families,
 live collections, or advanced builders. Use `$dartitect-offline-first` for local
-authority, paging, durable mutations, or outbox recovery.
+authority, paging, durable mutations, or outbox recovery. Use
+`$dartitect-incremental` for cold incremental producers, partial aggregates,
+and bounded worker-pool sequences.
 
 ## Invariants
 
@@ -1528,6 +1530,301 @@ link/include, changelog-cohort, skill-reference, managed snapshot/hash, and MCP
 catalog gates. Normal config accepts v3 only; v1/v2 are transactional fleet
 migration inputs. `sdkVersion` follows the workspace cohort; public consumption
 continues to use the latest materialized distributed stable cohort.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
+    name: 'dartitect-dart',
+    displayName: 'Dartitect Dart',
+    shortDescription: 'Apply safe Dart stream and isolate semantics',
+    defaultPrompt:
+        r'Use $dartitect-dart to review Dart runtime semantics safely.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-dart
+description: Apply Dart language and runtime semantics to Dartitect producers, streams, cancellation, cleanup, and isolate data transfer. Use when correctness depends on generator, subscription, stack, or isolate behavior; do not use as a general Dart tutorial or architecture selector.
+---
+
+# Apply Dart runtime semantics
+
+## When to use
+
+Use this skill when Dartitect or consumer infrastructure depends on exact
+`sync*`/`async*`, single-subscription stream, cancellation, cleanup, stack
+preservation, sendability, or transferable-data behavior.
+
+## When not to use
+
+Use `$dartitect-incremental` for the higher-level incremental operation,
+Flutter command, sync, or worker-pool contracts. Use `$dartitect-performance`
+when the question is primarily capacity, algorithmic complexity, or benchmark
+evidence. Do not invoke this skill for ordinary syntax or business logic.
+
+## Invariants
+
+Create cold sources per execution and reject broadcast streams where one owner
+must control consumption. Await consumer work before requesting the next item.
+Cancellation stops admission, awaits subscription cancellation and producer
+`finally`, and fences late publication. A plain `Iterator` has no cancel/close
+protocol; resource-owning synchronous sources need an explicit cleanup seam.
+Preserve original errors and stacks. Never infer retries or make a VM-only
+boundary run silently on the web or main isolate.
+
+## Workflow
+
+Identify the source kind, its owner, the cancellation path, and the terminal
+cleanup order before coding. Then check sendability and platform support for
+every isolate boundary.
+
+Read [references/streams-and-cancellation.md](references/streams-and-cancellation.md)
+for producer and subscription behavior, and
+[references/isolate-data.md](references/isolate-data.md) for worker messages and
+transferable bytes.
+
+## Validate
+
+Test list, `sync*`, `async*`, consumer failure, producer failure with original
+stack, cancellation during work, exact-once cleanup, nested stream behavior,
+unsupported web use, and zero late values or residual workers.
+''',
+      'references/streams-and-cancellation.md': r'''# Streams and cancellation
+
+A producer factory is an execution boundary: invoke it again for every run.
+Single-subscription streams let the owner pause or cancel consumption; a
+broadcast stream does not provide that ownership contract. Await the per-item
+callback before pulling again rather than relying on an `async` listen callback
+whose upstream continues unchecked.
+
+On cancellation or deadline, stop accepting values, await
+`StreamSubscription.cancel()`, and let an `async*` producer finish its
+`finally` before exposing the terminal result. Fence generation/publication so
+an already scheduled callback cannot publish afterward. Keep synchronous CPU
+work bounded between emissions because cancellation cannot preempt it.
+
+Do not promise cleanup for an arbitrary `Iterable`: Dart's `Iterator` has no
+close method. Use finite resource-free iterables, or an owned source with an
+explicit idempotent close callback. Cleanup errors stay named and retain their
+original cause and stack.
+''',
+      'references/isolate-data.md': r'''# Isolate data and workers
+
+Create a fresh isolate-local graph and exchange only sendable messages. Do not
+transfer live clients, Stores, subscriptions, commands, owners, or closures
+that capture them. Handler functions must satisfy the supported VM isolate
+entry contract; fail explicitly on unsupported platforms.
+
+`TransferableTypedData` transfers ownership after construction without an
+automatic intermediate materialization. Keep it opaque through dispatch and
+materialize only at the endpoint that needs bytes.
+
+Cancellation acknowledges completion only after handler cleanup. A worker
+crash never proves whether an admitted request applied, so replacement may
+serve future work but must not replay the crashed request. Drain admitted work
+before safe-stop unless an explicit terminal failure makes completion
+impossible.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
+    name: 'dartitect-incremental',
+    displayName: 'Dartitect Incremental',
+    shortDescription: 'Build bounded incremental Dartitect operations',
+    defaultPrompt:
+        r'Use $dartitect-incremental to build a bounded incremental flow.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-incremental
+description: Build bounded incremental Dartitect operations across core, Flutter, sync datasets, and isolate worker pools. Use when work must stream items with backpressure, partial aggregates, cancellation, or bounded admission; do not use for ordinary one-shot commands.
+---
+
+# Build incremental operations
+
+## When to use
+
+Use this skill when a workload should expose the first result before the whole
+input completes, reduce an explicit aggregate item by item, checkpoint each
+confirmed sync step, or dispatch a bounded sequence across isolates.
+
+## When not to use
+
+Keep a finite one-shot command or dataset one-shot when partial progress has no
+consumer value. Use `$dartitect-dart` when only language-level stream/isolate
+semantics need review and `$dartitect-performance` for profiling or hot-path
+changes unrelated to the incremental API.
+
+## Invariants
+
+Import opt-in incremental entrypoints. Bound both item count and cumulative
+weight, reject the item that would cross either limit, and retain nothing unless
+the caller explicitly folds, collects within a bound, or supplies a ring
+buffer. Stop at the first typed `Err`; preserve crashes and stacks. Cancellation
+or deadline awaits cleanup before the terminal and prevents late publication.
+
+Flutter coalescing changes notifications only: every admitted item still passes
+through the reducer. Sync confirms a checkpoint before pulling the next item.
+Worker pools bound workers, in-flight requests, queued requests, and completed
+results waiting for order.
+
+## Workflow
+
+Choose the source ownership model, limits and weight, aggregate, expected
+failure type, concurrency policy, publication policy, and terminal receipt.
+Make the producer factory cold and explicit, then connect only the integrations
+the workload requires.
+
+Read [references/operations.md](references/operations.md) for core execution and
+[references/flutter-sync-and-pools.md](references/flutter-sync-and-pools.md) for
+the Flutter, dataset, and isolate projections.
+
+## Validate
+
+Test zero/one/many items, slow consumers, first `Err`, crashes with original
+stack, count/weight boundaries, cancellation/deadline cleanup, partial
+aggregate, bounded retention, restart/dispose fencing, checkpoint-before-pull,
+pool capacity, ordered/unordered mapping, and zero late work.
+''',
+      'references/operations.md': r'''# Incremental operations
+
+Use `package:dartitect/dartitect_incremental.dart`. Construct
+`IncrementalOperation.sync`, `.syncCloseable`, or `.async` with a factory that
+creates a fresh source for each execution. Plain sync producers are only for
+finite resource-free iterables; owned synchronous resources use the closeable
+variant.
+
+`IncrementalLimits` defaults to 100,000 emissions and 100,000 weight units.
+Without `weightOf`, each successful item weighs one. Sequence numbers start at
+one and timestamps use the injected UTC clock. `consume` retains no item;
+`fold` returns the explicit aggregate and report; `collectBounded` returns the
+explicit bounded items and report. Use `BoundedRingBuffer<T>` only when ordered
+recent retention is an actual requirement.
+
+Await `onValue` before the next emission. The first `Err` is terminal. Reject a
+broadcast stream. Limit violations exclude the crossing item. A cancellation
+or deadline cancels and awaits the subscription/source cleanup before returning
+a cancelled or deadline report.
+''',
+      'references/flutter-sync-and-pools.md':
+          r'''# Flutter, sync, and worker pools
+
+Import `dartitect_flutter_incremental.dart` for the no-argument
+`IncrementalCommand`. Each execution begins from a fresh initial aggregate.
+Choose `everyEmission`, `coalesceMicrotask`, or `coalesceFrame`; coalescing never
+skips reducer calls. Terminal states retain the partial aggregate, count,
+weight, execution ID, and payload-free receipt. Use `restartLatest` only when
+old execution publication is generation-fenced. The state builder accepts a
+static child and stays Material-neutral.
+
+`SyncDataset.incremental` serializes each successful checkpoint before asking
+for another item. Sequential is the default; bounded DAG parallelism admits
+ready nodes in plan order, runs only independent nodes, continues unrelated
+branches after typed failure, blocks descendants, and fails fast on crashes.
+Checkpoint, lease, and journal ports remain single-flight even when nodes run
+in parallel.
+
+`IsolateWorkerPool.spawn` requires explicit size, in-flight, and queue bounds.
+`mapSequence` pauses input at capacity and bounds completed values waiting for
+preserved order. Consumer cancellation drains input and admitted requests.
+`failPool` is the default crash policy; `replaceWorker` spends a finite budget
+without replaying an uncertain request. `disposeAsync` closes admission, drains,
+then safely stops workers.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
+    name: 'dartitect-performance',
+    displayName: 'Dartitect Performance',
+    shortDescription: 'Bound and measure Dartitect runtime efficiency',
+    defaultPrompt:
+        r'Use $dartitect-performance to bound and measure a runtime path.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-performance
+description: Diagnose, improve, and benchmark Dartitect runtime efficiency with bounded structures and structural complexity gates. Use for hot queues, listener dispatch, DAG scheduling, retention, scan throughput, or benchmark evidence; do not use for speculative micro-optimization.
+---
+
+# Bound runtime efficiency
+
+## When to use
+
+Use this skill when a repeated path may grow with emissions, listeners,
+dependencies, destinations, files, queued work, or retained history, or when a
+change needs reproducible latency, memory, or throughput evidence.
+
+## When not to use
+
+Do not optimize an unmeasured cold path or trade away public ordering,
+ownership, cancellation, privacy, or failure semantics. Use
+`$dartitect-incremental` to design the incremental contract and
+`$dartitect-dart` to resolve language-runtime correctness first.
+
+## Invariants
+
+Every in-memory queue and history has a visible capacity or eviction policy.
+FIFO front removal is constant-time, retained weight is maintained in O(1),
+listener dispatch is reentrancy-safe O(N), and topological scheduling uses
+dependents plus indegrees rather than repeated full scans. Preserve stable
+public order and isolate callback failures.
+
+Structural complexity and bounds are release gates. Wall time, RSS, first item,
+p50, and p95 are informative unless compared on the same controlled runner.
+Never weaken cleanup, backpressure, or privacy to improve a benchmark.
+
+## Workflow
+
+State the input scale and required bound, inspect the execution model, identify
+the retained state and asymptotic path, make the smallest semantics-preserving
+change, then measure a curated set of representative cases.
+
+Read [references/hot-paths.md](references/hot-paths.md) for implementation
+patterns and [references/measurement.md](references/measurement.md) for the
+benchmark and evidence contract.
+
+## Validate
+
+Prove capacity rejection/eviction, stable order, reentrant removal, isolated
+callback crashes, linear DAG/listener behavior, bounded slow-consumer state,
+cancellation cleanup, and identical public results. Run positive and negative
+execution-model fixtures and record benchmark environment with every metric.
+''',
+      'references/hot-paths.md': r'''# Hot paths and bounded state
+
+Use `ListQueue` for FIFO admission and `BoundedRingBuffer<T>` for explicit
+ordered recent retention. Do not use `List.removeAt(0)` or rebuild a retained
+collection merely to append or evict. Track cumulative retained weight during
+insert/evict rather than rescanning history.
+
+For listeners, keep stable registrations with tombstones. Dispatch over the
+current stable registry once, allow removal during callbacks, defer compaction
+while dispatch is nested, and isolate one callback failure without a snapshot
+plus repeated membership checks.
+
+For DAG work, compile a dependent map and indegree count once. Admit ready nodes
+through a stable queue, update only their dependents, and preserve declared
+topological order in reports. For destination policy, compile winner lookup and
+sanitize a classified/projected structure once before fan-out.
+
+Run `dartitect inspect execution-model [--json]` for DT2200-DT2211 evidence.
+Heuristics are informational; structurally strong findings may warn, but the
+inspection remains non-blocking unless usage or internal execution fails.
+''',
+      'references/measurement.md': r'''# Measurement and evidence
+
+Start with structural gates: bounded queues/retention, one classification per
+node, no quadratic readiness scan, backpressure, exact cleanup, no late
+publication, and no residual request/worker. These are portable correctness
+claims and may block release.
+
+Use a curated matrix rather than a full Cartesian product. Cover 0, 1, 32,
+1,000, and 100,000 emissions where practical; eager inputs, generators, and
+batches; slow consumers and cancellation; multiple telemetry destinations;
+and representative Flutter, sync, isolate, and CLI paths. Measure first item,
+total time, RSS or retained state, throughput, and p50/p95 where the harness can
+do so reproducibly.
+
+Record SDK/runtime, OS, CPU architecture, mode, warmup, iteration count, input,
+and bounds. Treat absolute time and memory as informational across different
+runners. Compare regressions only on the same runner and preserve raw receipts
+or machine-readable summaries needed to reproduce the conclusion.
 ''',
     },
   ),

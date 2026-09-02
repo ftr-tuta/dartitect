@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add Dart semantics, incremental execution, and runtime-performance skills,
+  with catalog-derived managed-skill counts and routing validation.
 - Add deterministic progressive scan events, bounded four-file analysis,
   content/config-aware LRU source facts, JSON Lines output, and SIGINT
   cancellation with exit code 130.

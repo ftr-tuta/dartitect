@@ -1,0 +1,6 @@
+interface:
+  display_name: "Dartitect Dart"
+  short_description: "Apply safe Dart stream and isolate semantics"
+  default_prompt: "Use $dartitect-dart to review Dart runtime semantics safely."
+policy:
+  allow_implicit_invocation: true
