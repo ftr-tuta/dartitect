@@ -34,8 +34,10 @@ does not authorize a tag, GitHub Release, publication, or stable promotion.
   commands and ViewModels are insufficient.
 - Keep authenticated work generation-scoped with
   [credential generations](guides/credential-generations.md).
-- Apply the [business-neutral UI quality](guides/ui-quality.md) boundary to
-  consumer-owned Material or Cupertino presentation.
+- Apply the [executable business-neutral Flutter quality](guides/ui-quality.md)
+  contract to consumer-owned Material or Cupertino presentation. ADR 0050
+  records its preview, runtime, static, test, performance, and eval evidence
+  boundaries.
 
 ## Add persistence, transport, and optional capabilities
 

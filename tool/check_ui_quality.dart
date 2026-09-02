@@ -5,27 +5,74 @@ const _entrypoints = <String>[
   'package:dartitect_flutter/dartitect_flutter_ui.dart',
   'package:dartitect_flutter_testing/dartitect_flutter_testing.dart',
 ];
-const _builders = <String>[
-  'DartitectFormSnapshotBuilder',
-  'DartitectQueryStateBuilder',
-  'ResourcePresentationBuilder',
+const _officialSkills = <String>[
+  'flutter-add-integration-test',
+  'flutter-add-widget-preview',
+  'flutter-add-widget-test',
+  'flutter-apply-architecture-best-practices',
+  'flutter-build-responsive-layout',
+  'flutter-fix-layout-issues',
 ];
-const _diagnostics = <String>[
-  'DT3001',
-  'DT3002',
-  'DT3101',
-  'DT3102',
-  'DT3103',
-  'DT3104',
-  'DT3105',
-  'DT3106',
+const _requiredEvidence = <String>[
+  'analyze',
+  'audit',
+  'preview',
+  'runtimeInspection',
+  'tests',
+  'platforms',
 ];
-const _sizes = <String>[
-  '360x640',
-  '430x932',
-  '768x1024',
-  '1024x768',
-  '1440x900',
+const _techniques = <String>[
+  'constraintsResponsive',
+  'devtoolsRuntime',
+  'reusableWidgetsPreviews',
+  'mvvm',
+  'repositories',
+  'multiplatform',
+  'tests',
+];
+const _techniqueEvidence = <String>[
+  'skills',
+  'diagnostics',
+  'preview',
+  'runtime',
+  'tests',
+  'evals',
+  'canaries',
+  'platforms',
+];
+const _platforms = <String>[
+  'android',
+  'ios',
+  'linux',
+  'macos',
+  'windows',
+  'web',
+];
+const _semanticDiagnostics = <String>[
+  'DT3120',
+  'DT3121',
+  'DT3122',
+  'DT3123',
+  'DT3124',
+  'DT3125',
+  'DT3126',
+  'DT3127',
+  'DT3128',
+  'DT3130',
+  'DT3131',
+  'DT3132',
+  'DT3140',
+  'DT3141',
+  'DT3142',
+  'DT3143',
+  'DT3144',
+  'DT3145',
+];
+const _previewRows = <(String, String, String, num)>[
+  ('compact', '360x640', 'light', 1.0),
+  ('compact-200-percent', '430x932', 'dark', 2.0),
+  ('medium', '768x1024', 'light', 1.0),
+  ('expanded', '1440x900', 'light', 1.0),
 ];
 
 Future<void> main(List<String> arguments) async {
@@ -41,66 +88,145 @@ Future<void> main(List<String> arguments) async {
       if (!condition) failures.add(message);
     }
 
-    require(contract['schemaVersion'] == 1, 'Unsupported contract schema.');
-    require(contract['artifact'] == 'ui-quality-v1', 'Wrong artifact name.');
-    require(contract['goal'] == 'V1S-18', 'Wrong goal.');
-    require(contract['releaseVersion'] == '1.0.0', 'Wrong cohort version.');
+    require(contract['schemaVersion'] == 2, 'Unsupported contract schema.');
+    require(contract['artifact'] == 'ui-quality-v2', 'Wrong artifact name.');
+    require(contract['goal'] == 'RC3-FLUTTER-QUALITY', 'Wrong quality goal.');
+    require(
+      contract['releaseVersion'] == '1.1.0-rc.3',
+      'Wrong cohort version.',
+    );
+    require(
+      contract['stableVersion'] == '1.0.0',
+      'The distributed stable version changed.',
+    );
+    require(contract['mode'] == 'native-strict', 'Native Strict is required.');
+
     final topology = _map(contract['topology']);
     require(topology['packages'] == 25, 'Expected 25 packages.');
-    require(topology['publicEntrypoints'] == 33, 'Expected 33 entrypoints.');
+    require(topology['publicEntrypoints'] == 35, 'Expected 35 entrypoints.');
     require(
       _same(_strings(contract['entrypoints']), _entrypoints),
       'UI entrypoint evidence is incomplete.',
     );
     require(
-      _same(_strings(contract['builders']), _builders),
-      'Builder evidence is incomplete.',
+      _same(_strings(contract['publicAdditions']), const <String>[
+        'DartitectPreviewMatrix',
+      ]),
+      'The RC3 public addition is not exact.',
     );
-    if (failures.isNotEmpty) throw StateError(failures.join('\n'));
+    require(
+      _same(_strings(contract['requiredEvidence']), _requiredEvidence),
+      'The executable evidence contract is incomplete.',
+    );
 
-    final matrix = _list(contract['matrix']).map(_map).toList();
-    require(matrix.length == 5, 'The paired matrix must contain five rows.');
+    final plugin = _map(contract['officialPlugin']);
     require(
-      _same(matrix.map((row) => '${row['size']}').toList(), _sizes),
-      'The paired matrix sizes differ from the contract.',
+      plugin['selector'] == 'dart-flutter@dart-flutter',
+      'Wrong official Flutter plugin selector.',
     );
     require(
-      matrix.map((row) => row['textScale']).toSet().containsAll(<Object?>{
-            1.0,
-            2.0,
-          }) &&
-          matrix.map((row) => row['direction']).toSet().containsAll(<Object?>{
-            'ltr',
-            'rtl',
-          }) &&
-          matrix.map((row) => row['brightness']).toSet().containsAll(<Object?>{
-            'light',
-            'dark',
-          }) &&
-          matrix.any((row) => row['highContrast'] == true) &&
-          matrix.any((row) => row['reducedMotion'] == true),
-      'The paired matrix omits a required environment.',
+      plugin['mcpCommand'] == 'dart mcp-server',
+      'Wrong official Flutter MCP command.',
     );
+    require(
+      _same(_strings(plugin['skills']), _officialSkills),
+      'The official Flutter skill set is incomplete.',
+    );
+
+    final techniques = _map(contract['techniques']);
+    require(
+      _same(techniques.keys.toList(), _techniques),
+      'The seven quality techniques or their order changed.',
+    );
+    for (final name in _techniques) {
+      final technique = _map(techniques[name]);
+      require(
+        technique.keys.toSet().containsAll(_techniqueEvidence) &&
+            technique.length == _techniqueEvidence.length,
+        '$name must declare every evidence dimension.',
+      );
+      for (final dimension in _techniqueEvidence) {
+        require(
+          _strings(technique[dimension]).isNotEmpty,
+          '$name has no $dimension evidence.',
+        );
+      }
+      require(
+        _strings(technique['skills']).contains('dartitect-flutter-quality'),
+        '$name is not routed through dartitect-flutter-quality.',
+      );
+      require(
+        _same(_strings(technique['platforms']), _platforms),
+        '$name does not cover the six platforms.',
+      );
+    }
 
     final parity = _map(contract['diagnosticParity']);
-    final declaredDiagnostics = <String>{
-      ..._strings(parity['errors']),
-      ..._strings(parity['warnings']),
-    };
     require(
-      declaredDiagnostics.length == _diagnostics.length &&
-          declaredDiagnostics.containsAll(_diagnostics),
-      'CLI/analyzer diagnostic evidence is incomplete.',
+      _same(_strings(parity['objectiveErrors']), const <String>[
+        'DT3001',
+        'DT3002',
+      ]),
+      'Objective UI diagnostics changed.',
     );
-    final corpus = _map(
-      jsonDecode(_read(root, '${parity['corpus']}', failures)),
-    );
-    final diagnosticMap = _map(corpus['diagnosticMap']);
     require(
-      diagnosticMap.values.toSet().containsAll(_diagnostics),
-      'The parity corpus does not cover every UI diagnostic.',
+      _same(_strings(parity['semanticErrors']), _semanticDiagnostics),
+      'Semantic Flutter diagnostics are incomplete.',
     );
+    require(
+      _strings(parity['syntacticWarnings'])
+          .toSet()
+          .containsAll(_semanticDiagnostics),
+      'The syntactic scanner does not reserve every semantic diagnostic.',
+    );
+    _mustExist(root, '${parity['corpus']}', failures);
     _mustExist(root, '${parity['checker']}', failures);
+
+    final previewMatrices = _map(contract['previewMatrices']);
+    final previews = _list(previewMatrices['device']).map(_map).toList();
+    require(
+      previews.length == _previewRows.length,
+      'The device preview matrix must contain four ordered rows.',
+    );
+    for (
+      var index = 0;
+      index < previews.length && index < _previewRows.length;
+      index++
+    ) {
+      final actual = previews[index];
+      final expected = _previewRows[index];
+      require(
+        actual['name'] == expected.$1 &&
+            actual['size'] == expected.$2 &&
+            actual['brightness'] == expected.$3 &&
+            actual['textScale'] == expected.$4,
+        'Preview row $index differs from the RC3 contract.',
+      );
+    }
+    require(
+      previewMatrices['accessibility'] == 'DartitectUiMatrix',
+      'Accessibility coverage must remain in DartitectUiMatrix.',
+    );
+
+    final performance = _map(contract['performance']);
+    require(
+      _strings(performance['blocking']).length == 9,
+      'Structural performance blockers are incomplete.',
+    );
+    require(
+      _same(_strings(performance['informative']), const <String>[
+        'frame-time',
+        'memory',
+      ]),
+      'Timing and memory must remain informative.',
+    );
+    final privacy = _map(contract['privacy']);
+    require(
+      privacy.length == 4 && privacy.values.every((value) => value == false),
+      'Quality evidence must remain payload-free.',
+    );
+
+    if (failures.isNotEmpty) throw StateError(failures.join('\n'));
 
     final api = _map(
       jsonDecode(_read(root, 'tool/api_surface.snapshot.json', failures)),
@@ -115,112 +241,11 @@ Future<void> main(List<String> arguments) async {
       );
     }
 
-    final matrixSource = _read(
-      root,
-      'packages/dartitect_flutter_testing/lib/src/ui_matrix.dart',
-      failures,
-    );
-    for (final size in _sizes) {
-      require(
-        matrixSource.contains('Size(${size.replaceFirst('x', ', ')})'),
-        'Matrix implementation lacks $size.',
-      );
-    }
-
-    final skill = '${contract['skill']}';
-    require(
-      _read(root, skill, failures).contains('dartitect-ui'),
-      'Managed skill is stale.',
-    );
-    final scaffold = _read(root, '${contract['scaffold']}', failures);
-    for (final token in <String>[
-      'ThemeData(useMaterial3: true)',
-      'GlobalMaterialLocalizations.delegate',
-      'testDartitectUiMatrix(',
-      'NavigationBar(',
-      'NavigationRail(',
-    ]) {
-      require(scaffold.contains(token), 'App scaffold lacks $token.');
-    }
-
-    final canary = _map(contract['canary']);
-    final canaryRoot = '${canary['root']}';
-    final canarySources = <String>[
-      _read(root, '$canaryRoot/lib/main.dart', failures),
-      _read(
-        root,
-        '$canaryRoot/lib/presentation/ui_quality_shell.dart',
-        failures,
-      ),
-      _read(
-        root,
-        '$canaryRoot/lib/presentation/ui_quality_state_gallery.dart',
-        failures,
-      ),
-      _read(root, '$canaryRoot/test/ui_quality_matrix_test.dart', failures),
-      _read(
-        root,
-        '$canaryRoot/test/ui_quality_state_gallery_test.dart',
-        failures,
-      ),
-    ].join('\n');
-    for (final token in _strings(canary['controls'])) {
-      require(canarySources.contains(token), 'UI canary lacks $token.');
-    }
-    for (final token in _strings(canary['states'])) {
-      require(canarySources.contains(token), 'UI canary lacks $token state.');
-    }
-    for (final relative in <String>[
-      ..._strings(canary['tests']),
-      ..._strings(canary['goldens']),
-    ]) {
-      _mustExist(root, '$canaryRoot/$relative', failures);
-    }
-    for (final platform in _strings(canary['platformBuilds'])) {
-      _mustExist(root, '$canaryRoot/$platform', failures);
-    }
-    final workflow = _read(root, '.github/workflows/ci.yaml', failures);
-    for (final command in <String>[
-      'flutter build apk --debug',
-      'flutter build ios --release --no-codesign',
-      'flutter build web --release',
-      'flutter build linux --release',
-      'flutter build windows --release',
-      'flutter build macos --release',
-      'flutter test --platform chrome',
-    ]) {
-      require(workflow.contains(command), 'Hosted CI lacks `$command`.');
-    }
-    require(
-      workflow.split('working-directory: examples/paved_road_canary').length >=
-          7,
-      'Hosted builds are not all bound to the UI canary.',
-    );
-
-    final privacy = _map(contract['privacy']);
-    require(
-      privacy.values.every((value) => value == false),
-      'UI evidence must not upload screen or semantics content.',
-    );
-    final goals = _map(
-      jsonDecode(_read(root, 'tool/goal_gates.json', failures)),
-    );
-    final ids = _list(goals['goals'])
-        .map((goal) => '${_map(goal)['id']}')
-        .toList();
-    require(
-      ids.contains('V1S-18') &&
-          ids.contains('V1-18') &&
-          ids.indexOf('V1S-18') < ids.indexOf('V1-18'),
-      'V1S-18 must precede V1-18.',
-    );
-
-    if (failures.isNotEmpty) {
-      throw StateError(failures.join('\n'));
-    }
+    if (failures.isNotEmpty) throw StateError(failures.join('\n'));
     stdout.writeln(
-      'ui-quality-v1 passed: 25 packages, 33 entrypoints, five paired '
-      'scenarios, CLI/analyzer parity, canary, and six hosted builds.',
+      'ui-quality-v2 passed: seven executable techniques, 25 packages, '
+      '35 entrypoints, six platforms, official Flutter tooling, and '
+      'payload-free evidence.',
     );
   } on Object catch (error) {
     stderr.writeln('UI quality validation failed: $error');

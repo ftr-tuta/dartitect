@@ -27,7 +27,7 @@ Future<void> main(List<String> arguments) async {
         value['stableVersion'] != '1.0.0' ||
         value['requiresExactMainSha'] != true ||
         value['requiresReadinessArtifact'] != 'actions-readiness-v1' ||
-        value['requiresUiQualityEvidence'] != 'ui-quality-v1' ||
+        value['requiresUiQualityEvidence'] != 'ui-quality-v2' ||
         value['requiresDistributionPolicy'] !=
             'tool/distribution_policy.json' ||
         value['requiredCheck'] != 'CI / Required' ||
@@ -44,7 +44,7 @@ Future<void> main(List<String> arguments) async {
     ], workingDirectory: root.path);
     if (uiQuality.exitCode != 0) {
       throw StateError(
-        'Stable candidate rejected ui-quality-v1: ${uiQuality.stderr}',
+        'Stable candidate rejected ui-quality-v2: ${uiQuality.stderr}',
       );
     }
     final distribution = await Process.run(
@@ -77,9 +77,9 @@ Future<void> main(List<String> arguments) async {
     stdout.writeln(
       options.manifest == null
           ? 'Stable policy passed structurally with the nominal five-cell '
-                'Actions matrix and ui-quality-v1 evidence; formal Actions '
+                'Actions matrix and ui-quality-v2 evidence; formal Actions '
                 'readiness remains external.'
-          : 'Stable candidate passed actions-readiness-v1 and ui-quality-v1.',
+          : 'Stable candidate passed actions-readiness-v1 and ui-quality-v2.',
     );
   } on Object catch (error) {
     stderr.writeln('Stable candidate validation failed: $error');

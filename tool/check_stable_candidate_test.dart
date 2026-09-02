@@ -34,7 +34,7 @@ void main() {
       ]);
 
       expect(accepted.exitCode, 0);
-      expect(accepted.stdout, contains('ui-quality-v1'));
+      expect(accepted.stdout, contains('ui-quality-v2'));
       expect(rejected.exitCode, 1);
     },
   );
