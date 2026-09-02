@@ -27,8 +27,9 @@ manifest-owned skills and preserves consumer-owned files/directories.
 Every reviewed project change binds only its semantic inputs in a sorted
 SHA-256 manifest. Partition generated ownership, reports, and journals by
 `GenerationNamespace`. Acquire the cross-process project lock before
-revalidation and hold it through commit, rollback, or recovery. Migrate RC3
-ownership only when manifest metadata, recorded digest, and current bytes match.
+revalidation and hold it through commit, rollback, or recovery. Migrate legacy
+pre-stable ownership only when manifest metadata, recorded digest, and current
+bytes match.
 Every generated file operation has a stable `rendererId`; the formal canary
 catalog must cover every package, public entrypoint, renderer, profile,
 capability, provider, scope, and target.

@@ -35,13 +35,37 @@ policy:
 ''';
 }
 
+/// Repository inclusion gate appended to every managed skill entrypoint.
+const String dartitectSkillInclusionGate = '''## Dartitect inclusion gate
+
+Before adding a capability, answer:
+
+> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+
+All three answers must be “yes”. Otherwise reusable infrastructure belongs in
+a typed project-local extension and business behavior stays in the application.
+''';
+
+/// Materializes the complete managed-skill snapshot from the canonical catalog.
+Map<String, Map<String, String>> buildDartitectManagedSkillFiles() =>
+    <String, Map<String, String>>{
+      for (final template in dartitectSkillCatalog)
+        template.name: <String, String>{
+          for (final entry in template.files.entries)
+            entry.key: entry.key == 'SKILL.md'
+                ? '${entry.value.trimRight()}\n\n$dartitectSkillInclusionGate'
+                : entry.value,
+          'agents/openai.yaml': template.openAiYaml,
+        },
+    };
+
 /// Typed skill templates distributed by `dartitect codex sync`.
 const List<DartitectSkillTemplate>
 dartitectSkillCatalog = <DartitectSkillTemplate>[
   DartitectSkillTemplate(
     name: 'dartitect-design',
     displayName: 'Dartitect Design',
-    shortDescription: 'Choose the smallest Dartitect package set',
+    shortDescription: 'Select greenfield Dartitect packages and routes',
     defaultPrompt:
         r'Use $dartitect-design to select a minimal Dartitect architecture.',
     files: <String, String>{
@@ -102,44 +126,43 @@ break a stated requirement.
 ''',
       'references/selection-matrix.md': r'''# Selection matrix
 
-- Pure Dart result/ownership/composition: `dartitect` plus `$dartitect-runtime`.
-- Immutable values, explicit JSON, projections, or pure boundary mappers: add
-  `dartitect_modeling` and `$dartitect-modeling`; capabilities remain separately
-  opt-in and Analyzer tooling stays out of runtime.
-- Basic Flutter ViewModels and commands: add `dartitect_flutter` and keep the
-  established `dartitect_flutter.dart` entrypoint. Generated `FeatureHost` and
-  `CommandStateBuilder` remain Material-neutral; product UI stays consumer-owned.
-- Hot/warm/cold resources, causal refresh, families, collections, selectors, or
-  advanced builders: use the opt-in reactive entrypoint and
-  `$dartitect-reactive`.
-- Local-authority paging or durable mutations/outbox: combine the reactive
-  runtime with `$dartitect-offline-first`; add a storage adapter only after the
-  application chooses its provider.
-- Dataset DAG orchestration, checkpoints, leases, progress, or headless ACKs:
-  add `dartitect_sync` and `dartitect_jobs` with `$dartitect-offline-first`;
-  keep scheduling, recurrence, conflicts, storage transactions, and provider
-  resources consumer-owned.
-- Bounded retry, single-flight, breaker, bulkhead, or rate limiting: add
-  `dartitect_resilience`; expected-failure classification remains
-  consumer-owned and uncertain mutation results are never retried.
-- Resumable chunk transfer: add `dartitect_transfer` and optionally
-  `dartitect_dio`; checkpoints follow durable chunk commits, while remote
-  protocol, authentication, Range, ETag, and idempotency remain consumer-owned.
-- Neutral logs/reporting/tracing: add `dartitect_observability` and
-  `$dartitect-observability`; add `dartitect_sentry` only for an already selected
-  and consumer-initialized Sentry Hub.
-- Dio, Drift, or ObjectBox integration: add only the matching adapter and use
-  `$dartitect-adapters`.
-- Deterministic consumer tests: add `dartitect_testing` as a dev dependency and
-  use `$dartitect-testing`.
-- Inspection, generators, policy, or CI gates: use `dartitect_cli` and/or
-  `dartitect_lints` with `$dartitect-tooling`.
-- Local bounded agent context: add `dartitect_mcp` as a dev dependency and use
-  `$dartitect-mcp`; scripts should call the CLI directly.
+Select only rows justified by a concrete boundary. The matrix lists all 25
+stable packages so an omitted package is an explicit decision.
 
-ObjectBox has no web support. CLI and MCP run on the Dart VM. Material widgets
-belong only in Material presentation code. Provider adapters never belong in
-domain, application, ViewModel, or presentation layers.
+| Package | Select for | Route or boundary |
+| --- | --- | --- |
+| `dartitect` | Result, ownership, commands, credentials, and composition | `$dartitect-runtime` |
+| `dartitect_flutter` | Basic Flutter ViewModels, hosts, forms, queries, or opt-in reactive entrypoints | `$dartitect-runtime`, `$dartitect-reactive` |
+| `dartitect_flutter_testing` | Dev-only semantics, accessibility, contrast, tap-target, and paired UI matrices | `$dartitect-ui`, `$dartitect-testing` |
+| `dartitect_sync` | Durable mutation/outbox, dataset DAGs, checkpoints, leases, and headless sync | `$dartitect-offline-first` |
+| `dartitect_resilience` | Bounded retry, single-flight, breaker, bulkhead, or rate limiting | `$dartitect-runtime`, `$dartitect-testing` |
+| `dartitect_jobs` | Versioned job envelopes, bounded dispatch, deadlines, receipts, and fencing ports | `$dartitect-offline-first`, `$dartitect-testing` |
+| `dartitect_transfer` | Resumable chunks or attachment staging with durable checkpoints | `$dartitect-adapters`, `$dartitect-testing` |
+| `dartitect_devtools` | Development-only, read-only, payload-free service extensions | `$dartitect-observability`, `$dartitect-testing` |
+| `dartitect_isolates` | Versioned worker ACK/readiness/heartbeat/deadline lifecycle | `$dartitect-runtime`, `$dartitect-testing` |
+| `dartitect_observability` | Provider-neutral logs, errors, tracing, and diagnostics | `$dartitect-observability` |
+| `dartitect_dio` | Explicit Dio ownership, typed transport failures, and safe instrumentation | `$dartitect-adapters` |
+| `dartitect_drift` | Lifecycle and operational adapters around a consumer-generated Drift database | `$dartitect-adapters`, `$dartitect-offline-first` |
+| `dartitect_objectbox` | Native Store/query/watch/projection lifecycle around a consumer-generated model | `$dartitect-adapters`, `$dartitect-offline-first` |
+| `dartitect_sentry` | Borrowed-Hub telemetry after the consumer selects and initializes Sentry | `$dartitect-adapters`, `$dartitect-observability` |
+| `dartitect_testing` | Deterministic failure, lifecycle, provider, and residual-resource harnesses | `$dartitect-testing` |
+| `dartitect_cli` | Config v3, inspect/scan/doctor, generators, fleet, contracts, and Codex sync | `$dartitect-tooling` |
+| `dartitect_lints` | Analyzer-host Native Strict and modeling diagnostics | `$dartitect-tooling` |
+| `dartitect_locale_br` | Structural Brazilian postal-code value handling only | `$dartitect-design` |
+| `dartitect_geometry` | Finite planar polygon/polylabel values only | `$dartitect-design` |
+| `dartitect_privacy` | Explicit iOS ATT status/request boundary | `$dartitect-adapters` |
+| `dartitect_media` | Explicit Android/iOS image-save permission and action boundary | `$dartitect-adapters` |
+| `dartitect_mcp` | Local bounded interactive context, previews, and reviewed writes | `$dartitect-mcp` |
+| `dartitect_workmanager` | Workmanager callbacks adapted to a fresh job graph per execution | `$dartitect-adapters`, `$dartitect-offline-first` |
+| `dartitect_modeling` | Opt-in immutable values, JSON, projections, lenses, and pure mappers | `$dartitect-modeling` |
+| `dartitect_modeling_analyzer` | Tooling-only semantic compilation and model diagnostics | `$dartitect-modeling`, `$dartitect-tooling` |
+
+Generated `FeatureHost` and `CommandStateBuilder` remain Material-neutral;
+product UI stays consumer-owned. Scheduling, recurrence, schemas, transactions,
+conflict/retry/authentication policy, provider configuration, and semantic
+mappings stay consumer-owned. ObjectBox has no web support. CLI and MCP run on
+the Dart VM. Provider adapters never belong in domain, application, ViewModel,
+or presentation layers.
 
 Native Strict does not provide an overlap or coexistence mode for competing
 application architecture runtimes.
@@ -149,7 +172,7 @@ application architecture runtimes.
   DartitectSkillTemplate(
     name: 'dartitect-audit',
     displayName: 'Dartitect Audit',
-    shortDescription: 'Audit Native Strict conformance read-only',
+    shortDescription: 'Audit Native Strict conformance without writes',
     defaultPrompt: r'Use $dartitect-audit to audit Native Strict conformance.',
     files: <String, String>{
       'SKILL.md': r'''---
@@ -242,7 +265,7 @@ errors.
   DartitectSkillTemplate(
     name: 'dartitect-runtime',
     displayName: 'Dartitect Runtime',
-    shortDescription: 'Build core and basic Flutter runtimes',
+    shortDescription: 'Own Result, command, graph, and Flutter lifecycles',
     defaultPrompt:
         r'Use $dartitect-runtime to implement an owned Dartitect runtime.',
     files: <String, String>{
@@ -375,7 +398,7 @@ ViewModel, and keep loading/failure/ready presentation consumer-owned.
   DartitectSkillTemplate(
     name: 'dartitect-reactive',
     displayName: 'Dartitect Reactive',
-    shortDescription: 'Build causal reactive Flutter runtimes',
+    shortDescription: 'Build hot, warm, and cold causal Flutter resources',
     defaultPrompt:
         r'Use $dartitect-reactive to implement a causal reactive feature.',
     files: <String, String>{
@@ -497,7 +520,7 @@ access, and supported text-scale tests.
   DartitectSkillTemplate(
     name: 'dartitect-offline-first',
     displayName: 'Dartitect Offline First',
-    shortDescription: 'Build local-authority pages and outboxes',
+    shortDescription: 'Build durable local authority, outbox, and sync',
     defaultPrompt: r'Use $dartitect-offline-first to implement a durable local-first flow.',
     files: <String, String>{
       'SKILL.md': r'''---
@@ -625,7 +648,7 @@ ETag, Range, auth, and idempotency remain consumer policy.
   DartitectSkillTemplate(
     name: 'dartitect-observability',
     displayName: 'Dartitect Observability',
-    shortDescription: 'Configure private provider-neutral telemetry',
+    shortDescription: 'Design sanitized provider-neutral telemetry',
     defaultPrompt: r'Use $dartitect-observability to design sanitized Dartitect telemetry.',
     files: <String, String>{
       'SKILL.md': r'''---
@@ -741,13 +764,13 @@ builds.
   DartitectSkillTemplate(
     name: 'dartitect-adapters',
     displayName: 'Dartitect Adapters',
-    shortDescription: 'Integrate explicit provider boundaries',
+    shortDescription: 'Wire provider SDKs at infrastructure composition',
     defaultPrompt:
         r'Use $dartitect-adapters to integrate a Dartitect provider safely.',
     files: <String, String>{
       'SKILL.md': r'''---
 name: dartitect-adapters
-description: Integrate Dartitect with Dio, Drift, ObjectBox, Sentry, or a custom provider using isolated provider references and explicit ownership. Use for infrastructure wiring; do not use to select application architecture or define domain policy.
+description: Integrate Dartitect with transport, storage, telemetry, native capability, transfer, or background providers using explicit ownership. Use for infrastructure wiring; do not use to select application architecture or define domain policy.
 ---
 
 # Integrate Dartitect adapters
@@ -784,6 +807,8 @@ real SDK boundary plus deterministic failure cases.
 - ObjectBox: [references/objectbox.md](references/objectbox.md)
 - Drift + ObjectBox coexistence: [references/coexistence.md](references/coexistence.md)
 - Sentry: [references/sentry.md](references/sentry.md)
+- Privacy and media plugins: [references/privacy-and-media.md](references/privacy-and-media.md)
+- Transfer and Workmanager: [references/transfer-and-workmanager.md](references/transfer-and-workmanager.md)
 - Another provider: [references/custom-provider.md](references/custom-provider.md)
 
 ## Validate
@@ -885,6 +910,42 @@ a fake Hub with zero network, including destination failure and borrowed
 lifetime. Dispose Dartitect sinks/reporters/tracers before the consumer closes
 the Hub.
 ''',
+      'references/privacy-and-media.md': r'''# Privacy and media adapters
+
+`dartitect_privacy` is an iOS ATT status/request boundary. Construction and
+status reads are prompt-free; only a consumer-owned interaction calls
+`request()`. Preserve every native state, return typed not-supported outcomes
+without channel calls elsewhere, emit no telemetry, and keep disclosure text,
+usage descriptions, request timing, analytics policy, and legal review in the
+application.
+
+`dartitect_media` saves one consumer-selected image on Android or iOS. Status
+reads and `saveImage` never request permission. The consumer owns source-file
+lifetime, album naming, UX, and legal/platform review. The plugin owns only
+request coordination and its Android legacy-request history bit. Await
+`clearOwnedState()` before package removal; a cleanup failure blocks a
+zero-residue claim. Never log paths, names, bytes, albums, native messages, or
+receipts. Test unsupported hosts without channel calls and supported hosts
+through the real method-channel/native lifecycle boundary.
+''',
+      'references/transfer-and-workmanager.md':
+          r'''# Transfer and Workmanager adapters
+
+`dartitect_transfer` owns provider-neutral chunk planning, checksums, progress,
+and checkpoints. Remote protocol, Range/ETag semantics, authentication,
+idempotency, retry classification, picker/share/gallery ports, and durable
+metadata/outbox transactions remain consumer-owned. A checkpoint advances only
+after the chunk commit is durable. Use `dartitect_dio` only as the selected
+transport adapter and never retry an uncertain mutation implicitly.
+
+`dartitect_workmanager` adapts a consumer-initialized Workmanager callback to a
+versioned `JobDispatcher`. Build a fresh graph per accepted execution, validate
+the envelope, preserve deadline/cancellation/receipt semantics, and close the
+graph in `finally`. The consumer owns registration, recurrence, platform policy,
+constraints, and provider lifecycle. Test Android/iOS/macOS through supported
+plugin boundaries, preserve preview limitations on web/Linux, and return typed
+unsupported on Windows.
+''',
       'references/custom-provider.md': r'''# Custom provider
 
 Implement an application-owned or small reusable adapter against Dartitect's
@@ -902,7 +963,7 @@ provider constraints or changes the domain contract.
   DartitectSkillTemplate(
     name: 'dartitect-ui',
     displayName: 'Dartitect UI',
-    shortDescription: 'Build adaptive accessible Flutter presentation',
+    shortDescription: 'Build consumer-owned adaptive accessible Flutter UI',
     defaultPrompt: r'Use $dartitect-ui to design and verify Dartitect Flutter presentation.',
     files: <String, String>{
       'SKILL.md': r'''---
@@ -1052,7 +1113,7 @@ audits send screenshots, semantics, or content to telemetry.
   DartitectSkillTemplate(
     name: 'dartitect-testing',
     displayName: 'Dartitect Testing',
-    shortDescription: 'Test failures, lifecycles, and providers',
+    shortDescription: 'Verify failure, lifecycle, provider, and leak contracts',
     defaultPrompt:
         r'Use $dartitect-testing to design a Dartitect verification matrix.',
     files: <String, String>{
@@ -1098,7 +1159,8 @@ only domain fixtures, selected policies, and domain assertions.
 
 Read [references/runtime-and-reactive.md](references/runtime-and-reactive.md),
 [references/sync.md](references/sync.md),
-[references/provider-fixtures.md](references/provider-fixtures.md), or
+[references/provider-fixtures.md](references/provider-fixtures.md),
+[references/platform-and-background.md](references/platform-and-background.md), or
 [references/tooling.md](references/tooling.md) for the boundary under test.
 
 ## Validate
@@ -1159,13 +1221,44 @@ session recovery that does not auto-deliver uncertain records.
 - Dio: use the real Dio adapter/interceptor boundary with mock transport; test
   cancellation, concurrency, typed failure, minimal attributes, propagation,
   and duplicate instrumentation without network.
+- Drift: use a consumer-generated test database and real executor; test owned
+  and borrowed close, failed configuration cleanup, commit/rollback, watches,
+  checkpoint/journal fencing, migration/reopen, and web worker/assets where
+  applicable.
 - ObjectBox: use consumer-generated entities/model/Store/query/watcher; test
   transactions, same-path locking, cleanup, and isolate attachment on supported
   native hosts.
 - Sentry: use a fake Hub, no DSN and zero network; test sanitized mapping,
   destination failure, duplicate capture prevention, and borrowed lifetime.
 - Custom providers: pair deterministic contract tests with at least one real SDK
-  boundary fixture that proves version and lifecycle compatibility.
+boundary fixture that proves version and lifecycle compatibility.
+''',
+      'references/platform-and-background.md':
+          r'''# Platform and background tests
+
+- Privacy: prove construction and status are prompt-free, request occurs only
+  after an explicit consumer action, unknown status fails closed, unsupported
+  hosts make no channel call, and no status or choice enters telemetry.
+- Media: cover Android legacy/current permission separation, iOS limited access,
+  save-without-request, partial native rollback, main-thread completion,
+  unsupported hosts, and `clearOwnedState()` residue. Never retain paths, names,
+  bytes, album data, or native messages in test diagnostics.
+- Transfer: corrupt or reorder chunks, cancel and resume, fail durable commit,
+  preserve the idempotency key, and prove checkpoints advance only after a
+  durable chunk commit. Pair a deterministic transport with the selected real
+  provider adapter.
+- Jobs and Workmanager: validate envelope versions, deduplication, bounds,
+  deadline/cancellation, terminal receipts, fresh graph creation, teardown in
+  `finally`, supported plugin callbacks, preview limitations, and typed
+  unsupported hosts.
+- Isolates: use a real isolate for readiness, ACK/result correlation, heartbeat,
+  deadlines, crash/exit, stale envelope rejection, safe stop, and zero ports,
+  timers, or requests after supervisor disposal.
+- Resilience: inject clock, scheduler, randomness, and failure classification;
+  cover bounds and never retry an uncertain mutation or an unexpected crash.
+- DevTools: register exactly the three read-only service extensions in
+  development mode, reject mutation methods and payload-bearing facts, isolate
+  registrations by runtime isolate, and prove product builds register nothing.
 ''',
       'references/tooling.md': r'''# Tooling tests
 
@@ -1191,7 +1284,7 @@ expiry, replay, concurrency/lock, output sanitization, and clean shutdown.
   DartitectSkillTemplate(
     name: 'dartitect-modeling',
     displayName: 'Dartitect Modeling',
-    shortDescription: 'Generate opt-in Dartitect modeling capabilities',
+    shortDescription: 'Generate opt-in values, codecs, and pure mappers',
     defaultPrompt:
         r'Use $dartitect-modeling to define and synchronize Dartitect models.',
     files: <String, String>{
@@ -1266,7 +1359,7 @@ concurrency, pending recovery, and stable JSON/SARIF/exit codes.
   DartitectSkillTemplate(
     name: 'dartitect-tooling',
     displayName: 'Dartitect Tooling',
-    shortDescription: 'Operate CLI, lints, generators, and gates',
+    shortDescription: 'Operate config v3, CLI, generators, lints, and gates',
     defaultPrompt:
         r'Use $dartitect-tooling to operate or extend Dartitect tooling.',
     files: <String, String>{
@@ -1299,8 +1392,9 @@ manifest-owned skills and preserves consumer-owned files/directories.
 Every reviewed project change binds only its semantic inputs in a sorted
 SHA-256 manifest. Partition generated ownership, reports, and journals by
 `GenerationNamespace`. Acquire the cross-process project lock before
-revalidation and hold it through commit, rollback, or recovery. Migrate RC3
-ownership only when manifest metadata, recorded digest, and current bytes match.
+revalidation and hold it through commit, rollback, or recovery. Migrate legacy
+pre-stable ownership only when manifest metadata, recorded digest, and current
+bytes match.
 Every generated file operation has a stable `rendererId`; the formal canary
 catalog must cover every package, public entrypoint, renderer, profile,
 capability, provider, scope, and target.
@@ -1379,21 +1473,28 @@ provider code generation by hand or edit its output.
 Run formatting, analysis, public API snapshots, package/example tests,
 generated-consumer matrices, public documentation/link checks, skills coverage,
 MCP catalog freshness, CI/security policy, license/SBOM/advisory checks, native
-fixtures, and publish dry-runs in proportion to the change and as required by
-the repository workflow.
+fixtures, clean package archives, and exact-tag Git-consumption canaries in
+proportion to the change and as required by the repository workflow.
 
 Pin external Actions by full commit SHA. OSV exceptions are exact advisory IDs
 with justification, analysis link, and short expiry; package-wide ignores and
-PackageOverrides are forbidden. A dry-run never authorizes publishing or tags.
-Platform-specific evidence must run on its supported host, and builds must
-leave tracked files unchanged.
+PackageOverrides are forbidden. Distribution is GitHub-only; validation uses
+clean archives and exact-tag Git canaries, and no registry workflow exists. A
+source-validation preview never authorizes a tag or GitHub Release. Platform-specific evidence
+must run on its supported host, and builds must leave tracked files unchanged.
+
+For documentation and skill changes, require the documentation classification,
+link/include, changelog-cohort, skill-reference, managed snapshot/hash, and MCP
+catalog gates. Normal config accepts v3 only; v1/v2 are transactional fleet
+migration inputs. Keep `sdkVersion` at the released cohort until a separately
+authorized release changes it.
 ''',
     },
   ),
   DartitectSkillTemplate(
     name: 'dartitect-mcp',
     displayName: 'Dartitect MCP',
-    shortDescription: 'Use the bounded local Dartitect MCP',
+    shortDescription: 'Use bounded local MCP tools and reviewed writes',
     defaultPrompt:
         r'Use $dartitect-mcp to inspect this project through local MCP.',
     files: <String, String>{

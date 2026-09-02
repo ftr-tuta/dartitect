@@ -1,6 +1,6 @@
 interface:
   display_name: "Dartitect Modeling"
-  short_description: "Generate opt-in Dartitect modeling capabilities"
+  short_description: "Generate opt-in values, codecs, and pure mappers"
   default_prompt: "Use $dartitect-modeling to define and synchronize Dartitect models."
 policy:
   allow_implicit_invocation: true

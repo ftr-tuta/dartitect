@@ -3,6 +3,7 @@
 
 Candidate:: `1.0.0-rc.9`
 State:: SOURCE CANDIDATE ONLY
+Document status:: Historical handoff superseded by released `v1.0.0`
 Topology:: 24 packages / 30 public entrypoints
 
 This branch assembles RC9 without creating a tag, GitHub Release, or pub.dev

@@ -1,6 +1,7 @@
 = V1S-13 hosted native evidence
 
-Status:: GITHUB ACTIONS ONLY
+Status:: COMPLETED FOR RELEASED `v1.0.0` IN GITHUB ACTIONS
+Document status:: Historical release evidence
 Authority:: `tool/native_evidence_contract.json`
 Structural gate:: `dart run tool/check_native_evidence.dart --contract-only`
 Formal gate:: `dart run tool/check_native_evidence.dart`

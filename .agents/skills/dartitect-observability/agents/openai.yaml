@@ -1,6 +1,6 @@
 interface:
   display_name: "Dartitect Observability"
-  short_description: "Configure private provider-neutral telemetry"
+  short_description: "Design sanitized provider-neutral telemetry"
   default_prompt: "Use $dartitect-observability to design sanitized Dartitect telemetry."
 policy:
   allow_implicit_invocation: true

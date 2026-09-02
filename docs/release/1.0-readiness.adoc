@@ -1,10 +1,13 @@
-= Dartitect 1.0 Actions readiness
+= Dartitect 1.0 Actions readiness record
 
-The validated RC10 source is promoted directly to the permanent lockstep
-`1.0.0` cohort. This policy must authorize the exact merged source before the
-GitHub-only Release workflow can act on it.
+Document status:: Historical release evidence
+The validated pre-release source was promoted to the permanent lockstep
+`1.0.0` cohort. This policy authorized the exact merged source before the
+GitHub-only Release workflow acted on it.
 
-Status:: ACTIONS READINESS PENDING
+Status:: COMPLETED AND RELEASED
+Released tag:: `v1.0.0`
+Released source:: `747e3f17cc20c0afd13d5702c17ddc5d7330f00c`
 Authority:: `tool/actions_readiness_policy.json`
 Required branch check:: `CI / Required`
 Formal artifact:: `actions-readiness-v1`
@@ -79,13 +82,13 @@ both prove migration, CRUD, commit/rollback, watch propagation, persistence,
 safe multi-context storage, and foreground resume. There is no in-memory,
 unsafe IndexedDB, missing-Chrome, or WebDriver fallback.
 
-== Release
+== Recorded release
 
-The manual `Release` workflow is the sole human decision point. Its actor
-supplies only `source_sha` and `ci_run_id`. Before any write, the workflow proves
-that the SHA is the current remote `main` HEAD, the CI push run and
-`CI / Required` succeeded for it, and the unexpired readiness artifact matches
-the run attempt, source tree, eight jobs, and all hashes. It then creates the
-annotated `v1.0.0` tag and an immutable stable/latest GitHub Release using the
-idempotent transaction in the release runbook. The actor is provenance, not
-technical evidence; there is no Dartitect registry channel.
+The manual `Release` workflow was the human decision point. Its actor supplied
+only `source_sha` and `ci_run_id`. Before any write, the workflow proved that
+the SHA was the current remote `main` HEAD, the CI push run and
+`CI / Required` succeeded for it, and the unexpired readiness artifact matched
+the run attempt, source tree, eight jobs, and all hashes. It then created the
+annotated `v1.0.0` tag and immutable stable/latest GitHub Release using the
+idempotent transaction recorded in the release runbook. The actor is
+provenance, not technical evidence; there is no Dartitect registry channel.

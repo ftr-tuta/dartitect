@@ -7,8 +7,10 @@ description: Safely deliver versioned Dartitect changes through short-lived bran
 
 Read the applicable `AGENTS.md`, `CONTRIBUTING.md`, and
 [`docs/guides/repository-contribution.md`](../../../docs/guides/repository-contribution.md)
-before changing tracked content or remote GitHub state. Preserve unrelated work
-and keep authorization boundaries explicit.
+before changing tracked content or remote GitHub state. For documentation or
+skills, also read the task index in [`docs/README.md`](../../../docs/README.md)
+and preserve the classification in `tool/documentation_contract.json`.
+Preserve unrelated work and keep authorization boundaries explicit.
 
 ## Start safely
 
@@ -28,6 +30,14 @@ relevant hosts; iOS/macOS builds must leave the tracked tree unchanged.
 Before committing, review the complete diff, authorship, generated artifacts,
 and working tree. Do not publish packages or create tags unless separately
 authorized.
+
+For documentation and skill work, update
+`packages/dartitect_cli/lib/src/codex/skill_catalog.dart`, regenerate rather than
+hand-edit the twelve managed skills, and update the local skill directly. Keep
+all 25 changelogs on the same non-empty `Unreleased` entry and keep `1.0.0` as
+the first numbered version. Run documentation classification/link checks,
+skill coverage/reference/snapshot checks, the package release contract, managed
+skill validation, and generated-catalog freshness before committing.
 
 ## Deliver through a pull request
 

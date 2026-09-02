@@ -8,7 +8,7 @@ projection, typed transactions, sync checkpoints/journals, and sanitized
 instrumentation. Consumer entities and generated ObjectBox models remain
 consumer-owned.
 
-Config-v2 generation exposes one `<Context>DartitectObjectBoxFragment` and a
+Config-v3 generation exposes one `<Context>DartitectObjectBoxFragment` and a
 frozen operational UID map. Adding or removing a feature registration does not
 renumber operational entities or properties; domain entities and the generated
 consumer model remain consumer-owned.

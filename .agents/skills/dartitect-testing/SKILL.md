@@ -40,7 +40,8 @@ only domain fixtures, selected policies, and domain assertions.
 
 Read [references/runtime-and-reactive.md](references/runtime-and-reactive.md),
 [references/sync.md](references/sync.md),
-[references/provider-fixtures.md](references/provider-fixtures.md), or
+[references/provider-fixtures.md](references/provider-fixtures.md),
+[references/platform-and-background.md](references/platform-and-background.md), or
 [references/tooling.md](references/tooling.md) for the boundary under test.
 
 ## Validate

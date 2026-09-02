@@ -1,6 +1,8 @@
 = RC8 source-candidate handoff
 :date: 2026-08-29
 
+Document status:: Historical handoff superseded by released `v1.0.0`
+
 == Delivered boundary
 
 This branch prepares +1.0.0-rc.8+ for greenfield Dartitect projects. It creates

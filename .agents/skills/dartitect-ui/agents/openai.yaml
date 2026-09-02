@@ -1,6 +1,6 @@
 interface:
   display_name: "Dartitect UI"
-  short_description: "Build adaptive accessible Flutter presentation"
+  short_description: "Build consumer-owned adaptive accessible Flutter UI"
   default_prompt: "Use $dartitect-ui to design and verify Dartitect Flutter presentation."
 policy:
   allow_implicit_invocation: true

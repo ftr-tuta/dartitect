@@ -165,26 +165,7 @@ final class CodexSkillSynchronizer {
   }
 
   Map<String, Map<String, String>> _desiredFiles() =>
-      <String, Map<String, String>>{
-        for (final template in dartitectSkillCatalog)
-          template.name: <String, String>{
-            for (final entry in template.files.entries)
-              entry.key: entry.key == 'SKILL.md'
-                  ? '${entry.value.trimRight()}\n\n$_inclusionGate'
-                  : entry.value,
-            'agents/openai.yaml': template.openAiYaml,
-          },
-      };
-
-  static const String _inclusionGate = '''## Dartitect inclusion gate
-
-Before adding a capability, answer:
-
-> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
-
-All three answers must be “yes”. Otherwise reusable infrastructure belongs in
-a typed project-local extension and business behavior stays in the application.
-''';
+      buildDartitectManagedSkillFiles();
 
   Future<String> _hashDirectory(Directory directory) async {
     final files = <String, String>{};

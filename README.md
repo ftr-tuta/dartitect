@@ -12,6 +12,10 @@ an application framework: the consuming application continues to own its
 domain, data model, provider configuration, schemas, migrations, navigation,
 and product policy.
 
+Use the [task-oriented documentation index](docs/README.md) to enter by
+adoption, composition, runtime, persistence, tooling, testing, contribution, or
+historical record.
+
 ## Project suitability
 
 Dartitect is a good fit when a team wants these rules to be visible in code:

@@ -3,6 +3,7 @@
 
 Candidate:: `1.0.0-rc.10`
 State:: SOURCE CANDIDATE ONLY
+Document status:: Historical handoff superseded by released `v1.0.0`
 Topology:: 25 packages / 32 public entrypoints
 
 This branch assembles RC10 without creating a tag, GitHub Release, or pub.dev

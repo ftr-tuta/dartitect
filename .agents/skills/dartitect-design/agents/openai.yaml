@@ -1,6 +1,6 @@
 interface:
   display_name: "Dartitect Design"
-  short_description: "Choose the smallest Dartitect package set"
+  short_description: "Select greenfield Dartitect packages and routes"
   default_prompt: "Use $dartitect-design to select a minimal Dartitect architecture."
 policy:
   allow_implicit_invocation: true

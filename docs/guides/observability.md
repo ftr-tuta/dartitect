@@ -6,6 +6,26 @@ Create `ObservabilityRuntime` explicitly. Developer logging is the default;
 remote reporting/tracing require an explicit provider at composition. Never use
 global telemetry objects.
 
+```dart
+final runtime = ObservabilityRuntime(
+  samplingPolicy: FixedSamplingPolicy(spanRate: 1),
+);
+final span = runtime.tracing.startSpan('Load catalog');
+try {
+  await loadCatalog();
+  await span.end(status: SpanStatus.ok);
+} catch (error, stackTrace) {
+  await span.end(
+    status: SpanStatus.error,
+    error: error,
+    stackTrace: stackTrace,
+  );
+  rethrow;
+} finally {
+  await runtime.disposeAsync();
+}
+```
+
 ## Data policy
 
 Sanitize before every destination. Do not record authorization, cookies,

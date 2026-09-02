@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Complete developer documentation, managed skill guidance, and documentation quality gates.
+
 ## 1.0.0
 
 - Promote the validated RC10 source cohort to the stable GitHub-only release.

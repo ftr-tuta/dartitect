@@ -3,7 +3,9 @@
 Install `dartitect_cli`, run read-only discovery first, and review every preview:
 
 ```console
-dart pub global activate dartitect_cli 1.0.0-rc.8
+dart install https://github.com/ftr-tuta/dartitect.git \
+  --git-path packages/dartitect_cli \
+  --git-ref v1.0.0
 dartitect inspect --json
 dartitect scan
 dartitect doctor
@@ -20,8 +22,8 @@ dartitect fleet policy apps/a --root . --bundle=tool/fleet_policy_bundle.json --
 dartitect create app shop --targets=android,ios,web
 dartitect create feature orders --profile=offline-full --scope=session --targets=android,ios,web --storage-context=primary --transport=api --pagination=cursor --headless-targets=android,ios
 dartitect wiring sync --dry-run --json
-dartitect fleet upgrade apps/a --root . --to=1.0.0-rc.8 --json
-dartitect fleet upgrade apps/a --root . --to=1.0.0-rc.8 --apply --json
+dartitect fleet upgrade apps/a --root . --to=1.0.0 --json
+dartitect fleet upgrade apps/a --root . --to=1.0.0 --apply --json
 ```
 
 Mutating counterparts are `init` and `codex sync` without `--dry-run`. `create` generators also
@@ -39,7 +41,7 @@ Fleet report/check/policy commands never write. Upgrade previews by default;
 `--apply` acquires the fleet lock and ordered project locks, journals all bytes,
 runs only allowlisted validation, and commits the cohort atomically or restores
 and verifies every digest. Policy uses only a local, doubly pinned bundle.
-Codex sync distributes eleven manifest-owned `dartitect-*` skills, preserves
+Codex sync distributes twelve manifest-owned `dartitect-*` skills, preserves
 consumer-owned skills such as `repository-contribution`, and requires
 `--overwrite-managed` before replacing local changes to a managed skill.
 

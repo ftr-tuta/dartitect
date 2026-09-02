@@ -1,14 +1,20 @@
 = Immutable GitHub Release runbook
 
+Document status:: *EXECUTED HISTORICAL RECORD — DO NOT REUSE*
 Version:: `1.0.0`
 Tag:: `v1.0.0` (annotated, unsigned, protected)
 Workflow:: `.github/workflows/release.yaml`
 Distribution:: GitHub-only
+Released source:: `747e3f17cc20c0afd13d5702c17ddc5d7330f00c`
 
-== Authorization
+This procedure records the completed `1.0.0` publication. It is not a template
+for a later patch and must not be dispatched again. A future version requires
+explicit authorization, new version-specific evidence, and a new runbook.
 
-After the release PR is squash-merged, wait for the successful `CI` push run on
-the new remote `main` HEAD. The operator manually starts `Release` with exactly:
+== Recorded authorization
+
+After the release PR was squash-merged, the operator waited for the successful
+`CI` push run on the new remote `main` HEAD and started `Release` with exactly:
 
 * `source_sha`: the full lowercase SHA at remote `main` HEAD;
 * `ci_run_id`: the successful `CI` run that produced
@@ -17,10 +23,10 @@ the new remote `main` HEAD. The operator manually starts `Release` with exactly:
 There is no channel selector, registry token, PAT, GitHub App, or environment
 secret. `Release` is the only workflow with `contents: write`.
 
-=== Administrative operator preflight
+=== Recorded administrative operator preflight
 
-Immediately before every dispatch, an administrator must verify through an
-authenticated local `gh` session that:
+Immediately before the one authorized dispatch, an administrator verified
+through an authenticated local `gh` session that:
 
 * `GET /repos/ftr-tuta/dartitect/immutable-releases` returns `enabled: true`;
 * ruleset `21525640` is active, targets tags, includes only `refs/tags/v*`, has
@@ -35,9 +41,9 @@ Release settings endpoint requires. The workflow therefore revalidates the
 public portion of the tag ruleset before writing and proves `immutable: true`
 plus the Release attestation immediately after publication.
 
-== Read-only preflight
+== Recorded read-only preflight
 
-Before any repository write the workflow proves all of the following:
+Before any repository write the workflow proved all of the following:
 
 . `source_sha` equals the current remote `main` HEAD;
 . the public view of ruleset `21525640` has the required name, target,
@@ -53,9 +59,9 @@ Before any repository write the workflow proves all of the following:
 Any ambiguity or divergence observable by the operator or workflow fails closed
 before a write.
 
-== Deterministic assets
+== Recorded deterministic assets
 
-The workflow generates and uploads:
+The workflow generated and uploaded:
 
 * `actions-readiness-v1.json`;
 * `release-provenance.json`;
@@ -70,15 +76,15 @@ The workflow generates and uploads:
 downloads all assets again, validates names and SHA-256 digests, and publishes
 only after the round trip succeeds.
 
-== Tag and Release transaction
+== Executed tag and Release transaction
 
-The workflow creates an annotated Git tag object through the GitHub API, then
-creates `refs/tags/v1.0.0`, and verifies that the peeled ref equals
-`source_sha`. It creates the draft with `gh release create --verify-tag`, uploads
-the assets, verifies them after download, and then publishes the Release as
-stable and latest.
+The workflow created an annotated Git tag object through the GitHub API, then
+created `refs/tags/v1.0.0`, and verified that the peeled ref equaled
+`source_sha`. It created the draft with `gh release create --verify-tag`,
+uploaded the assets, verified them after download, and then published the
+Release as stable and latest.
 
-Retries are idempotent:
+The executed transaction defined these idempotency rules:
 
 * an exact existing annotated tag continues;
 * an exact existing draft may replace only its draft assets before revalidation;

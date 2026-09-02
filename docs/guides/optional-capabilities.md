@@ -65,12 +65,11 @@ same result.
 Run the two Flutter package tests and both pure-Dart suites on VM and Chrome.
 The contract tests cover inert construction, unsupported hosts, native status
 mapping, prompt separation, typed/payload-free failures, owned-state cleanup,
-value boundaries, immutable copies, numeric validation, and determinism. Native
-floor/current builds and runtime lifecycle/permission evidence remain the
-separate V1S-13 hardening gate.
+value boundaries, immutable copies, numeric validation, and determinism.
 
-For RC.3, Android API 24 is covered by manifest/lint/build compatibility and
-Android 14/API 34 runtime runs on a clean GitHub-hosted emulator. iOS uses the
-iOS 14 media and iOS 12 privacy deployment-floor builds plus real method-channel
-integration on a dynamically selected hosted simulator. No consumer hardware
-or privately managed runner is required; local runs are optional feedback.
+Stable release evidence covers Android API 24 manifest/lint/build compatibility
+and Android 14/API 34 runtime on a clean GitHub-hosted emulator. iOS evidence
+covers the iOS 14 media and iOS 12 privacy deployment floors plus real
+method-channel integration on a dynamically selected hosted simulator. No
+consumer hardware or privately managed runner is required; local runs are
+development feedback only.

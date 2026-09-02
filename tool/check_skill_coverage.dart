@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import '../packages/dartitect_cli/lib/src/codex/skill_catalog.dart';
+
 const _expectedSkills = <String>{
   'dartitect-adapters',
   'dartitect-audit',
@@ -31,8 +33,8 @@ const _expectedRouting = <String, String>{
   'flutterPresentation': 'dartitect-ui',
 };
 
-Future<void> main() async {
-  final root = File.fromUri(Platform.script).parent.parent.absolute;
+Future<void> main(List<String> arguments) async {
+  final root = _root(arguments);
   final release = jsonDecode(
     await File('${root.path}/tool/package_release_contract.json')
         .readAsString(),
@@ -42,10 +44,14 @@ Future<void> main() async {
     throw const FormatException('Invalid package release cohort.');
   }
   final cohort = release['releaseVersion']! as String;
+  final releasePackages = release['packages'];
+  if (releasePackages is! Map<String, Object?>) {
+    throw const FormatException('Invalid release package inventory.');
+  }
   final manifest = jsonDecode(
     await File('${root.path}/tool/skill_coverage.json').readAsString(),
   );
-  if (manifest is! Map<String, Object?> || manifest['schemaVersion'] != 1) {
+  if (manifest is! Map<String, Object?> || manifest['schemaVersion'] != 2) {
     stderr.writeln('Invalid skill coverage manifest.');
     exitCode = 1;
     return;
@@ -62,6 +68,24 @@ Future<void> main() async {
       'Managed skills differ: expected ${_expectedSkills.toList()..sort()}, '
       'found ${skillNames.toList()..sort()}.',
     );
+    exitCode = 1;
+  }
+
+  final designPackages = manifest['designPackages'];
+  if (designPackages is! List<Object?> ||
+      designPackages.any((item) => item is! String) ||
+      !_sameStrings(
+        designPackages.whereType<String>().toSet(),
+        releasePackages.keys.toSet(),
+      )) {
+    stderr.writeln('Design package matrix must cover all 25 release packages.');
+    exitCode = 1;
+  }
+
+  final rawReferenceRequirements = manifest['referenceRequirements'];
+  if (rawReferenceRequirements is! Map<String, Object?> ||
+      !_sameStrings(rawReferenceRequirements.keys.toSet(), _expectedSkills)) {
+    stderr.writeln('Reference requirements must cover all managed skills.');
     exitCode = 1;
   }
 
@@ -86,6 +110,24 @@ Future<void> main() async {
     }
   }
 
+  final desiredSkills = buildDartitectManagedSkillFiles();
+  final referenceRequirements = rawReferenceRequirements is Map<String, Object?>
+      ? rawReferenceRequirements
+      : const <String, Object?>{};
+  final selectionMatrix =
+      desiredSkills['dartitect-design']?['references/selection-matrix.md'] ??
+      '';
+  final packagesMissingFromDesign =
+      releasePackages.keys
+          .where((name) => !selectionMatrix.contains('`$name`'))
+          .toList()
+        ..sort();
+  if (packagesMissingFromDesign.isNotEmpty) {
+    stderr.writeln(
+      'Design selection matrix omits: ${packagesMissingFromDesign.join(', ')}.',
+    );
+    exitCode = 1;
+  }
   final covered = <String>{};
   for (final entry in rawSkills.entries) {
     final skill = Directory('${root.path}/.agents/skills/${entry.key}');
@@ -112,14 +154,29 @@ Future<void> main() async {
       stderr.writeln('Invalid SKILL.md router for ${entry.key}.');
       exitCode = 1;
     }
-    if (!metadataSource.contains('display_name: "Dartitect ') ||
-        !metadataSource.contains('short_description: "') ||
-        !metadataSource.contains('default_prompt: "Use \$${entry.key} ') ||
-        !metadataSource.contains('allow_implicit_invocation: true')) {
+    final displayName = _quotedYamlValue(metadataSource, 'display_name');
+    final shortDescription = _quotedYamlValue(
+      metadataSource,
+      'short_description',
+    );
+    final defaultPrompt = _quotedYamlValue(metadataSource, 'default_prompt');
+    if (displayName == null ||
+        !displayName.startsWith('Dartitect ') ||
+        shortDescription == null ||
+        shortDescription.length < 25 ||
+        shortDescription.length > 64 ||
+        defaultPrompt == null ||
+        !defaultPrompt.startsWith('Use \$${entry.key} ') ||
+        RegExp(
+              r'^policy:\n  allow_implicit_invocation: true$',
+              multiLine: true,
+            ).allMatches(metadataSource).length !=
+            1) {
       stderr.writeln('Invalid Codex metadata for ${entry.key}.');
       exitCode = 1;
     }
     final managedManifest = jsonDecode(await manifestFile.readAsString());
+    String? recordedHash;
     if (managedManifest is! Map<String, Object?> ||
         managedManifest['schemaVersion'] != 1 ||
         managedManifest['sdkVersion'] != cohort ||
@@ -127,6 +184,49 @@ Future<void> main() async {
         !RegExp(r'^[0-9a-f]{8}$')
             .hasMatch(managedManifest['contentHash']! as String)) {
       stderr.writeln('Invalid managed-skill manifest for ${entry.key}.');
+      exitCode = 1;
+    } else {
+      recordedHash = managedManifest['contentHash']! as String;
+    }
+
+    final actualSkillFiles = await _skillFiles(skill);
+    final desiredSkillFiles = desiredSkills[entry.key];
+    if (desiredSkillFiles == null ||
+        !_sameStrings(
+          actualSkillFiles.keys.toSet(),
+          desiredSkillFiles.keys.toSet(),
+        ) ||
+        desiredSkillFiles.entries.any(
+          (file) => actualSkillFiles[file.key] != file.value,
+        )) {
+      stderr.writeln(
+        'Managed skill snapshot diverges from canonical catalog: ${entry.key}.',
+      );
+      exitCode = 1;
+    }
+    final actualHash = _hashFiles(actualSkillFiles);
+    if (recordedHash != null && recordedHash != actualHash) {
+      stderr.writeln('Stale managed-skill content hash for ${entry.key}.');
+      exitCode = 1;
+    }
+
+    final declaredReferences = referenceRequirements[entry.key];
+    final declaredReferenceSet =
+        declaredReferences is List<Object?> &&
+            declaredReferences.every((item) => item is String)
+        ? declaredReferences.cast<String>().toSet()
+        : <String>{};
+    final actualReferenceSet = actualSkillFiles.keys
+        .where((path) => path.startsWith('references/') && path.endsWith('.md'))
+        .toSet();
+    final linkedReferenceSet = RegExp(
+      r'\[[^\]]+\]\((references/[^)#]+\.md)(?:#[^)]+)?\)',
+    ).allMatches(entrypointSource).map((match) => match.group(1)!).toSet();
+    if (!_sameStrings(declaredReferenceSet, actualReferenceSet) ||
+        !_sameStrings(declaredReferenceSet, linkedReferenceSet)) {
+      stderr.writeln(
+        'Skill references are not fully declared and linked for ${entry.key}.',
+      );
       exitCode = 1;
     }
     final files = entry.value;
@@ -138,6 +238,15 @@ Future<void> main() async {
       continue;
     }
     covered.addAll(files.cast<String>());
+  }
+
+  if (arguments.contains('--skills-only')) {
+    if (exitCode == 0) {
+      stdout.writeln(
+        'Managed skill contract passed for ${rawSkills.length} skills.',
+      );
+    }
+    return;
   }
 
   final discovered = <String>{'tool/setup_objectbox_vm.dart'};
@@ -174,3 +283,52 @@ Future<void> main() async {
 
 bool _sameStrings(Set<String> left, Set<String> right) =>
     left.length == right.length && left.containsAll(right);
+
+Directory _root(List<String> arguments) {
+  final remaining = arguments
+      .where((argument) => argument != '--skills-only')
+      .toList();
+  if (remaining.isEmpty) {
+    return File.fromUri(Platform.script).parent.parent.absolute;
+  }
+  if (remaining.length == 2 && remaining.first == '--root') {
+    return Directory(remaining[1]).absolute;
+  }
+  throw const FormatException(
+    'Usage: dart run tool/check_skill_coverage.dart [--root PATH] [--skills-only]',
+  );
+}
+
+String? _quotedYamlValue(String source, String field) => RegExp(
+  '^  ${RegExp.escape(field)}: "([^"]*)"\$',
+  multiLine: true,
+).firstMatch(source)?.group(1);
+
+Future<Map<String, String>> _skillFiles(Directory skill) async {
+  final files = <String, String>{};
+  await for (final entity in skill.list(recursive: true, followLinks: false)) {
+    if (entity is! File || _basename(entity.path) == '.dartitect-skill.json') {
+      continue;
+    }
+    final relative = entity.path
+        .substring(skill.path.length + 1)
+        .replaceAll(Platform.pathSeparator, '/');
+    files[relative] = await entity.readAsString();
+  }
+  return files;
+}
+
+String _hashFiles(Map<String, String> files) {
+  final keys = files.keys.toList()..sort();
+  var hash = 0x811c9dc5;
+  for (final byte in utf8.encode(
+    keys.map((key) => '$key\u0000${files[key]}').join('\u0000'),
+  )) {
+    hash ^= byte;
+    hash = (hash * 0x01000193) & 0xffffffff;
+  }
+  return hash.toRadixString(16).padLeft(8, '0');
+}
+
+String _basename(String path) =>
+    path.split(Platform.pathSeparator).where((part) => part.isNotEmpty).last;

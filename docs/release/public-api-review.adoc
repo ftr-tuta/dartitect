@@ -3,6 +3,7 @@
 Review date:: 2026-08-31
 Reviewed version:: `1.0.0`, promoted from the RC10 API baseline without additions or removals
 Snapshot gate:: `dart run tool/check_api_snapshot.dart`
+Document status:: Historical evidence for the released `v1.0.0` API
 
 == Result
 
@@ -128,7 +129,7 @@ returns typed not-supported outside iOS.
 access, cancellation, failure outcomes, and cleanup for its sole owned metadata.
 
 | `package:dartitect_mcp/dartitect_mcp.dart`
-| Local STDIO tooling on the RC10 release-candidate baseline; no HTTP/OAuth, app
+| Local STDIO tooling on the stable `1.0.0` baseline; no HTTP/OAuth, app
 runtime, arbitrary filesystem, or private-plan access.
 
 | `package:dartitect_objectbox/dartitect_objectbox.dart`
@@ -170,7 +171,7 @@ entrypoint remains thin; advanced reactive APIs require a deliberate import and
 Material remains consumer-owned. No public Dartitect API retains an
 experimental marker.
 
-The RC10 diff makes config-v3 semantic factories and concrete application,
+The final pre-release diff made config-v3 semantic factories and concrete application,
 session, feature runtime/host, and harness outputs the paved road. It adds
 typed OpenAPI operation selection, schema-2 consumer tax, fleet
 inventory/impact, confined blueprints, 12-scenario change tax, and a mandatory
@@ -187,6 +188,7 @@ deprecated, or breaking and checked against the declared version.
 
 == Decision
 
-The API surface is suitable for the current release-candidate line and a
-controlled pre-release use. Final RC readiness requires `CI / Required` and the
-unaltered `actions-readiness-v1` artifact for the final candidate SHA.
+The API surface was accepted for stable `1.0.0`. The required
+`CI / Required` result and unaltered `actions-readiness-v1` artifact were
+completed before annotated tag `v1.0.0` and the immutable GitHub Release were
+created.

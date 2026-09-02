@@ -1,41 +1,45 @@
-= Dartitect 1.0 Git candidate implementation status
+= Dartitect 1.0 implementation and release status
 :toc:
 
-Snapshot:: 2026-08-31
-Release status:: *ACTIONS READINESS PENDING*
+Snapshot:: 2026-09-01
+Release status:: *RELEASED*
+Release tag:: `v1.0.0`
+Release source:: `747e3f17cc20c0afd13d5702c17ddc5d7330f00c`
+Distribution:: Immutable GitHub Release; Git dependencies only
 Feature policy:: *FEATURE FREEZE*
 Toolchain floor:: Dart 3.13 / Flutter 3.47.1 stable
 Target topology:: 25 packages / 32 public entrypoints
 
-`tool/goal_gates.json` is the machine-readable roadmap authority. GitHub
-Actions is the only technical evidence authority. Local commands are optional
-feedback and cannot declare an RC or stable candidate ready.
+`tool/goal_gates.json` preserves the implementation roadmap state recorded
+before publication; its `IN_PROGRESS` fields are historical and are not the
+current release status. GitHub Actions supplied the formal technical evidence.
+Local commands remain development feedback and do not authorize a release.
 
 [cols="1,2,5",options="header"]
 |===
 | Goals | State | Evidence
 
 | V1S-00–V1S-03
-| IMPLEMENTED_LOCAL
+| COMPLETED
 | Roadmap, privacy/consumer-neutrality, ecosystem, generator recovery, media,
 geometry, Drift, modular modeling/compiler, and public API guards are
 implemented for the twenty-five-package topology.
 
 | V1S-04
-| IN_PROGRESS
+| COMPLETED
 | Pull requests, merge queue candidates, and `main` run the coordinated CI
-graph. Branch protection requires only `CI / Required`; OSV is inside that graph.
+graph. The release source passed `CI / Required`; OSV is inside that graph.
 The required graph also includes native Drift on all desktop hosts and a real
 two-page Chrome Web job with portable and isolated header profiles.
 
 | V1S-05–V1S-12
-| IMPLEMENTED_LOCAL
+| COMPLETED
 | Lifecycle, reactive, model, capability, release, runtime, persistence, race,
 benchmark, clean-clone, and canary gates are implemented.
 The provider canary owns its Drift schema and exercises transaction/checkpoint
 ports; the offline-first canary opens Drift and ObjectBox in separate bounded
 contexts without dual-write.
-The RC10 real vertical Task and thin-consumer canaries cover config-v3 factories,
+The stable vertical Task and thin-consumer canaries cover config-v3 factories,
 concrete graphs/hosts, credential generations, durable operational contexts,
 explicit sync triggers, OpenAPI operation selection, schema-2 consumer tax,
 semantic API compatibility, and observed runtime evidence with zero residual
@@ -43,29 +47,29 @@ resources. The large consumer adds 30 features across all five profiles and
 both scopes, Web/Linux builds, fleet migration, and zero residual resources.
 
 | V1S-13
-| IN_PROGRESS
+| COMPLETED
 | Schema v3 defines exactly five cells: Android API 24 build, Android API 34
 hosted emulator, iOS 14 build, iOS 12 build, and the current hosted iOS
 simulator. Every manifest binds SHA, tree, run ID, attempt, and hosted runner.
 
 | V1S-14–V1S-17
-| IN_PROGRESS
-| A successful push to `main` produces one `actions-readiness-v1` artifact for
-90 days with job conclusions and artifact hashes. RC validation consumes the
-same nominal five native cells.
+| COMPLETED
+| The release-source push to `main` produced the required
+`actions-readiness-v1` evidence with job conclusions and artifact hashes. The
+stable validation consumed the same nominal five native cells.
 
 | V1S-18
-| IMPLEMENTED_LOCAL
+| COMPLETED
 | `ui-quality-v1` validates the business-neutral responsive API, exhaustive
 borrowed builders, paired five-row UI matrix, CLI/analyzer parity, managed
 skill, Material 3 scaffold, synthetic accessibility canary, three shared-layout
 goldens, and hosted Android/iOS/Web/Linux/Windows/macOS build cells.
 
 | V1-18
-| IN_PROGRESS
-| Manual publication accepts `source_sha`, `ci_run_id`, and `channel`, verifies
-the successful main run and readiness hashes, records the actor, then performs
-only the selected tag, GitHub Release, or pub.dev action.
+| COMPLETED
+| The manual GitHub-only publication verified the successful `main` run and
+readiness hashes, created annotated tag `v1.0.0`, and published the immutable
+GitHub Release. No registry publication occurred.
 |===
 
 == Hosted-only invariant
@@ -83,6 +87,7 @@ simulator availability failure makes `CI / Required` fail.
 * dependency-free core and isolated optional capabilities;
 * fresh graph construction and reverse teardown in every isolate.
 
-Stable `1.0.0` promotion now requires the machine-readable `ui-quality-v1`
-evidence together with the existing Actions-readiness artifact. Publication
-remains a separate manual action and is outside this source delivery.
+Stable `1.0.0` promotion completed with the machine-readable `ui-quality-v1`
+and Actions-readiness evidence. Future documentation and skill corrections stay
+under the uniform `Unreleased` changelog section. They do not authorize a
+`1.0.1` release, tag, or publication workflow.

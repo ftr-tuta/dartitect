@@ -52,6 +52,23 @@ injection. Record owned versus borrowed values. Dispose bindings/commands,
 watchers/queries, clients/Stores, then observability resources. Provider objects
 owned by the consumer close afterward.
 
+The normal generated application entrypoint delegates ownership to the concrete
+config-v3 graph:
+
+```dart
+void main() => runDartitectApplication<ApplicationGraph>(
+  create: ApplicationModule.create,
+  application: (graph) => OrdersApp(graph: graph),
+);
+```
+
+At a route boundary, provide the generated `<Feature>FeatureHost` with its typed
+factory and exhaustive loading, failure, and ready builders. The host starts and
+closes the ViewModel, fences late work, and closes the feature graph after the
+ViewModel. Generated hosts do not choose Material, text, layout, navigation,
+color, or style. Use the [composition guide](composition-lifecycle-isolates.md)
+for manual low-level ownership primitives.
+
 ## Validate
 
 ```console

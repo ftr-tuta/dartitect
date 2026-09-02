@@ -1,6 +1,6 @@
 interface:
   display_name: "Dartitect Adapters"
-  short_description: "Integrate explicit provider boundaries"
+  short_description: "Wire provider SDKs at infrastructure composition"
   default_prompt: "Use $dartitect-adapters to integrate a Dartitect provider safely."
 policy:
   allow_implicit_invocation: true
