@@ -80,6 +80,20 @@ void main() {
     expect(result.exitCode, 1);
     expect(result.stderr, contains('Invalid Codex metadata'));
   });
+
+  test('requires the consumer-owned repository contribution skill', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+    await fixture.file('repository-contribution/SKILL.md').delete();
+
+    final result = await fixture.check();
+
+    expect(result.exitCode, 1);
+    expect(
+      result.stderr,
+      contains('Invalid consumer-owned repository-contribution skill'),
+    );
+  });
 }
 
 final class _Fixture {

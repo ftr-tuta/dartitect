@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dartitect/dartitect.dart';
 import 'package:flutter/foundation.dart';
 
+import 'listener_registry.dart';
 import 'resource_lifecycle.dart';
 
 /// Explicit projection strategy for one [LiveCollection.update] cycle.
@@ -118,7 +119,7 @@ final class LiveItem<K, T> implements ValueListenable<T?> {
   LiveItem._(this.key, this._onListenerChanged);
 
   final VoidCallback _onListenerChanged;
-  final List<VoidCallback> _listeners = <VoidCallback>[];
+  final ListenerRegistry _listeners = ListenerRegistry();
   T? _value;
   var _present = false;
   var _attached = true;
@@ -148,8 +149,7 @@ final class LiveItem<K, T> implements ValueListenable<T?> {
 
   @override
   void removeListener(VoidCallback listener) {
-    final index = _listeners.indexOf(listener);
-    if (index >= 0) _listeners.removeAt(index);
+    _listeners.remove(listener);
     if (_attached) _onListenerChanged();
   }
 
@@ -161,15 +161,7 @@ final class LiveItem<K, T> implements ValueListenable<T?> {
   }
 
   void _notify() {
-    final snapshot = List<VoidCallback>.of(_listeners);
-    for (final listener in snapshot) {
-      if (!_attached || !_listeners.contains(listener)) continue;
-      try {
-        listener();
-      } catch (_) {
-        continue;
-      }
-    }
+    _listeners.notifySafely(shouldContinue: () => _attached);
   }
 
   void _detach() {
@@ -693,7 +685,7 @@ final class _CollectionSourceItem<K, S> {
 final class _CollectionValue<V> implements ValueListenable<V> {
   _CollectionValue(this._value);
 
-  final List<VoidCallback> _listeners = <VoidCallback>[];
+  final ListenerRegistry _listeners = ListenerRegistry();
   V _value;
   var _disposed = false;
 
@@ -708,22 +700,13 @@ final class _CollectionValue<V> implements ValueListenable<V> {
 
   @override
   void removeListener(VoidCallback listener) {
-    final index = _listeners.indexOf(listener);
-    if (index >= 0) _listeners.removeAt(index);
+    _listeners.remove(listener);
   }
 
   void _stage(V value) => _value = value;
 
   void _notify() {
-    final snapshot = List<VoidCallback>.of(_listeners);
-    for (final listener in snapshot) {
-      if (_disposed || !_listeners.contains(listener)) continue;
-      try {
-        listener();
-      } catch (_) {
-        continue;
-      }
-    }
+    _listeners.notifySafely(shouldContinue: () => !_disposed);
   }
 
   void dispose() {

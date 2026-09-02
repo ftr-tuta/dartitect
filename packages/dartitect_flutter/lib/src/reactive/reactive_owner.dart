@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:dartitect/dartitect.dart';
 import 'package:flutter/foundation.dart';
 
+import 'listener_registry.dart';
 import 'live_resource.dart';
 
 /// Equality used to suppress unchanged reactive publication.
@@ -134,8 +136,7 @@ sealed class ReactiveNode<T> extends _ReactiveNodeBase
 
   @override
   void removeListener(VoidCallback listener) {
-    final index = listeners.indexOf(listener);
-    if (index >= 0) listeners.removeAt(index);
+    listeners.remove(listener);
   }
 
   @override
@@ -240,7 +241,7 @@ final class ReactiveLazyComputed<T> implements ValueListenable<T> {
   T Function(ReactiveLazyRead read) _compute;
   final List<ValueListenable<Object?>> _dependencies =
       <ValueListenable<Object?>>[];
-  final List<VoidCallback> _listeners = <VoidCallback>[];
+  final ListenerRegistry _listeners = ListenerRegistry();
   Object? _stableValue;
   var _hasValue = false;
   var _dirty = true;
@@ -409,16 +410,10 @@ final class ReactiveLazyComputed<T> implements ValueListenable<T> {
   }
 
   void _notifyListeners() {
-    final snapshot = List<VoidCallback>.of(_listeners);
-    for (final listener in snapshot) {
-      if (_disposed || _owner.isDisposed) break;
-      if (!_listeners.contains(listener)) continue;
-      try {
-        listener();
-      } catch (error, stackTrace) {
-        _owner._report(error, stackTrace);
-      }
-    }
+    _listeners.notifySafely(
+      shouldContinue: () => !_disposed && !_owner.isDisposed,
+      onFailure: _owner._report,
+    );
   }
 
   void _detachDependencies() {
@@ -1051,29 +1046,37 @@ final class ReactiveOwner {
 
   List<ReactiveComputed<Object?>> _topologicalComputeds() {
     final computeds = _nodes.whereType<ReactiveComputed<Object?>>().toList();
-    final indegree = <ReactiveComputed<Object?>, int>{
-      for (final node in computeds)
-        node: node._dependencies.whereType<ReactiveComputed<Object?>>().length,
-    };
-    final ready = computeds.where((node) => indegree[node] == 0).toList()
-      ..sort((left, right) => left.ordinal.compareTo(right.ordinal));
+    final indegree = <ReactiveComputed<Object?>, int>{};
+    final dependents =
+        <ReactiveComputed<Object?>, List<ReactiveComputed<Object?>>>{};
+    for (final node in computeds) {
+      var dependencyCount = 0;
+      for (final dependency
+          in node._dependencies.whereType<ReactiveComputed<Object?>>()) {
+        dependencyCount += 1;
+        (dependents[dependency] ??= <ReactiveComputed<Object?>>[]).add(node);
+      }
+      indegree[node] = dependencyCount;
+    }
+    final ready = SplayTreeSet<ReactiveComputed<Object?>>(
+      (left, right) => left.ordinal.compareTo(right.ordinal),
+    )..addAll(computeds.where((node) => indegree[node] == 0));
     final result = <ReactiveComputed<Object?>>[];
     while (ready.isNotEmpty) {
-      final node = ready.removeAt(0);
+      final node = ready.first;
+      ready.remove(node);
       result.add(node);
-      for (final candidate in computeds) {
-        if (!candidate._dependencies.contains(node)) continue;
+      for (final candidate
+          in dependents[node] ?? const <ReactiveComputed<Object?>>[]) {
         final next = indegree[candidate]! - 1;
         indegree[candidate] = next;
-        if (next == 0) {
-          ready.add(candidate);
-          ready.sort((left, right) => left.ordinal.compareTo(right.ordinal));
-        }
+        if (next == 0) ready.add(candidate);
       }
     }
     if (result.length != computeds.length) {
+      final ordered = result.toSet();
       final cyclic = computeds
-          .where((node) => !result.contains(node))
+          .where((node) => !ordered.contains(node))
           .map((node) => node.key.name)
           .toList(growable: false);
       throw ReactiveCycleException(cyclic);
@@ -1126,22 +1129,18 @@ base class _ReactiveNodeBase {
   Object? stableValue;
   int nodeRevision = 0;
   DartitectDiagnosticSubject? diagnostics;
-  final List<VoidCallback> listeners = <VoidCallback>[];
+  final ListenerRegistry listeners = ListenerRegistry();
 
   bool valuesEqual(Object? previous, Object? next) => previous == next;
 
   List<_NotificationFailure> notifyListenersSafely() {
     final failures = <_NotificationFailure>[];
-    final snapshot = List<VoidCallback>.of(listeners);
-    for (final listener in snapshot) {
-      if (owner.isDisposed) break;
-      if (!listeners.contains(listener)) continue;
-      try {
-        listener();
-      } catch (error, stackTrace) {
+    listeners.notifySafely(
+      shouldContinue: () => !owner.isDisposed,
+      onFailure: (error, stackTrace) {
         failures.add(_NotificationFailure(error, stackTrace));
-      }
-    }
+      },
+    );
     return failures;
   }
 }

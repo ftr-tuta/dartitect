@@ -16,6 +16,17 @@ void main() {
       () => ObservabilityDataClass.custom('Customer Email'),
       throwsArgumentError,
     );
+    expect(
+      () => ObservabilityDataClass.custom(
+        'a.${List<String>.filled(119, 'b').join()}',
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () =>
+          ObservabilityDataClass.custom(List<String>.filled(17, 'a').join('.')),
+      throwsArgumentError,
+    );
   });
 
   test('leaf rules search ancestors before decisions combine', () {
@@ -45,6 +56,32 @@ void main() {
     expect(allowed.source, ObservabilityPrivacyDecisionSource.globalOverride);
     expect(denied.action, ObservabilityPrivacyAction.deny);
     expect(denied.winningClass, ObservabilityDataClass.accessToken);
+  });
+
+  test('winner selection is independent of input iteration order', () {
+    final policy = ObservabilityPrivacyPolicy.fromProfile(
+      profile: ObservabilityPrivacyProfile.diagnostic,
+    );
+    final forward = policy.explain(
+      destination: ObservabilityDestinationKind.local,
+      classes: <ObservabilityDataClass>{
+        ObservabilityDataClass.safeMetadata,
+        ObservabilityDataClass.email,
+        ObservabilityDataClass.token,
+      },
+    );
+    final reverse = policy.explain(
+      destination: ObservabilityDestinationKind.local,
+      classes: <ObservabilityDataClass>{
+        ObservabilityDataClass.token,
+        ObservabilityDataClass.email,
+        ObservabilityDataClass.safeMetadata,
+      },
+    );
+
+    expect(reverse.action, forward.action);
+    expect(reverse.winningClass, forward.winningClass);
+    expect(reverse.source, forward.source);
   });
 
   test('named, destination, global, and profile precedence is explicit', () {

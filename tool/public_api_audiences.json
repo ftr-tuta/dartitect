@@ -10,6 +10,7 @@
       }
     },
     "packages/dartitect/lib/dartitect_credentials.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect/lib/dartitect_incremental.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_cli/lib/dartitect_cli.dart": {"defaultAudience": "tooling-test"},
     "packages/dartitect_cli/lib/dartitect_contracts.dart": {"defaultAudience": "tooling-test"},
     "packages/dartitect_devtools/lib/dartitect_devtools.dart": {"defaultAudience": "tooling-test"},
@@ -17,6 +18,7 @@
     "packages/dartitect_drift/lib/dartitect_drift.dart": {"defaultAudience": "adapter-author"},
     "packages/dartitect_flutter/lib/dartitect_flutter.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_flutter/lib/dartitect_flutter_forms.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_flutter/lib/dartitect_flutter_incremental.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_flutter/lib/dartitect_flutter_queries.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_flutter/lib/dartitect_flutter_ui.dart": {"defaultAudience": "application-facing"},

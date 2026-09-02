@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:dart_mcp/server.dart';
+import 'package:dartitect/dartitect.dart' show CancellationSource;
 import 'package:dartitect_cli/dartitect_cli.dart';
 
 import 'catalog/generated_catalog.dart';
@@ -77,11 +78,8 @@ base class DartitectMcpServer extends MCPServer
           'limit': Schema.int(minimum: 1, maximum: policy.maxResultLimit),
         },
       ),
-      handler: (arguments) async {
-        final root = await _resolveProject(arguments);
-        final report = await DartitectProjectService(root).scanArchitecture();
-        return _ok(_paginateReport(report, arguments));
-      },
+      handler: (arguments) => _scanArchitecture(arguments, null),
+      progressHandler: _scanArchitecture,
     );
     _registerReadTool(
       name: 'dartitect_doctor_project',
@@ -230,6 +228,8 @@ base class DartitectMcpServer extends MCPServer
     required String description,
     required ObjectSchema schema,
     required FutureOr<CallToolResult> Function(Map<String, Object?>) handler,
+    FutureOr<CallToolResult> Function(Map<String, Object?>, ProgressToken?)?
+    progressHandler,
   }) {
     _register(
       Tool(
@@ -246,6 +246,7 @@ base class DartitectMcpServer extends MCPServer
       ),
       schema,
       handler,
+      progressHandler: progressHandler,
     );
   }
 
@@ -329,8 +330,10 @@ base class DartitectMcpServer extends MCPServer
   void _register(
     Tool tool,
     ObjectSchema schema,
-    FutureOr<CallToolResult> Function(Map<String, Object?>) handler,
-  ) {
+    FutureOr<CallToolResult> Function(Map<String, Object?>) handler, {
+    FutureOr<CallToolResult> Function(Map<String, Object?>, ProgressToken?)?
+    progressHandler,
+  }) {
     registerTool(tool, (request) async {
       final arguments = request.arguments ?? const <String, Object?>{};
       final validation = schema.validate(arguments);
@@ -341,7 +344,10 @@ base class DartitectMcpServer extends MCPServer
         );
       }
       try {
-        return await Future<CallToolResult>.value(handler(arguments))
+        final operation = progressHandler == null
+            ? handler(arguments)
+            : progressHandler(arguments, request.meta?.progressToken);
+        return await Future<CallToolResult>.value(operation)
             .timeout(policy.operationTimeout);
       } on DartitectMcpException catch (error) {
         _diagnosticSink.writeln(
@@ -655,6 +661,67 @@ base class DartitectMcpServer extends MCPServer
       },
       'exitCode': report.exitCode,
     };
+  }
+
+  Future<CallToolResult> _scanArchitecture(
+    Map<String, Object?> arguments,
+    ProgressToken? progressToken,
+  ) async {
+    final cancellation = CancellationSource();
+    final timeoutMicros = policy.operationTimeout.inMicroseconds;
+    final leadMicros = (timeoutMicros ~/ 10).clamp(1, 50000);
+    final cancellationDelay = Duration(
+      microseconds: timeoutMicros - leadMicros,
+    );
+    var timedOut = false;
+    var progressEnabled = progressToken != null;
+    final timer = Timer(cancellationDelay, () {
+      timedOut = true;
+      progressEnabled = false;
+      cancellation.cancel('MCP scan operation timed out.');
+    });
+
+    try {
+      final root = await _resolveProject(arguments);
+      ProjectScan? completed;
+      await for (final event in ProjectScanner(
+        root,
+      ).scanEvents(cancellation: cancellation.signal)) {
+        switch (event) {
+          case ProjectScanFileAnalyzed(:final index, :final total):
+            if (progressEnabled) {
+              notifyProgress(
+                ProgressNotification(
+                  progressToken: progressToken!,
+                  progress: index,
+                  total: total,
+                ),
+              );
+            }
+          case ProjectScanCompleted(:final scan):
+            progressEnabled = false;
+            completed = scan;
+          case ProjectScanCancelled():
+            progressEnabled = false;
+          case ProjectScanStarted() ||
+              ProjectScanFileDiscovered() ||
+              ProjectScanFinding():
+            break;
+        }
+      }
+      if (timedOut) throw TimeoutException('MCP scan operation timed out.');
+      final scan = completed;
+      if (scan == null) {
+        throw StateError('Project scan ended without a terminal event.');
+      }
+      final report = await DartitectProjectService(root)
+          .scanArchitectureFrom(scan);
+      return _ok(_paginateReport(report, arguments));
+    } finally {
+      progressEnabled = false;
+      timer.cancel();
+      cancellation.dispose();
+    }
   }
 
   Future<CallToolResult> _explainFeatureGraph(

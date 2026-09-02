@@ -44,6 +44,10 @@ Future<void> main(List<String> arguments) async {
       'run',
       'tool/check_benchmark_artifacts.dart',
     ]),
+    const _Command('dart', <String>[
+      'run',
+      'tool/check_incremental_benchmark.dart',
+    ]),
     const _Command('dart', <String>['run', 'tool/check_model_benchmark.dart']),
     const _Command('dart', <String>['run', 'tool/check_source_ledger.dart']),
     const _Command('dart', <String>[

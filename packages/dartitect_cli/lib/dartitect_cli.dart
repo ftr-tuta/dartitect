@@ -18,6 +18,7 @@ export 'src/generation/generation_engine.dart';
 export 'src/generation/scaffolds.dart';
 export 'src/generation/wiring_service.dart';
 export 'src/inspect/consumer_tax.dart';
+export 'src/inspect/execution_model.dart';
 export 'src/model/model_generator.dart';
 export 'src/policy/ecosystem_policy.dart';
 export 'src/project/dartitect_project_service.dart';

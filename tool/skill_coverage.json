@@ -155,6 +155,26 @@
     ],
     "dartitect-mcp": [
       "packages/dartitect_mcp/lib/dartitect_mcp.dart"
+    ],
+    "dartitect-dart": [
+      "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect/lib/dartitect_incremental.dart",
+      "packages/dartitect_isolates/lib/dartitect_isolates.dart"
+    ],
+    "dartitect-incremental": [
+      "packages/dartitect/lib/dartitect_incremental.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter_incremental.dart",
+      "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_isolates/lib/dartitect_isolates.dart"
+    ],
+    "dartitect-performance": [
+      "packages/dartitect/lib/dartitect.dart",
+      "packages/dartitect/lib/dartitect_incremental.dart",
+      "packages/dartitect_flutter/lib/dartitect_flutter_incremental.dart",
+      "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_isolates/lib/dartitect_isolates.dart",
+      "packages/dartitect_observability/lib/dartitect_observability.dart",
+      "packages/dartitect_cli/lib/dartitect_cli.dart"
     ]
   },
   "referenceRequirements": {
@@ -215,6 +235,18 @@
     "dartitect-mcp": [
       "references/reviewed-writes.md",
       "references/setup-and-surface.md"
+    ],
+    "dartitect-dart": [
+      "references/isolate-data.md",
+      "references/streams-and-cancellation.md"
+    ],
+    "dartitect-incremental": [
+      "references/flutter-sync-and-pools.md",
+      "references/operations.md"
+    ],
+    "dartitect-performance": [
+      "references/hot-paths.md",
+      "references/measurement.md"
     ]
   },
   "routingScenarios": {
@@ -229,6 +261,9 @@
     "cliAndLints": ["dartitect-tooling"],
     "localMcp": ["dartitect-mcp"],
     "immutableModels": ["dartitect-modeling"],
-    "flutterPresentation": ["dartitect-ui"]
+    "flutterPresentation": ["dartitect-ui"],
+    "dartRuntimeSemantics": ["dartitect-dart"],
+    "incrementalOperations": ["dartitect-incremental"],
+    "runtimePerformance": ["dartitect-performance"]
   }
 }

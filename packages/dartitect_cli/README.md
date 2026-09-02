@@ -44,6 +44,8 @@ rule and preserves consumer-owned skills and an existing `AGENTS.md`.
 dartitect inspect --json
 dartitect inspect --consumer-tax --json
 dartitect scan
+dartitect scan --jsonl
+dartitect inspect execution-model --json
 dartitect doctor
 dartitect contracts check api/openapi.yaml --json
 dartitect contracts sync api/openapi.yaml --dry-run
@@ -62,6 +64,12 @@ document their own `--dry-run`/apply form in `example/README.md`.
   size, and profile ratchets without writing the project.
 - `ProjectScanner`, `DartitectFinding`, `DartitectRuleCodes`, source
   classification, and SARIF/report types expose architecture results.
+- `ProjectScanner.scanEvents` emits deterministic started, discovered,
+  analyzed, finding, completed, and cancelled events with bounded analysis;
+  `ProjectSourceIndex` caches only immutable content/configuration facts.
+- Execution-model inspection exposes non-blocking DT2200-DT2211 diagnostics;
+  JSON Lines scanning is mutually exclusive with JSON/SARIF and maps SIGINT to
+  a terminal cancelled event and exit code 130.
 - `DartitectConfig`, the v1→v2→v3 migration chain, and
   `nativeStrictProfile` define strict config v3 and architecture defaults.
 - `DartitectSemanticFactoryCompiler` resolves concrete factory annotations,
@@ -86,7 +94,7 @@ document their own `--dry-run`/apply form in `example/README.md`.
 - `DartitectFleetCanaryService` is a separate opt-in boundary that archives an
   exact candidate commit, runs a closed command allowlist only in a temporary
   consumer copy, sanitizes receipts, and verifies both originals are unchanged.
-- `CodexSkillSynchronizer` synchronizes twelve canonical managed templates while
+- `CodexSkillSynchronizer` synchronizes every canonical catalog template while
   preserving consumer-owned skill directories.
 - `DartitectVerificationService` and `DartitectCliRunner` map services to stable
   JSON and exit codes.
@@ -154,7 +162,9 @@ bounded local agent interface. Read
 [project-local extensions](../../docs/guides/project-local-extensions.md),
 [consumer tax](../../docs/guides/consumer-tax.md),
 [fleet tooling](../../docs/guides/fleet-tooling.md), and
-[MCP](../../docs/guides/mcp.md).
+[MCP](../../docs/guides/mcp.md). Progressive scanning is demonstrated in the
+[incremental operations guide](../../docs/guides/incremental-operations.md) and
+[scanner example](example/progressive_scan_example.dart).
 
 ## Availability
 

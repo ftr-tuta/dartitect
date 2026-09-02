@@ -44,7 +44,8 @@ Choose one mechanism for each concern:
    eligible dataset, runs prerequisites first, lets the dataset atomically apply
    remote data locally, and only then writes the new checkpoint. An optional
    journal records payload-free run facts; an optional lease supplies fencing
-   authority.
+   authority. An incremental dataset confirms each successful step before it
+   asks its cold producer for the next one.
 3. A `HeadlessSyncEndpoint` adapts a versioned sync definition through
    `dartitect_jobs`, deduplicates a bounded request set, acknowledges
    acceptance, creates one fresh `OwnedGraph`, and produces a terminal
@@ -150,10 +151,16 @@ Dataset synchronization:
 
 - `SyncDependencyGraph` rejects missing keys, duplicates, self-edges, and cycles,
   then produces a stable `SyncPlan`.
-- `SyncDataset` and `SyncDatasetContext` provide checkpoint, cancellation,
+- `SyncDataset`, `SyncDataset.incremental`, and `SyncDatasetContext` provide
+  one-shot or cold incremental execution with checkpoint, cancellation,
   deadline, run ID, and optional `SyncAuthority` to consumer code.
 - `SyncEngine.start` returns a single-use `SyncRun` with bounded progress and a
   terminal `SyncReport`.
+- `SyncExecutionPolicy.sequential()` remains the default;
+  `boundedParallel(maxConcurrent)` runs only dependency-independent ready nodes
+  while reports retain declared topological order.
+- `SyncRun.checkpointProgress` reports confirmed step counts without extending
+  the exhaustive `SyncProgressPhase` enum.
 - `SyncCheckpointStore` persists opaque consumer checkpoints.
 - `SyncLeaseStore`/`SyncLease` provide mutual exclusion, renewal, expiry, and a
   monotonic fencing token.
@@ -276,6 +283,9 @@ worker; and `dartitect_flutter` for local-authority presentation. Read
 [implementation recipes](../../docs/guides/implementation-recipes.md),
 [commands/results/effects](../../docs/guides/commands-results-effects.md), and
 [composition/lifecycle/isolates](../../docs/guides/composition-lifecycle-isolates.md).
+For per-step checkpoint ordering and bounded parallel branches, read the
+[incremental operations guide](../../docs/guides/incremental-operations.md) and
+[sync example](example/incremental_sync_example.dart).
 
 ## Availability
 

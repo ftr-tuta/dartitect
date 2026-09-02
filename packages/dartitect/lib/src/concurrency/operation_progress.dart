@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import '../lifecycle/contracts.dart';
 import 'cancellation.dart';
 
@@ -118,7 +120,8 @@ final class BoundedProgressReporter<P>
   /// Maximum retained event count.
   final int capacity;
 
-  final List<OperationProgress<P>> _events = <OperationProgress<P>>[];
+  final ListQueue<OperationProgress<P>> _events =
+      ListQueue<OperationProgress<P>>();
   int? _executionId;
   var _lastSequence = 0;
   var _disposed = false;
@@ -155,7 +158,7 @@ final class BoundedProgressReporter<P>
     }
     _lastSequence = progress.sequence;
     if (_events.length == capacity) {
-      _events.removeAt(0);
+      _events.removeFirst();
       _droppedEventCount += 1;
     }
     _events.add(progress);

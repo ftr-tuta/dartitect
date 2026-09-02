@@ -21,10 +21,12 @@ telemetry destinations, or provider configuration.
 
 ## Platforms and entrypoints
 
-The public entrypoint is
-`package:dartitect/dartitect.dart`. It is pure Dart and supports the Dart VM,
-Flutter, and web. Background projection additionally requires an environment
-that can spawn isolates and transferable callbacks/values.
+`package:dartitect/dartitect.dart` is the stable core entrypoint.
+`package:dartitect/dartitect_incremental.dart` is the opt-in candidate
+entrypoint for cold bounded producers, partial aggregation, and explicit
+retention. Both are pure Dart and support the Dart VM, Flutter, and web.
+Background projection additionally requires an environment that can spawn
+isolates and transferable callbacks/values.
 
 ## Mental model and data flow
 
@@ -71,6 +73,10 @@ Future<void> main() async {
 - `CommandLane`, `KeyedCommandLane`, `CommandConcurrency`, and
   `CommandOutcome` provide bounded scheduling with explicit accepted, rejected,
   dropped, cancelled, failed, succeeded, and crash behavior.
+- `IncrementalOperation`, `IncrementalLimits`, `IncrementalItemContext`,
+  `IncrementalReport`, and `BoundedRingBuffer` provide cold execution,
+  backpressure, count/weight bounds, partial aggregation, explicit closeable
+  sync sources, and bounded recent retention from the opt-in entrypoint.
 - `ProjectionExecutor`, `ProjectionExecution`, and
   `IsolateProjectionExecutor` make inline versus background projection an
   explicit choice.
@@ -149,6 +155,9 @@ harnesses. Read the
 [composition/lifecycle/isolates](../../docs/guides/composition-lifecycle-isolates.md).
 Project-only infrastructure can use the confined
 [typed local extension contract](../../docs/guides/project-local-extensions.md).
+Incremental consumers should read the
+[incremental operations guide](../../docs/guides/incremental-operations.md) and
+the [core example](example/incremental_operation_example.dart).
 
 ## Availability
 

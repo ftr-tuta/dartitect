@@ -1,8 +1,18 @@
+import 'dart:async';
+import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:crypto/crypto.dart';
+import 'package:dartitect/dartitect.dart'
+    show
+        CancellationException,
+        CancellationRegistration,
+        CancellationSignal,
+        CancellationSource;
 
 import '../config/dartitect_config.dart';
 import '../diagnostics/models.dart';
@@ -50,15 +60,265 @@ final class ProjectScan {
 
   /// Number of config and inline architecture suppressions observed.
   final int suppressionCount;
+
+  /// Stable machine representation used by progressive scan terminals.
+  Map<String, Object?> toJson() => <String, Object?>{
+    if (packageName != null) 'packageName': packageName,
+    'dependencies': dependencies,
+    'features': features,
+    'platforms': platforms,
+    'capabilities': capabilities,
+    'findings': findings.map((finding) => finding.toJson()).toList(),
+    'violations': violations.map((finding) => finding.toJson()).toList(),
+    'dartFileCount': dartFileCount,
+    'suppressionCount': suppressionCount,
+  };
+}
+
+/// Base event for the progressive scanner protocol.
+sealed class ProjectScanEvent {
+  const ProjectScanEvent({required this.timestamp});
+
+  /// JSON Lines event schema.
+  static const int schemaVersion = 1;
+
+  /// UTC event timestamp.
+  final DateTime timestamp;
+
+  /// Stable event discriminator.
+  String get kind;
+
+  /// Stable JSON Lines representation.
+  Map<String, Object?> toJson();
+
+  Map<String, Object?> _baseJson() => <String, Object?>{
+    'schemaVersion': schemaVersion,
+    'event': kind,
+    'timestamp': timestamp.toIso8601String(),
+  };
+}
+
+/// A progressive scan was admitted.
+final class ProjectScanStarted extends ProjectScanEvent {
+  /// Creates a start event.
+  const ProjectScanStarted({required super.timestamp});
+
+  @override
+  String get kind => 'started';
+
+  @override
+  Map<String, Object?> toJson() => _baseJson();
+}
+
+/// One project-relative Dart path was discovered.
+final class ProjectScanFileDiscovered extends ProjectScanEvent {
+  /// Creates a deterministic discovery event.
+  const ProjectScanFileDiscovered({
+    required super.timestamp,
+    required this.path,
+    required this.index,
+    required this.total,
+  });
+
+  /// Project-relative path.
+  final String path;
+
+  /// One-based discovery index.
+  final int index;
+
+  /// Total discovered analyzable files.
+  final int total;
+
+  @override
+  String get kind => 'file-discovered';
+
+  @override
+  Map<String, Object?> toJson() => <String, Object?>{
+    ..._baseJson(),
+    'path': path,
+    'index': index,
+    'total': total,
+  };
+}
+
+/// One discovered file completed semantic analysis.
+final class ProjectScanFileAnalyzed extends ProjectScanEvent {
+  /// Creates a deterministic analyzed-file event.
+  const ProjectScanFileAnalyzed({
+    required super.timestamp,
+    required this.path,
+    required this.index,
+    required this.total,
+    required this.cacheHit,
+  });
+
+  /// Project-relative path.
+  final String path;
+
+  /// One-based analyzed index.
+  final int index;
+
+  /// Total discovered analyzable files.
+  final int total;
+
+  /// Whether immutable source facts came from [ProjectSourceIndex].
+  final bool cacheHit;
+
+  @override
+  String get kind => 'file-analyzed';
+
+  @override
+  Map<String, Object?> toJson() => <String, Object?>{
+    ..._baseJson(),
+    'path': path,
+    'index': index,
+    'total': total,
+    'cacheHit': cacheHit,
+  };
+}
+
+/// One deterministic finding or violation was emitted.
+final class ProjectScanFinding extends ProjectScanEvent {
+  /// Creates a finding event.
+  const ProjectScanFinding({
+    required super.timestamp,
+    required this.finding,
+    required this.isViolation,
+  });
+
+  /// Immutable scanner diagnostic.
+  final DartitectFinding finding;
+
+  /// Whether this diagnostic is an architecture violation.
+  final bool isViolation;
+
+  @override
+  String get kind => 'finding';
+
+  @override
+  Map<String, Object?> toJson() => <String, Object?>{
+    ..._baseJson(),
+    'isViolation': isViolation,
+    'finding': finding.toJson(),
+  };
+}
+
+/// Terminal successful progressive scan event.
+final class ProjectScanCompleted extends ProjectScanEvent {
+  /// Creates a successful terminal event.
+  const ProjectScanCompleted({required super.timestamp, required this.scan});
+
+  /// Complete compatibility result.
+  final ProjectScan scan;
+
+  @override
+  String get kind => 'completed';
+
+  @override
+  Map<String, Object?> toJson() => <String, Object?>{
+    ..._baseJson(),
+    'scan': scan.toJson(),
+  };
+}
+
+/// Terminal cooperative-cancellation event.
+final class ProjectScanCancelled extends ProjectScanEvent {
+  /// Creates a cancellation terminal with payload-free counts.
+  const ProjectScanCancelled({
+    required super.timestamp,
+    required this.discoveredFileCount,
+    required this.analyzedFileCount,
+  });
+
+  /// Files discovered before cancellation.
+  final int discoveredFileCount;
+
+  /// Files analyzed before cancellation.
+  final int analyzedFileCount;
+
+  @override
+  String get kind => 'cancelled';
+
+  @override
+  Map<String, Object?> toJson() => <String, Object?>{
+    ..._baseJson(),
+    'discoveredFileCount': discoveredFileCount,
+    'analyzedFileCount': analyzedFileCount,
+  };
+}
+
+/// Bounded LRU of immutable source hashes and semantic facts.
+final class ProjectSourceIndex {
+  /// Creates a source index with at most [capacity] entries.
+  ProjectSourceIndex({this.capacity = 2048}) {
+    if (capacity <= 0) {
+      throw ArgumentError.value(capacity, 'capacity', 'must be positive');
+    }
+  }
+
+  /// Maximum retained entries.
+  final int capacity;
+
+  final LinkedHashMap<String, _CachedSourceFacts> _entries =
+      LinkedHashMap<String, _CachedSourceFacts>();
+  var _hitCount = 0;
+  var _missCount = 0;
+  var _evictionCount = 0;
+
+  /// Retained entry count.
+  int get length => _entries.length;
+
+  /// Successful content-and-configuration lookups.
+  int get hitCount => _hitCount;
+
+  /// Missing or invalidated lookups.
+  int get missCount => _missCount;
+
+  /// Least-recently-used entries removed at capacity.
+  int get evictionCount => _evictionCount;
+
+  /// Clears retained facts without changing cumulative counters.
+  void clear() => _entries.clear();
+
+  _CachedSourceFacts? _lookup(
+    String path,
+    String contentHash,
+    String configurationHash,
+  ) {
+    final entry = _entries.remove(path);
+    if (entry == null ||
+        entry.contentHash != contentHash ||
+        entry.configurationHash != configurationHash) {
+      _missCount += 1;
+      return null;
+    }
+    _entries[path] = entry;
+    _hitCount += 1;
+    return entry;
+  }
+
+  void _store(String path, _CachedSourceFacts facts) {
+    _entries.remove(path);
+    _entries[path] = facts;
+    while (_entries.length > capacity) {
+      _entries.remove(_entries.keys.first);
+      _evictionCount += 1;
+    }
+  }
 }
 
 /// Conservative, deterministic, and read-only project scanner.
 final class ProjectScanner {
   /// Creates a scanner rooted at [root].
-  ProjectScanner(Directory root) : root = root.absolute;
+  ProjectScanner(Directory root, {ProjectSourceIndex? sourceIndex})
+    : root = root.absolute,
+      sourceIndex = sourceIndex ?? ProjectSourceIndex();
 
   /// Absolute root used internally. Emitted paths are always relative.
   final Directory root;
+
+  /// Bounded immutable-facts cache shared by repeated scans when injected.
+  final ProjectSourceIndex sourceIndex;
 
   static const _platformNames = <String>[
     'android',
@@ -71,6 +331,82 @@ final class ProjectScanner {
 
   /// Performs a scan without following symlinks or writing any file.
   Future<ProjectScan> scan() async {
+    await for (final event in scanEvents()) {
+      if (event is ProjectScanCompleted) return event.scan;
+      if (event is ProjectScanCancelled) {
+        throw const CancellationException('Project scan cancelled.');
+      }
+    }
+    throw StateError('Project scan ended without a terminal event.');
+  }
+
+  /// Emits deterministic progressive events and one terminal event.
+  Stream<ProjectScanEvent> scanEvents({CancellationSignal? cancellation}) {
+    final localCancellation = CancellationSource();
+    CancellationRegistration? externalRegistration;
+    late final StreamController<ProjectScanEvent> controller;
+    var discoveredFileCount = 0;
+    var analyzedFileCount = 0;
+    controller = StreamController<ProjectScanEvent>(
+      onListen: () {
+        externalRegistration = cancellation?.register(localCancellation.cancel);
+        unawaited(() async {
+          try {
+            final scan = await _scan(
+              cancellation: localCancellation.signal,
+              emit: (event) {
+                if (event is ProjectScanFileDiscovered) {
+                  discoveredFileCount = event.index;
+                } else if (event is ProjectScanFileAnalyzed) {
+                  analyzedFileCount = event.index;
+                }
+                if (!controller.isClosed && controller.hasListener) {
+                  controller.add(event);
+                }
+              },
+            );
+            if (!controller.isClosed && controller.hasListener) {
+              controller.add(
+                ProjectScanCompleted(
+                  timestamp: DateTime.now().toUtc(),
+                  scan: scan,
+                ),
+              );
+            }
+          } on CancellationException {
+            if (!controller.isClosed && controller.hasListener) {
+              controller.add(
+                ProjectScanCancelled(
+                  timestamp: DateTime.now().toUtc(),
+                  discoveredFileCount: discoveredFileCount,
+                  analyzedFileCount: analyzedFileCount,
+                ),
+              );
+            }
+          } catch (error, stackTrace) {
+            if (!controller.isClosed && controller.hasListener) {
+              controller.addError(error, stackTrace);
+            }
+          } finally {
+            externalRegistration?.dispose();
+            if (!controller.isClosed) await controller.close();
+          }
+        }());
+      },
+      onCancel: () {
+        localCancellation.cancel('Project scan event consumer cancelled.');
+      },
+    );
+    return controller.stream;
+  }
+
+  Future<ProjectScan> _scan({
+    required CancellationSignal cancellation,
+    required void Function(ProjectScanEvent event) emit,
+  }) async {
+    final scanNow = DateTime.now().toUtc();
+    emit(ProjectScanStarted(timestamp: scanNow));
+    cancellation.throwIfCancelled();
     if (!await root.exists()) {
       throw FileSystemException('Project root does not exist', root.path);
     }
@@ -174,63 +510,54 @@ final class ProjectScanner {
         findings,
         owner: scanRoot,
         fileOwners: fileOwners,
+        cancellation: cancellation,
       );
     }
     dartFiles.sort((left, right) => left.path.compareTo(right.path));
 
+    for (var index = 0; index < dartFiles.length; index += 1) {
+      cancellation.throwIfCancelled();
+      emit(
+        ProjectScanFileDiscovered(
+          timestamp: DateTime.now().toUtc(),
+          path: _relative(dartFiles[index].path),
+          index: index + 1,
+          total: dartFiles.length,
+        ),
+      );
+    }
+
     var hasBackground = false;
     var hasComposition = false;
-    for (final file in dartFiles) {
-      final relativePath = _relative(file.path);
-      final owner = fileOwners[file.absolute.path]!;
-      final policyPath = owner.policy.relative(file.path);
-      final sourceConfig = owner.policy.config;
-      final source = await file.readAsString();
-      final lines = source.split(RegExp(r'\r?\n'));
-      final suppressions = _parseSuppressions(
-        lines,
-        path: relativePath,
-        findings: findings,
-      );
-      suppressionCount += suppressions.values.fold<int>(
-        0,
-        (total, codes) => total + codes.length,
-      );
-      final parsed = parseString(
-        content: source,
-        path: file.path,
-        throwIfDiagnostics: false,
-      );
-      final facts = _inspectUnit(
-        parsed.unit,
-        lineNumberAt: (offset) =>
-            parsed.lineInfo.getLocation(offset).lineNumber,
-        path: relativePath,
-        packageName: owner.packageName,
-        classification: owner.policy.classifier.classify(
-          policyPath,
-          source: source,
-        ),
-        nativeStrict: sourceConfig?.profile == nativeStrictProfile,
-        isSuppressed: (code, line) {
-          final inline = <String>{
-            ...?suppressions[line - 1],
-            ...?suppressions[line],
-          };
-          if (inline.contains(code)) return true;
-          final now = DateTime.now().toUtc();
-          return sourceConfig?.suppressions.any(
-                (suppression) =>
-                    suppression.code == code &&
-                    !suppression.isExpiredAt(now) &&
-                    dartitectGlobMatches(suppression.path, policyPath),
-              ) ??
-              false;
-        },
-        violations: violations,
-      );
-      hasComposition = hasComposition || facts.hasComposition;
-      hasBackground = hasBackground || facts.hasBackground;
+    for (var start = 0; start < dartFiles.length; start += 4) {
+      cancellation.throwIfCancelled();
+      final end = start + 4 < dartFiles.length ? start + 4 : dartFiles.length;
+      final analyzed = await Future.wait<_AnalyzedSource>([
+        for (var index = start; index < end; index += 1)
+          _analyzeSource(
+            dartFiles[index],
+            fileOwners[dartFiles[index].absolute.path]!,
+            scanNow,
+          ),
+      ]);
+      cancellation.throwIfCancelled();
+      for (var offset = 0; offset < analyzed.length; offset += 1) {
+        final result = analyzed[offset];
+        findings.addAll(result.findings);
+        violations.addAll(result.violations);
+        suppressionCount += result.suppressionCount;
+        hasComposition = hasComposition || result.facts.hasComposition;
+        hasBackground = hasBackground || result.facts.hasBackground;
+        emit(
+          ProjectScanFileAnalyzed(
+            timestamp: DateTime.now().toUtc(),
+            path: result.path,
+            index: start + offset + 1,
+            total: dartFiles.length,
+            cacheHit: result.cacheHit,
+          ),
+        );
+      }
     }
 
     final capabilities = <String>[
@@ -252,6 +579,24 @@ final class ProjectScanner {
 
     violations.sort(_compareFinding);
     findings.sort(_compareFinding);
+    for (final finding in findings) {
+      emit(
+        ProjectScanFinding(
+          timestamp: DateTime.now().toUtc(),
+          finding: finding,
+          isViolation: false,
+        ),
+      );
+    }
+    for (final violation in violations) {
+      emit(
+        ProjectScanFinding(
+          timestamp: DateTime.now().toUtc(),
+          finding: violation,
+          isViolation: true,
+        ),
+      );
+    }
     return ProjectScan(
       packageName: packageName,
       dependencies: List<String>.unmodifiable(dependencies..sort()),
@@ -265,8 +610,130 @@ final class ProjectScanner {
     );
   }
 
+  Future<_AnalyzedSource> _analyzeSource(
+    File file,
+    _DeclaredScanRoot owner,
+    DateTime scanNow,
+  ) async {
+    final relativePath = _relative(file.path);
+    final policyPath = owner.policy.relative(file.path);
+    final sourceConfig = owner.policy.config;
+    final source = await file.readAsString();
+    final classification = owner.policy.classifier.classify(
+      policyPath,
+      source: source,
+    );
+    final contentHash = sha256.convert(utf8.encode(source)).toString();
+    final configurationHash = sha256
+        .convert(
+          utf8.encode(
+            jsonEncode(<String, Object?>{
+              'config': sourceConfig?.toJson(),
+              'packageName': owner.packageName,
+              'policyPath': policyPath,
+              'layers': classification.layers.toList()..sort(),
+              'composition': classification.isCompositionRoot,
+              'generated': classification.isGeneratedInfrastructure,
+              'activeSuppressions': <Object?>[
+                for (final suppression
+                    in sourceConfig?.suppressions ??
+                        const <DartitectSuppression>[])
+                  <String, Object?>{
+                    'code': suppression.code,
+                    'path': suppression.path,
+                    'active': !suppression.isExpiredAt(scanNow),
+                  },
+              ],
+            }),
+          ),
+        )
+        .toString();
+    final cached = sourceIndex._lookup(
+      relativePath,
+      contentHash,
+      configurationHash,
+    );
+    if (cached != null) {
+      return _AnalyzedSource(
+        path: relativePath,
+        facts: cached.facts,
+        findings: cached.findings,
+        violations: cached.violations,
+        suppressionCount: cached.suppressionCount,
+        cacheHit: true,
+      );
+    }
+
+    final localFindings = <DartitectFinding>[];
+    final localViolations = <DartitectFinding>[];
+    final suppressions = _parseSuppressions(
+      source.split(RegExp(r'\r?\n')),
+      path: relativePath,
+      findings: localFindings,
+    );
+    final suppressionCount = suppressions.values.fold<int>(
+      0,
+      (total, codes) => total + codes.length,
+    );
+    final parsed = parseString(
+      content: source,
+      path: file.path,
+      throwIfDiagnostics: false,
+    );
+    final facts = _inspectUnit(
+      parsed.unit,
+      source: source,
+      lineNumberAt: (offset) => parsed.lineInfo.getLocation(offset).lineNumber,
+      path: relativePath,
+      packageName: owner.packageName,
+      classification: classification,
+      nativeStrict: sourceConfig?.profile == nativeStrictProfile,
+      isSuppressed: (code, line) {
+        final inline = <String>{
+          ...?suppressions[line - 1],
+          ...?suppressions[line],
+        };
+        if (inline.contains(code)) return true;
+        return sourceConfig?.suppressions.any(
+              (suppression) =>
+                  suppression.code == code &&
+                  !suppression.isExpiredAt(scanNow) &&
+                  dartitectGlobMatches(suppression.path, policyPath),
+            ) ??
+            false;
+      },
+      violations: localViolations,
+    );
+    final immutableFindings = List<DartitectFinding>.unmodifiable(
+      localFindings,
+    );
+    final immutableViolations = List<DartitectFinding>.unmodifiable(
+      localViolations,
+    );
+    sourceIndex._store(
+      relativePath,
+      _CachedSourceFacts(
+        contentHash: contentHash,
+        configurationHash: configurationHash,
+        facts: facts,
+        findings: immutableFindings,
+        violations: immutableViolations,
+        suppressionCount: suppressionCount,
+      ),
+    );
+    return _AnalyzedSource(
+      path: relativePath,
+      facts: facts,
+      findings: immutableFindings,
+      violations: immutableViolations,
+      suppressionCount: suppressionCount,
+      cacheHit: false,
+    );
+  }
+
   _SemanticFacts _inspectUnit(
     CompilationUnit unit, {
+    required String source,
     required int Function(int offset) lineNumberAt,
     required String path,
     required String? packageName,
@@ -318,9 +785,9 @@ final class ProjectScanner {
       declaredTypes: declaredTypes,
       topLevelFunctions: topLevelFunctions,
       usesPrivacyRuntime: RegExp(r'\bObservabilityRuntime\s*\.\s*withPrivacy\b')
-          .hasMatch(unit.toSource()),
+          .hasMatch(source),
       usesSafeDioInterceptor: RegExp(r'\bDioObservabilityInterceptor\b')
-          .hasMatch(unit.toSource()),
+          .hasMatch(source),
       lineNumberAt: lineNumberAt,
       isSuppressed: isSuppressed,
       addViolation: violations.add,
@@ -357,7 +824,9 @@ final class ProjectScanner {
     List<DartitectFinding> findings, {
     required _DeclaredScanRoot owner,
     required Map<String, _DeclaredScanRoot> fileOwners,
+    required CancellationSignal cancellation,
   }) async {
+    cancellation.throwIfCancelled();
     final relativeDirectory = _relative(directory.path);
     if (relativeDirectory != '.' &&
         await File(_join(directory.path, 'pubspec.yaml')).exists()) {
@@ -394,6 +863,7 @@ final class ProjectScanner {
     }
     entities.sort((left, right) => left.path.compareTo(right.path));
     for (final entity in entities) {
+      cancellation.throwIfCancelled();
       if (entity is Link) {
         findings.add(
           DartitectFinding(
@@ -410,6 +880,7 @@ final class ProjectScanner {
           findings,
           owner: owner,
           fileOwners: fileOwners,
+          cancellation: cancellation,
         );
       } else if (entity is File && entity.path.endsWith('.dart')) {
         output.add(entity);
@@ -649,6 +1120,42 @@ final class _BoundaryPolicy {
     }
     return source;
   }
+}
+
+final class _CachedSourceFacts {
+  const _CachedSourceFacts({
+    required this.contentHash,
+    required this.configurationHash,
+    required this.facts,
+    required this.findings,
+    required this.violations,
+    required this.suppressionCount,
+  });
+
+  final String contentHash;
+  final String configurationHash;
+  final _SemanticFacts facts;
+  final List<DartitectFinding> findings;
+  final List<DartitectFinding> violations;
+  final int suppressionCount;
+}
+
+final class _AnalyzedSource {
+  const _AnalyzedSource({
+    required this.path,
+    required this.facts,
+    required this.findings,
+    required this.violations,
+    required this.suppressionCount,
+    required this.cacheHit,
+  });
+
+  final String path;
+  final _SemanticFacts facts;
+  final List<DartitectFinding> findings;
+  final List<DartitectFinding> violations;
+  final int suppressionCount;
+  final bool cacheHit;
 }
 
 final class _SemanticFacts {

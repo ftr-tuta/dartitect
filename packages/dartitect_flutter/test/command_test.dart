@@ -5,6 +5,31 @@ import 'package:dartitect_flutter/dartitect_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('commands and progress commands reject invalid runtime bounds', () {
+    final zero = int.parse('0');
+    expect(
+      () => Command0<int, _ExpectedFailure>(
+        () async => const Ok<int>(1),
+        concurrency: CommandConcurrency.concurrent(maxConcurrent: zero),
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => ProgressCommand0<int, int, _ExpectedFailure>(
+        (_) async => const Ok<int>(1),
+        concurrency: CommandConcurrency.sequential(maxQueue: zero),
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => KeyedProgressCommand1<String, int, int, int, _ExpectedFailure>(
+        (_, _, _) async => const Ok<int>(1),
+        concurrency: CommandConcurrency.keyed(maxConcurrent: zero),
+      ),
+      throwsArgumentError,
+    );
+  });
+
   test('commands emit only payload-free terminal diagnostics', () async {
     final diagnostics = DartitectDiagnosticBuffer(capacity: 8);
     final emitter = DartitectDiagnosticsEmitter(

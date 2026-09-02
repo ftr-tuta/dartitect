@@ -40,7 +40,7 @@ prerelease cohorts before external writes.
 
 For documentation and skill work, update
 `packages/dartitect_cli/lib/src/codex/skill_catalog.dart`, regenerate rather than
-hand-edit the twelve managed skills, and update the local skill directly. Keep
+hand-edit the catalog-managed skills, and update the local skill directly. Keep
 all 25 changelogs on the same non-empty `Unreleased` entry and keep `1.0.0` as
 the first numbered version. The current source cohort may be newer than the
 public version; consumption guidance stays on the latest materialized stable

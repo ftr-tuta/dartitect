@@ -19,7 +19,7 @@ is never a configuration migration target.
 
 == Opting into destination-aware observability
 
-The untagged `1.1.0-rc.1` workspace adds an optional privacy-aware runtime; it
+The untagged `1.1.0-rc.2` workspace includes the optional privacy-aware runtime; it
 does not introduce config v4 and does not change existing `1.0.0` runtime,
 `Redactor`, Dio metadata, or direct Sentry behavior. Existing source can remain
 unchanged. Candidate evaluation may instead create a new composition with

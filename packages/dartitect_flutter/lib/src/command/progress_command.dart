@@ -2,11 +2,12 @@ import 'package:dartitect/dartitect.dart';
 import 'package:flutter/foundation.dart';
 
 import 'command.dart';
+import 'progress_command_runtime.dart';
 
 /// No-argument command whose action receives typed progress and control.
 final class ProgressCommand0<P, T, F extends Object>
     implements DartitectCommand<T, F>, Disposable {
-  ProgressCommand0._(this._command, this._progress);
+  ProgressCommand0._(this._command, this._runtime);
 
   /// Creates a typed-progress command while preserving [Command0] scheduling.
   factory ProgressCommand0(
@@ -18,35 +19,23 @@ final class ProgressCommand0<P, T, F extends Object>
     DateTime Function()? now,
     DartitectDiagnosticSubject? diagnostics,
   }) {
-    final fenced = LatestExecutionProgressReporter<P>(reporter: progress);
-    var executionId = 0;
+    final runtime = ProgressCommandRuntime<P>(progress);
     final command = Command0<T, F>.cancellable(
-      (signal) async {
-        final current = ++executionId;
-        fenced.begin(current);
-        try {
-          return await action(
-            CommandExecutionContext<P>(
-              executionId: current,
-              cancellation: signal,
-              progress: fenced,
-              deadline: deadline,
-              now: now,
-            ),
-          );
-        } finally {
-          fenced.finish(current);
-        }
-      },
+      (signal) => runtime.run<T, F>(
+        cancellation: signal,
+        action: action,
+        deadline: deadline,
+        now: now,
+      ),
       concurrency: concurrency,
       reporter: reporter,
       diagnostics: diagnostics,
     );
-    return ProgressCommand0<P, T, F>._(command, fenced);
+    return ProgressCommand0<P, T, F>._(command, runtime);
   }
 
   final Command0<T, F> _command;
-  final LatestExecutionProgressReporter<P> _progress;
+  final ProgressCommandRuntime<P> _runtime;
 
   /// Current exhaustive command state.
   CommandState<T, F> get state => _command.state;
@@ -61,7 +50,7 @@ final class ProgressCommand0<P, T, F extends Object>
   bool get isDisposed => _command.isDisposed;
 
   /// Number of progress events rejected by the latest-execution fence.
-  int get droppedProgressCount => _progress.droppedEventCount;
+  int get droppedProgressCount => _runtime.droppedProgressCount;
 
   /// Executes according to [Command0]'s bounded scheduling policy.
   Future<CommandExecution<T, F>> execute() => _command.execute();
@@ -88,13 +77,13 @@ final class ProgressCommand0<P, T, F extends Object>
 
   @override
   void dispose() {
-    _progress.dispose();
+    _runtime.dispose();
     _command.dispose();
   }
 
   @override
   Future<void> disposeAsync() async {
-    _progress.dispose();
+    _runtime.dispose();
     await _command.disposeAsync();
   }
 }
@@ -102,7 +91,7 @@ final class ProgressCommand0<P, T, F extends Object>
 /// One-argument command whose action receives typed progress and control.
 final class ProgressCommand1<A, P, T, F extends Object>
     implements DartitectCommand<T, F>, Disposable {
-  ProgressCommand1._(this._command, this._progress);
+  ProgressCommand1._(this._command, this._runtime);
 
   /// Creates a typed-progress command while preserving [Command1] scheduling.
   factory ProgressCommand1(
@@ -118,36 +107,23 @@ final class ProgressCommand1<A, P, T, F extends Object>
     DateTime Function()? now,
     DartitectDiagnosticSubject? diagnostics,
   }) {
-    final fenced = LatestExecutionProgressReporter<P>(reporter: progress);
-    var executionId = 0;
+    final runtime = ProgressCommandRuntime<P>(progress);
     final command = Command1<A, T, F>.cancellable(
-      (argument, signal) async {
-        final current = ++executionId;
-        fenced.begin(current);
-        try {
-          return await action(
-            argument,
-            CommandExecutionContext<P>(
-              executionId: current,
-              cancellation: signal,
-              progress: fenced,
-              deadline: deadline,
-              now: now,
-            ),
-          );
-        } finally {
-          fenced.finish(current);
-        }
-      },
+      (argument, signal) => runtime.run<T, F>(
+        cancellation: signal,
+        action: (context) => action(argument, context),
+        deadline: deadline,
+        now: now,
+      ),
       concurrency: concurrency,
       reporter: reporter,
       diagnostics: diagnostics,
     );
-    return ProgressCommand1<A, P, T, F>._(command, fenced);
+    return ProgressCommand1<A, P, T, F>._(command, runtime);
   }
 
   final Command1<A, T, F> _command;
-  final LatestExecutionProgressReporter<P> _progress;
+  final ProgressCommandRuntime<P> _runtime;
 
   /// Current exhaustive command state.
   CommandState<T, F> get state => _command.state;
@@ -162,7 +138,7 @@ final class ProgressCommand1<A, P, T, F extends Object>
   bool get isDisposed => _command.isDisposed;
 
   /// Number of progress events rejected by the latest-execution fence.
-  int get droppedProgressCount => _progress.droppedEventCount;
+  int get droppedProgressCount => _runtime.droppedProgressCount;
 
   /// Executes [argument] through the configured bounded policy.
   Future<CommandExecution<T, F>> execute(A argument) =>
@@ -187,13 +163,13 @@ final class ProgressCommand1<A, P, T, F extends Object>
 
   @override
   void dispose() {
-    _progress.dispose();
+    _runtime.dispose();
     _command.dispose();
   }
 
   @override
   Future<void> disposeAsync() async {
-    _progress.dispose();
+    _runtime.dispose();
     await _command.disposeAsync();
   }
 }
@@ -201,7 +177,7 @@ final class ProgressCommand1<A, P, T, F extends Object>
 /// Keyed command whose action receives typed progress and control.
 final class KeyedProgressCommand1<K, A, P, T, F extends Object>
     implements DartitectCommand<T, F>, Disposable {
-  KeyedProgressCommand1._(this._command, this._progress);
+  KeyedProgressCommand1._(this._command, this._runtime);
 
   /// Creates a typed-progress keyed command with bounded keys and concurrency.
   factory KeyedProgressCommand1(
@@ -218,37 +194,23 @@ final class KeyedProgressCommand1<K, A, P, T, F extends Object>
     DateTime Function()? now,
     DartitectDiagnosticSubject? diagnostics,
   }) {
-    final fenced = LatestExecutionProgressReporter<P>(reporter: progress);
-    var executionId = 0;
+    final runtime = ProgressCommandRuntime<P>(progress);
     final command = KeyedCommand1<K, A, T, F>(
-      (key, argument, signal) async {
-        final current = ++executionId;
-        fenced.begin(current);
-        try {
-          return await action(
-            key,
-            argument,
-            CommandExecutionContext<P>(
-              executionId: current,
-              cancellation: signal,
-              progress: fenced,
-              deadline: deadline,
-              now: now,
-            ),
-          );
-        } finally {
-          fenced.finish(current);
-        }
-      },
+      (key, argument, signal) => runtime.run<T, F>(
+        cancellation: signal,
+        action: (context) => action(key, argument, context),
+        deadline: deadline,
+        now: now,
+      ),
       concurrency: concurrency,
       reporter: reporter,
       diagnostics: diagnostics,
     );
-    return KeyedProgressCommand1<K, A, P, T, F>._(command, fenced);
+    return KeyedProgressCommand1<K, A, P, T, F>._(command, runtime);
   }
 
   final KeyedCommand1<K, A, T, F> _command;
-  final LatestExecutionProgressReporter<P> _progress;
+  final ProgressCommandRuntime<P> _runtime;
 
   /// Current exhaustive command state.
   CommandState<T, F> get state => _command.state;
@@ -263,7 +225,7 @@ final class KeyedProgressCommand1<K, A, P, T, F extends Object>
   bool get isDisposed => _command.isDisposed;
 
   /// Number of progress events rejected by the latest-execution fence.
-  int get droppedProgressCount => _progress.droppedEventCount;
+  int get droppedProgressCount => _runtime.droppedProgressCount;
 
   /// Number of keys with active work; key values are never exposed.
   int get activeKeyCount => _command.activeKeyCount;
@@ -295,13 +257,13 @@ final class KeyedProgressCommand1<K, A, P, T, F extends Object>
 
   @override
   void dispose() {
-    _progress.dispose();
+    _runtime.dispose();
     _command.dispose();
   }
 
   @override
   Future<void> disposeAsync() async {
-    _progress.dispose();
+    _runtime.dispose();
     await _command.disposeAsync();
   }
 }

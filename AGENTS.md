@@ -5,11 +5,12 @@ boundaries. Invoke `repository-contribution` for every tracked change and for
 branch, commit, pull request, check, or merge work. It is repository-specific
 and is not managed by `dartitect codex sync`.
 
-The canonical source for the twelve distributed skills is
+The canonical source for the distributed skills is
 `packages/dartitect_cli/lib/src/codex/skill_catalog.dart`. Never edit their
 managed snapshots directly; regenerate them with
-`dartitect codex sync --overwrite-managed` and require a twelve-`NO-OP` dry run
-before delivery. Update the local `repository-contribution` skill directly.
+`dartitect codex sync --overwrite-managed` and require one `NO-OP` per catalog
+entry in the dry run before delivery. Update the local
+`repository-contribution` skill directly.
 
 Use `docs/README.md` as the public documentation entrypoint and
 `tool/documentation_contract.json` as the current/migration/historical/generated

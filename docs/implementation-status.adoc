@@ -8,7 +8,8 @@ Release source:: `747e3f17cc20c0afd13d5702c17ddc5d7330f00c`
 Distribution:: Immutable GitHub Release; Git dependencies only
 Feature policy:: *FEATURE FREEZE*
 Toolchain floor:: Dart 3.13 / Flutter 3.47.1 stable
-Target topology:: 25 packages / 32 public entrypoints
+Stable topology:: 25 packages / 32 public entrypoints
+Workspace candidate topology:: 25 packages / 35 public entrypoints
 
 `tool/goal_gates.json` preserves the implementation roadmap state recorded
 before publication; its `IN_PROGRESS` fields are historical and are not the

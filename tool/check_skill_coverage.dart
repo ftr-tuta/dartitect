@@ -3,20 +3,9 @@ import 'dart:io';
 
 import '../packages/dartitect_cli/lib/src/codex/skill_catalog.dart';
 
-const _expectedSkills = <String>{
-  'dartitect-adapters',
-  'dartitect-audit',
-  'dartitect-design',
-  'dartitect-mcp',
-  'dartitect-modeling',
-  'dartitect-observability',
-  'dartitect-offline-first',
-  'dartitect-reactive',
-  'dartitect-runtime',
-  'dartitect-testing',
-  'dartitect-tooling',
-  'dartitect-ui',
-};
+final Set<String> _expectedSkills = dartitectSkillCatalog
+    .map((skill) => skill.name)
+    .toSet();
 
 const _expectedRouting = <String, String>{
   'greenfield': 'dartitect-design',
@@ -31,6 +20,9 @@ const _expectedRouting = <String, String>{
   'localMcp': 'dartitect-mcp',
   'immutableModels': 'dartitect-modeling',
   'flutterPresentation': 'dartitect-ui',
+  'dartRuntimeSemantics': 'dartitect-dart',
+  'incrementalOperations': 'dartitect-incremental',
+  'runtimePerformance': 'dartitect-performance',
 };
 
 Future<void> main(List<String> arguments) async {
@@ -67,6 +59,10 @@ Future<void> main(List<String> arguments) async {
     return;
   }
   final skillNames = rawSkills.keys.toSet();
+  if (_expectedSkills.length != dartitectSkillCatalog.length) {
+    stderr.writeln('Canonical managed skill names must be unique.');
+    exitCode = 1;
+  }
   if (!_sameStrings(skillNames, _expectedSkills)) {
     stderr.writeln(
       'Managed skills differ: expected ${_expectedSkills.toList()..sort()}, '
@@ -97,7 +93,8 @@ Future<void> main(List<String> arguments) async {
   if (routing is! Map<String, Object?> ||
       !_sameStrings(routing.keys.toSet(), _expectedRouting.keys.toSet())) {
     stderr.writeln(
-      'Routing scenarios must cover the twelve supported workflows.',
+      'Routing scenarios must cover all ${_expectedRouting.length} supported '
+      'workflows.',
     );
     exitCode = 1;
   } else {
@@ -244,10 +241,29 @@ Future<void> main(List<String> arguments) async {
     covered.addAll(files.cast<String>());
   }
 
+  final localSkill = Directory(
+    '${root.path}/.agents/skills/repository-contribution',
+  );
+  final localEntrypoint = File('${localSkill.path}/SKILL.md');
+  final localMetadata = File('${localSkill.path}/agents/openai.yaml');
+  final localManifest = File('${localSkill.path}/.dartitect-skill.json');
+  if (!await localEntrypoint.exists() ||
+      !await localMetadata.exists() ||
+      await localManifest.exists() ||
+      !await localEntrypoint.readAsString().then(
+        (source) => source.startsWith(
+          '---\nname: repository-contribution\ndescription: ',
+        ),
+      )) {
+    stderr.writeln('Invalid consumer-owned repository-contribution skill.');
+    exitCode = 1;
+  }
+
   if (arguments.contains('--skills-only')) {
     if (exitCode == 0) {
       stdout.writeln(
-        'Managed skill contract passed for ${rawSkills.length} skills.',
+        'Skill contract passed for ${rawSkills.length} managed skills plus '
+        'repository-contribution (${rawSkills.length + 1} total).',
       );
     }
     return;
@@ -279,9 +295,10 @@ Future<void> main(List<String> arguments) async {
     return;
   }
   stdout.writeln(
-    'Skill coverage passed: ${rawSkills.length} skills cover '
+    'Skill coverage passed: ${rawSkills.length} managed skills cover '
     '${discovered.length} managed entrypoints and ${_expectedRouting.length} '
-    'routing scenarios.',
+    'routing scenarios; repository-contribution brings the validated total to '
+    '${rawSkills.length + 1}.',
   );
 }
 

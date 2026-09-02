@@ -1,6 +1,6 @@
 # Getting started
 
-The source workspace is currently the untagged `1.1.0-rc.1` candidate cohort.
+The source workspace is currently the untagged `1.1.0-rc.2` candidate cohort.
 For public consumption, continue using the stable `1.0.0` / `v1.0.0` release;
 no candidate tag or GitHub Release exists.
 
@@ -87,12 +87,13 @@ through a baseline.
 
 ## Agent guidance
 
-`dartitect codex sync --dry-run` previews twelve managed, implicitly invocable
+`dartitect codex sync --dry-run` previews the managed, implicitly invocable
 skills. New work starts with `$dartitect-design`; `$dartitect-audit` validates
 that a Dartitect-created project still conforms after development or an SDK
 upgrade. It does not produce an adoption or conversion plan. Focused
-implementation routes to runtime, reactive, offline-first,
-observability, adapters, testing, tooling, or MCP. The sync never
+implementation routes to Dart semantics, incremental execution, performance,
+runtime, reactive, offline-first, observability, adapters, testing, tooling, or
+MCP. The sync never
 manages the repository-local `repository-contribution` skill.
 
 ## Next

@@ -4,6 +4,7 @@ import 'dart:collection';
 import 'package:dartitect/dartitect.dart';
 import 'package:flutter/foundation.dart';
 
+import 'listener_registry.dart';
 import 'live_collection.dart';
 import 'live_resource.dart';
 import 'resource_lifecycle.dart';
@@ -311,7 +312,7 @@ final class PagedLiveResource<C, K, T, F extends Object>
   final PagedResourceCrashReporter _reporter;
   final int _recentRevisionLimit;
   final ReactiveObservation<PagedLocalSnapshot<K, T>, F> _localObservation;
-  final List<VoidCallback> _listeners = <VoidCallback>[];
+  final ListenerRegistry _listeners = ListenerRegistry();
   final LinkedHashSet<Object> _recentRevisions = LinkedHashSet<Object>();
   final Map<Object, List<_PageObservationWaiter<C, F>>> _waiters =
       <Object, List<_PageObservationWaiter<C, F>>>{};
@@ -398,8 +399,7 @@ final class PagedLiveResource<C, K, T, F extends Object>
 
   @override
   void removeListener(VoidCallback listener) {
-    final index = _listeners.indexOf(listener);
-    if (index >= 0) _listeners.removeAt(index);
+    _listeners.remove(listener);
   }
 
   /// Reloads from [initialCursor], joining an already running refresh.
@@ -697,15 +697,7 @@ final class PagedLiveResource<C, K, T, F extends Object>
 
   void _notify() {
     if (_disposed) return;
-    final snapshot = List<VoidCallback>.of(_listeners);
-    for (final listener in snapshot) {
-      if (_disposed || !_listeners.contains(listener)) continue;
-      try {
-        listener();
-      } catch (_) {
-        continue;
-      }
-    }
+    _listeners.notifySafely(shouldContinue: () => !_disposed);
   }
 
   Future<void> _dispose() async {

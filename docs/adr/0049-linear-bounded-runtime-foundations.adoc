@@ -1,0 +1,44 @@
+= ADR 0049: Linear and bounded runtime foundations
+:status: accepted
+:date: 2026-09-01
+
+== Context
+
+Bounded public APIs can still degrade when internal queues shift lists,
+listener dispatch combines snapshots with repeated membership scans, DAG
+schedulers rescan every node, or destination fan-out repeats classification.
+Parallel sync and isolate pools also risk racing consumer-owned checkpoint,
+lease, journal, and worker resources.
+
+== Decision
+
+Use deque-backed FIFO admission, fixed-capacity rings for retention, O(1)
+history-weight accounting, tombstoned reentrancy-safe listener registries, and
+dependent/indegree maps with stable ready queues for topological scheduling.
+Share command-lane admission internally without changing 1.0 command APIs.
+Compile privacy policy resolution and share classification/projection work
+across destinations while keeping raw values confined to synchronous
+preparation.
+
+Add bounded-parallel sync execution that runs only independent nodes and keeps
+borrowed checkpoint, lease, journal, and cleanup ports single-flight. Add a
+fixed-size isolate worker pool whose in-flight and queued work are bounded,
+whose ordered mapping also bounds completed results, and whose replacement
+policy never replays an uncertain request. Shutdown closes admission and drains
+admitted work before owned resources stop.
+
+Progressive project scanning analyzes at most four files concurrently, emits
+deterministic events, and reuses only bounded immutable source facts. The
+execution-model inspector reports DT2200-DT2211 without making heuristic
+findings blocking. Structural complexity, bounds, cleanup, stable order, and
+zero residual work are release gates; latency, RSS, first-item time, p50, and
+p95 remain informative or comparable only on the same runner.
+
+== Consequences
+
+Hot paths have explicit capacity and expected linear or constant-time
+operations without changing public ordering or typed failure semantics.
+Additional concurrency does not imply provider concurrency. Consumer-owned
+ports remain serialized unless their contracts explicitly say otherwise.
+Heuristic inspection and benchmark numbers cannot authorize publication or
+replace functional evidence.

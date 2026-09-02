@@ -87,16 +87,29 @@ Future<void> main(List<String> arguments) async {
       'run',
       'tool/check_benchmark_artifacts.dart',
     ]),
+    const _Command('dart', <String>[
+      'run',
+      'tool/check_incremental_benchmark.dart',
+    ]),
     const _Command('dart', <String>['run', 'tool/check_model_benchmark.dart']),
     const _Command('dart', <String>['run', 'tool/benchmark_wiring_sync.dart']),
     const _Command('dart', <String>[
       'test',
       'packages/dartitect/benchmark/paved_road_primitives_benchmark_test.dart',
+      'packages/dartitect/benchmark/incremental_operation_benchmark_test.dart',
     ]),
     const _Command('flutter', <String>[
       'test',
       'packages/dartitect_flutter/benchmark/reactive_lazy_computed_benchmark_test.dart',
       'packages/dartitect_flutter/benchmark/versioned_restoration_benchmark_test.dart',
+      'packages/dartitect_flutter/benchmark/incremental_command_benchmark_test.dart',
+    ]),
+    const _Command('dart', <String>[
+      'test',
+      'packages/dartitect_sync/benchmark/incremental_sync_benchmark_test.dart',
+      'packages/dartitect_isolates/benchmark/worker_pool_benchmark_test.dart',
+      'packages/dartitect_observability/benchmark/privacy_fanout_benchmark_test.dart',
+      'packages/dartitect_cli/benchmark/progressive_scan_benchmark_test.dart',
     ]),
     const _Command('dart', <String>[
       '--enable-asserts',
@@ -155,6 +168,10 @@ Future<void> main(List<String> arguments) async {
       'tool/check_provider_constructor_evidence_test.dart',
     ]),
     const _Command('dart', <String>['test', 'tool/release_audit_test.dart']),
+    const _Command('dart', <String>[
+      'test',
+      'tool/check_incremental_benchmark_test.dart',
+    ]),
     const _Command('dart', <String>['test', 'tool/run_git_canaries_test.dart']),
     const _Command('dart', <String>[
       'test',

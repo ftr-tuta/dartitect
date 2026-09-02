@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 
 import 'lifecycle_barrier.dart';
+import 'listener_registry.dart';
 import 'resource_lifecycle.dart';
 
 /// Backpressure policy for source invalidation signals.
@@ -285,7 +286,7 @@ final class LiveResource<T, F extends Object> implements Listenable {
   Future<void> Function()? _cancelSubscription;
   _SourceCoordinator<T, F>? _coordinator;
   final Set<Disposable> _invalidationBindings = <Disposable>{};
-  final List<VoidCallback> _lifecycleListeners = <VoidCallback>[];
+  final ListenerRegistry _lifecycleListeners = ListenerRegistry();
   var _disposed = false;
   var _readCount = 0;
   var _crashedGeneration = -1;
@@ -352,8 +353,7 @@ final class LiveResource<T, F extends Object> implements Listenable {
   /// Removes one passive lifecycle listener.
   @override
   void removeListener(VoidCallback listener) {
-    final index = _lifecycleListeners.indexOf(listener);
-    if (index >= 0) _lifecycleListeners.removeAt(index);
+    _lifecycleListeners.remove(listener);
   }
 
   /// Reconciles the initial activation policy.
@@ -661,15 +661,7 @@ final class LiveResource<T, F extends Object> implements Listenable {
   void _notifyLifecycleListeners() {
     if (_disposed) return;
     _emitStateDiagnostic();
-    final snapshot = List<VoidCallback>.of(_lifecycleListeners);
-    for (final listener in snapshot) {
-      if (_disposed || !_lifecycleListeners.contains(listener)) continue;
-      try {
-        listener();
-      } catch (_) {
-        continue;
-      }
-    }
+    _lifecycleListeners.notifySafely(shouldContinue: () => !_disposed);
   }
 
   void _emitStateDiagnostic() {

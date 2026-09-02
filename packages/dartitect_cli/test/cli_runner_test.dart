@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dartitect_cli/dartitect_cli.dart';
+import 'package:dartitect_cli/src/codex/skill_catalog.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -260,7 +261,7 @@ import 'package:flutter/widgets.dart';
         r'^NO-OP \.agents/skills/dartitect-',
         multiLine: true,
       ).allMatches(output.toString()),
-      hasLength(12),
+      hasLength(dartitectSkillCatalog.length),
     );
   }, timeout: const Timeout(Duration(minutes: 2)));
 

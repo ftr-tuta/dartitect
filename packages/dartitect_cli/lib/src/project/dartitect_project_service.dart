@@ -31,7 +31,7 @@ enum DartitectChangeKind {
   /// Replace the reviewed architecture baseline.
   baseline,
 
-  /// Synchronize the ten managed Codex skills.
+  /// Synchronize the catalog-managed Codex skills.
   codexSync,
 
   /// Upgrade reviewed Dartitect dependency constraints as one cohort.
@@ -210,6 +210,13 @@ final class DartitectProjectService {
   /// Scans architecture boundaries strictly.
   Future<CommandEnvelope> scanArchitecture() => _readOnly('scan');
 
+  /// Builds the canonical scan envelope from a progressive scanner terminal.
+  ///
+  /// This integration seam avoids analyzing the same project twice in hosts
+  /// that consume [ProjectScanner.scanEvents].
+  Future<CommandEnvelope> scanArchitectureFrom(ProjectScan scan) =>
+      _readOnlyFromScan('scan', scan);
+
   /// Validates configuration, toolchain, skills, and optional analyzer state.
   Future<CommandEnvelope> doctorProject({
     bool deep = false,
@@ -382,6 +389,15 @@ final class DartitectProjectService {
     bool release = false,
   }) async {
     final scan = await ProjectScanner(root).scan();
+    return _readOnlyFromScan(command, scan, deep: deep, release: release);
+  }
+
+  Future<CommandEnvelope> _readOnlyFromScan(
+    String command,
+    ProjectScan scan, {
+    bool deep = false,
+    bool release = false,
+  }) async {
     final findings = <DartitectFinding>[...scan.findings];
     final violations = <DartitectFinding>[...scan.violations];
     DartitectConfig? config;
@@ -571,7 +587,7 @@ final class DartitectProjectService {
       if (result.exitCode == 0) return const <DartitectFinding>[];
       return <DartitectFinding>[
         DartitectFinding(
-          code: 'DT2200',
+          code: 'DT2198',
           severity: FindingSeverity.error,
           message: 'Deep `dart analyze` validation failed.',
           evidence: _sanitize(_firstLine('${result.stdout}${result.stderr}')),
@@ -581,7 +597,7 @@ final class DartitectProjectService {
     } on TimeoutException {
       return const <DartitectFinding>[
         DartitectFinding(
-          code: 'DT2201',
+          code: 'DT2199',
           severity: FindingSeverity.warning,
           message: 'Deep analyzer check timed out after two minutes.',
           remediation:

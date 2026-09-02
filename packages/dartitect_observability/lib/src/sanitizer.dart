@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:typed_data';
 
@@ -239,6 +240,21 @@ final class ObservabilitySanitizer {
   /// Deterministic structural budgets.
   final ObservabilitySanitizationLimits limits;
 
+  /// Shares classifier, projector, and inline-detection work across a
+  /// synchronous set of destination preparations.
+  ///
+  /// The session exists only for [prepare] and is discarded before this method
+  /// returns, so it cannot retain raw values in queues or runtime state.
+  static T shareDestinationPreparation<T>(T Function() prepare) {
+    if (Zone.current[_sharedPreparationZoneKey] != null) return prepare();
+    return runZoned(
+      prepare,
+      zoneValues: <Object?, Object?>{
+        _sharedPreparationZoneKey: _SharedPreparation(),
+      },
+    );
+  }
+
   /// Produces an unforgeable prepared value and immutable diagnostics.
   PreparedObservabilityValue prepare(
     Object? value, {
@@ -384,11 +400,17 @@ final class _SanitizationState {
         value = projected.value;
       }
     }
-    classes.addAll(_classify(value, key: key, container: container));
+    final classification = _classify(value, key: key, container: container);
+    if (classification.denied) {
+      deniedValues += 1;
+      return _denied;
+    }
+    classes.addAll(classification.classes);
 
     final isContainer =
-        value is Map<Object?, Object?> ||
-        value is Iterable<Object?> && value is! String;
+        !_isBinaryValue(value) &&
+        (value is Map<Object?, Object?> ||
+            value is Iterable<Object?> && value is! String);
     final decision = sanitizer.policy.explain(
       destination: destination,
       destinationName: destinationName,
@@ -414,6 +436,8 @@ final class _SanitizationState {
     if (value is DateTime) return value.toUtc().toIso8601String();
     if (value is Duration) return value.inMicroseconds;
     if (value is Enum) return value.name;
+    final binaryMetadata = _binaryMetadata(value);
+    if (binaryMetadata != null) return binaryMetadata;
     if (value is Uri) return _sanitizeUri(value, depth: depth);
     if (value is ObservabilityErrorProjection) {
       return _sanitizeError(value, depth: depth);
@@ -539,16 +563,20 @@ final class _SanitizationState {
       final Enum value => value.name,
       _ => null,
     };
-    final classes = _classify(
+    final classification = _classify(
       projected,
       key: projected,
       container: container,
       keyPosition: true,
     );
+    if (classification.denied) {
+      deniedValues += 1;
+      return const _PreparedKey.denied();
+    }
     final decision = sanitizer.policy.explain(
       destination: destination,
       destinationName: destinationName,
-      classes: classes,
+      classes: classification.classes,
     );
     if (decision.action == ObservabilityPrivacyAction.deny) {
       deniedValues += 1;
@@ -633,14 +661,31 @@ final class _SanitizationState {
     return List<String>.unmodifiable(output);
   }
 
-  Set<ObservabilityDataClass> _classify(
+  _ClassificationResult _classify(
     Object? value, {
     required String? key,
     required ObservabilityDataClass? container,
     bool keyPosition = false,
   }) {
+    final shared = _sharedPreparation;
+    final cacheKey = _ClassificationCacheKey(
+      value,
+      key,
+      container,
+      keyPosition,
+    );
+    if (shared != null && shared.classifications.containsKey(cacheKey)) {
+      return shared.classifications[cacheKey]!;
+    }
+    _ClassificationResult complete(_ClassificationResult result) {
+      shared?.classifications[cacheKey] = result;
+      return result;
+    }
+
     final output = <ObservabilityDataClass>{};
-    if (!_takeClassificationWork()) return output;
+    if (!_takeClassificationWork()) {
+      return complete(const _ClassificationResult.denied());
+    }
     if (value == null || value is bool || value is num || value is DateTime) {
       output.add(ObservabilityDataClass.safeMetadata);
     } else if (value is Duration) {
@@ -653,10 +698,8 @@ final class _SanitizationState {
       if (value.hasQuery) output.add(ObservabilityDataClass.httpQuery);
       if (value.userInfo.isNotEmpty)
         output.add(ObservabilityDataClass.credential);
-    } else if (value is Uint8List) {
-      output.add(ObservabilityDataClass.httpBinary);
-    } else if (value is Stream<Object?>) {
-      output.add(ObservabilityDataClass.httpBinary);
+    } else if (_isBinaryValue(value)) {
+      output.add(ObservabilityDataClass.safeMetadata);
     }
     if (key != null) {
       output.addAll(_classifyKey(key, container: container));
@@ -667,21 +710,28 @@ final class _SanitizationState {
       }
     }
     for (final classifier in sanitizer.classifiers) {
-      if (!_takeClassificationWork()) break;
+      if (!_takeClassificationWork()) {
+        return complete(const _ClassificationResult.denied());
+      }
+      final additions = <ObservabilityDataClass>{};
       try {
         for (final dataClass in classifier.classify(
           value,
           key: key,
           container: container,
         )) {
-          if (!_takeClassificationWork()) break;
-          output.add(dataClass);
+          if (!_takeClassificationWork()) {
+            return complete(const _ClassificationResult.denied());
+          }
+          additions.add(dataClass);
         }
       } on Object {
         classifierFailures += 1;
+        return complete(const _ClassificationResult.denied());
       }
+      output.addAll(additions);
     }
-    return output;
+    return complete(_ClassificationResult.allowed(output));
   }
 
   Set<ObservabilityDataClass> _classifyKey(
@@ -735,18 +785,29 @@ final class _SanitizationState {
 
   ObservabilityClassifiedValue<Object?>? _project(Object? value) {
     if (value == null) return null;
+    final shared = _sharedPreparation;
+    if (shared != null && shared.projections.containsKey(value)) {
+      return shared.projections[value];
+    }
+    ObservabilityClassifiedValue<Object?>? complete(
+      ObservabilityClassifiedValue<Object?>? result,
+    ) {
+      shared?.projections[value] = result;
+      return result;
+    }
+
     for (final projector in sanitizer.projectors) {
-      if (!_takeClassificationWork()) return null;
+      if (!_takeClassificationWork()) return complete(null);
       try {
         if (!projector.supports(value)) continue;
-        if (!_takeClassificationWork()) return null;
-        return projector.project(value);
+        if (!_takeClassificationWork()) return complete(null);
+        return complete(projector.project(value));
       } on Object {
         projectorFailures += 1;
-        return null;
+        return complete(null);
       }
     }
-    return null;
+    return complete(null);
   }
 
   Object _mask(Object? value) {
@@ -767,28 +828,87 @@ final class _SanitizationState {
   }
 
   String _sanitizeInline(String input) {
-    var output = input;
-    for (final detector in _inlineDetectors) {
-      if (!_takeClassificationWork()) return '[CLASSIFICATION_BUDGET]';
-      output = output.replaceAllMapped(detector.pattern, (match) {
-        if (!_takeClassificationWork()) return '[CLASSIFICATION_BUDGET]';
-        final decision = sanitizer.policy.explain(
-          destination: destination,
-          destinationName: destinationName,
-          classes: <ObservabilityDataClass>{detector.dataClass},
-        );
-        if (decision.action == ObservabilityPrivacyAction.allow) {
-          return match.group(0)!;
-        }
-        if (decision.action == ObservabilityPrivacyAction.mask) {
+    final plan = _inlinePlan(input);
+    if (plan.budgetExceeded) return '[CLASSIFICATION_BUDGET]';
+    if (plan.spans.isEmpty) return input;
+    final output = StringBuffer();
+    var cursor = 0;
+    for (final span in plan.spans) {
+      if (span.start > cursor)
+        output.write(input.substring(cursor, span.start));
+      final source = input.substring(span.start, span.end);
+      final decision = sanitizer.policy.explain(
+        destination: destination,
+        destinationName: destinationName,
+        classes: span.classes,
+      );
+      switch (decision.action) {
+        case ObservabilityPrivacyAction.allow:
+          output.write(source);
+        case ObservabilityPrivacyAction.mask:
           maskedValues += 1;
-          return sanitizer.policy.masking.mask(match.group(0)!);
-        }
-        deniedValues += 1;
-        return '[REDACTED]';
-      });
+          output.write(sanitizer.policy.masking.mask(source));
+        case ObservabilityPrivacyAction.deny:
+          deniedValues += 1;
+          output.write('[REDACTED]');
+      }
+      cursor = span.end;
     }
-    return output;
+    if (cursor < input.length) output.write(input.substring(cursor));
+    return output.toString();
+  }
+
+  _InlinePlan _inlinePlan(String input) {
+    final shared = _sharedPreparation;
+    final cached = shared?.inlinePlans[input];
+    if (cached != null) return cached;
+    final candidates = <_InlineCandidate>[];
+    for (final detector in _inlineDetectors) {
+      if (!_takeClassificationWork()) {
+        return _cacheInlinePlan(
+          shared,
+          input,
+          const _InlinePlan.budgetExceeded(),
+        );
+      }
+      for (final match in detector.pattern.allMatches(input)) {
+        if (!_takeClassificationWork()) {
+          return _cacheInlinePlan(
+            shared,
+            input,
+            const _InlinePlan.budgetExceeded(),
+          );
+        }
+        if (match.start < match.end) {
+          candidates.add(
+            _InlineCandidate(match.start, match.end, detector.dataClass),
+          );
+        }
+      }
+    }
+    if (candidates.isEmpty) {
+      return _cacheInlinePlan(shared, input, const _InlinePlan.empty());
+    }
+    final boundaries = <int>{
+      for (final candidate in candidates) candidate.start,
+      for (final candidate in candidates) candidate.end,
+    }.toList()..sort();
+    final spans = <_InlineSpan>[];
+    for (var index = 0; index + 1 < boundaries.length; index += 1) {
+      final start = boundaries[index];
+      final end = boundaries[index + 1];
+      final classes = <ObservabilityDataClass>{
+        for (final candidate in candidates)
+          if (candidate.start < end && candidate.end > start)
+            candidate.dataClass,
+      };
+      if (classes.isNotEmpty) spans.add(_InlineSpan(start, end, classes));
+    }
+    return _cacheInlinePlan(
+      shared,
+      input,
+      _InlinePlan(List<_InlineSpan>.unmodifiable(spans)),
+    );
   }
 
   String _boundedText(String input) {
@@ -860,6 +980,97 @@ final class _PreparedKey {
   final bool masked;
 }
 
+final class _ClassificationResult {
+  const _ClassificationResult.allowed(this.classes) : denied = false;
+
+  const _ClassificationResult.denied()
+    : classes = const <ObservabilityDataClass>{},
+      denied = true;
+
+  final Set<ObservabilityDataClass> classes;
+  final bool denied;
+}
+
+final Object _sharedPreparationZoneKey = Object();
+
+_SharedPreparation? get _sharedPreparation =>
+    Zone.current[_sharedPreparationZoneKey] as _SharedPreparation?;
+
+final class _SharedPreparation {
+  final Map<_ClassificationCacheKey, _ClassificationResult> classifications =
+      <_ClassificationCacheKey, _ClassificationResult>{};
+  final HashMap<Object, ObservabilityClassifiedValue<Object?>?> projections =
+      HashMap<Object, ObservabilityClassifiedValue<Object?>?>.identity();
+  final Map<String, _InlinePlan> inlinePlans = <String, _InlinePlan>{};
+}
+
+final class _ClassificationCacheKey {
+  const _ClassificationCacheKey(
+    this.value,
+    this.key,
+    this.container,
+    this.keyPosition,
+  );
+
+  final Object? value;
+  final String? key;
+  final ObservabilityDataClass? container;
+  final bool keyPosition;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _ClassificationCacheKey &&
+      identical(value, other.value) &&
+      key == other.key &&
+      container == other.container &&
+      keyPosition == other.keyPosition;
+
+  @override
+  int get hashCode =>
+      Object.hash(identityHashCode(value), key, container, keyPosition);
+}
+
+final class _InlineCandidate {
+  const _InlineCandidate(this.start, this.end, this.dataClass);
+
+  final int start;
+  final int end;
+  final ObservabilityDataClass dataClass;
+}
+
+final class _InlineSpan {
+  _InlineSpan(this.start, this.end, Set<ObservabilityDataClass> classes)
+    : classes = Set<ObservabilityDataClass>.unmodifiable(classes);
+
+  final int start;
+  final int end;
+  final Set<ObservabilityDataClass> classes;
+}
+
+final class _InlinePlan {
+  const _InlinePlan(this.spans) : budgetExceeded = false;
+
+  const _InlinePlan.empty()
+    : spans = const <_InlineSpan>[],
+      budgetExceeded = false;
+
+  const _InlinePlan.budgetExceeded()
+    : spans = const <_InlineSpan>[],
+      budgetExceeded = true;
+
+  final List<_InlineSpan> spans;
+  final bool budgetExceeded;
+}
+
+_InlinePlan _cacheInlinePlan(
+  _SharedPreparation? shared,
+  String input,
+  _InlinePlan plan,
+) {
+  shared?.inlinePlans[input] = plan;
+  return plan;
+}
+
 final class _InlineDetector {
   const _InlineDetector(this.pattern, this.dataClass);
 
@@ -929,12 +1140,56 @@ bool _isSupported(Object? value) =>
     value is DateTime ||
     value is Duration ||
     value is Enum ||
-    value is Uint8List ||
-    value is Stream<Object?> ||
+    value is TypedData ||
+    value is ByteBuffer ||
+    _isBinaryStream(value) ||
     value is Map<Object?, Object?> ||
     value is Iterable<Object?> ||
     value is ObservabilityErrorProjection ||
     value is ObservabilityStackTraceProjection;
+
+bool _isBinaryValue(Object? value) =>
+    value is TypedData || value is ByteBuffer || _isBinaryStream(value);
+
+bool _isBinaryStream(Object? value) =>
+    value is Stream<Uint8List> ||
+    value is Stream<List<int>> ||
+    value is Stream<TypedData> ||
+    value is Stream<ByteBuffer>;
+
+Map<String, Object?>? _binaryMetadata(Object? value) {
+  if (value is Uint8List) {
+    return Map<String, Object?>.unmodifiable(<String, Object?>{
+      'kind': 'uint8_list',
+      'length': value.lengthInBytes,
+    });
+  }
+  if (value is ByteData) {
+    return Map<String, Object?>.unmodifiable(<String, Object?>{
+      'kind': 'byte_data',
+      'length': value.lengthInBytes,
+    });
+  }
+  if (value is TypedData) {
+    return Map<String, Object?>.unmodifiable(<String, Object?>{
+      'kind': 'typed_data',
+      'length': value.lengthInBytes,
+    });
+  }
+  if (value is ByteBuffer) {
+    return Map<String, Object?>.unmodifiable(<String, Object?>{
+      'kind': 'byte_buffer',
+      'length': value.lengthInBytes,
+    });
+  }
+  if (_isBinaryStream(value)) {
+    return Map<String, Object?>.unmodifiable(const <String, Object?>{
+      'kind': 'binary_stream',
+      'length': null,
+    });
+  }
+  return null;
+}
 
 ObservabilityDataClass? _structuralContainer(
   Set<ObservabilityDataClass> classes,

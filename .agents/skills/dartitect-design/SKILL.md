@@ -13,9 +13,9 @@ or provider boundary when the required Dartitect packages are not yet clear.
 ## When not to use
 
 Use `$dartitect-audit` to inspect a Dartitect-created project without changing it.
-Route detailed runtime, reactive, offline-first, telemetry, adapter, testing,
-CLI, or MCP work to the matching focused skill after suitability and the stack
-are decided.
+Route detailed Dart semantics, incremental execution, performance, runtime,
+reactive, offline-first, telemetry, adapter, testing, CLI, or MCP work to the
+matching focused skill after suitability and the stack are decided.
 
 ## Invariants
 

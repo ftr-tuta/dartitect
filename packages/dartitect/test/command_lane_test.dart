@@ -4,6 +4,40 @@ import 'package:dartitect/dartitect.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('all concurrency bounds are validated by lane consumers at runtime', () {
+    final zero = int.parse('0');
+    expect(
+      () => CommandLane<int, String>(
+        action: (_) async => const Ok<int>(1),
+        concurrency: CommandConcurrency.sequential(maxQueue: zero),
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => CommandLane<int, String>(
+        action: (_) async => const Ok<int>(1),
+        concurrency: CommandConcurrency.concurrent(maxConcurrent: zero),
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => KeyedCommandLane<String, int, int, String>(
+        action: (_, _, _) async => const Ok<int>(1),
+        concurrency: CommandConcurrency.keyed(maxConcurrent: zero),
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => KeyedCommandLane<String, int, int, String>(
+        action: (_, _, _) async => const Ok<int>(1),
+        concurrency: CommandConcurrency.keyed(
+          perKey: CommandConcurrency.sequential(maxQueue: zero),
+        ),
+      ),
+      throwsArgumentError,
+    );
+  });
+
   test(
     'cancellation is exact-once and listener failures are isolated',
     () async {

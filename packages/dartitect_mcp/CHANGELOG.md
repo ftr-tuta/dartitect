@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Emit payload-free analyzed/total scan progress only when an MCP request
+  supplies a progress token, while preserving the paginated terminal response.
 - Refresh package/API catalogs and privacy-aware observability routing without adding remote or write authority.
 
 ## 1.0.0

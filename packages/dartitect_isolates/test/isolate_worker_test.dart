@@ -186,6 +186,29 @@ void main() {
     expect(worker.activeRequestCount, 0);
     await worker.safeStop(deadline: const Duration(milliseconds: 30));
   });
+
+  test('optional cancellation waits for remote handler cleanup', () async {
+    final finished = ReceivePort();
+    final cancellation = CancellationSource();
+    final worker = await IsolateWorker.spawn<SendPort, int, _Failure>(
+      handler: _cancellableHandler,
+      heartbeatInterval: const Duration(milliseconds: 10),
+      heartbeatTimeout: const Duration(milliseconds: 100),
+    );
+    final receipt = worker.send(
+      finished.sendPort,
+      cancellation: cancellation.signal,
+    );
+    await receipt.accepted;
+
+    cancellation.cancel('test');
+    await expectLater(receipt.result, throwsA(isA<CancellationException>()));
+
+    expect(await finished.first, 'finished');
+    expect(worker.activeRequestCount, 0);
+    finished.close();
+    await worker.disposeAsync();
+  });
 }
 
 Future<Result<int, _Failure>> _handler(
@@ -214,6 +237,19 @@ Future<Result<Object, _Failure>> _objectHandler(
   Object value,
   CancellationSignal cancellation,
 ) async => Ok<Object>(value);
+
+Future<Result<int, _Failure>> _cancellableHandler(
+  SendPort finished,
+  CancellationSignal cancellation,
+) async {
+  try {
+    await cancellation.whenCancelled;
+    cancellation.throwIfCancelled();
+    return const Ok<int>(1);
+  } finally {
+    finished.send('finished');
+  }
+}
 
 void _blockEventLoop(Duration duration) {
   final stopwatch = Stopwatch()..start();

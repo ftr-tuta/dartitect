@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import 'lifecycle_barrier.dart';
+import 'listener_registry.dart';
 
 /// Data state of a resource, independent from its upstream temperature.
 sealed class ResourceDataState<T, F extends Object> {
@@ -202,7 +203,7 @@ final class ReactiveObservation<T, F extends Object> implements Listenable {
     : _tickerEnabled = tickerEnabled;
 
   final ResourceLifecycle<T, F> _resource;
-  final List<VoidCallback> _listeners = <VoidCallback>[];
+  final ListenerRegistry _listeners = ListenerRegistry();
   bool _tickerEnabled;
   var _closed = false;
   var _active = false;
@@ -234,8 +235,7 @@ final class ReactiveObservation<T, F extends Object> implements Listenable {
 
   @override
   void removeListener(VoidCallback listener) {
-    final index = _listeners.indexOf(listener);
-    if (index >= 0) _listeners.removeAt(index);
+    _listeners.remove(listener);
     _refreshActivity();
   }
 
@@ -266,17 +266,7 @@ final class ReactiveObservation<T, F extends Object> implements Listenable {
 
   void _notify() {
     if (!_active || _closed) return;
-    final snapshot = List<VoidCallback>.of(_listeners);
-    for (final listener in snapshot) {
-      if (_closed || !_active) break;
-      if (!_listeners.contains(listener)) continue;
-      try {
-        listener();
-      } catch (_) {
-        // Listener failures never alter resource state.
-        continue;
-      }
-    }
+    _listeners.notifySafely(shouldContinue: () => !_closed && _active);
   }
 }
 

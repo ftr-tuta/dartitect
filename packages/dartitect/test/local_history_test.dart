@@ -36,6 +36,26 @@ void main() {
     expect(() => history.edit('123456'), throwsArgumentError);
   });
 
+  test('retained weight is cached across reads and history navigation', () {
+    var weightCalls = 0;
+    final history = BoundedLocalHistory<String>(
+      initialValue: 'a',
+      weightOf: (value) {
+        weightCalls += 1;
+        return value.length;
+      },
+    )..edit('bb');
+
+    expect(weightCalls, 2);
+    expect(history.retainedWeight, 3);
+    expect(history.retainedWeight, 3);
+    history
+      ..undo()
+      ..redo();
+    expect(history.retainedWeight, 3);
+    expect(weightCalls, 2);
+  });
+
   test('history rejects executable values and clears on disposal', () {
     expect(
       () => BoundedLocalHistory<Object>(initialValue: () {}),

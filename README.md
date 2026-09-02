@@ -58,6 +58,7 @@ independently documented and exports only public entrypoints under `lib/`.
 | Workflow | Start with | Add when needed |
 | --- | --- | --- |
 | Pure Dart results, cancellation, ownership, or bounded work | [`dartitect`](packages/dartitect/) | [`dartitect_isolates`](packages/dartitect_isolates/) for a typed native worker |
+| Cold incremental input with bounded retention and cleanup | `package:dartitect/dartitect_incremental.dart` | `dartitect_flutter_incremental.dart` for partial Flutter state, `dartitect_sync` for confirmed checkpoints, or `dartitect_isolates` for a bounded native pool |
 | Flutter MVVM with native listenables | [`dartitect_flutter`](packages/dartitect_flutter/) | Import `dartitect_flutter_reactive.dart` only for the owned reactive runtime |
 | Adaptive, accessible Flutter presentation | `package:dartitect_flutter/dartitect_flutter_ui.dart` | Consumer-owned Material/Cupertino controls, themes, localization, navigation, focus, and restoration |
 | Credentials and authenticated-session rebuild | [`dartitect`](packages/dartitect/) | Import `dartitect_credentials.dart`; storage and credential values stay consumer-owned |
@@ -90,7 +91,9 @@ connects feature profiles, hosts, resilience, jobs, transfer, diagnostics, and
 contract matrices without turning them into a framework. The
 [business-neutral UI quality guide](docs/guides/ui-quality.md) covers responsive
 layout, exhaustive presentation, localization, accessibility, and the paired UI
-matrix.
+matrix. The [incremental operations guide](docs/guides/incremental-operations.md)
+covers cold producers, partial Flutter state, confirmed sync checkpoints,
+bounded native workers, progressive scans, and structural performance gates.
 
 ## Core workflow
 
@@ -271,8 +274,8 @@ READMEs. Drift accepts consumer-owned native and web executors. ObjectBox has no
 web support. The CLI, modeling analyzer, and MCP server run on the Dart VM.
 
 All 25 packages permanently share one lockstep workspace version. This source
-branch is the untagged `1.1.0-rc.1` candidate cohort; its derivable candidate
-tag is `v1.1.0-rc.1`, but that tag is not materialized and is not a public
+branch is the untagged `1.1.0-rc.2` candidate cohort; its derivable candidate
+tag is `v1.1.0-rc.2`, but that tag is not materialized and is not a public
 distribution. The latest stable distribution remains the immutable GitHub
 Release for `v1.0.0`. Consumers should continue declaring `1.0.0`; transitive
 Dartitect packages resolve from the same stable tag without overrides:

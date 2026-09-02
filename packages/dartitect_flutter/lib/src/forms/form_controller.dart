@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:dartitect/dartitect.dart';
 import 'package:flutter/foundation.dart';
@@ -124,7 +125,7 @@ final class DartitectFormController<T, F extends Object> extends ChangeNotifier
     this.historyLimit = 50,
   }) : _original = original,
        _current = original,
-       _history = <T>[original] {
+       _history = ListQueue<T>.from(<T>[original]) {
     if (draftVersion <= 0 || historyLimit <= 0) {
       throw ArgumentError('Draft version and history limit must be positive.');
     }
@@ -156,7 +157,7 @@ final class DartitectFormController<T, F extends Object> extends ChangeNotifier
   CancellationSource? _submission;
   T _original;
   T _current;
-  final List<T> _history;
+  final ListQueue<T> _history;
   var _historyIndex = 0;
   var _touched = false;
   var _phase = DartitectFormPhase.idle;
@@ -194,10 +195,12 @@ final class DartitectFormController<T, F extends Object> extends ChangeNotifier
     }
     _cancelValidation('Form value changed');
     if (_historyIndex < _history.length - 1) {
-      _history.removeRange(_historyIndex + 1, _history.length);
+      while (_history.length > _historyIndex + 1) {
+        _history.removeLast();
+      }
     }
-    _history.add(value);
-    if (_history.length > historyLimit) _history.removeAt(0);
+    _history.addLast(value);
+    if (_history.length > historyLimit) _history.removeFirst();
     _historyIndex = _history.length - 1;
     _current = value;
     _touched = _touched || touched;
@@ -221,7 +224,7 @@ final class DartitectFormController<T, F extends Object> extends ChangeNotifier
     if (_historyIndex == 0) return false;
     _cancelValidation('Form history changed');
     _historyIndex -= 1;
-    _current = _history[_historyIndex];
+    _current = _history.elementAt(_historyIndex);
     _phase = DartitectFormPhase.idle;
     notifyListeners();
     return true;
@@ -233,7 +236,7 @@ final class DartitectFormController<T, F extends Object> extends ChangeNotifier
     if (_historyIndex >= _history.length - 1) return false;
     _cancelValidation('Form history changed');
     _historyIndex += 1;
-    _current = _history[_historyIndex];
+    _current = _history.elementAt(_historyIndex);
     _phase = DartitectFormPhase.idle;
     notifyListeners();
     return true;

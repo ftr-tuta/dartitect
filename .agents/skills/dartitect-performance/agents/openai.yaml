@@ -1,0 +1,6 @@
+interface:
+  display_name: "Dartitect Performance"
+  short_description: "Bound and measure Dartitect runtime efficiency"
+  default_prompt: "Use $dartitect-performance to bound and measure a runtime path."
+policy:
+  allow_implicit_invocation: true

@@ -3,7 +3,7 @@
 ## Scope
 
 The distributed `dartitect_mcp 1.0.0` is local and STDIO-only. The source
-workspace is the untagged `1.1.0-rc.1` candidate and retains the same transport
+workspace is the untagged `1.1.0-rc.2` candidate and retains the same transport
 boundary. It uses
 `dart_mcp 0.5.2`. Streamable HTTP, OAuth/authorization, remote ChatGPT plugins,
 MCP UI, arbitrary shell/files, scaffolding `create`, and access to running
