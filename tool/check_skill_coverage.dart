@@ -20,6 +20,7 @@ const _expectedRouting = <String, String>{
   'localMcp': 'dartitect-mcp',
   'immutableModels': 'dartitect-modeling',
   'flutterPresentation': 'dartitect-ui',
+  'flutterQuality': 'dartitect-flutter-quality',
   'dartRuntimeSemantics': 'dartitect-dart',
   'incrementalOperations': 'dartitect-incremental',
   'runtimePerformance': 'dartitect-performance',

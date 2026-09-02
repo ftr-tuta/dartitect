@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dartitect_cli/dartitect_cli.dart';
+import 'package:dartitect_cli/src/codex/codex_skill_synchronizer.dart'
+    show setupFlutterCodexSkills;
 import 'package:dartitect_cli/src/codex/skill_catalog.dart';
 import 'package:test/test.dart';
 
@@ -133,6 +135,88 @@ void main() {
       'local skill\n',
     );
   });
+
+  test(
+    'Flutter setup manages only catalog assets and yields 16 NO-OPs',
+    () async {
+      final root = await _temporaryRoot();
+      final synchronizer = CodexSkillSynchronizer(root);
+
+      final applied = await setupFlutterCodexSkills(
+        synchronizer,
+        dryRun: false,
+      );
+      final preview = await setupFlutterCodexSkills(synchronizer, dryRun: true);
+
+      expect(applied.dryRun, isFalse);
+      expect(await File('${root.path}/AGENTS.md').exists(), isFalse);
+      expect(preview.operations, hasLength(16));
+      expect(
+        preview.operations.every((operation) => operation.startsWith('NO-OP ')),
+        isTrue,
+      );
+    },
+    timeout: const Timeout(Duration(minutes: 2)),
+  );
+
+  test('Flutter setup dry-run plans recovery without writing', () async {
+    final root = await _temporaryRoot();
+    final synchronizer = CodexSkillSynchronizer(root);
+    await setupFlutterCodexSkills(synchronizer, dryRun: false);
+    final skills = Directory('${root.path}/.agents/skills');
+    final target = Directory('${skills.path}/dartitect-runtime');
+    final expected = await File('${target.path}/SKILL.md').readAsString();
+    final backup = Directory('${root.path}/.dartitect-codex-backup');
+    await backup.create();
+    await target.rename('${backup.path}/dartitect-runtime');
+    await target.create();
+    await File('${target.path}/SKILL.md').writeAsString('partial\n');
+    final journal = File('${root.path}/.dartitect-codex-sync.json');
+    await journal.writeAsString(
+      jsonEncode(<String, Object?>{
+        'schemaVersion': 1,
+        'phase': 'staged',
+        'skills': <String>['dartitect-runtime'],
+      }),
+    );
+
+    final preview = await setupFlutterCodexSkills(synchronizer, dryRun: true);
+
+    expect(preview.operations.first, startsWith('RECOVER '));
+    expect(await File('${target.path}/SKILL.md').readAsString(), 'partial\n');
+    expect(await journal.exists(), isTrue);
+    await setupFlutterCodexSkills(synchronizer, dryRun: false);
+    expect(await File('${target.path}/SKILL.md').readAsString(), expected);
+    expect(await journal.exists(), isFalse);
+    expect(await backup.exists(), isFalse);
+  }, timeout: const Timeout(Duration(minutes: 2)));
+
+  test(
+    'irrecoverable Flutter setup fails before touching managed assets',
+    () async {
+      final root = await _temporaryRoot();
+      final synchronizer = CodexSkillSynchronizer(root);
+      await setupFlutterCodexSkills(synchronizer, dryRun: false);
+      final skill = File(
+        '${root.path}/.agents/skills/dartitect-runtime/SKILL.md',
+      );
+      final expected = await skill.readAsString();
+      await File('${root.path}/.dartitect-codex-sync.json')
+          .writeAsString('{invalid');
+
+      await expectLater(
+        setupFlutterCodexSkills(synchronizer, dryRun: false),
+        throwsA(isA<FileSystemException>()),
+      );
+
+      expect(await skill.readAsString(), expected);
+      expect(
+        await File('${root.path}/.dartitect-codex-sync.json').readAsString(),
+        '{invalid',
+      );
+    },
+    timeout: const Timeout(Duration(minutes: 2)),
+  );
 }
 
 Future<Directory> _temporaryRoot() async {

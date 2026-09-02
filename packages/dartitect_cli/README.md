@@ -3,8 +3,9 @@
 ## Purpose
 
 Local Dart VM inspection, architecture scanning, diagnostics, stable config,
-strict greenfield scans, modeling generation, dependency/fleet policy,
-managed Codex skill synchronization, and transactional filesystem changes.
+strict greenfield scans, executable Flutter quality evidence, modeling
+generation, dependency/fleet policy, managed Codex skill synchronization, and
+transactional filesystem changes.
 
 ## When to use
 
@@ -46,12 +47,15 @@ dartitect inspect --consumer-tax --json
 dartitect scan
 dartitect scan --jsonl
 dartitect inspect execution-model --json
+dartitect inspect flutter-quality --json
 dartitect doctor
 dartitect contracts check api/openapi.yaml --json
 dartitect contracts sync api/openapi.yaml --dry-run
 dartitect model check --json
 dartitect model sync
 dartitect codex sync --dry-run
+dartitect codex doctor --flutter --json
+dartitect codex setup --flutter --dry-run
 ```
 
 `model sync` previews by default and writes only with `--apply`. Other mutators
@@ -95,7 +99,8 @@ document their own `--dry-run`/apply form in `example/README.md`.
   exact candidate commit, runs a closed command allowlist only in a temporary
   consumer copy, sanitizes receipts, and verifies both originals are unchanged.
 - `CodexSkillSynchronizer` synchronizes every canonical catalog template while
-  preserving consumer-owned skill directories.
+  preserving consumer-owned skill directories. Flutter setup manages only
+  those assets and performs complete preflight before recovery or writes.
 - `DartitectVerificationService` and `DartitectCliRunner` map services to stable
   JSON and exit codes.
 - `FeatureProfile` and scaffold/generation types expose the `local`, `online`,
@@ -121,7 +126,8 @@ and synchronize it.
 ## Failure, cancellation, and concurrency
 
 Exit codes are `0` success, `1` findings/conflicts, `2` usage/configuration, and
-`3` unexpected I/O/internal failure. Plans fail closed on changed semantic input,
+`3` unexpected I/O/internal failure. `inspect flutter-quality` reserves `64` for
+its schema-defined usage failures. Plans fail closed on changed semantic input,
 path escape, symlink/traversal, manifest mismatch, lock conflict, or partial I/O.
 Recoverable journals preserve integral rollback.
 

@@ -216,10 +216,13 @@ dart run dartitect_cli:dartitect inspect --json
 dart run dartitect_cli:dartitect scan
 dart run dartitect_cli:dartitect doctor
 dart run dartitect_cli:dartitect inspect --consumer-tax --json
+dart run dartitect_cli:dartitect inspect flutter-quality --json
 dart run dartitect_cli:dartitect contracts check api/openapi.yaml --json
 dart run dartitect_cli:dartitect model check --json
 dart run dartitect_cli:dartitect wiring sync --dry-run --json
 dart run dartitect_cli:dartitect codex sync --dry-run
+dart run dartitect_cli:dartitect codex doctor --flutter --json
+dart run dartitect_cli:dartitect codex setup --flutter --dry-run
 ```
 
 Preview mutating operations before applying them. Generated-once files become

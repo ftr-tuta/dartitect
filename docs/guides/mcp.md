@@ -33,6 +33,21 @@ stderr. The process accepts repeated `--root` arguments; all must already exist.
 
 ## Codex
 
+For Flutter SDK and DevTools integration, install Flutter's official plugin as
+an explicit user action and begin a new session:
+
+```console
+codex plugin add dart-flutter@dart-flutter
+dartitect codex doctor --flutter
+dartitect codex setup --flutter --dry-run
+```
+
+The plugin supplies its own `dart mcp-server` and six official Flutter skills.
+Dartitect discovers those capabilities at runtime and never invents a missing
+tool. Setup is offline and synchronizes only catalog-managed Dartitect skills;
+it never installs the plugin, calls `npx`, modifies global Codex configuration,
+or creates `.vscode/mcp.json`.
+
 ```console
 codex mcp add dartitect -- dart run dartitect_mcp:dartitect_mcp --root .
 codex mcp list

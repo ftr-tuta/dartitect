@@ -5,7 +5,8 @@ export 'package:dartitect/dartitect.dart' show FeatureProfile;
 
 export 'src/blueprints/blueprint_service.dart';
 export 'src/cli/dartitect_cli_runner.dart';
-export 'src/codex/codex_skill_synchronizer.dart';
+export 'src/codex/codex_skill_synchronizer.dart'
+    show CodexSkillSynchronizer, CodexSyncResult;
 export 'src/config/dartitect_config.dart';
 export 'src/diagnostics/models.dart';
 export 'src/diagnostics/sarif.dart';

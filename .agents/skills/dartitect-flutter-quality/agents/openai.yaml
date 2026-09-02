@@ -1,0 +1,6 @@
+interface:
+  display_name: "Dartitect Flutter Quality"
+  short_description: "Prove executable Native Strict Flutter quality"
+  default_prompt: "Use $dartitect-flutter-quality to implement and prove this Flutter quality change."
+policy:
+  allow_implicit_invocation: true

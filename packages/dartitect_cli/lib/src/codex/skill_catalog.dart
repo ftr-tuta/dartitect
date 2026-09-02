@@ -1137,6 +1137,139 @@ audits send screenshots, semantics, or content to telemetry.
     },
   ),
   DartitectSkillTemplate(
+    name: 'dartitect-flutter-quality',
+    displayName: 'Dartitect Flutter Quality',
+    shortDescription: 'Prove executable Native Strict Flutter quality',
+    defaultPrompt: r'Use $dartitect-flutter-quality to implement and prove this Flutter quality change.',
+    files: <String, String>{
+      'SKILL.md': r'''---
+name: dartitect-flutter-quality
+description: Implement or audit executable Flutter quality in a Native Strict Dartitect application. Use for responsive constraints, previews, MVVM/repositories, DevTools runtime evidence, multi-platform behavior, tests, or structural performance; coordinate Flutter's official skills instead of copying them.
+---
+
+# Prove Flutter quality
+
+## When to use
+
+Use this skill when Flutter quality must be demonstrated by source, previews,
+runtime inspection, tests, platforms, or agent-evaluation evidence.
+
+## When not to use
+
+Use `$dartitect-ui` for ordinary presentation composition and the focused
+runtime, offline-first, testing, or performance skill for a non-Flutter
+boundary. Do not install plugins or claim unavailable MCP tools.
+
+## Invariants
+
+Apply Native Strict. Keep widgets value/callback-only, ViewModels responsible
+for state/commands/effects, repositories provider-neutral, and exactly one
+store selected at composition. Previews are dev-only, synthetic, immutable,
+and free of I/O, adapters, plugins, globals, and app lifecycle.
+
+## Workflow
+
+Route the task by name to the applicable official skills:
+`flutter-apply-architecture-best-practices`,
+`flutter-build-responsive-layout`, `flutter-fix-layout-issues`,
+`flutter-add-widget-preview`, `flutter-add-widget-test`, and
+`flutter-add-integration-test`. Use only skills actually discovered from
+`dart-flutter@dart-flutter`; do not duplicate their instructions.
+
+Read [references/architecture-and-previews.md](references/architecture-and-previews.md)
+for MVVM, repositories, responsive composition, and preview safety. Read
+[references/runtime-devtools-and-mcp.md](references/runtime-devtools-and-mcp.md)
+when live inspection is applicable. Read
+[references/tests-and-evidence.md](references/tests-and-evidence.md) for the
+verification matrix. Read [references/performance.md](references/performance.md)
+for structural budgets and informative measurements.
+
+## Validate
+
+Require explicit analyze, strict audit, preview compilation, runtime inspection,
+tests, and platform evidence. Mark unavailable MCP or a missing applicable
+dimension as not evidenced. Never store transcripts, screenshots, semantics,
+or visible content in evaluation receipts.
+''',
+      'references/architecture-and-previews.md': r'''# Architecture and previews
+
+Use the route `Page -> ViewModel -> Repository -> store/outbox -> remote
+service`. The Page owns route lifecycle, controllers, mounted navigation, and
+effect delivery. The View observes one ViewModel. Reusable content, rows,
+details, and diagnostics receive immutable values and callbacks, never
+sessions, roots, providers, Stores, clients, or internal payloads.
+
+A provider-neutral repository coordinates local-first behavior and selects
+exactly one Memory, Drift, or ObjectBox store at composition. Never dual-write
+or migrate engines implicitly. Fence restart-latest search generations and
+publish only the current aggregate. Keep query, selection, scroll, and focus
+above compact/medium/expanded branch replacement; use lazy builders and
+row-scoped selectors.
+
+Use `DartitectPreviewMatrix` only for device size, brightness, and text scale.
+Keep RTL, contrast, reduced motion, semantics, focus, and keyboard in
+`DartitectUiMatrix`. Preview functions live in permitted dev-only locations
+and return widgets from immutable synthetic view data and pure callbacks.
+They cannot reach native I/O, FFI, network, stores, adapters, plugins, global
+initialization, or application lifecycle.
+''',
+      'references/runtime-devtools-and-mcp.md': r'''# Runtime, DevTools, and MCP
+
+Discover Flutter tools at runtime from the official
+`dart-flutter@dart-flutter` plugin and its `dart mcp-server`. Do not infer a
+tool name or fabricate output. If the plugin, MCP server, a running target, or
+a necessary tool is absent, record the exact missing evidence and continue
+with the applicable static and test evidence.
+
+Inspect finite layout constraints, widget/runtime errors, overflow, rebuild
+scope, focus, scroll, interaction paths, first useful state, and cleanup.
+Runtime evidence stays payload-free: record counts, statuses, tool identity,
+and digests, not screen text, semantics, screenshots, or transcripts.
+
+`dartitect codex doctor --flutter` is read-only and offline. Plugin installation
+is a manual user action with `codex plugin add dart-flutter@dart-flutter`.
+Dartitect setup manages only catalog assets and never creates or edits
+`.vscode/mcp.json`.
+''',
+      'references/tests-and-evidence.md': r'''# Tests and evidence
+
+Test ViewModel transitions, generation cancellation, mounted effects, and the
+common repository contract for Memory, Drift, and ObjectBox. Widget tests cover
+all visible states, callback purity, diagnostics view data, responsive branch
+replacement, selection, scroll, focus, keyboard, mouse, and touch. Integration
+journeys cover smoke, resize, commands, offline/reconnect, search/toggle,
+forced logout, and the 10,000-item fixture.
+
+Compile discovered previews from a temporary copy with
+`flutter widget-preview start --no-launch-previewer`. Run `dart analyze`,
+`flutter analyze`, the strict Dartitect UI audit, focused and complete tests,
+Chrome, and supported hosted builds. Prove previews and widget tests invoke no
+network or plugin boundary.
+
+An exact-SHA agent-evaluation compares baseline, official skills, and official
+skills plus Dartitect with one model/configuration/sandbox. The complete variant
+must pass structural scorers and prove real MCP in the DevTools case.
+''',
+      'references/performance.md': r'''# Performance evidence
+
+Collect first frame/useful state, FrameTiming build/raster p50/p95, frames over
+budget, rebuilds, rows materialized, queue depth, first search result,
+cancel/dispose, and residual subscriptions/watchers/timers/workers inside
+canary support only. Do not add a public performance API.
+
+Block zero-overflow, zero-framework-error, zero-late-publication,
+zero-residual-resource, fewer than 100 rows materialized before scrolling
+10,000 items, state preservation on resize, no heavy/provider work in
+presentation, no network/plugin in previews or widget tests, and constrained
+images.
+
+Treat time and memory as informative until runner, Flutter version, build
+mode, fixture, and measurement window match an equivalent baseline. Do not
+turn one machine's measurements into portable release thresholds.
+''',
+    },
+  ),
+  DartitectSkillTemplate(
     name: 'dartitect-testing',
     displayName: 'Dartitect Testing',
     shortDescription: 'Verify failure, lifecycle, provider, and leak contracts',

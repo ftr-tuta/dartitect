@@ -265,6 +265,59 @@ import 'package:flutter/widgets.dart';
     );
   }, timeout: const Timeout(Duration(minutes: 2)));
 
+  test(
+    'codex Flutter setup requires one mode and remains catalog-only',
+    () async {
+      final root = await Directory.systemTemp.createTemp(
+        'dartitect-codex-setup-',
+      );
+      addTearDown(() => root.delete(recursive: true));
+      final editor = File('${root.path}/.vscode/mcp.json');
+      await editor.parent.create(recursive: true);
+      await editor.writeAsString('{"external":true}\n');
+      final output = StringBuffer();
+      final errors = StringBuffer();
+      final runner = DartitectCliRunner(
+        currentDirectory: root,
+        stdoutSink: output,
+        stderrSink: errors,
+      );
+
+      expect(await runner.run(<String>['codex', 'setup', '--flutter']), 2);
+      expect(
+        await runner.run(<String>[
+          'codex',
+          'setup',
+          '--flutter',
+          '--dry-run',
+          '--apply',
+        ]),
+        2,
+      );
+      expect(
+        await runner.run(<String>['codex', 'setup', '--flutter', '--apply']),
+        0,
+      );
+      output.clear();
+      expect(
+        await runner.run(<String>['codex', 'setup', '--flutter', '--dry-run']),
+        0,
+      );
+
+      expect(
+        RegExp(
+          r'^NO-OP \.agents/skills/dartitect-',
+          multiLine: true,
+        ).allMatches(output.toString()),
+        hasLength(16),
+      );
+      expect(output.toString(), contains('codex plugin add dart-flutter'));
+      expect(await File('${root.path}/AGENTS.md').exists(), isFalse);
+      expect(await editor.readAsString(), '{"external":true}\n');
+    },
+    timeout: const Timeout(Duration(minutes: 2)),
+  );
+
   test('create app requires targets and rejects productive defaults', () async {
     final root = await Directory.systemTemp.createTemp('dartitect-app-');
     addTearDown(() => root.delete(recursive: true));
