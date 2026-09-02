@@ -66,6 +66,12 @@ dependencies:
 
 dev_dependencies:
   build_runner: 2.16.0
+  dartitect_flutter_testing:
+    git:
+      url: https://github.com/ftr-tuta/dartitect.git
+      path: packages/dartitect_flutter_testing
+      tag_pattern: 'v{{version}}'
+    version: 1.1.0-rc.2
   dartitect_testing:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
@@ -74,6 +80,8 @@ dev_dependencies:
     version: 1.1.0-rc.2
   drift_dev: 2.34.3
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
 
 flutter:

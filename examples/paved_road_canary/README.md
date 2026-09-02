@@ -12,6 +12,9 @@ Cupertino convention directly. It proves the responsive window API, exhaustive
 command/form/query/resource builders, the paired accessibility matrix, keyboard
 activation, and fixed compact/medium/expanded shared-layout goldens. Product
 themes, copy, localization, navigation, and visual identity remain app-owned.
+The private `lib/src/dev` preview contains only immutable synthetic values. The
+Linux integration journey exercises resize, retained navigation state, touch,
+mouse, keyboard, command execution, and cleanup.
 
 DevTools registration occurs only inside an assertion, so the three read-only
 service extensions are absent from product and release builds.
@@ -20,6 +23,7 @@ Run the canary with:
 
 ```sh
 flutter test
+flutter test -d linux integration_test/flutter_quality_journey_test.dart
 flutter build web
 flutter build linux
 flutter build apk --debug

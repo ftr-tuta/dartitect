@@ -42,6 +42,8 @@ Run the normal deterministic suite:
 
 ```text
 flutter test examples/reference_app
+flutter test -d linux \
+  examples/reference_app/integration_test/flutter_quality_journey_test.dart
 ```
 
 Run the verified native ObjectBox gate on the current host:
