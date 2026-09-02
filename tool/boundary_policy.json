@@ -31,6 +31,8 @@
     "infrastructure": ["**/infrastructure/**"],
     "presentation": [
       "**/presentation/**",
+      "lib/src/dev/**",
+      "**/lib/src/dev/**",
       "**/*_page.dart",
       "**/*_view.dart",
       "**/*_view_model.dart"

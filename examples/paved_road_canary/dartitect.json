@@ -6,7 +6,11 @@
     "application": ["**/application/**"],
     "data": ["**/data/**"],
     "infrastructure": ["**/infrastructure/**"],
-    "presentation": ["**/presentation/**"]
+    "presentation": [
+      "**/presentation/**",
+      "lib/src/dev/**",
+      "**/lib/src/dev/**"
+    ]
   },
   "compositionRoots": ["lib/main.dart", "test/**"],
   "generatedInfrastructure": ["**/infrastructure/**/*.g.dart"],

@@ -165,6 +165,13 @@ makes warnings fail the command. CLI and analyzer use the same versioned parity
 corpus. Reviewed suppressions use the existing narrow code/path, owner, reason,
 and expiry contract.
 
+Resolved analyzer errors add three executable groups: `DT3120`–`DT3128` for
+presentation/MVVM and lifecycle ownership, `DT3130`–`DT3132` for preview purity,
+and `DT3140`–`DT3145` for lazy and bounded rendering. The offline CLI reserves
+the identical codes but emits only warnings when syntax cannot prove library,
+type, or inheritance identity. The parity corpus includes positive and negative
+cases, aliases, indirect exports, and safe homonyms.
+
 Keep goldens only for shared compact, medium, and expanded layouts on a fixed
 runner, font, and renderer. Semantics and behavior are the primary gate. No
 Dartitect test, audit, or golden uploads screenshots, semantics, or screen

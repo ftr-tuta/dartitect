@@ -28,7 +28,25 @@
     "DARTITECT_DT3103": "DT3103",
     "DARTITECT_DT3104": "DT3104",
     "DARTITECT_DT3105": "DT3105",
-    "DARTITECT_DT3106": "DT3106"
+    "DARTITECT_DT3106": "DT3106",
+    "DARTITECT_DT3120": "DT3120",
+    "DARTITECT_DT3121": "DT3121",
+    "DARTITECT_DT3122": "DT3122",
+    "DARTITECT_DT3123": "DT3123",
+    "DARTITECT_DT3124": "DT3124",
+    "DARTITECT_DT3125": "DT3125",
+    "DARTITECT_DT3126": "DT3126",
+    "DARTITECT_DT3127": "DT3127",
+    "DARTITECT_DT3128": "DT3128",
+    "DARTITECT_DT3130": "DT3130",
+    "DARTITECT_DT3131": "DT3131",
+    "DARTITECT_DT3132": "DT3132",
+    "DARTITECT_DT3140": "DT3140",
+    "DARTITECT_DT3141": "DT3141",
+    "DARTITECT_DT3142": "DT3142",
+    "DARTITECT_DT3143": "DT3143",
+    "DARTITECT_DT3144": "DT3144",
+    "DARTITECT_DT3145": "DT3145"
   },
   "cases": [
     {
@@ -65,6 +83,30 @@
     },
     {
       "path": "lib/features/orders/presentation/app_theme.dart",
+      "expected": []
+    },
+    {
+      "path": "lib/features/orders/presentation/flutter_architecture_violations.dart",
+      "expected": ["DT1008", "DT3120", "DT3121", "DT3122", "DT3123", "DT3124", "DT3125", "DT3126", "DT3127", "DT3128"]
+    },
+    {
+      "path": "lib/features/orders/presentation/flutter_preview_violations.dart",
+      "expected": ["DT3130", "DT3131", "DT3132"]
+    },
+    {
+      "path": "lib/features/orders/presentation/flutter_performance_violations.dart",
+      "expected": ["DT3140", "DT3141", "DT3142", "DT3143", "DT3144", "DT3145"]
+    },
+    {
+      "path": "lib/features/orders/presentation/flutter_indirect_infrastructure_access.dart",
+      "expected": ["DT3121"]
+    },
+    {
+      "path": "lib/features/orders/presentation/flutter_quality_homonyms.dart",
+      "expected": []
+    },
+    {
+      "path": "lib/src/dev/features/orders/presentation/flutter_quality_safe.dart",
       "expected": []
     },
     {

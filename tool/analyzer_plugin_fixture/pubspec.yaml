@@ -11,6 +11,8 @@ dependencies:
     path: dependencies/dartitect_dio
   dartitect_flutter:
     path: dependencies/dartitect_flutter
+  dartitect_flutter_testing:
+    path: dependencies/dartitect_flutter_testing
   dartitect_observability:
     path: dependencies/dartitect_observability
   dartitect_sentry:

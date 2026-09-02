@@ -187,8 +187,8 @@ final class FlutterCodexDoctor {
       '--json',
     ]);
     if (structured.exitCode == 0) {
-      try {
-        final decoded = jsonDecode(structured.stdout);
+      final decoded = _tryDecodeJson(structured.stdout);
+      if (decoded != null) {
         final tokens = _flattenStrings(decoded).toSet();
         final installed =
             tokens.contains('dart-flutter@dart-flutter') ||
@@ -209,8 +209,6 @@ final class FlutterCodexDoctor {
             ],
           ),
         );
-      } on FormatException {
-        // Fall through to the exact text compatibility path.
       }
     }
     final text = await _commandRunner('codex', const <String>[
@@ -445,6 +443,14 @@ final class FlutterCodexDoctor {
     return (value['installed']! as List<Object?>).any(
       (entry) => _flattenStrings(entry).contains(name),
     );
+  }
+
+  static Object? _tryDecodeJson(String source) {
+    try {
+      return jsonDecode(source);
+    } on FormatException {
+      return null;
+    }
   }
 
   static Iterable<String> _flattenStrings(Object? value) sync* {

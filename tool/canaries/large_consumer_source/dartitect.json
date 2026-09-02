@@ -15,7 +15,9 @@
       "**/infrastructure/**"
     ],
     "presentation": [
-      "**/presentation/**"
+      "**/presentation/**",
+      "lib/src/dev/**",
+      "**/lib/src/dev/**"
     ]
   },
   "compositionRoots": [

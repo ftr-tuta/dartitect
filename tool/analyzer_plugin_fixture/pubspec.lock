@@ -46,6 +46,13 @@ packages:
       relative: true
     source: path
     version: "1.1.0-rc.2"
+  dartitect_flutter_testing:
+    dependency: "direct main"
+    description:
+      path: "dependencies/dartitect_flutter_testing"
+      relative: true
+    source: path
+    version: "1.1.0-rc.2"
   dartitect_observability:
     dependency: "direct main"
     description:

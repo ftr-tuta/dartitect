@@ -80,6 +80,8 @@ abstract final class DartitectArchitectureRules {
     'infrastructure': <String>['**/infrastructure/**'],
     'presentation': <String>[
       '**/presentation/**',
+      'lib/src/dev/**',
+      '**/lib/src/dev/**',
       '**/*_page.dart',
       '**/*_view.dart',
       '**/*_view_model.dart',

@@ -16,3 +16,11 @@ final class SessionHost<R, D> {
 final class ViewModelHost<T> {
   const ViewModelHost.value({required T value});
 }
+
+class SessionState<S extends Object> {
+  const SessionState();
+}
+
+final class SessionStateController<S extends Object> {
+  const SessionStateController();
+}

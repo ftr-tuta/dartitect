@@ -1,0 +1,6 @@
+name: dartitect_flutter_testing
+version: 1.1.0-rc.2
+publish_to: none
+
+environment:
+  sdk: ^3.13.0

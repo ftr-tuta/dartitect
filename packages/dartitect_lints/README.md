@@ -62,8 +62,23 @@ Diagnostics:
 - `DT1053` a custom telemetry capture value lacks explicit classification.
 - `DT1054` a legacy Sentry adapter is registered in a prepared runtime.
 
-The analyzer and `dartitect scan` use the same policy and parity corpus for
-these privacy bypasses. They do not require or create config v4.
+Executable Flutter quality diagnostics are grouped by boundary:
+
+- `DT3120`–`DT3128` enforce presentation, MVVM, observable ownership,
+  lifecycle cleanup, and mounted-context boundaries.
+- `DT3130`–`DT3132` enforce preview signatures, dev-only placement, and pure
+  fixture/runtime reachability.
+- `DT3140`–`DT3145` enforce lazy collections, single scroll ownership, static
+  builder children, bounded build work, and finite image constraints.
+
+These diagnostics are errors only when the analyzer proves the relevant
+library, type, or inheritance identity. The offline syntax-only UI auditor
+emits the same stable codes as warnings; `dartitect ui audit --strict` promotes
+those warnings at the gate.
+
+The analyzer and CLI use the same versioned parity corpus for architecture,
+privacy, and Flutter quality boundaries. They do not require or create config
+v4.
 
 ## Ownership and lifecycle
 
