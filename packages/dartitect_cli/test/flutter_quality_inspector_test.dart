@@ -136,6 +136,25 @@ Widget view() => LayoutBuilder(builder: (_, __) => const SizedBox());
     );
   });
 
+  test('ignores deliberately broken agent evaluation fixtures', () async {
+    final root = await _root('eval_fixture');
+    await File('${root.path}/pubspec.yaml').writeAsString(
+      'name: eval_fixture\ndependencies:\n  flutter:\n    sdk: flutter\n',
+    );
+    final fixtures = Directory('${root.path}/tool/agent_evals/fixtures');
+    await fixtures.create(recursive: true);
+    await File('${fixtures.path}/unsafe_preview.dart').writeAsString(
+      "import 'dart:io';\n@Preview()\nObject preview() => File('x');\n",
+    );
+
+    final report = await FlutterQualityInspector(root).inspect();
+
+    expect(
+      report.techniques.values.map((entry) => entry.status),
+      isNot(contains(FlutterQualityStatus.fail)),
+    );
+  });
+
   test('CLI emits the schema and reserves usage exit code 64', () async {
     final root = await _root('quality_cli');
     await File('${root.path}/pubspec.yaml')

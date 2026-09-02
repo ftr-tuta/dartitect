@@ -3,6 +3,8 @@ analyzer:
     - "**/.dart_tool/**"
     - "**/build/**"
     - "tool/analyzer_plugin_fixture/**"
+    - "tool/agent_evals/fixtures/**"
+    - "tool/agent_evals/scorers/**"
     - "tool/canaries/**"
     - build/**
     - android/**

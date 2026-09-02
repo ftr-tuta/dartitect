@@ -156,6 +156,10 @@ Future<void> main(List<String> arguments) async {
         '$name is not routed through dartitect-flutter-quality.',
       );
       require(
+        _same(_strings(technique['evals']), <String>[name]),
+        '$name does not map to its aggregate agent eval case.',
+      );
+      require(
         _same(_strings(technique['platforms']), _platforms),
         '$name does not cover the six platforms.',
       );
@@ -220,6 +224,17 @@ Future<void> main(List<String> arguments) async {
       ]),
       'Timing and memory must remain informative.',
     );
+    final agentEvaluations = _map(contract['agentEvaluations']);
+    require(
+      agentEvaluations['corpus'] == 'tool/agent_evals/corpus.json' &&
+          agentEvaluations['checker'] == 'tool/check_agent_evals.dart' &&
+          agentEvaluations['requiredEvaluations'] == 21 &&
+          agentEvaluations['trendEvaluations'] == 63 &&
+          agentEvaluations['sandbox'] == 'docker',
+      'Agent evaluation evidence is incomplete.',
+    );
+    _mustExist(root, '${agentEvaluations['corpus']}', failures);
+    _mustExist(root, '${agentEvaluations['checker']}', failures);
     final privacy = _map(contract['privacy']);
     require(
       privacy.length == 4 && privacy.values.every((value) => value == false),

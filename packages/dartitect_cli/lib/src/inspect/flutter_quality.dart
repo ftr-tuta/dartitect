@@ -322,6 +322,8 @@ final class FlutterQualityInspector {
   static bool _excluded(String path) =>
       path.startsWith('.dart_tool/') ||
       path.startsWith('build/') ||
+      path.startsWith('tool/agent_evals/fixtures/') ||
+      path.startsWith('tool/agent_evals/scorers/') ||
       path.contains('/.dart_tool/') ||
       path.contains('/build/') ||
       path.endsWith('.g.dart');
