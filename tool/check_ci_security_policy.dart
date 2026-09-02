@@ -78,8 +78,21 @@ void _auditWorkflows(Directory root, List<String> errors) {
           )
           .toList()
         ..sort((left, right) => left.path.compareTo(right.path));
-  if (workflows.length != 3) {
-    errors.add('Expected exactly three GitHub Actions workflows.');
+  const expectedWorkflowNames = <String>{
+    'ci.yaml',
+    'flutter_quality_evals.yml',
+    'release.yaml',
+    'security.yaml',
+  };
+  final workflowNames = workflows
+      .map((workflow) => workflow.uri.pathSegments.last)
+      .toSet();
+  if (workflowNames.length != expectedWorkflowNames.length ||
+      !workflowNames.containsAll(expectedWorkflowNames)) {
+    errors.add(
+      'Expected exactly the reviewed GitHub Actions workflows: '
+      '${expectedWorkflowNames.toList()..sort()}.',
+    );
   }
   for (final workflow in workflows) {
     final relative = _relative(root, workflow);
