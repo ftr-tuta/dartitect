@@ -38,10 +38,16 @@ The automated workload covers:
 - native ObjectBox close/reopen of the same directory and durable outbox
   recovery.
 
+The test-only performance workload records first-frame/useful-state/search,
+frame timing percentiles, rebuilds, queue/cancellation/disposal counts, the 10k
+virtualization census, and residual resources. Structural invariants block;
+timing and memory remain informative until an equivalent baseline exists.
+
 Run the normal deterministic suite:
 
 ```text
 flutter test examples/reference_app
+flutter test examples/reference_app/test/flutter_quality_performance_test.dart
 flutter test -d linux \
   examples/reference_app/integration_test/flutter_quality_journey_test.dart
 ```
