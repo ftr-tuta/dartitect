@@ -16048,7 +16048,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "tooling-test",
-              "declaration": "DartitectCliRunner({StringSink? stdoutSink, StringSink? stderrSink, Directory? currentDirectory})",
+              "declaration": "DartitectCliRunner({StringSink? stdoutSink, StringSink? stderrSink, Directory? currentDirectory, Stream<Object?>? interruptSignals})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -16075,6 +16075,14 @@
                   "name": "currentDirectory",
                   "declaration": "{Directory? currentDirectory}",
                   "type": "Directory?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "interruptSignals",
+                  "declaration": "{Stream<Object?>? interruptSignals}",
+                  "type": "Stream<Object?>?",
                   "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
@@ -23150,6 +23158,152 @@
           ]
         },
         {
+          "name": "ExecutionModelInspection",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ExecutionModelInspection",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ExecutionModelInspection({required int dartFileCount, required List<DartitectFinding> findings})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ExecutionModelInspection",
+              "parameters": [
+                {
+                  "name": "dartFileCount",
+                  "declaration": "{required int dartFileCount}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "findings",
+                  "declaration": "{required List<DartitectFinding> findings}",
+                  "type": "List<DartitectFinding>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "dartFileCount",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "int dartFileCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "findings",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<DartitectFinding> findings",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<DartitectFinding>"
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "ExecutionModelInspector",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ExecutionModelInspector",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ExecutionModelInspector(Directory root)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "ExecutionModelInspector",
+              "parameters": [
+                {
+                  "name": "root",
+                  "declaration": "Directory root",
+                  "type": "Directory",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "root",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "Directory root",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Directory"
+            },
+            {
+              "name": "inspect",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Future<ExecutionModelInspection> inspect()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<ExecutionModelInspection>",
+              "parameters": []
+            }
+          ]
+        },
+        {
           "name": "FeatureScaffoldOptions",
           "kind": "class",
           "audience": "tooling-test",
@@ -24989,6 +25143,760 @@
                 "final"
               ],
               "type": "List<DartitectFinding>"
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "ProjectScanCancelled",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ProjectScanCancelled extends ProjectScanEvent",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "ProjectScanEvent",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ProjectScanCancelled({required DateTime timestamp, required int discoveredFileCount, required int analyzedFileCount})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ProjectScanCancelled",
+              "parameters": [
+                {
+                  "name": "timestamp",
+                  "declaration": "{required DateTime timestamp}",
+                  "type": "DateTime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "discoveredFileCount",
+                  "declaration": "{required int discoveredFileCount}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "analyzedFileCount",
+                  "declaration": "{required int analyzedFileCount}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "analyzedFileCount",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "int analyzedFileCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "discoveredFileCount",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "int discoveredFileCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "kind",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "String get kind",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "ProjectScanCompleted",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ProjectScanCompleted extends ProjectScanEvent",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "ProjectScanEvent",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ProjectScanCompleted({required DateTime timestamp, required ProjectScan scan})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ProjectScanCompleted",
+              "parameters": [
+                {
+                  "name": "timestamp",
+                  "declaration": "{required DateTime timestamp}",
+                  "type": "DateTime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "scan",
+                  "declaration": "{required ProjectScan scan}",
+                  "type": "ProjectScan",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "scan",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "ProjectScan scan",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "ProjectScan"
+            },
+            {
+              "name": "kind",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "String get kind",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "ProjectScanEvent",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "sealed class ProjectScanEvent",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "sealed"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ProjectScanEvent({required DateTime timestamp})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ProjectScanEvent",
+              "parameters": [
+                {
+                  "name": "timestamp",
+                  "declaration": "{required DateTime timestamp}",
+                  "type": "DateTime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "schemaVersion",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "int schemaVersion",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "timestamp",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DateTime timestamp",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DateTime"
+            },
+            {
+              "name": "kind",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "String get kind",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "ProjectScanFileAnalyzed",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ProjectScanFileAnalyzed extends ProjectScanEvent",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "ProjectScanEvent",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ProjectScanFileAnalyzed({required DateTime timestamp, required String path, required int index, required int total, required bool cacheHit})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ProjectScanFileAnalyzed",
+              "parameters": [
+                {
+                  "name": "timestamp",
+                  "declaration": "{required DateTime timestamp}",
+                  "type": "DateTime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "path",
+                  "declaration": "{required String path}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "index",
+                  "declaration": "{required int index}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "total",
+                  "declaration": "{required int total}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cacheHit",
+                  "declaration": "{required bool cacheHit}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "cacheHit",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "bool cacheHit",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "index",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "int index",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "path",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String path",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "total",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "int total",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "kind",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "String get kind",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "ProjectScanFileDiscovered",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ProjectScanFileDiscovered extends ProjectScanEvent",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "ProjectScanEvent",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ProjectScanFileDiscovered({required DateTime timestamp, required String path, required int index, required int total})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ProjectScanFileDiscovered",
+              "parameters": [
+                {
+                  "name": "timestamp",
+                  "declaration": "{required DateTime timestamp}",
+                  "type": "DateTime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "path",
+                  "declaration": "{required String path}",
+                  "type": "String",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "index",
+                  "declaration": "{required int index}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "total",
+                  "declaration": "{required int total}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "index",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "int index",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "path",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "String path",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "total",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "int total",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "kind",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "String get kind",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "ProjectScanFinding",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ProjectScanFinding extends ProjectScanEvent",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "ProjectScanEvent",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ProjectScanFinding({required DateTime timestamp, required DartitectFinding finding, required bool isViolation})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ProjectScanFinding",
+              "parameters": [
+                {
+                  "name": "timestamp",
+                  "declaration": "{required DateTime timestamp}",
+                  "type": "DateTime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "finding",
+                  "declaration": "{required DartitectFinding finding}",
+                  "type": "DartitectFinding",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "isViolation",
+                  "declaration": "{required bool isViolation}",
+                  "type": "bool",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "finding",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectFinding finding",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DartitectFinding"
+            },
+            {
+              "name": "isViolation",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "bool isViolation",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "bool"
+            },
+            {
+              "name": "kind",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "String get kind",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "ProjectScanStarted",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ProjectScanStarted extends ProjectScanEvent",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "ProjectScanEvent",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ProjectScanStarted({required DateTime timestamp})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "ProjectScanStarted",
+              "parameters": [
+                {
+                  "name": "timestamp",
+                  "declaration": "{required DateTime timestamp}",
+                  "type": "DateTime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "kind",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "String get kind",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "toJson",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Map<String, Object?> toJson()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Map<String, Object?>",
+              "parameters": []
             }
           ]
         },
@@ -25011,7 +25919,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "tooling-test",
-              "declaration": "ProjectScanner(Directory root)",
+              "declaration": "ProjectScanner(Directory root, {ProjectSourceIndex? sourceIndex})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -25023,6 +25931,14 @@
                   "declaration": "Directory root",
                   "type": "Directory",
                   "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "sourceIndex",
+                  "declaration": "{ProjectSourceIndex? sourceIndex}",
+                  "type": "ProjectSourceIndex?",
+                  "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
                 }
@@ -25041,6 +25957,18 @@
               "type": "Directory"
             },
             {
+              "name": "sourceIndex",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "ProjectSourceIndex sourceIndex",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "ProjectSourceIndex"
+            },
+            {
               "name": "scan",
               "kind": "method",
               "audience": "tooling-test",
@@ -25050,6 +25978,137 @@
               "modifiers": [],
               "typeParameters": [],
               "returnType": "Future<ProjectScan>",
+              "parameters": []
+            },
+            {
+              "name": "scanEvents",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "Stream<ProjectScanEvent> scanEvents({CancellationSignal? cancellation})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Stream<ProjectScanEvent>",
+              "parameters": [
+                {
+                  "name": "cancellation",
+                  "declaration": "{CancellationSignal? cancellation}",
+                  "type": "CancellationSignal?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "ProjectSourceIndex",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class ProjectSourceIndex",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "ProjectSourceIndex({int capacity = 2048})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "ProjectSourceIndex",
+              "parameters": [
+                {
+                  "name": "capacity",
+                  "declaration": "{int capacity = 2048}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "2048",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "capacity",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "int capacity",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "evictionCount",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "int get evictionCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "hitCount",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "int get hitCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "length",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "int get length",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "missCount",
+              "kind": "getter",
+              "audience": "tooling-test",
+              "declaration": "int get missCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "clear",
+              "kind": "method",
+              "audience": "tooling-test",
+              "declaration": "void clear()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
               "parameters": []
             }
           ]
@@ -25645,6 +26704,20 @@
               "kind": "field",
               "audience": "tooling-test",
               "declaration": "DartitectExitCode internal",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "DartitectExitCode"
+            },
+            {
+              "name": "interrupted",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "DartitectExitCode interrupted",
               "deprecated": false,
               "annotations": [],
               "modifiers": [

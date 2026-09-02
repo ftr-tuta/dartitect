@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add deterministic progressive scan events, bounded four-file analysis,
+  content/config-aware LRU source facts, JSON Lines output, and SIGINT
+  cancellation with exit code 130.
+- Add the non-blocking `inspect execution-model` heuristic corpus with
+  DT2200-DT2211 findings that never change its successful inspection exit code.
 - Add `balanced` observability privacy scaffolding, privacy-bypass scan diagnostics, and candidate-aware release tooling.
 - Traverse resolved dependency graphs with a deque-backed tooling queue.
 

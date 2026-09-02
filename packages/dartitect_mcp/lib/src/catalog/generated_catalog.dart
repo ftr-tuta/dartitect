@@ -509,13 +509,61 @@ abstract final class DartitectGeneratedCatalog {
       "summary": "A resolved Dartitect package is outside its generated compatibility range.",
       "remediation": "Resolve a version accepted by the RC10 package compatibility manifest."
     },
-    "DT2200": {
+    "DT2198": {
       "summary": "The opt-in deep analyzer check failed.",
       "remediation": "Run `dart analyze` and resolve diagnostics."
     },
-    "DT2201": {
+    "DT2199": {
       "summary": "The opt-in deep analyzer check timed out.",
       "remediation": "Run the analyzer directly and inspect its performance."
+    },
+    "DT2200": {
+      "summary": "An eager collection materialization may increase latency and memory.",
+      "remediation": "Keep the source lazy or collect into an explicit bounded buffer."
+    },
+    "DT2201": {
+      "summary": "A List is used as a FIFO with linear front removal.",
+      "remediation": "Use ListQueue or a bounded ring buffer for queue semantics."
+    },
+    "DT2202": {
+      "summary": "A retained collection has no visible capacity policy.",
+      "remediation": "Declare a bound, eviction policy, or externally owned persistence seam."
+    },
+    "DT2203": {
+      "summary": "Listener dispatch combines a snapshot with linear membership checks.",
+      "remediation": "Use a tombstoned listener registry with reentrancy-safe linear dispatch."
+    },
+    "DT2204": {
+      "summary": "A sort appears on a potentially repeated execution path.",
+      "remediation": "Maintain stable admission order or precompile the ordering once."
+    },
+    "DT2205": {
+      "summary": "Dependency readiness appears to rescan prerequisite collections.",
+      "remediation": "Build a dependent map and update indegrees as nodes complete."
+    },
+    "DT2206": {
+      "summary": "Future.wait admits a mapped input without a visible concurrency bound.",
+      "remediation": "Use a bounded worker lane and pause the producer at admission capacity."
+    },
+    "DT2207": {
+      "summary": "An async stream listener has no visible pause or backpressure protocol.",
+      "remediation": "Pause input or await each item through an explicit incremental consumer."
+    },
+    "DT2208": {
+      "summary": "A synchronous StreamController requires a reentrancy justification.",
+      "remediation": "Test nested add, pause, cancellation, and dispose or use async delivery."
+    },
+    "DT2209": {
+      "summary": "An async generator may perform substantial work before its first yield.",
+      "remediation": "Keep CPU and I/O bounded between emissions or move work behind a pool."
+    },
+    "DT2210": {
+      "summary": "The same source file serializes analyzer nodes repeatedly.",
+      "remediation": "Reuse the original source string or one serialized projection."
+    },
+    "DT2211": {
+      "summary": "A loop performs repeated linear membership checks.",
+      "remediation": "Precompute a Set or indexed registry before entering the hot loop."
     },
     "DT2400": {
       "summary": "Managed Codex skills are not installed.",
@@ -655,6 +703,6 @@ abstract final class DartitectGeneratedCatalog {
     },
     "extensionSources": []
   },
-  "apiSnapshotHash": "8fb493fc"
+  "apiSnapshotHash": "53e2e24c"
 }''';
 }

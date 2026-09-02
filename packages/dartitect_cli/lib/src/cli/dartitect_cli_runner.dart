@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dartitect/dartitect.dart' show FeatureProfile;
+import 'package:dartitect/dartitect.dart'
+    show CancellationSource, FeatureProfile;
 
 import '../blueprints/blueprint_service.dart';
 import '../config/dartitect_config.dart';
@@ -13,6 +14,7 @@ import '../generation/generation_engine.dart';
 import '../generation/scaffolds.dart';
 import '../generation/wiring_service.dart';
 import '../inspect/consumer_tax.dart';
+import '../inspect/execution_model.dart';
 import '../model/model_generator.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
@@ -32,7 +34,10 @@ enum DartitectExitCode {
   usage(2),
 
   /// Unexpected IO or internal failure.
-  internal(3);
+  internal(3),
+
+  /// A progressive command was interrupted by SIGINT.
+  interrupted(130);
 
   const DartitectExitCode(this.code);
 
@@ -47,8 +52,10 @@ final class DartitectCliRunner {
     StringSink? stdoutSink,
     StringSink? stderrSink,
     Directory? currentDirectory,
+    Stream<Object?>? interruptSignals,
   }) : _stdout = stdoutSink ?? stdout,
        _stderr = stderrSink ?? stderr,
+       _interruptSignals = interruptSignals,
        _currentDirectory = Directory(
          (currentDirectory ?? Directory.current).resolveSymbolicLinksSync(),
        );
@@ -56,6 +63,7 @@ final class DartitectCliRunner {
   final StringSink _stdout;
   final StringSink _stderr;
   final Directory _currentDirectory;
+  final Stream<Object?>? _interruptSignals;
 
   /// Parses and executes [arguments].
   Future<int> run(List<String> arguments) async {
@@ -136,17 +144,59 @@ final class DartitectCliRunner {
     Directory root,
     _CliArguments arguments,
   ) async {
-    arguments.requireNoPositionals();
+    final executionModel =
+        command == 'inspect' &&
+        arguments.positionals.length == 1 &&
+        arguments.positionals.single == 'execution-model';
+    if (!executionModel) arguments.requireNoPositionals();
     arguments.requireOnlyFlags(<String>{
       'json',
       if (command == 'scan' || command == 'verify') 'sarif',
+      if (command == 'scan') 'jsonl',
       'deep',
       if (command == 'doctor') 'release',
       if (command == 'inspect') 'consumer-tax',
       'verbose',
     });
-    if (arguments.flags.contains('json') && arguments.flags.contains('sarif')) {
-      throw const _UsageException('--json and --sarif are mutually exclusive.');
+    final structuredFormats = arguments.flags.intersection(const <String>{
+      'json',
+      'jsonl',
+      'sarif',
+    });
+    if (structuredFormats.length > 1) {
+      throw const _UsageException(
+        '--json, --jsonl, and --sarif are mutually exclusive.',
+      );
+    }
+    if (command == 'scan' && arguments.flags.contains('jsonl')) {
+      return _scanJsonLines(root);
+    }
+    if (executionModel) {
+      final unsupported = arguments.flags.difference(const <String>{
+        'json',
+        'verbose',
+      });
+      if (unsupported.isNotEmpty) {
+        throw _UsageException(
+          'Unknown flag for inspect execution-model: --${unsupported.first}',
+        );
+      }
+      final report = await ExecutionModelInspector(root).inspect();
+      if (arguments.flags.contains('json')) {
+        _stdout.writeln(jsonEncode(report.toJson()));
+      } else {
+        _stdout.writeln('EXECUTION-MODEL ${report.findings.length} findings');
+        for (final finding in report.findings) {
+          final location = finding.path == null
+              ? '.'
+              : '${finding.path}:${finding.line ?? 1}';
+          _stdout.writeln(
+            '${finding.severity.name.toUpperCase()} '
+            '${finding.code} $location ${finding.message}',
+          );
+        }
+      }
+      return DartitectExitCode.success.code;
     }
     if (command == 'inspect' && arguments.flags.contains('consumer-tax')) {
       final report = await ConsumerTaxInspector(root).inspect();
@@ -181,6 +231,38 @@ final class DartitectCliRunner {
       _writeEnvelope(envelope, json: arguments.flags.contains('json'));
     }
     return envelope.exitCode;
+  }
+
+  Future<int> _scanJsonLines(Directory root) async {
+    final cancellation = CancellationSource();
+    final interrupts = _interruptSignals ?? ProcessSignal.sigint.watch();
+    final interruptSubscription = interrupts.listen((_) {
+      cancellation.cancel('SIGINT');
+    });
+    var exitCode = DartitectExitCode.success.code;
+    try {
+      await for (final event in ProjectScanner(
+        root,
+      ).scanEvents(cancellation: cancellation.signal)) {
+        _stdout.writeln(jsonEncode(event.toJson()));
+        if (event is ProjectScanCompleted) {
+          final hasFindings =
+              event.scan.violations.isNotEmpty ||
+              event.scan.findings.any(
+                (finding) => finding.severity != FindingSeverity.info,
+              );
+          exitCode = hasFindings
+              ? DartitectExitCode.findings.code
+              : DartitectExitCode.success.code;
+        } else if (event is ProjectScanCancelled) {
+          exitCode = DartitectExitCode.interrupted.code;
+        }
+      }
+      return exitCode;
+    } finally {
+      await interruptSubscription.cancel();
+      cancellation.dispose();
+    }
   }
 
   Future<int> _init(Directory root, _CliArguments arguments) async {
@@ -1503,7 +1585,7 @@ final class _ExampleTasksRepository implements TasksRepository {
 Usage: dartitect <command> [arguments]
 
 Read-only commands:
-  scan [--json|--sarif] [--root PATH]
+  scan [--json|--jsonl|--sarif] [--root PATH]
                                     Scan files and architecture boundaries.
   ui audit [--json|--sarif] [--strict]
                                     Audit adaptive and accessible UI source.
@@ -1512,6 +1594,7 @@ Read-only commands:
   doctor [--json] [--deep] [--release]
                                     Validate toolchain, config, and project.
   inspect [--json]                  Emit consolidated architecture metadata.
+  inspect execution-model [--json] Report bounded runtime-efficiency heuristics.
   inspect --consumer-tax [--json]   Measure consumer plumbing and capability closure.
   verify [--json|--sarif]           Verify architecture, models, and providers.
   model check [--json]              Validate generated model freshness.

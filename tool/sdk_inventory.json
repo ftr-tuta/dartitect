@@ -32,7 +32,7 @@
         "dartitect_cli.dart",
         "dartitect_contracts.dart"
       ],
-      "publicSymbolCount": 112
+      "publicSymbolCount": 122
     },
     {
       "name": "dartitect_devtools",

@@ -571,7 +571,7 @@ final class DartitectProjectService {
       if (result.exitCode == 0) return const <DartitectFinding>[];
       return <DartitectFinding>[
         DartitectFinding(
-          code: 'DT2200',
+          code: 'DT2198',
           severity: FindingSeverity.error,
           message: 'Deep `dart analyze` validation failed.',
           evidence: _sanitize(_firstLine('${result.stdout}${result.stderr}')),
@@ -581,7 +581,7 @@ final class DartitectProjectService {
     } on TimeoutException {
       return const <DartitectFinding>[
         DartitectFinding(
-          code: 'DT2201',
+          code: 'DT2199',
           severity: FindingSeverity.warning,
           message: 'Deep analyzer check timed out after two minutes.',
           remediation:
