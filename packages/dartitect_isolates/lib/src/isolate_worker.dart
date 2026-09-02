@@ -245,11 +245,13 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
     P payload, {
     Duration timeout = const Duration(seconds: 30),
     String? requestId,
+    CancellationSignal? cancellation,
   }) {
     if (!isReady) throw StateError('IsolateWorker is not accepting requests.');
     if (timeout <= Duration.zero) {
       throw ArgumentError.value(timeout, 'timeout', 'must be positive');
     }
+    cancellation?.throwIfCancelled();
     final id = requestId ?? _ids.nextId();
     if (id.trim().isEmpty || _activePublicRequestIds.contains(id)) {
       throw ArgumentError.value(
@@ -268,12 +270,7 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
       revision: _pending.length,
     );
     pending.deadline = Timer(timeout, () {
-      _commands?.send(<String, Object?>{
-        'kind': 'cancel',
-        'generation': generation,
-        'correlationId': correlationId,
-      });
-      _completeRequestError(
+      _cancelRequest(
         correlationId,
         const IsolateRequestDeadlineException('Request deadline elapsed.'),
         StackTrace.current,
@@ -286,6 +283,13 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
         'generation': generation,
         'correlationId': correlationId,
         'payload': payload,
+      });
+      pending.cancellation = cancellation?.register((reason) {
+        _cancelRequest(
+          correlationId,
+          CancellationException(reason),
+          StackTrace.current,
+        );
       });
     } catch (error, stackTrace) {
       _completeRequestError(correlationId, error, stackTrace);
@@ -302,7 +306,13 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
     P payload, {
     Duration timeout = const Duration(seconds: 30),
     String? requestId,
-  }) => send(payload, timeout: timeout, requestId: requestId).result;
+    CancellationSignal? cancellation,
+  }) => send(
+    payload,
+    timeout: timeout,
+    requestId: requestId,
+    cancellation: cancellation,
+  ).result;
 
   /// Stops intake, waits for worker ACK, and force-kills only after [deadline].
   Future<void> safeStop({Duration deadline = const Duration(seconds: 5)}) =>
@@ -366,7 +376,13 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
         if (pending == null) return;
         pending.deadline?.cancel();
         if (!pending.accepted.isCompleted) pending.accepted.complete();
-        if (message['success'] == true) {
+        final cancellationError = pending.terminalError;
+        if (cancellationError != null) {
+          pending.result.completeError(
+            cancellationError,
+            pending.terminalStackTrace ?? StackTrace.current,
+          );
+        } else if (message['success'] == true) {
           pending.result.complete(Ok<R>(message['value'] as R));
         } else {
           pending.result.complete(
@@ -382,6 +398,18 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
               : DartitectDiagnosticPhase.failed,
           generation: generation,
           revision: _pending.length,
+        );
+      case 'cancelled':
+        final correlationId = message['correlationId'];
+        if (correlationId is! int) return;
+        final pending = _removePending(correlationId);
+        if (pending == null) return;
+        pending.deadline?.cancel();
+        if (!pending.accepted.isCompleted) pending.accepted.complete();
+        pending.result.completeError(
+          pending.terminalError ??
+              const CancellationException('Remote request cancelled.'),
+          pending.terminalStackTrace ?? StackTrace.current,
         );
       case 'crash':
         final correlationId = message['correlationId'];
@@ -455,9 +483,25 @@ final class IsolateWorker<P, R, F extends Object> implements AsyncDisposable {
     }
   }
 
+  void _cancelRequest(int correlationId, Object error, StackTrace stackTrace) {
+    final pending = _pending[correlationId];
+    if (pending == null || pending.terminalError != null) return;
+    pending.terminalError = error;
+    pending.terminalStackTrace = stackTrace;
+    pending.deadline?.cancel();
+    _commands?.send(<String, Object?>{
+      'kind': 'cancel',
+      'generation': generation,
+      'correlationId': correlationId,
+    });
+  }
+
   _PendingRequest<R, F>? _removePending(int correlationId) {
     final pending = _pending.remove(correlationId);
-    if (pending != null) _activePublicRequestIds.remove(pending.requestId);
+    if (pending != null) {
+      pending.cancellation?.dispose();
+      _activePublicRequestIds.remove(pending.requestId);
+    }
     return pending;
   }
 
@@ -520,6 +564,9 @@ final class _PendingRequest<R, F extends Object> {
   final Completer<void> accepted = Completer<void>();
   final Completer<Result<R, F>> result = Completer<Result<R, F>>();
   Timer? deadline;
+  CancellationRegistration? cancellation;
+  Object? terminalError;
+  StackTrace? terminalStackTrace;
 }
 
 final class _WorkerBootstrap<P, R, F extends Object> {
@@ -560,14 +607,29 @@ void _workerMain<P, R, F extends Object>(_WorkerBootstrap<P, R, F> bootstrap) {
       'generation': bootstrap.generation,
       'correlationId': correlationId,
     });
+    var terminalSent = false;
+    void sendCancelled() {
+      if (terminalSent) return;
+      terminalSent = true;
+      bootstrap.supervisor.send(<String, Object?>{
+        'kind': 'cancelled',
+        'generation': bootstrap.generation,
+        'correlationId': correlationId,
+      });
+    }
+
     try {
       final result = await bootstrap.handler(
         message['payload'] as P,
         cancellation.signal,
       );
-      if (cancellation.signal.isCancelled) return;
+      if (cancellation.signal.isCancelled) {
+        sendCancelled();
+        return;
+      }
       switch (result) {
         case Ok<dynamic>(:final value):
+          terminalSent = true;
           bootstrap.supervisor.send(<String, Object?>{
             'kind': 'result',
             'generation': bootstrap.generation,
@@ -576,6 +638,7 @@ void _workerMain<P, R, F extends Object>(_WorkerBootstrap<P, R, F> bootstrap) {
             'value': value,
           });
         case Err<Object>(:final failure, :final stackTrace):
+          terminalSent = true;
           bootstrap.supervisor.send(<String, Object?>{
             'kind': 'result',
             'generation': bootstrap.generation,
@@ -585,7 +648,10 @@ void _workerMain<P, R, F extends Object>(_WorkerBootstrap<P, R, F> bootstrap) {
             'stack': stackTrace.toString(),
           });
       }
+    } on CancellationException {
+      sendCancelled();
     } catch (error, stackTrace) {
+      terminalSent = true;
       bootstrap.supervisor.send(<String, Object?>{
         'kind': 'crash',
         'generation': bootstrap.generation,
@@ -594,6 +660,7 @@ void _workerMain<P, R, F extends Object>(_WorkerBootstrap<P, R, F> bootstrap) {
         'stack': stackTrace.toString(),
       });
     } finally {
+      if (cancellation.signal.isCancelled) sendCancelled();
       cancellation.dispose();
       active.remove(correlationId);
     }

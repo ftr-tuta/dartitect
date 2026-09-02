@@ -129,7 +129,7 @@
       "entrypoints": [
         "dartitect_isolates.dart"
       ],
-      "publicSymbolCount": 10
+      "publicSymbolCount": 16
     },
     {
       "name": "dartitect_jobs",

@@ -70314,7 +70314,7 @@
               "name": "execute",
               "kind": "method",
               "audience": "application-facing",
-              "declaration": "Future<Result<R, F>> execute(P payload, {Duration timeout = const Duration(seconds: 30), String? requestId})",
+              "declaration": "Future<Result<R, F>> execute(P payload, {Duration timeout = const Duration(seconds: 30), String? requestId, CancellationSignal? cancellation})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -70341,6 +70341,14 @@
                   "name": "requestId",
                   "declaration": "{String? requestId}",
                   "type": "String?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cancellation",
+                  "declaration": "{CancellationSignal? cancellation}",
+                  "type": "CancellationSignal?",
                   "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
@@ -70372,7 +70380,7 @@
               "name": "send",
               "kind": "method",
               "audience": "application-facing",
-              "declaration": "IsolateRequestReceipt<R, F> send(P payload, {Duration timeout = const Duration(seconds: 30), String? requestId})",
+              "declaration": "IsolateRequestReceipt<R, F> send(P payload, {Duration timeout = const Duration(seconds: 30), String? requestId, CancellationSignal? cancellation})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -70399,6 +70407,14 @@
                   "name": "requestId",
                   "declaration": "{String? requestId}",
                   "type": "String?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cancellation",
+                  "declaration": "{CancellationSignal? cancellation}",
+                  "type": "CancellationSignal?",
                   "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
@@ -70506,6 +70522,63 @@
           ]
         },
         {
+          "name": "IsolateWorkerCrashPolicy",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "sealed class IsolateWorkerCrashPolicy",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "sealed"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "failPool",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IsolateWorkerCrashPolicy.failPool()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "factory"
+              ],
+              "typeParameters": [],
+              "returnType": "IsolateWorkerCrashPolicy",
+              "parameters": []
+            },
+            {
+              "name": "replaceWorker",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IsolateWorkerCrashPolicy.replaceWorker(int maxReplacements)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "factory"
+              ],
+              "typeParameters": [],
+              "returnType": "IsolateWorkerCrashPolicy",
+              "parameters": [
+                {
+                  "name": "maxReplacements",
+                  "declaration": "int maxReplacements",
+                  "type": "int",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "IsolateWorkerException",
           "kind": "class",
           "audience": "application-facing",
@@ -70571,6 +70644,559 @@
               "typeParameters": [],
               "returnType": "String",
               "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "IsolateWorkerPool",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IsolateWorkerPool<P, R, F extends Object> implements AsyncDisposable",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "P",
+              "declaration": "P",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "R",
+              "declaration": "R",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "AsyncDisposable"
+          ],
+          "members": [
+            {
+              "name": "maxInFlight",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maxInFlight",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "maxQueued",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maxQueued",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "size",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int size",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "activeRequestCount",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "int get activeRequestCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "isAccepting",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get isAccepting",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "isDisposed",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get isDisposed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "queuedRequestCount",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "int get queuedRequestCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "replacementCount",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "int get replacementCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "disposeAsync",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Future<void> disposeAsync()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<void>",
+              "parameters": []
+            },
+            {
+              "name": "execute",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Future<Result<R, F>> execute(P payload, {Duration timeout = const Duration(seconds: 30), String? requestId, CancellationSignal? cancellation})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<Result<R, F>>",
+              "parameters": [
+                {
+                  "name": "payload",
+                  "declaration": "P payload",
+                  "type": "P",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "timeout",
+                  "declaration": "{Duration timeout = const Duration(seconds: 30)}",
+                  "type": "Duration",
+                  "kind": "optionalNamed",
+                  "default": "const Duration(seconds: 30)",
+                  "annotations": []
+                },
+                {
+                  "name": "requestId",
+                  "declaration": "{String? requestId}",
+                  "type": "String?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cancellation",
+                  "declaration": "{CancellationSignal? cancellation}",
+                  "type": "CancellationSignal?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "mapSequence",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Stream<Result<R, F>> mapSequence(Stream<P> input, {bool preserveOrder = true, Duration timeout = const Duration(seconds: 30), CancellationSignal? cancellation})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Stream<Result<R, F>>",
+              "parameters": [
+                {
+                  "name": "input",
+                  "declaration": "Stream<P> input",
+                  "type": "Stream<P>",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "preserveOrder",
+                  "declaration": "{bool preserveOrder = true}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "true",
+                  "annotations": []
+                },
+                {
+                  "name": "timeout",
+                  "declaration": "{Duration timeout = const Duration(seconds: 30)}",
+                  "type": "Duration",
+                  "kind": "optionalNamed",
+                  "default": "const Duration(seconds: 30)",
+                  "annotations": []
+                },
+                {
+                  "name": "cancellation",
+                  "declaration": "{CancellationSignal? cancellation}",
+                  "type": "CancellationSignal?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "spawn",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Future<IsolateWorkerPool<P, R, F>> spawn<P, R, F extends Object>({required int size, required int maxInFlight, required int maxQueued, required Future<Result<R, F>> Function(P, CancellationSignal) handler, IsolateWorkerCrashPolicy crashPolicy = const IsolateWorkerCrashPolicy.failPool(), Duration readinessTimeout = const Duration(seconds: 10), Duration heartbeatInterval = const Duration(seconds: 1), Duration heartbeatTimeout = const Duration(seconds: 5), IdGenerator? ids})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "static"
+              ],
+              "typeParameters": [
+                {
+                  "name": "P",
+                  "declaration": "P",
+                  "bound": null,
+                  "annotations": []
+                },
+                {
+                  "name": "R",
+                  "declaration": "R",
+                  "bound": null,
+                  "annotations": []
+                },
+                {
+                  "name": "F",
+                  "declaration": "F extends Object",
+                  "bound": "Object",
+                  "annotations": []
+                }
+              ],
+              "returnType": "Future<IsolateWorkerPool<P, R, F>>",
+              "parameters": [
+                {
+                  "name": "size",
+                  "declaration": "{required int size}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "maxInFlight",
+                  "declaration": "{required int maxInFlight}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "maxQueued",
+                  "declaration": "{required int maxQueued}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "handler",
+                  "declaration": "{required Future<Result<R, F>> Function(P, CancellationSignal) handler}",
+                  "type": "Future<Result<R, F>> Function(P, CancellationSignal)",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "crashPolicy",
+                  "declaration": "{IsolateWorkerCrashPolicy crashPolicy = const IsolateWorkerCrashPolicy.failPool()}",
+                  "type": "IsolateWorkerCrashPolicy",
+                  "kind": "optionalNamed",
+                  "default": "const IsolateWorkerCrashPolicy.failPool()",
+                  "annotations": []
+                },
+                {
+                  "name": "readinessTimeout",
+                  "declaration": "{Duration readinessTimeout = const Duration(seconds: 10)}",
+                  "type": "Duration",
+                  "kind": "optionalNamed",
+                  "default": "const Duration(seconds: 10)",
+                  "annotations": []
+                },
+                {
+                  "name": "heartbeatInterval",
+                  "declaration": "{Duration heartbeatInterval = const Duration(seconds: 1)}",
+                  "type": "Duration",
+                  "kind": "optionalNamed",
+                  "default": "const Duration(seconds: 1)",
+                  "annotations": []
+                },
+                {
+                  "name": "heartbeatTimeout",
+                  "declaration": "{Duration heartbeatTimeout = const Duration(seconds: 5)}",
+                  "type": "Duration",
+                  "kind": "optionalNamed",
+                  "default": "const Duration(seconds: 5)",
+                  "annotations": []
+                },
+                {
+                  "name": "ids",
+                  "declaration": "{IdGenerator? ids}",
+                  "type": "IdGenerator?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "IsolateWorkerPoolCapacityException",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IsolateWorkerPoolCapacityException extends IsolateWorkerPoolException",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "IsolateWorkerPoolException",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IsolateWorkerPoolCapacityException(String message)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IsolateWorkerPoolCapacityException",
+              "parameters": [
+                {
+                  "name": "message",
+                  "declaration": "String message",
+                  "type": "String",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "IsolateWorkerPoolClosedException",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IsolateWorkerPoolClosedException extends IsolateWorkerPoolException",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "IsolateWorkerPoolException",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IsolateWorkerPoolClosedException(String message)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IsolateWorkerPoolClosedException",
+              "parameters": [
+                {
+                  "name": "message",
+                  "declaration": "String message",
+                  "type": "String",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "IsolateWorkerPoolException",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "sealed class IsolateWorkerPoolException implements Exception",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "sealed"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "Exception"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IsolateWorkerPoolException(String message)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IsolateWorkerPoolException",
+              "parameters": [
+                {
+                  "name": "message",
+                  "declaration": "String message",
+                  "type": "String",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "message",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "String message",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "toString",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "String toString()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "IsolateWorkerPoolTerminalException",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class IsolateWorkerPoolTerminalException extends IsolateWorkerPoolException",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "IsolateWorkerPoolException",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "IsolateWorkerPoolTerminalException(String message, Object cause)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "IsolateWorkerPoolTerminalException",
+              "parameters": [
+                {
+                  "name": "message",
+                  "declaration": "String message",
+                  "type": "String",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "cause",
+                  "declaration": "Object cause",
+                  "type": "Object",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "cause",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Object cause",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Object"
             }
           ]
         },

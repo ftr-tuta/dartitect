@@ -2,3 +2,4 @@
 library;
 
 export 'src/isolate_worker.dart';
+export 'src/isolate_worker_pool.dart';

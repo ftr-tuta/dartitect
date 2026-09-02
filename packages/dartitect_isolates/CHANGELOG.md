@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add fixed-size `IsolateWorkerPool` execution with bounded in-flight and FIFO
+  queue admission, ordered or completion-order stream mapping, and drain-first
+  disposal.
+- Add fail-pool and bounded worker-replacement crash policies without replaying
+  requests whose effects may already have applied.
+- Add optional drain-aware request cancellation to `IsolateWorker` and preserve
+  `TransferableTypedData` ownership transfer without runtime materialization.
 - Version-only lockstep candidate; isolate diagnostics remain payload-free.
 
 ## 1.0.0
