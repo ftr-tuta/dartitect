@@ -28,6 +28,8 @@ does not authorize a tag, GitHub Release, publication, or stable promotion.
 
 - Use the [implementation recipes](guides/implementation-recipes.md) for
   complete public-entrypoint examples.
+- Use [incremental operations](guides/incremental-operations.md) when input,
+  retention, cleanup, or partial publication needs explicit bounds.
 - Opt into the [reactive runtime](guides/reactive-runtime.md) only when basic
   commands and ViewModels are insufficient.
 - Keep authenticated work generation-scoped with
@@ -93,6 +95,9 @@ does not authorize a tag, GitHub Release, publication, or stable promotion.
   historical, not reusable release instructions.
 - [1.1.0-rc.1 readiness](release/1.1.0-rc.1-readiness.adoc) records candidate
   evidence only. It is not a reusable release runbook or publication authority.
+- [1.1.0-rc.2 readiness](release/1.1.0-rc.2-readiness.adoc) records the
+  incremental execution candidate and its still-pending hosted evidence. It is
+  not publication authority.
 - [Research](research/) and [work records](work/) preserve the evidence,
   assumptions, and status that applied when each record was written. They may
   contain superseded RC terminology and must not be read as current guidance.

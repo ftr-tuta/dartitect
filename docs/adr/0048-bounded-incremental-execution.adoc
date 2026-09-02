@@ -1,0 +1,42 @@
+= ADR 0048: Bounded incremental execution
+:status: accepted
+:date: 2026-09-01
+
+== Context
+
+Dartitect 1.0 models commands and dataset synchronization as bounded one-shot
+operations. Consumers with large or progressively available inputs otherwise
+must rebuild cold-source ownership, backpressure, count/weight limits,
+cancellation cleanup, partial aggregation, and UI publication fencing. A plain
+Dart `Iterator` cannot cancel or close an owned resource, while an unowned
+stream or eager collection can hide retention and admit work without bounds.
+
+== Decision
+
+Add opt-in incremental entrypoints to the existing core and Flutter packages;
+do not create another package or alter the 1.0 entrypoints. Core exposes cold
+sync, closeable-sync, and async producers through `IncrementalOperation`, with
+explicit consume, fold, bounded collection, reports, limits, UTC time, and a
+fixed-capacity ring buffer.
+
+Every execution creates a fresh source. The consumer is awaited before the next
+item, the first typed failure stops the operation, and the item that would cross
+a count or weight bound is not published. Cancellation and deadline handling
+stop admission, await subscription/source cleanup, and fence late publication.
+Plain synchronous producers are restricted to finite resource-free iterables;
+owned synchronous resources use the explicit closeable source.
+
+Flutter projects the operation as a no-argument `IncrementalCommand` with
+partial aggregate states and payload-free receipts. Notification coalescing
+never skips reducer work. `SyncDataset.incremental` serializes checkpoint
+confirmation before the next pull. Existing one-shot commands and datasets
+remain supported without changed behavior.
+
+== Consequences
+
+Consumers can process large inputs without implicit runtime retention and can
+choose bounded recent collection explicitly. The opt-in API is additive to the
+25-package cohort and raises the public inventory to 35 entrypoints. It does not
+add retry, persistence, scheduling, business aggregation, provider policy, or a
+config v4. Web consumers use core incremental operations; isolate pools remain
+VM/native-only.

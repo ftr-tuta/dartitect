@@ -70,6 +70,12 @@ change previews, and guarded apply. Resources cover packages, package details,
 diagnostics, English guides, and config v3. There is no create, shell, process
 argument, arbitrary file-read, or network tool.
 
+When a scan request carries an MCP progress token, the server consumes
+`ProjectScanner.scanEvents` and publishes only analyzed and total counts.
+Progress never includes source, finding text, or paths, and timeout/disposal
+fences late notifications. The terminal response keeps the existing bounded,
+paginated finding contract.
+
 ## Ownership and lifecycle
 
 The host owns the channel, process, server lifetime, project files, credentials,
@@ -113,7 +119,9 @@ preview/apply/expiry/replay, concurrent apply, sanitized errors, and clean STDIO
 Use the `dartitect-mcp` managed skill for agent workflows. Read
 [MCP](../../docs/guides/mcp.md),
 [getting started](../../docs/guides/getting-started.md), and
-[model generation](../../docs/guides/model-generation.md).
+[model generation](../../docs/guides/model-generation.md). Progressive scan
+semantics are documented in the
+[incremental operations guide](../../docs/guides/incremental-operations.md).
 
 Destination privacy questions route to the managed observability skill. MCP
 does not read running telemetry payloads or expose the separate DevTools

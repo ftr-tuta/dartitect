@@ -1,0 +1,55 @@
+= 1.1.0-rc.2 candidate readiness record
+:status: in-review
+:date: 2026-09-01
+
+This document records evidence for the incremental execution candidate. It is
+not a reusable release runbook, publication authorization, or statement that
+the candidate is distributed.
+
+== Version state
+
+* Workspace cohort: `1.1.0-rc.2`
+* Channel: `candidate`
+* Packages: `25`
+* Public entrypoints: `35`
+* Latest stable distribution: `1.0.0` / `v1.0.0`
+* Derivable candidate tag: `v1.1.0-rc.2`
+* Candidate tag materialized: `false`
+
+The source candidate adds opt-in core and Flutter incremental entrypoints
+without creating a twenty-sixth package. Existing `1.0.0` entrypoints remain
+compatible, and consumers continue to install the stable cohort until a later,
+separately authorized distribution exists.
+
+== Candidate scope
+
+The candidate includes cold bounded incremental operations, partial Flutter
+command projection, incremental sync checkpoints with bounded DAG parallelism,
+bounded native isolate worker pools, fail-closed observability preparation and
+shutdown, linear and bounded runtime internals, progressive CLI/MCP scanning,
+execution-model inspection, three additional managed skills, and curated
+structural benchmark gates. ADRs 0048 and 0049 record the execution and runtime
+decisions; the incremental operations guide records consumer usage.
+
+== Evidence state
+
+Focused functional suites, public API and inventory checks, documentation,
+generated MCP/skill catalogs, and curated benchmark slices are required local
+evidence. The benchmark treats bounds, backpressure, cleanup, stable order,
+single-flight borrowed ports, deterministic output, and zero residual work as
+blocking; timing and memory measurements remain informative on a named runner.
+
+Readiness is not complete until the complete repository verification, release
+audit, disposable local-tag canaries, authorship/diff/tree review, Security,
+the hosted matrix, and `CI / Required` all pass for the review head. Merge must
+remain blocked until the observability/privacy base PR is present in `main`.
+After merge, the resulting `main` CI must also pass before this record can be
+treated as completed evidence.
+
+== Explicitly excluded
+
+This work does not materialize or push `v1.1.0-rc.2`, run the `Release`
+workflow, create a GitHub Release, publish packages, promote to stable, add a
+config v4, or include `estudo2.md`. It does not alter the historical readiness
+records or ADRs. Squash merge requires separate review authority and does not
+itself authorize a tag or distribution.

@@ -12,7 +12,8 @@ opt-in owned reactive runtime.
 Use the default entrypoint when native `Listenable`/`ChangeNotifier` plus visible
 ViewModel ownership are sufficient. Add the reactive entrypoint when a feature
 needs typed graph state, hot/warm/cold resources, families, collections, or
-local-authority paging.
+local-authority paging. Add the incremental entrypoint when every item must
+update a partial aggregate while UI notifications use a separate cadence.
 
 ## When not to use
 
@@ -36,6 +37,9 @@ Flutter is required on its supported platforms.
 - `package:dartitect_flutter/dartitect_flutter_reactive.dart` is an opt-in
   entrypoint for the owned reactive runtime. It does not export Material
   widgets.
+- `package:dartitect_flutter/dartitect_flutter_incremental.dart` is the opt-in,
+  Material-neutral projection of a core incremental operation into sealed
+  command states and a borrowed state builder.
 - `package:dartitect_flutter/dartitect_flutter_ui.dart` exposes only size
   classes, validated breakpoints, and space-based builders. It owns no visual
   control, theme, text, locale, navigation, or state.
@@ -144,6 +148,17 @@ Reactive entrypoint:
   expected failure, and crash presentations, including stale content, while
   borrowing the resource and following `TickerMode`.
 
+Incremental entrypoint:
+
+- `IncrementalCommand` reduces every emitted item while
+  `IncrementalPublication` controls only notification cadence. It reuses
+  `CommandConcurrency`, including restart-latest, and fences scheduled
+  callbacks after restart or disposal.
+- Sealed incremental idle, running, succeeded, failed, cancelled, and crashed
+  states retain partial aggregate facts and payload-free receipts.
+- `IncrementalCommandStateBuilder` requires all six branches, borrows the
+  command, accepts a static child, and follows `TickerMode` without Material.
+
 Forms, queries, and UI entrypoints:
 
 - `DartitectFormSnapshotBuilder` and `DartitectQueryStateBuilder` render their
@@ -215,7 +230,9 @@ mutation and dataset sync, a persistence adapter for provider-backed sources,
 `dartitect_flutter_testing` as a dev dependency for the paired UI matrix. Read
 [commands/results/effects](../../docs/guides/commands-results-effects.md),
 [reactive runtime](../../docs/guides/reactive-runtime.md), and
-[UI quality](../../docs/guides/ui-quality.md).
+[UI quality](../../docs/guides/ui-quality.md). Incremental consumers should
+read the [incremental operations guide](../../docs/guides/incremental-operations.md)
+and [Flutter example](example/incremental_command_example.dart).
 
 ## Availability
 

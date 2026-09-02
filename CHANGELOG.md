@@ -20,6 +20,45 @@ truth for cross-package changes and migration guidance.
 
 ### Added
 
+#### Incremental execution
+
+- Add opt-in `dartitect_incremental.dart` and
+  `dartitect_flutter_incremental.dart` entrypoints without adding a package or
+  changing the stable 1.0 entrypoints. The public candidate inventory is 25
+  packages and 35 entrypoints.
+- Add cold sync, explicitly closeable sync, and async incremental producers;
+  count/weight limits; backpressure; partial fold; bounded collection; reports;
+  named cleanup/limit failures; and a fixed-capacity ordered ring buffer.
+- Add a Material-neutral incremental Flutter command with six sealed states,
+  execution-fenced notification coalescing, restart-latest support, partial
+  aggregate receipts, and a borrowed state builder with static child support.
+- Add incremental sync datasets, per-step confirmed checkpoint progress,
+  sequential and bounded-parallel DAG execution policies, stable reports, and
+  single-flight borrowed checkpoint, lease, and journal ports.
+- Add bounded native isolate worker pools, ordered or completion-order mapping,
+  optional request cancellation, finite worker replacement, draining shutdown,
+  and pass-through `TransferableTypedData` ownership.
+
+#### Progressive tooling and execution guidance
+
+- Add deterministic `ProjectScanner.scanEvents`, a 2,048-entry immutable-fact
+  source index, four-file bounded analysis, JSON Lines output, and SIGINT
+  cancellation with exit code 130.
+- Add non-blocking `inspect execution-model` diagnostics DT2200-DT2211 and MCP
+  count-only scan progress that never publishes source, finding text, or path.
+- Add the managed `$dartitect-dart`, `$dartitect-incremental`, and
+  `$dartitect-performance` skills, ADRs 0048/0049, a candidate guide, five
+  focused examples, and curated structural benchmark slices.
+
+#### Runtime efficiency foundations
+
+- Replace shifting FIFOs and unbounded internal histories with deque/ring
+  structures, constant-time history weights, reentrancy-safe tombstoned
+  listener dispatch, and stable dependent-map topological scheduling.
+- Share command admission without changing 1.0 command APIs, compile privacy
+  resolution, sanitize each observability structure once for fan-out, and add
+  bounded detailed shutdown that never disposes an active destination.
+
 #### Destination-aware privacy policy
 
 - Add `ObservabilityPrivacyProfile` with `strict`, `balanced`, and `diagnostic`

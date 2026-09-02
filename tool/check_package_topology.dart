@@ -126,7 +126,7 @@ const Map<String, Set<String>> _allowed = <String, Set<String>>{
   'dartitect_jobs': <String>{'dartitect'},
   'dartitect_lints': <String>{'dartitect_modeling_analyzer'},
   'dartitect_locale_br': <String>{},
-  'dartitect_mcp': <String>{'dartitect_cli'},
+  'dartitect_mcp': <String>{'dartitect', 'dartitect_cli'},
   'dartitect_media': <String>{'dartitect'},
   'dartitect_modeling': <String>{'dartitect'},
   'dartitect_modeling_analyzer': <String>{'dartitect_modeling'},

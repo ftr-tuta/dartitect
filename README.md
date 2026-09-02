@@ -58,6 +58,7 @@ independently documented and exports only public entrypoints under `lib/`.
 | Workflow | Start with | Add when needed |
 | --- | --- | --- |
 | Pure Dart results, cancellation, ownership, or bounded work | [`dartitect`](packages/dartitect/) | [`dartitect_isolates`](packages/dartitect_isolates/) for a typed native worker |
+| Cold incremental input with bounded retention and cleanup | `package:dartitect/dartitect_incremental.dart` | `dartitect_flutter_incremental.dart` for partial Flutter state, `dartitect_sync` for confirmed checkpoints, or `dartitect_isolates` for a bounded native pool |
 | Flutter MVVM with native listenables | [`dartitect_flutter`](packages/dartitect_flutter/) | Import `dartitect_flutter_reactive.dart` only for the owned reactive runtime |
 | Adaptive, accessible Flutter presentation | `package:dartitect_flutter/dartitect_flutter_ui.dart` | Consumer-owned Material/Cupertino controls, themes, localization, navigation, focus, and restoration |
 | Credentials and authenticated-session rebuild | [`dartitect`](packages/dartitect/) | Import `dartitect_credentials.dart`; storage and credential values stay consumer-owned |
@@ -90,7 +91,9 @@ connects feature profiles, hosts, resilience, jobs, transfer, diagnostics, and
 contract matrices without turning them into a framework. The
 [business-neutral UI quality guide](docs/guides/ui-quality.md) covers responsive
 layout, exhaustive presentation, localization, accessibility, and the paired UI
-matrix.
+matrix. The [incremental operations guide](docs/guides/incremental-operations.md)
+covers cold producers, partial Flutter state, confirmed sync checkpoints,
+bounded native workers, progressive scans, and structural performance gates.
 
 ## Core workflow
 

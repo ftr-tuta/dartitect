@@ -9,7 +9,9 @@ cooperative safe stop.
 ## When to use
 
 Use `IsolateWorker<P, R, F>` for a native Dart or Flutter workload that benefits
-from one long-lived owned worker and a bounded typed request protocol.
+from one long-lived owned worker and a bounded typed request protocol. Use
+`IsolateWorkerPool<P, R, F>` when a fixed number of workers should share bounded
+in-flight and queued admission.
 
 ## When not to use
 
@@ -62,7 +64,11 @@ Future<Result<int, StateError>> _double(
 ## Public API tour
 
 - `IsolateWorker.spawn`, `send`, `execute`, and `safeStop` own the worker
-  lifecycle and request flow.
+  lifecycle and request flow; `send` and `execute` accept optional cooperative
+  cancellation.
+- `IsolateWorkerPool.spawn`, `execute`, `mapSequence`, and `disposeAsync`
+  provide FIFO bounded admission, optional result-order preservation, draining
+  shutdown, and explicit fail-pool or finite replacement crash policy.
 - `IsolateRequestReceipt` exposes acceptance and result futures independently.
 - `IsolateRequestHandler` is the receiver callback contract.
 - `IsolateWorkerException`, readiness, heartbeat, deadline, unexpected-exit,
@@ -95,6 +101,8 @@ Never transfer clients, Stores, databases, owners, ViewModels, subscriptions, or
 closures that capture live resources. Validate protocol version and DTO shape
 before provider work. Dart isolate copying and transfer costs still apply.
 There is no web contract or automatic restart loop.
+The pool does not replay a request whose effect is uncertain after a crash and
+does not materialize `TransferableTypedData` on the caller's behalf.
 
 ## Testing
 
@@ -107,7 +115,10 @@ late envelopes, reused public IDs, safe stop, and zero residual requests.
 Use the core `IsolateProjectionExecutor` for explicit per-task projection and
 `dartitect_sync` for versioned headless sync commands. Read
 [composition/lifecycle/isolates](../../docs/guides/composition-lifecycle-isolates.md)
-and [offline-first recipes](../../docs/guides/implementation-recipes.md).
+and [offline-first recipes](../../docs/guides/implementation-recipes.md). The
+[incremental operations guide](../../docs/guides/incremental-operations.md) and
+[worker-pool example](example/isolate_worker_pool_example.dart) cover bounded
+pool admission and ordered mapping.
 
 ## Availability
 
