@@ -34,6 +34,15 @@ enum SpanStatus {
   cancelled,
 }
 
+/// Dedicated handling policy for validated W3C `tracestate`.
+enum TraceStatePropagationPolicy {
+  /// Drop tracestate at extraction and injection boundaries.
+  discard,
+
+  /// Propagate valid tracestate only as its W3C protocol header.
+  propagateValidated,
+}
+
 /// Valid W3C trace identity.
 final class TraceContext {
   /// Creates and validates a trace context.
@@ -54,8 +63,8 @@ final class TraceContext {
     if (!_flags.hasMatch(traceFlags)) {
       throw FormatException('traceFlags must be two lowercase hex digits.');
     }
-    if (traceState case final value? when value.length > 512) {
-      throw FormatException('tracestate exceeds the W3C 512 character limit.');
+    if (traceState case final value? when !_isValidTraceState(value)) {
+      throw FormatException('tracestate is not a valid W3C list.');
     }
   }
 
@@ -95,9 +104,38 @@ final class TraceContext {
   }
 
   static String? _validTraceState(String? value) {
-    if (value == null || value.isEmpty || value.length > 512) return null;
-    if (value.contains(RegExp(r'[\r\n]'))) return null;
+    if (value == null || !_isValidTraceState(value)) return null;
     return value;
+  }
+
+  static bool _isValidTraceState(String value) {
+    if (value.isEmpty || value.length > 512) return false;
+    final members = value.split(',');
+    if (members.length > 32) return false;
+    final keys = <String>{};
+    for (final untrimmed in members) {
+      final member = untrimmed.trim();
+      if (member != untrimmed &&
+          (untrimmed.startsWith(' ') || untrimmed.endsWith(' '))) {
+        return false;
+      }
+      final separator = member.indexOf('=');
+      if (separator <= 0 || separator != member.lastIndexOf('=')) return false;
+      final key = member.substring(0, separator);
+      final stateValue = member.substring(separator + 1);
+      if (!_traceStateKey.hasMatch(key) ||
+          stateValue.isEmpty ||
+          stateValue.length > 256 ||
+          stateValue.codeUnits.any(
+            (unit) => unit < 0x20 || unit > 0x7e || unit == 0x2c,
+          ) ||
+          stateValue.startsWith(' ') ||
+          stateValue.endsWith(' ') ||
+          !keys.add(key)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   static final RegExp _traceId = RegExp(r'^[0-9a-f]{32}$');
@@ -106,6 +144,9 @@ final class TraceContext {
   static final RegExp _allZero = RegExp(r'^0+$');
   static final RegExp _traceParent = RegExp(
     r'^00-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})$',
+  );
+  static final RegExp _traceStateKey = RegExp(
+    r'^(?:[a-z][a-z0-9_\-*/]{0,255}|[a-z0-9][a-z0-9_\-*/]{0,240}@[a-z][a-z0-9_\-*/]{0,13})$',
   );
 }
 
@@ -249,8 +290,15 @@ abstract interface class TracePropagator {
 
 /// W3C `traceparent`/`tracestate` propagator. Baggage is never injected.
 final class W3CTracePropagator implements TracePropagator {
-  /// Creates a W3C propagator.
-  const W3CTracePropagator();
+  /// Creates a W3C propagator that propagates validated tracestate.
+  const W3CTracePropagator()
+    : traceStatePolicy = TraceStatePropagationPolicy.propagateValidated;
+
+  /// Creates a W3C propagator with a dedicated [traceStatePolicy].
+  const W3CTracePropagator.withTraceStatePolicy(this.traceStatePolicy);
+
+  /// Tracestate is never converted to an attribute, tag, or baggage item.
+  final TraceStatePropagationPolicy traceStatePolicy;
 
   @override
   TraceContext? extract(Map<String, String> headers) {
@@ -264,12 +312,22 @@ final class W3CTracePropagator implements TracePropagator {
           traceState = entry.value;
       }
     }
-    return TraceContext.tryParse(traceParent, traceState: traceState);
+    return TraceContext.tryParse(
+      traceParent,
+      traceState:
+          traceStatePolicy == TraceStatePropagationPolicy.propagateValidated
+          ? traceState
+          : null,
+    );
   }
 
   @override
   void inject(Map<String, String> headers, TraceContext context) {
     headers['traceparent'] = context.traceParent;
-    if (context.traceState case final state?) headers['tracestate'] = state;
+    if (traceStatePolicy == TraceStatePropagationPolicy.propagateValidated) {
+      if (context.traceState case final state?) {
+        headers['tracestate'] = state;
+      }
+    }
   }
 }

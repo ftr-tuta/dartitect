@@ -317,6 +317,10 @@ final class ProjectScanner {
       isRepositoryOrService: isRepositoryOrService,
       declaredTypes: declaredTypes,
       topLevelFunctions: topLevelFunctions,
+      usesPrivacyRuntime: RegExp(r'\bObservabilityRuntime\s*\.\s*withPrivacy\b')
+          .hasMatch(unit.toSource()),
+      usesSafeDioInterceptor: RegExp(r'\bDioObservabilityInterceptor\b')
+          .hasMatch(unit.toSource()),
       lineNumberAt: lineNumberAt,
       isSuppressed: isSuppressed,
       addViolation: violations.add,
@@ -667,6 +671,8 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
     required this.isRepositoryOrService,
     required this.declaredTypes,
     required this.topLevelFunctions,
+    required this.usesPrivacyRuntime,
+    required this.usesSafeDioInterceptor,
     required this.lineNumberAt,
     required this.isSuppressed,
     required this.addViolation,
@@ -681,6 +687,8 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
   final bool isRepositoryOrService;
   final Set<String> declaredTypes;
   final Set<String> topLevelFunctions;
+  final bool usesPrivacyRuntime;
+  final bool usesSafeDioInterceptor;
   final int Function(int offset) lineNumberAt;
   final bool Function(String code, int line) isSuppressed;
   final void Function(DartitectFinding finding) addViolation;
@@ -818,6 +826,7 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
   @override
   void visitMethodInvocation(MethodInvocation node) {
     if (classification.isGeneratedInfrastructure) return;
+    _inspectPrivacyInvocation(node);
     if (node.target?.toSource() == 'Isolate' &&
         node.methodName.name == 'spawn') {
       hasBackground = true;
@@ -871,10 +880,28 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
   }
 
   @override
+  void visitStringInterpolation(StringInterpolation node) {
+    if (!classification.isGeneratedInfrastructure &&
+        _sensitiveInterpolation.hasMatch(node.toSource()) &&
+        _isLoggerInterpolation(node)) {
+      _report(
+        DartitectRuleCodes.sensitiveLogInterpolation,
+        'Sensitive HTTP or credential data must not be interpolated into a logger message.',
+        node.offset,
+        'interpolated logger message',
+      );
+    }
+    super.visitStringInterpolation(node);
+  }
+
+  @override
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    if (classification.isGeneratedInfrastructure ||
-        !nativeStrict ||
-        !_importsDartitectFlutter(node)) {
+    if (classification.isGeneratedInfrastructure) {
+      super.visitInstanceCreationExpression(node);
+      return;
+    }
+    _inspectPrivacyConstruction(node);
+    if (!nativeStrict || !_importsDartitectFlutter(node)) {
       super.visitInstanceCreationExpression(node);
       return;
     }
@@ -904,6 +931,210 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
       }
     }
     super.visitInstanceCreationExpression(node);
+  }
+
+  @override
+  void visitMapLiteralEntry(MapLiteralEntry node) {
+    if (!classification.isGeneratedInfrastructure &&
+        _isUnclassifiedCustomCapture(node)) {
+      _report(
+        DartitectRuleCodes.unclassifiedCustomCapture,
+        'A custom telemetry value requires ObservabilityClassifiedValue.',
+        node.value.offset,
+        'custom telemetry value',
+      );
+    }
+    super.visitMapLiteralEntry(node);
+  }
+
+  void _inspectPrivacyConstruction(InstanceCreationExpression node) {
+    final type = node.constructorName.type.name.lexeme;
+    final constructorSource = node.constructorName.toSource();
+    if (type == 'LogInterceptor' && usesSafeDioInterceptor) {
+      _report(
+        DartitectRuleCodes.dioLogInterceptorConflict,
+        'Dio LogInterceptor bypasses Dartitect classified observability capture.',
+        node.offset,
+        'LogInterceptor',
+      );
+    }
+    if ((constructorSource == 'ObservabilityRiskAcceptance.explicit' ||
+            RegExp(r'\bObservabilityRiskAcceptance\s*\.\s*explicit\s*\(')
+                .hasMatch(node.toSource())) &&
+        !_isQaSource) {
+      _report(
+        DartitectRuleCodes.productionRiskAcceptance,
+        'ObservabilityRiskAcceptance must be limited to reviewed test or QA source.',
+        node.offset,
+        'ObservabilityRiskAcceptance.explicit',
+      );
+    }
+    if (usesPrivacyRuntime &&
+        constructorSource == type &&
+        const <String>{
+          'SentryLogSink',
+          'SentryErrorReporter',
+          'SentryTracer',
+        }.contains(type) &&
+        _hasRegistrationAncestor(node, const <String>{
+          'PreparedLogSinkRegistration',
+          'ErrorReporterRegistration',
+          'TracerRegistration',
+        })) {
+      _report(
+        DartitectRuleCodes.legacySentryPreparedRegistration,
+        'A privacy runtime destination must use a prepared Sentry adapter.',
+        node.offset,
+        type,
+      );
+    }
+  }
+
+  void _inspectPrivacyInvocation(MethodInvocation node) {
+    final target = node.target?.toSource();
+    final method = node.methodName.name;
+    if (target == null &&
+        method == 'LogInterceptor' &&
+        usesSafeDioInterceptor) {
+      _report(
+        DartitectRuleCodes.dioLogInterceptorConflict,
+        'Dio LogInterceptor bypasses Dartitect classified observability capture.',
+        node.offset,
+        'LogInterceptor',
+      );
+    }
+    if (target == 'ObservabilityRiskAcceptance' &&
+        method == 'explicit' &&
+        !_isQaSource) {
+      _report(
+        DartitectRuleCodes.productionRiskAcceptance,
+        'ObservabilityRiskAcceptance must be limited to reviewed test or QA source.',
+        node.offset,
+        'ObservabilityRiskAcceptance.explicit',
+      );
+    }
+    if (usesPrivacyRuntime &&
+        target == null &&
+        const <String>{
+          'SentryLogSink',
+          'SentryErrorReporter',
+          'SentryTracer',
+        }.contains(method) &&
+        _hasRegistrationAncestor(node, const <String>{
+          'PreparedLogSinkRegistration',
+          'ErrorReporterRegistration',
+          'TracerRegistration',
+        })) {
+      _report(
+        DartitectRuleCodes.legacySentryPreparedRegistration,
+        'A privacy runtime destination must use a prepared Sentry adapter.',
+        node.offset,
+        method,
+      );
+    }
+  }
+
+  bool _isUnclassifiedCustomCapture(MapLiteralEntry entry) {
+    final value = entry.value;
+    final type = switch (value) {
+      InstanceCreationExpression(:final constructorName) =>
+        constructorName.type.name.lexeme,
+      MethodInvocation(:final target, :final methodName)
+          when target == null &&
+              !topLevelFunctions.contains(methodName.name) &&
+              (declaredTypes.contains(methodName.name) ||
+                  _typeLikeName.hasMatch(methodName.name)) =>
+        methodName.name,
+      _ => null,
+    };
+    if (type == null) return false;
+    if (_safeCaptureTypes.contains(type)) return false;
+    var cursor = entry.parent;
+    for (var depth = 0; depth < 10 && cursor != null; depth += 1) {
+      if (cursor is InstanceCreationExpression &&
+          const <String>{
+            'ObservabilityContext',
+            'ObservabilityLogEvent',
+            'ErrorEvent',
+          }.contains(cursor.constructorName.type.name.lexeme)) {
+        return true;
+      }
+      if (cursor is MethodInvocation &&
+          const <String>{
+            'addEvent',
+            'event',
+            'log',
+            'report',
+            'setAttribute',
+            'startSpan',
+          }.contains(cursor.methodName.name)) {
+        return true;
+      }
+      cursor = cursor.parent;
+    }
+    return false;
+  }
+
+  bool _isLoggerInterpolation(AstNode node) {
+    var cursor = node.parent;
+    for (var depth = 0; depth < 12 && cursor != null; depth += 1) {
+      if (cursor is MethodInvocation &&
+          const <String>{
+            'debug',
+            'error',
+            'event',
+            'fatal',
+            'info',
+            'log',
+            'warning',
+          }.contains(cursor.methodName.name)) {
+        final target = cursor.target?.toSource().toLowerCase();
+        if (target != null && target.endsWith('logger')) return true;
+      }
+      if (cursor is InstanceCreationExpression &&
+          cursor.constructorName.type.name.lexeme == 'ObservabilityLogEvent') {
+        return true;
+      }
+      cursor = cursor.parent;
+    }
+    return false;
+  }
+
+  static bool _hasRegistrationAncestor(
+    AstNode node,
+    Set<String> acceptedTypes,
+  ) {
+    var cursor = node.parent;
+    for (var depth = 0; depth < 8 && cursor != null; depth += 1) {
+      if (cursor is InstanceCreationExpression &&
+          acceptedTypes.contains(cursor.constructorName.type.name.lexeme)) {
+        return true;
+      }
+      if (cursor is MethodInvocation &&
+          acceptedTypes.contains(cursor.target?.toSource())) {
+        return true;
+      }
+      cursor = cursor.parent;
+    }
+    return false;
+  }
+
+  bool get _isQaSource {
+    final normalized = path.replaceAll('\\', '/').toLowerCase();
+    final segments = normalized
+        .split('/')
+        .where((segment) => segment.isNotEmpty)
+        .toList(growable: false);
+    return segments.any(
+          const <String>{
+            'qa',
+            'test',
+            'testing',
+            'fixture',
+            'fixtures',
+          }.contains,
+        ) ||
+        segments.last.endsWith('_qa.dart');
   }
 
   bool _providerImportAlreadyReported = false;
@@ -1026,6 +1257,22 @@ final class _SemanticBoundaryVisitor extends RecursiveAstVisitor<void> {
           methodName.name,
         _ => null,
       };
+
+  static final _sensitiveInterpolation = RegExp(
+    r'\b(authorization|token|password|cookie|body|headers?|query)\b',
+    caseSensitive: false,
+  );
+
+  static const _safeCaptureTypes = <String>{
+    'DateTime',
+    'Duration',
+    'ObservabilityClassifiedValue',
+    'ObservabilityErrorProjection',
+    'ObservabilityStackTraceProjection',
+    'Uri',
+  };
+
+  static final _typeLikeName = RegExp(r'^[A-Z][A-Za-z0-9_]*$');
 
   void _report(String code, String message, int offset, String evidence) {
     final line = lineNumberAt(offset);

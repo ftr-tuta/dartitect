@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_flutter/dartitect_flutter_reactive.dart';
 import 'package:dartitect_objectbox/dartitect_objectbox.dart';
+import 'package:dartitect_observability/dartitect_observability.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:objectbox/objectbox.dart';
@@ -168,10 +169,82 @@ void main() {
     expect(store.transactionModes, <TxMode>[TxMode.write, TxMode.read]);
     expect(store.closeCalls, 0);
   });
+
+  test('privacy runtime receives no ObjectBox path or raw failure', () async {
+    final tracer = _PreparedRecordingTracer();
+    final runtime = ObservabilityRuntime.withPrivacy(
+      privacyPolicy: ObservabilityPrivacyPolicy.fromProfile(
+        profile: ObservabilityPrivacyProfile.diagnostic,
+      ),
+      destinations: <ObservabilityDestinationRegistration>[
+        ObservabilityDestinationRegistration.local(
+          tracers: <TracerRegistration>[TracerRegistration.borrowed(tracer)],
+          samplingPolicy: FixedSamplingPolicy(spanRate: 1),
+        ),
+      ],
+    );
+    final instrumentation = ObjectBoxInstrumentation(tracer: runtime.tracing);
+    final error = _ExplosiveObjectBoxError();
+
+    await expectLater(
+      instrumentation.traceOpen<void>(() => throw error),
+      throwsA(same(error)),
+    );
+
+    expect(error.toStringCalls, 0);
+    expect(tracer.starts.single.name, 'ObjectBox Store open');
+    expect(tracer.starts.single.attributes, isEmpty);
+    expect('${tracer.span.end?.error}', contains('_ExplosiveObjectBoxError'));
+    expect('${tracer.span.end?.stackTrace}', isNot(contains('objectbox-dir')));
+    await runtime.disposeAsync();
+  });
 }
 
 final class _Failure implements Exception {
   const _Failure();
+}
+
+final class _PreparedRecordingTracer extends PreparedTracer {
+  final starts = <PreparedSpanStart>[];
+  final span = _PreparedRecordingSpan();
+
+  @override
+  PreparedSpan startPreparedSpan(PreparedSpanStart start) {
+    starts.add(start);
+    return span;
+  }
+}
+
+final class _PreparedRecordingSpan extends PreparedSpan {
+  PreparedSpanEnd? end;
+
+  @override
+  final TraceContext context = TraceContext(
+    traceId: '0123456789abcdef0123456789abcdef',
+    spanId: '0123456789abcdef',
+  );
+
+  @override
+  bool get isEnded => end != null;
+
+  @override
+  void addPreparedEvent(PreparedSpanEvent event) {}
+
+  @override
+  void setPreparedAttribute(PreparedSpanAttribute attribute) {}
+
+  @override
+  void endPrepared(PreparedSpanEnd end) => this.end = end;
+}
+
+final class _ExplosiveObjectBoxError {
+  int toStringCalls = 0;
+
+  @override
+  String toString() {
+    toStringCalls += 1;
+    throw StateError('objectbox-dir/private');
+  }
 }
 
 base class _FakeStore implements Store {

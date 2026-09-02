@@ -27,9 +27,10 @@ Future<void> main(List<String> arguments) async {
           .readAsStringSync(),
     ),
   );
-  if (contract['schemaVersion'] != 3 ||
-      contract['releaseVersion'] != release['releaseVersion'] ||
-      options.ref != 'v${release['releaseVersion']}') {
+  final cohort = _object(release['workspaceCohort']);
+  if (contract['schemaVersion'] != 4 ||
+      contract['workspaceVersion'] != cohort['version'] ||
+      options.ref != cohort['derivedTag']) {
     throw StateError('Git tag and canary release cohorts differ.');
   }
   final temporary = await Directory.systemTemp.createTemp(
@@ -44,7 +45,7 @@ Future<void> main(List<String> arguments) async {
           temporary: temporary,
           options: options,
           tag: tag,
-          releaseVersion: release['releaseVersion']! as String,
+          releaseVersion: cohort['version']! as String,
           dependencyOrder: _strings(release['dependencyOrder']),
           contract: canary,
         ),
@@ -58,7 +59,7 @@ Future<void> main(List<String> arguments) async {
       '${receiptDirectory.path}/${options.ref}-${tag.commit}.json',
     );
     await receipt.writeAsString(
-      '${const JsonEncoder.withIndent('  ').convert(<String, Object?>{'schemaVersion': 1, 'releaseVersion': release['releaseVersion'], 'repository': options.repository, 'ref': options.ref, 'annotatedTagObject': tag.object, 'sourceCommit': tag.commit, 'packageSource': 'git', 'localPathDependencies': false, 'registryDartitectDependencies': false, 'canaries': receipts, 'result': 'PASS', 'recordedAtUtc': DateTime.now().toUtc().toIso8601String()})}\n',
+      '${const JsonEncoder.withIndent('  ').convert(<String, Object?>{'schemaVersion': 1, 'workspaceVersion': cohort['version'], 'channel': cohort['channel'], 'repository': options.repository, 'ref': options.ref, 'localDisposableTag': true, 'annotatedTagObject': tag.object, 'sourceCommit': tag.commit, 'packageSource': 'git', 'localPathDependencies': false, 'registryDartitectDependencies': false, 'canaries': receipts, 'result': 'PASS', 'recordedAtUtc': DateTime.now().toUtc().toIso8601String()})}\n',
       flush: true,
     );
     stdout
@@ -216,16 +217,18 @@ Future<Map<String, Object?>> _runCanary({
       await run('flutter', const <String>['build', 'web', '--release']);
       await run('flutter', const <String>['build', 'web', '--release']);
       await run('flutter', const <String>['build', 'linux', '--release']);
-      await run('dart', const <String>[
-        'run',
-        'dartitect_cli:dartitect',
-        'fleet',
-        'upgrade',
-        '.',
-        '--to=1.0.0',
-        '--apply',
-        '--json',
-      ]);
+      if (gitCanaryRunsLegacyStableUpgrade(releaseVersion)) {
+        await run('dart', const <String>[
+          'run',
+          'dartitect_cli:dartitect',
+          'fleet',
+          'upgrade',
+          '.',
+          '--to=1.0.0',
+          '--apply',
+          '--json',
+        ]);
+      }
     case 'minimal':
       await run('dart', const <String>[
         'run',
@@ -335,6 +338,14 @@ Future<Map<String, Object?>> _runCanary({
     'result': 'PASS',
   };
 }
+
+/// Whether a Git canary should exercise the legacy stable-upgrade command.
+///
+/// Candidate cohorts validate consumption from their disposable candidate tag,
+/// but must not reinterpret the stable-only `--to=1.0.0` migration as a
+/// candidate downgrade.
+bool gitCanaryRunsLegacyStableUpgrade(String workspaceVersion) =>
+    workspaceVersion == '1.0.0';
 
 String _renderGitDependencies(
   String source, {
@@ -660,7 +671,7 @@ final class _Options {
 
   factory _Options.parse(List<String> arguments) {
     String? repository;
-    var ref = 'v1.0.0';
+    String? ref;
     var keepArtifacts = false;
     for (final argument in arguments) {
       if (argument.startsWith('--repository=')) {
@@ -676,6 +687,7 @@ final class _Options {
     if (repository == null ||
         repository.trim().isEmpty ||
         repository.contains(RegExp(r'[\r\n]')) ||
+        ref == null ||
         ref.trim().isEmpty ||
         ref.contains(RegExp(r'[\r\n]'))) {
       throw ArgumentError(

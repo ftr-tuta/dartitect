@@ -5,6 +5,7 @@
     "current": [
       "AGENTS.md",
       "CODE_OF_CONDUCT.md",
+      "CHANGELOG.md",
       "CONTRIBUTING.md",
       "DEPENDENCIES.adoc",
       "README.md",
@@ -52,6 +53,7 @@
     "historical": [
       "docs/adr/*.adoc",
       "docs/release/1.0-readiness.adoc",
+      "docs/release/1.1.0-rc.1-readiness.adoc",
       "docs/release/advisory-audit.adoc",
       "docs/release/ecosystem-threat-model.adoc",
       "docs/release/flutter-ecosystem-compatibility.adoc",
@@ -80,5 +82,8 @@
     ]
   },
   "excluded": ["packages/*/THIRD_PARTY_NOTICES.md"],
-  "activeReleaseCandidateExclusions": ["packages/*/CHANGELOG.md"]
+  "activeReleaseCandidateExclusions": [
+    "CHANGELOG.md",
+    "packages/*/CHANGELOG.md"
+  ]
 }

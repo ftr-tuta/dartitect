@@ -155,6 +155,7 @@ Future<void> main(List<String> arguments) async {
       'tool/check_provider_constructor_evidence_test.dart',
     ]),
     const _Command('dart', <String>['test', 'tool/release_audit_test.dart']),
+    const _Command('dart', <String>['test', 'tool/run_git_canaries_test.dart']),
     const _Command('dart', <String>[
       'test',
       'tool/check_package_release_contract_test.dart',

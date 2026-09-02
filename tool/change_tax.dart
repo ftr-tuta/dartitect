@@ -264,27 +264,29 @@ Future<void> _removeOpenApiOperationAssertion(Directory root) async {
 Future<void> _configureSentry(Directory root) async {
   final pubspec = File('${root.path}/pubspec.yaml');
   var pubspecSource = await pubspec.readAsString();
-  const syncDescriptor = '''  dartitect_sync:
-    git:
-      url: https://github.com/ftr-tuta/dartitect.git
-      path: packages/dartitect_sync
-      tag_pattern: 'v{{version}}'
-    version: 1.0.0
-''';
+  final workspaceVersion = RegExp(
+    r'^version:\s+(\S+)\s*$',
+    multiLine: true,
+  ).firstMatch(pubspecSource)?.group(1);
+  if (workspaceVersion == null) {
+    throw StateError('Large-consumer source lacks its workspace version.');
+  }
+  const devDependencies = '\ndev_dependencies:\n';
   pubspecSource = pubspecSource.replaceFirst(
-    syncDescriptor,
-    '$syncDescriptor'
-    '  dartitect_sentry:\n'
+    devDependencies,
+    '\n  dartitect_sentry:\n'
     '    git:\n'
     '      url: https://github.com/ftr-tuta/dartitect.git\n'
     '      path: packages/dartitect_sentry\n'
     "      tag_pattern: 'v{{version}}'\n"
-    '    version: 1.0.0\n'
-    '  sentry: ^9.27.0\n',
+    '    version: $workspaceVersion\n'
+    '  sentry: ^9.27.0\n'
+    '$devDependencies',
   );
-  if (!pubspecSource.contains('  dartitect_sentry:')) {
+  if (!pubspecSource.contains('  dartitect_sentry:\n') ||
+      !pubspecSource.contains('  sentry: ^9.27.0\n')) {
     throw StateError(
-      'Large-consumer source lacks the canonical sync descriptor.',
+      'Large-consumer source lacks the dev_dependencies boundary.',
     );
   }
   await pubspec.writeAsString(pubspecSource, flush: true);
@@ -300,9 +302,20 @@ final _hub = Hub(
     ..transport = _DiscardingTransport(),
 );
 
-ObservabilityRuntime createSentryObservability() => ObservabilityRuntime(
-  logSinks: <LogSinkRegistration>[
-    LogSinkRegistration.borrowed(SentryLogSink(hub: _hub)),
+DestinationAwareObservabilityRuntime createSentryObservability() =>
+    ObservabilityRuntime.withPrivacy(
+  privacyPolicy: ObservabilityPrivacyPolicy.fromProfile(
+    profile: ObservabilityPrivacyProfile.balanced,
+  ),
+  destinations: <ObservabilityDestinationRegistration>[
+    ObservabilityDestinationRegistration.remote(
+      name: 'sentry',
+      logSinks: <PreparedLogSinkRegistration>[
+        PreparedLogSinkRegistration.borrowed(
+          SentryLogSink.sanitizedInput(hub: _hub),
+        ),
+      ],
+    ),
   ],
 );
 

@@ -13,7 +13,7 @@ const _canonicalEnvironment = <String, String>{
 };
 
 void main() {
-  test('reads dependency order from the schema-v3 release authority', () async {
+  test('reads dependency order from the schema-v4 release authority', () async {
     final root = await Directory.systemTemp.createTemp(
       'dartitect-release-contract-test-',
     );
@@ -21,7 +21,7 @@ void main() {
     await Directory('${root.path}/tool').create();
     await File('${root.path}/tool/package_release_contract.json').writeAsString(
       jsonEncode(<String, Object?>{
-        'schemaVersion': 3,
+        'schemaVersion': 4,
         'dependencyOrder': <String>['dartitect', 'dartitect_cli'],
       }),
     );

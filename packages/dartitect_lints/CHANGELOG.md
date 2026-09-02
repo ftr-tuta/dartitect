@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Complete developer documentation, managed skill guidance, and documentation quality gates.
+- Add analyzer diagnostics for observability privacy bypasses with CLI scan parity.
 
 ## 1.0.0
 

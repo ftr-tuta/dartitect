@@ -17,7 +17,12 @@
     "packageDependencyCycle": "DT1014",
     "packageReexport": "DT1015",
     "scopeBoundary": "DT1016",
-    "temporaryDisposableHostValue": "DT1045"
+    "temporaryDisposableHostValue": "DT1045",
+    "sensitiveLogInterpolation": "DT1050",
+    "dioLogInterceptorConflict": "DT1051",
+    "productionRiskAcceptance": "DT1052",
+    "unclassifiedCustomCapture": "DT1053",
+    "legacySentryPreparedRegistration": "DT1054"
   },
   "defaultLayers": {
     "domain": ["**/domain/**"],

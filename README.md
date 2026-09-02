@@ -42,7 +42,8 @@ or another state/lifecycle runtime. Feature profiles (`local`, `online`,
 
 Before adding a capability to this repository, ask:
 
-> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+> Is it business-neutral, difficult to implement correctly, and a source of
+> repetitive infrastructure in consumer applications?
 
 It enters Dartitect only when all three answers are yes. Non-neutral reusable
 plumbing belongs in a typed extension local to the project; business rules,
@@ -79,7 +80,7 @@ independently documented and exports only public entrypoints under `lib/`.
 | Paired Flutter UI tests | [`dartitect_flutter_testing`](packages/dartitect_flutter_testing/) as a dev dependency | Consumer root, themes, locales, keyboard, focus, navigation, and action assertions |
 | Read-only local diagnostics inspection | [`dartitect_devtools`](packages/dartitect_devtools/) | Explicit development-entrypoint registration only; never product activation |
 | Inspection, generation, editor diagnostics, or agent context | [`dartitect_cli`](packages/dartitect_cli/), [`dartitect_lints`](packages/dartitect_lints/), [`dartitect_mcp`](packages/dartitect_mcp/) | Managed Codex skills synchronized by the CLI |
-| OpenAPI 3.1 JSON contracts | `dartitect contracts check|sync` | Local specs/refs only; generated DTOs and endpoint descriptors never infer domain mappings or execute security schemes |
+| OpenAPI 3.1 JSON contracts | [`dartitect_cli`](packages/dartitect_cli/) for `dartitect contracts check|sync` | [`dartitect_dio`](packages/dartitect_dio/) for generated `DioJsonClient` runtime bindings; local specs/refs only, with no inferred domain mappings or executed security schemes |
 | Non-neutral reusable infrastructure | `DartitectLocalExtension<B>` in the consumer workspace | Typed project-local binding generated from confined semantic source analysis; no plugin execution, registry, marketplace, or SDK preset |
 
 The [ecosystem selection guide](docs/guides/ecosystem-selection.md) gives the
@@ -187,14 +188,19 @@ boundaries with no dual-write invariant.
 ## Observability workflow
 
 Create `ObservabilityRuntime` at composition and inject its provider-neutral
-logger, reporter, and tracer. Local developer logging is the default. Remote
-destinations are opt-in, and provider objects remain consumer-owned or are
-registered with explicit ownership.
+logger, reporter, and tracer. The legacy `1.0.0` runtime remains compatible.
+New graphs can opt into `ObservabilityRuntime.withPrivacy`, whose balanced
+profile classifies and sanitizes values before preparing immutable events for
+each named local or remote destination.
 
-Sanitize before every destination. Authorization, cookies, tokens, passwords,
-request or response bodies, headers, query strings, DSNs, identity, entity
-keys, and identifying paths are prohibited telemetry. Expected `Err<F>` values
-remain application state; unexpected crashes may be reported once and rethrown.
+Raw values never enter destination queues. Policy resolution is hierarchical,
+combines multiple classifications as `deny > mask > allow`, and requires an
+explicit risk acceptance before a high-risk remote override can release data.
+Sanitization has deterministic structural budgets, safe projections for errors
+and keys, cycle detection, collision-safe masked keys, and validated W3C trace
+context. Local and remote destinations have independent queues, sampling,
+diagnostics, and flush results, so a slow or failing provider cannot block
+another destination or alter application behavior.
 See [observability](docs/guides/observability.md) and
 [adapters](docs/guides/adapters.md).
 
@@ -264,9 +270,12 @@ The workspace requires Dart `^3.13.0`; Flutter packages require Flutter
 READMEs. Drift accepts consumer-owned native and web executors. ObjectBox has no
 web support. The CLI, modeling analyzer, and MCP server run on the Dart VM.
 
-All 25 packages permanently share one lockstep version and are distributed only
-through the immutable GitHub Release for `v1.0.0`. Declare only direct packages;
-transitive Dartitect packages resolve from the same tag without overrides:
+All 25 packages permanently share one lockstep workspace version. This source
+branch is the untagged `1.1.0-rc.1` candidate cohort; its derivable candidate
+tag is `v1.1.0-rc.1`, but that tag is not materialized and is not a public
+distribution. The latest stable distribution remains the immutable GitHub
+Release for `v1.0.0`. Consumers should continue declaring `1.0.0`; transitive
+Dartitect packages resolve from the same stable tag without overrides:
 
 ```yaml
 dependencies:

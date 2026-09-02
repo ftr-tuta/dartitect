@@ -91,7 +91,9 @@ void main() {
         jobId: 'job-1',
         definition: 'sync',
         deadline: DateTime.utc(2027),
-        payload: const <String, Object?>{'value': 'payload'},
+        payload: const <String, Object?>{
+          'value': 'private-workmanager-payload',
+        },
       ).toInputData();
 
       expect(
@@ -114,6 +116,15 @@ void main() {
         receipts.values.map((receipt) => receipt.status),
         everyElement(DartitectWorkmanagerReceiptStatus.completed),
       );
+      final receiptFacts = <Map<String, Object?>>[
+        for (final receipt in receipts.values)
+          <String, Object?>{
+            'jobId': receipt.jobId,
+            'status': receipt.status.name,
+            'recordedAtUtc': receipt.recordedAtUtc,
+          },
+      ];
+      expect('$receiptFacts', isNot(contains('private-workmanager-payload')));
     },
   );
 }

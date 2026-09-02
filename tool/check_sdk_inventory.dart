@@ -8,10 +8,15 @@ Future<void> main(List<String> arguments) async {
     File('${root.path}/tool/package_release_contract.json').readAsStringSync(),
   );
   if (release is! Map<String, Object?> ||
-      release['releaseVersion'] is! String) {
+      release['workspaceCohort'] is! Map<String, Object?>) {
     throw const FormatException('Invalid package release cohort.');
   }
-  final cohort = release['releaseVersion']! as String;
+  final workspace = release['workspaceCohort']! as Map<String, Object?>;
+  final cohort = workspace['version'];
+  final channel = workspace['channel'];
+  if (cohort is! String || channel is! String) {
+    throw const FormatException('Invalid workspace release cohort.');
+  }
   final releasePackages = release['packages'];
   final decisions = release['inventoryDecisions'];
   if (releasePackages is! Map<String, Object?> ||
@@ -81,7 +86,7 @@ Future<void> main(List<String> arguments) async {
     return;
   }
   final encoded =
-      '${const JsonEncoder.withIndent('  ').convert(<String, Object?>{'schemaVersion': 1, 'status': cohort == '1.0.0' ? 'STABLE_CANDIDATE' : 'NOT_READY_FOR_1_0_RC', 'packages': packages})}\n';
+      '${const JsonEncoder.withIndent('  ').convert(<String, Object?>{'schemaVersion': 1, 'workspaceVersion': cohort, 'channel': channel, 'status': channel == 'candidate' ? 'CANDIDATE' : 'STABLE', 'packages': packages})}\n';
   final inventory = File('${root.path}/tool/sdk_inventory.json');
   if (arguments.contains('--update')) {
     inventory.writeAsStringSync(encoded, flush: true);

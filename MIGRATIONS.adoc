@@ -16,3 +16,20 @@ Ordinary parsing rejects versions 1 and 2 without modifying the project.
 Migration preserves supported extension fields, journals every write, validates
 the upgraded project, and rolls back on failure. Generated-once consumer source
 is never a configuration migration target.
+
+== Opting into destination-aware observability
+
+The untagged `1.1.0-rc.1` workspace adds an optional privacy-aware runtime; it
+does not introduce config v4 and does not change existing `1.0.0` runtime,
+`Redactor`, Dio metadata, or direct Sentry behavior. Existing source can remain
+unchanged. Candidate evaluation may instead create a new composition with
+`ObservabilityRuntime.withPrivacy`, select a reviewed profile, replace raw
+destinations with prepared destination registrations, and add explicit
+classification only for values the application intends to observe.
+
+Keep `balanced` as the generated default. Review local, remote, and named
+overrides independently; a high-risk remote allow requires explicit risk
+acceptance. Replace Dio `LogInterceptor` with metadata-only Dartitect capture,
+and use Sentry `.sanitizedInput` adapters only inside the prepared runtime.
+This is source migration guidance, not permission to consume an unmaterialized
+candidate tag. Public consumers remain on `1.0.0` / `v1.0.0`.

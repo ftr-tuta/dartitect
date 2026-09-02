@@ -42,6 +42,7 @@
       "packages/dartitect_flutter/lib/dartitect_flutter_reactive.dart",
       "packages/dartitect_isolates/lib/dartitect_isolates.dart",
       "packages/dartitect_observability/lib/dartitect_observability.dart",
+      "packages/dartitect_observability/lib/dartitect_observability_sync.dart",
       "packages/dartitect_devtools/lib/dartitect_devtools.dart",
       "packages/dartitect_dio/lib/dartitect_dio.dart",
       "packages/dartitect_drift/lib/dartitect_drift.dart",

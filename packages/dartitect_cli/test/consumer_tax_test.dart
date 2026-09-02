@@ -71,6 +71,46 @@ Object? use(Result<int, StateError> result, ObservabilityRuntime runtime,
   });
 
   test(
+    'transitive adapter dependencies do not imply capability opt-in',
+    () async {
+      final root = await _project(
+        dependencies: const <String>['dartitect', 'dartitect_observability'],
+        source: '''
+import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_observability/dartitect_observability.dart';
+
+Object? use(Result<int, StateError> result, ObservabilityRuntime runtime) =>
+    result;
+''',
+        config: DartitectConfig(
+          features: DartitectFeaturesConfig(),
+          observability: DartitectObservabilityConfig(provider: 'developer'),
+        ),
+      );
+      addTearDown(() => root.delete(recursive: true));
+      await File('${root.path}/pubspec.lock').writeAsString('''
+packages:
+  dartitect:
+    dependency: "direct main"
+  dartitect_observability:
+    dependency: "direct main"
+  dartitect_sync:
+    dependency: transitive
+''');
+
+      final report = await ConsumerTaxInspector(root).inspect();
+
+      expect(report.isCompliant, isTrue);
+      expect(report.capabilityOptIns['observability'], isTrue);
+      expect(report.capabilityOptIns['sync'], isFalse);
+      expect(
+        report.findings.map((finding) => finding.code),
+        isNot(contains('DT4006')),
+      );
+    },
+  );
+
+  test(
     'structural plumbing and unselected dependencies fail ratchets',
     () async {
       final root = await _project(

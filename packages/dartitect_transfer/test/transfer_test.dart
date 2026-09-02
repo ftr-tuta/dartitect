@@ -24,7 +24,7 @@ void main() {
       diagnostics: emitter.subject(DartitectDiagnosticSubjectKind.owner),
     );
 
-    final result = await engine.start('asset').done;
+    final result = await engine.start('private-transfer-sentinel').done;
     expect((result as Ok<TransferReport>).value.committedBytes, 5);
     expect(events, <String>[
       'commit:2',
@@ -49,6 +49,10 @@ void main() {
         DartitectDiagnosticPhase.succeeded,
         DartitectDiagnosticPhase.disposed,
       }),
+    );
+    expect(
+      '${diagnostics.events.map((event) => event.toJson())}',
+      isNot(contains('private-transfer-sentinel')),
     );
     await emitter.dispose();
     diagnostics.dispose();

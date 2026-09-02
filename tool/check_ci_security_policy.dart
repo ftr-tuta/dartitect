@@ -147,7 +147,7 @@ void _auditWorkflows(Directory root, List<String> errors) {
     'GITHUB_EVENT_NAME\" == \"merge_group',
     '--exclude-merge-commits',
     'Clean clone / release audit',
-    'Git consumption / v1.0.0',
+    'Git consumption / workspace candidate',
     'tool/run_git_canaries.dart',
     'dart run tool/change_tax.dart',
     'DARTITECT_CI_RUNNER_ID: ubuntu-24.04-flutter-3.47.1',

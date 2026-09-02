@@ -241,17 +241,17 @@ final class ConsumerTaxInspector {
       );
     }
     final optIns = _capabilityOptIns(config);
-    final resolved = await _resolvedDependencies(directDependencies);
     for (final capability in _capabilityPackages.entries) {
       if (optIns[capability.key] == true) continue;
-      final unexpected = capability.value.intersection(resolved).toList()
-        ..sort();
+      final unexpected =
+          capability.value.intersection(directDependencies).toList()..sort();
       for (final dependency in unexpected) {
         findings.add(
           ConsumerTaxFinding(
             code: 'DT4006',
             message:
-                'A capability dependency is resolved without config opt-in.',
+                'A direct capability dependency is declared without config '
+                'opt-in.',
             path: 'pubspec.yaml',
             evidence: '${capability.key}: $dependency',
           ),
@@ -402,25 +402,6 @@ final class ConsumerTaxInspector {
       if (match != null) output.add(match.group(1)!);
     }
     return output;
-  }
-
-  Future<Set<String>> _resolvedDependencies(Set<String> direct) async {
-    final lock = File(_join(root.path, 'pubspec.lock'));
-    if (!await lock.exists()) return direct;
-    final output = <String>{};
-    var packages = false;
-    for (final line in await lock.readAsLines()) {
-      if (line == 'packages:') {
-        packages = true;
-        continue;
-      }
-      if (packages && line.isNotEmpty && !line.startsWith(' ')) break;
-      final match = packages
-          ? RegExp(r'^  ([a-zA-Z][a-zA-Z0-9_]*):$').firstMatch(line)
-          : null;
-      if (match != null) output.add(match.group(1)!);
-    }
-    return output.isEmpty ? direct : output;
   }
 
   Future<_RecordedPerformance> _recordedPerformance() async {

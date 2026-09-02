@@ -8,13 +8,16 @@ proportion to the change and as required by the repository workflow.
 
 Pin external Actions by full commit SHA. OSV exceptions are exact advisory IDs
 with justification, analysis link, and short expiry; package-wide ignores and
-PackageOverrides are forbidden. Distribution is GitHub-only; validation uses
-clean archives and exact-tag Git canaries, and no registry workflow exists. A
-source-validation preview never authorizes a tag or GitHub Release. Platform-specific evidence
-must run on its supported host, and builds must leave tracked files unchanged.
+PackageOverrides are forbidden. Distribution is GitHub-only. Distinguish the
+workspace cohort/channel from the latest distributed stable cohort and whether
+a derivable candidate tag is materialized. Candidate validation uses clean
+archives and a local disposable-tag canary; it never authorizes a remote tag,
+workflow run, GitHub Release, publication, or promotion. Release rejects
+prerelease cohorts before external writes. Platform-specific evidence must run
+on its supported host, and builds must leave tracked files unchanged.
 
 For documentation and skill changes, require the documentation classification,
 link/include, changelog-cohort, skill-reference, managed snapshot/hash, and MCP
 catalog gates. Normal config accepts v3 only; v1/v2 are transactional fleet
-migration inputs. Keep `sdkVersion` at the released cohort until a separately
-authorized release changes it.
+migration inputs. `sdkVersion` follows the workspace cohort; public consumption
+continues to use the latest materialized distributed stable cohort.

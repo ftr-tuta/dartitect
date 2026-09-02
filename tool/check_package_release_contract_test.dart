@@ -12,7 +12,7 @@ void main() {
 
     expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
     expect(result.stdout, contains('25 packages'));
-    expect(result.stdout, contains('GitHub-only lockstep cohort'));
+    expect(result.stdout, contains('workspace lockstep cohort'));
   });
 
   test('rejects package metadata outside lockstep', () async {
@@ -38,8 +38,8 @@ void main() {
     );
     await pubspec.writeAsString(
       (await pubspec.readAsString()).replaceFirst(
-        'version: 1.0.0',
-        'version: 1.0.1',
+        'version: 1.1.0-rc.1',
+        'version: 1.1.0-rc.2',
       ),
     );
 
@@ -95,6 +95,42 @@ void main() {
     expect(result.stderr, contains('Independent-patch'));
   });
 
+  test('rejects a materialized prerelease workspace tag', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+    await fixture.updateContract((contract) {
+      final workspace = contract['workspaceCohort']! as Map<String, Object?>;
+      workspace
+        ..['version'] = '1.1.0-rc.1'
+        ..['channel'] = 'candidate'
+        ..['derivedTag'] = 'v1.1.0-rc.1'
+        ..['tagMaterialized'] = true;
+    });
+
+    final result = await fixture.check();
+
+    expect(result.exitCode, 1);
+    expect(result.stderr, contains('tag materialization'));
+  });
+
+  test('accepts package-specific non-empty Unreleased entries', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+    final changelog = File(
+      '${fixture.root.path}/packages/dartitect_sync/CHANGELOG.md',
+    );
+    await changelog.writeAsString(
+      (await changelog.readAsString()).replaceFirst(
+        '## Unreleased\n\n',
+        '## Unreleased\n\n- Package-specific candidate note.\n',
+      ),
+    );
+
+    final result = await fixture.check();
+
+    expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
+  });
+
   test('rejects a partial Unreleased changelog cohort', () async {
     final fixture = await _Fixture.create();
     addTearDown(fixture.dispose);
@@ -103,9 +139,7 @@ void main() {
     );
     await changelog.writeAsString(
       (await changelog.readAsString()).replaceFirst(
-        '## Unreleased\n\n'
-            '- Complete developer documentation, managed skill guidance, and '
-            'documentation quality gates.\n\n',
+        RegExp(r'## Unreleased\n\n.*?\n\n(?=## )', dotAll: true),
         '',
       ),
     );
@@ -131,6 +165,20 @@ final class _Fixture {
     await contract.parent.create(recursive: true);
     await File('${source.path}/tool/package_release_contract.json')
         .copy(contract.path);
+    final contractData =
+        jsonDecode(await contract.readAsString()) as Map<String, Object?>;
+    final versionSources =
+        contractData['workspaceVersionSources']! as Map<String, Object?>;
+    for (final path in <String>{
+      ...(versionSources['manifests']! as List<Object?>).cast<String>(),
+      ...(versionSources['nativeManifests']! as List<Object?>).cast<String>(),
+      ...(versionSources['structuredDerivatives']! as List<Object?>)
+          .cast<String>(),
+    }) {
+      final destination = File('${root.path}/$path');
+      await destination.parent.create(recursive: true);
+      await File('${source.path}/$path').copy(destination.path);
+    }
     for (final package in Directory(
       '${source.path}/packages',
     ).listSync(followLinks: false).whereType<Directory>()) {

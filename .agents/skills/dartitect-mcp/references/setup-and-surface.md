@@ -10,3 +10,6 @@ package metadata, diagnostics, canonical English guides, and credential-free
 config v3. There is no free-form file resource. Results include structured
 content plus compatible JSON text. Read tools/previews are annotated read-only;
 only apply is mutable/destructive.
+Privacy-bypass diagnostics `DT1050` through `DT1054` are catalog resources.
+Route destination policy to `$dartitect-observability`; MCP never reads runtime
+telemetry payloads or exposes the DevTools privacy RPC.

@@ -56,6 +56,14 @@ Diagnostics:
 - `DT1005` presentation imports infrastructure.
 - `DT1006` a forbidden architecture framework appears in a strict boundary.
 - `DT1007` code imports another package's private `src`.
+- `DT1050` a sensitive expression is interpolated into a logger call.
+- `DT1051` Dio `LogInterceptor` bypasses classified capture.
+- `DT1052` production source contains high-risk remote risk acceptance.
+- `DT1053` a custom telemetry capture value lacks explicit classification.
+- `DT1054` a legacy Sentry adapter is registered in a prepared runtime.
+
+The analyzer and `dartitect scan` use the same policy and parity corpus for
+these privacy bypasses. They do not require or create config v4.
 
 ## Ownership and lifecycle
 

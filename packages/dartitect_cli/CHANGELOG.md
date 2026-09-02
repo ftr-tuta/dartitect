@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Complete developer documentation, managed skill guidance, and documentation quality gates.
+- Add `balanced` observability privacy scaffolding, privacy-bypass scan diagnostics, and candidate-aware release tooling.
 
 ## 1.0.0
 

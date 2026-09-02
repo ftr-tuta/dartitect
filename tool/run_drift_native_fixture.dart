@@ -17,7 +17,23 @@ Future<void> main() async {
     await _exerciseVerticalFeature(file);
     stdout.writeln('Task vertical Drift native canary passed.');
   } finally {
-    if (await temporary.exists()) await temporary.delete(recursive: true);
+    await _deleteTemporaryDirectory(temporary);
+  }
+}
+
+Future<void> _deleteTemporaryDirectory(Directory directory) async {
+  const attempts = 20;
+  for (var attempt = 1; attempt <= attempts; attempt++) {
+    if (!await directory.exists()) return;
+    try {
+      await directory.delete(recursive: true);
+      return;
+    } on FileSystemException {
+      if (attempt == attempts) rethrow;
+      // Windows can retain the SQLite file briefly after the background
+      // executor has completed its awaited shutdown.
+      await Future<void>.delayed(Duration(milliseconds: attempt * 25));
+    }
   }
 }
 

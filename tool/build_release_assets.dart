@@ -5,21 +5,26 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
 import 'dependency_snippets.dart';
+import 'release_contract.dart';
 
 /// Builds the deterministic, checksummed assets for the immutable Release.
 Future<void> main(List<String> arguments) async {
   try {
     final options = _Options.parse(arguments);
-    final root = File.fromUri(Platform.script).parent.parent.absolute;
+    final root = options.root;
+    final cohorts = ReleaseCohortContract.read(root);
     final contract = _object(
       jsonDecode(
         File('${root.path}/tool/package_release_contract.json')
             .readAsStringSync(),
       ),
     );
-    if (contract['releaseVersion'] != '1.0.0' ||
-        contract['releaseTag'] != 'v1.0.0') {
-      throw StateError('Release assets require the stable 1.0.0 contract.');
+    if (cohorts.workspace.isPrerelease ||
+        cohorts.workspace.channel != 'stable') {
+      throw StateError(
+        'Release assets reject the ${cohorts.workspace.channel} workspace '
+        'cohort ${cohorts.workspace.version}.',
+      );
     }
     if (options.output.existsSync()) {
       await options.output.delete(recursive: true);
@@ -40,7 +45,7 @@ Future<void> main(List<String> arguments) async {
       File('${options.output.path}/release-provenance.json'),
       <String, Object?>{
         'schemaVersion': 1,
-        'release': contract['releaseTag'],
+        'release': cohorts.workspace.tag,
         'sourceSha': options.sourceSha,
         'sourceTree': options.sourceTree,
         'ciRunId': options.ciRunId,
@@ -52,13 +57,13 @@ Future<void> main(List<String> arguments) async {
 
     final paths = _object(contract['packagePaths']);
     final order = _strings(contract['dependencyOrder']);
-    final dependency = _object(contract['internalDependency']);
+    final dependency = cohorts.workspaceDependency;
     await _writeJson(
       File('${options.output.path}/dartitect-git-manifest.json'),
       <String, Object?>{
         'schemaVersion': 1,
-        'releaseVersion': contract['releaseVersion'],
-        'releaseTag': contract['releaseTag'],
+        'releaseVersion': cohorts.workspace.version,
+        'releaseTag': cohorts.workspace.tag,
         'sourceSha': options.sourceSha,
         'repository': dependency['url'],
         'tagPattern': dependency['tagPattern'],
@@ -69,7 +74,7 @@ Future<void> main(List<String> arguments) async {
             <String, Object?>{
               'name': package,
               'path': paths[package],
-              'version': contract['releaseVersion'],
+              'version': cohorts.workspace.version,
             },
         ],
       },
@@ -222,6 +227,7 @@ String _basename(String path) =>
 
 final class _Options {
   const _Options({
+    required this.root,
     required this.output,
     required this.readiness,
     required this.sourceSha,
@@ -243,7 +249,7 @@ final class _Options {
     final sourceTree = values['source-tree'];
     final ciRunId = int.tryParse(values['ci-run-id'] ?? '');
     final ciRunAttempt = int.tryParse(values['ci-run-attempt'] ?? '');
-    if (values.length != 6 ||
+    if ((values.length != 6 && values.length != 7) ||
         values['output'] == null ||
         values['readiness'] == null ||
         sourceSha == null ||
@@ -256,7 +262,7 @@ final class _Options {
         ciRunAttempt <= 0) {
       throw const FormatException(
         'Required valid --output, --readiness, --source-sha, --source-tree, '
-        '--ci-run-id, and --ci-run-attempt.',
+        '--ci-run-id, and --ci-run-attempt; --root is optional.',
       );
     }
     final readiness = File(values['readiness']!).absolute;
@@ -264,6 +270,9 @@ final class _Options {
       throw const FormatException('Readiness manifest does not exist.');
     }
     return _Options(
+      root: values['root'] == null
+          ? File.fromUri(Platform.script).parent.parent.absolute
+          : Directory(values['root']!).absolute,
       output: Directory(values['output']!).absolute,
       readiness: readiness,
       sourceSha: sourceSha,
@@ -273,6 +282,7 @@ final class _Options {
     );
   }
 
+  final Directory root;
   final Directory output;
   final File readiness;
   final String sourceSha;

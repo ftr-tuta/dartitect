@@ -1,0 +1,39 @@
+= 1.1.0-rc.1 candidate readiness record
+:status: in-review
+:date: 2026-09-01
+
+This document records candidate evidence. It is not a reusable release runbook,
+publication authorization, or statement that the candidate is distributed.
+
+== Version state
+
+* Workspace cohort: `1.1.0-rc.1`
+* Channel: `candidate`
+* Latest stable distribution: `1.0.0` / `v1.0.0`
+* Derivable candidate tag: `v1.1.0-rc.1`
+* Candidate tag materialized: `false`
+
+The 25 packages advance together in source. Consumers continue to install the
+stable `1.0.0` cohort until a later, separately authorized distribution exists.
+
+== Candidate evidence
+
+Readiness requires formatting, analysis, focused and complete tests, analyzer
+and CLI diagnostic parity, deterministic structural-budget tests, informative
+calibrated benchmarks, local disposable-tag canaries, clean-clone auditing,
+version/distribution contracts, documentation and API checks, MCP catalog
+validation, and managed-skill regeneration from the canonical catalog.
+
+The public API snapshot must classify the candidate as additive. Existing
+`1.0.0` observability, Dio, and Sentry usage must continue compiling without
+deprecation. Privacy tests must prove that raw data never reaches queues,
+buffers, Sentry, or DevTools; that `deny > mask > allow` is invariant; that Dio
+metadata-only capture remains payload-free; and that slow or failing remote
+destinations cannot disrupt local destinations.
+
+== Explicitly excluded
+
+This work does not create or move `v1.1.0-rc.1`, run the `Release` workflow,
+create a GitHub Release, publish packages, promote to `1.1.0`, or change release
+rules, secrets, and publication policy. The executed `1.0.0` publication
+runbook remains historical evidence and is not generalized here.

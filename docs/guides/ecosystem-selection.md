@@ -29,7 +29,7 @@ container, service locator, or application-state runtime is prohibited.
 | Credentials and session rebuild | `dartitect` | `package:dartitect/dartitect_credentials.dart` | Dart, Flutter, web | `$dartitect-runtime` | Product auth policy or a concrete credential store is expected |
 | Forms and queries | `dartitect_flutter` | `dartitect_flutter_forms.dart`; `dartitect_flutter_queries.dart` | Flutter | `$dartitect-reactive` | Product fields, filters, validation messages, or query codecs are expected |
 | Reactive graph, resources, families, collections, headless builders | `dartitect_flutter` | `package:dartitect_flutter/dartitect_flutter_reactive.dart` | Flutter | `$dartitect-reactive` | Basic `ChangeNotifier`/command composition is sufficient |
-| Logs, reporting, tracing, redaction | `dartitect_observability` | `package:dartitect_observability/dartitect_observability.dart` | Dart, Flutter, web | `$dartitect-observability` | A remote destination has not been explicitly selected; local developer logging already suffices |
+| Logs, reporting, tracing, destination privacy | `dartitect_observability` | `package:dartitect_observability/dartitect_observability.dart`; optional `dartitect_observability_sync.dart` | Dart, Flutter, web | `$dartitect-observability` | A remote destination has not been explicitly selected; balanced local prepared logging already suffices |
 | Dio integration | `dartitect_dio` | `package:dartitect_dio/dartitect_dio.dart` | Dio platforms | `$dartitect-adapters` | The application did not choose Dio or the import would cross into domain/presentation |
 | Drift integration | `dartitect_drift` | `package:dartitect_drift/dartitect_drift.dart` | Dart, Flutter, web | `$dartitect-adapters`; combine with `$dartitect-offline-first` | The consumer expects an SDK-owned schema/executor or universal database abstraction |
 | ObjectBox integration | `dartitect_objectbox` | `package:dartitect_objectbox/dartitect_objectbox.dart` | Android, iOS, Linux, macOS, Windows | `$dartitect-adapters`; combine with `$dartitect-offline-first` | Web support or an ORM abstraction is required |
@@ -43,6 +43,7 @@ container, service locator, or application-state runtime is prohibited.
 | Bounded OpenAPI 3.1 contracts | `dartitect_cli` | `package:dartitect_cli/dartitect_contracts.dart`; `dartitect contracts` | Dart VM | `$dartitect-tooling` | Network refs, streaming, multipart, security execution, or inferred domain mapping is expected |
 | Analyzer diagnostics | `dartitect_lints` | plugin `package:dartitect_lints/main.dart` | Dart analyzer | `$dartitect-tooling` | The host cannot run analyzer plugins; use `dartitect scan` instead |
 | Local MCP tools/resources | `dartitect_mcp` | `package:dartitect_mcp/dartitect_mcp.dart`; local STDIO executable | Dart VM, STDIO | `$dartitect-mcp` | Shell/CI automation, arbitrary files, HTTP/OAuth, or running-app access is required |
+| Payload-free privacy inspection | `dartitect_devtools` | separate `ext.dartitect.observabilityPrivacy` registration | Dart VM/Flutter development host | `$dartitect-observability` + `$dartitect-testing` | Product registration, payload samples, remote export, or mutation is expected |
 
 The native ObjectBox fixture installer, `tool/setup_objectbox_vm.dart`, belongs
 to `$dartitect-tooling`; it is not an application entrypoint.

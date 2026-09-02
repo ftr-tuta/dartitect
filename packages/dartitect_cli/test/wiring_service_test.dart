@@ -210,8 +210,14 @@ void main() {
       );
       expect(
         application,
-        contains('final ObservabilityRuntime observability;'),
+        contains('final DestinationAwareObservabilityRuntime observability;'),
       );
+      expect(application, contains('ObservabilityRuntime.withPrivacy('));
+      expect(
+        application,
+        contains('profile: ObservabilityPrivacyProfile.balanced'),
+      );
+      expect(application, contains('PreparedDeveloperLogSink()'));
       expect(application, isNot(contains('SessionRuntimeController<Object')));
       expect(application, contains('final PrimaryStorage primary;'));
       expect(application, contains('final ApiTransport api;'));
@@ -245,6 +251,37 @@ void main() {
       );
     },
   );
+
+  test('Sentry composition requires a privacy-prepared runtime', () async {
+    final root = await Directory.systemTemp.createTemp(
+      'dartitect-wiring-sentry-',
+    );
+    addTearDown(() => root.delete(recursive: true));
+    await _preparePackage(root);
+
+    await DartitectWiringService(root).apply(
+      config: DartitectConfig(
+        observability: DartitectObservabilityConfig(provider: 'sentry'),
+      ),
+    );
+    final application = await File(
+      '${root.path}/lib/composition/'
+      'application_module.wiring.dartitect.g.dart',
+    ).readAsString();
+
+    expect(
+      application,
+      contains('final DestinationAwareObservabilityRuntime observability;'),
+    );
+    expect(
+      application,
+      allOf(
+        contains('FutureOr<DestinationAwareObservabilityRuntime> Function()'),
+        contains('createObservability'),
+      ),
+    );
+    expect(application, isNot(contains('FutureOr<ObservabilityRuntime>')));
+  });
 
   test('ObjectBox context freezes UIDs when datasets are added', () async {
     final root = await Directory.systemTemp.createTemp(

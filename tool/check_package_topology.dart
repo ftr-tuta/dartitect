@@ -1,6 +1,6 @@
 import 'dart:io';
 
-/// Verifies the reviewed stable-v1 internal package DAG and core purity.
+/// Verifies the reviewed workspace package DAG and core purity.
 void main() {
   final root = File.fromUri(Platform.script).parent.parent.absolute;
   final observed = <String, Set<String>>{};
@@ -20,7 +20,7 @@ void main() {
   }
   if (observed.keys.toSet().difference(_allowed.keys.toSet()).isNotEmpty ||
       _allowed.keys.toSet().difference(observed.keys.toSet()).isNotEmpty) {
-    errors.add('Package set differs from the reviewed stable-v1 topology.');
+    errors.add('Package set differs from the reviewed workspace topology.');
   }
   for (final entry in observed.entries) {
     final allowed = _allowed[entry.key];
@@ -82,7 +82,7 @@ void main() {
     return;
   }
   stdout.writeln(
-    'Stable-v1 package DAG is acyclic and bounded-runtime purity is intact.',
+    'Workspace package DAG is acyclic and bounded-runtime purity is intact.',
   );
 }
 
@@ -109,7 +109,7 @@ bool _sameSet(Set<String> left, Set<String> right) =>
 const Map<String, Set<String>> _allowed = <String, Set<String>>{
   'dartitect': <String>{},
   'dartitect_cli': <String>{'dartitect', 'dartitect_modeling_analyzer'},
-  'dartitect_devtools': <String>{'dartitect'},
+  'dartitect_devtools': <String>{'dartitect', 'dartitect_observability'},
   'dartitect_dio': <String>{
     'dartitect',
     'dartitect_observability',
@@ -136,7 +136,7 @@ const Map<String, Set<String>> _allowed = <String, Set<String>>{
     'dartitect_observability',
     'dartitect_sync',
   },
-  'dartitect_observability': <String>{'dartitect'},
+  'dartitect_observability': <String>{'dartitect', 'dartitect_sync'},
   'dartitect_privacy': <String>{},
   'dartitect_resilience': <String>{'dartitect'},
   'dartitect_geometry': <String>{},

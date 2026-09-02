@@ -20,6 +20,7 @@
   timers, or requests after supervisor disposal.
 - Resilience: inject clock, scheduler, randomness, and failure classification;
   cover bounds and never retry an uncertain mutation or an unexpected crash.
-- DevTools: register exactly the three read-only service extensions in
-  development mode, reject mutation methods and payload-bearing facts, isolate
-  registrations by runtime isolate, and prove product builds register nothing.
+- DevTools: keep diagnostics v2 at exactly three read-only service extensions;
+  test `ext.dartitect.observabilityPrivacy` as a separate registration. Reject
+  mutation methods and payload-bearing facts, isolate registrations by runtime
+  isolate, and prove product builds register nothing.

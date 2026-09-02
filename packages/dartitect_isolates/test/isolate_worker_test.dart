@@ -19,7 +19,7 @@ void main() {
       diagnostics: emitter.subject(DartitectDiagnosticSubjectKind.isolate),
     );
 
-    final success = worker.send(2, requestId: 'success');
+    final success = worker.send(2, requestId: 'private-request-sentinel');
     await success.accepted;
     expect(await success.result, const Ok<int>(4));
 
@@ -37,6 +37,10 @@ void main() {
         DartitectDiagnosticPhase.failed,
         DartitectDiagnosticPhase.disposed,
       }),
+    );
+    expect(
+      '${diagnostics.events.map((event) => event.toJson())}',
+      isNot(contains('private-request-sentinel')),
     );
     await emitter.dispose();
     diagnostics.dispose();

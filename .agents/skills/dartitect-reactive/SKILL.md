@@ -52,7 +52,8 @@ graph cleanup.
 
 Before adding a capability, answer:
 
-> É business-neutral, difícil de implementar corretamente e gera infraestrutura repetitiva no consumidor?
+> Is it business-neutral, difficult to implement correctly, and a source of
+> repetitive infrastructure in consumer applications?
 
 All three answers must be “yes”. Otherwise reusable infrastructure belongs in
 a typed project-local extension and business behavior stays in the application.

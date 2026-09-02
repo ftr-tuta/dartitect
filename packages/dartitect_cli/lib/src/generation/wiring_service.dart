@@ -385,7 +385,7 @@ final class DartitectWiringService {
         rendererId: 'wiring.application',
         ownership: GeneratedOwnership.fullyGenerated,
         sourcePath: 'dartitect.json',
-        rendererVersion: 3,
+        rendererVersion: 4,
         semanticSchemaVersion: 2,
         inputSignature: signature,
       ),
@@ -984,9 +984,22 @@ final class ${type}FeatureHarness<T extends OnlineFeatureContractDriver> {
         'package:dartitect_observability/dartitect_observability.dart',
       );
       constructorParameters.add('    required this.observability,');
-      fields.add('  final ObservabilityRuntime observability;');
+      fields.add('  final DestinationAwareObservabilityRuntime observability;');
       construction.add('''          final observability = transaction.own(
-            ObservabilityRuntime(),
+            ObservabilityRuntime.withPrivacy(
+              privacyPolicy: ObservabilityPrivacyPolicy.fromProfile(
+                profile: ObservabilityPrivacyProfile.balanced,
+              ),
+              destinations: <ObservabilityDestinationRegistration>[
+                ObservabilityDestinationRegistration.local(
+                  logSinks: <PreparedLogSinkRegistration>[
+                    const PreparedLogSinkRegistration.owned(
+                      PreparedDeveloperLogSink(),
+                    ),
+                  ],
+                ),
+              ],
+            ),
             (runtime) => runtime.disposeAsync(),
             label: 'application.observability',
           );''');
@@ -996,9 +1009,9 @@ final class ${type}FeatureHarness<T extends OnlineFeatureContractDriver> {
         'package:dartitect_observability/dartitect_observability.dart',
       );
       constructorParameters.add('    required this.observability,');
-      fields.add('  final ObservabilityRuntime observability;');
+      fields.add('  final DestinationAwareObservabilityRuntime observability;');
       createParameters.add(
-        '    required FutureOr<ObservabilityRuntime> Function() '
+        '    required FutureOr<DestinationAwareObservabilityRuntime> Function() '
         'createObservability,',
       );
       construction.add('''          final observability = transaction.own(

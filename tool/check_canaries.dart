@@ -26,14 +26,17 @@ void main(List<String> arguments) {
       ),
     );
     final installation = _object(contract['gitInstallation']);
+    final workspace = _object(release['workspaceCohort']);
     final errors = <String>[];
-    if (contract['schemaVersion'] != 3 ||
-        contract['releaseVersion'] != release['releaseVersion'] ||
+    if (contract['schemaVersion'] != 4 ||
+        contract['workspaceVersion'] != workspace['version'] ||
         installation['repository'] !=
             'https://github.com/ftr-tuta/dartitect.git' ||
-        installation['ref'] != release['releaseTag'] ||
+        installation['ref'] != workspace['derivedTag'] ||
         installation['tagPattern'] != 'v{{version}}' ||
         installation['annotatedTagRequired'] != true ||
+        installation['localDisposableTag'] != true ||
+        installation['remoteTagRequired'] != false ||
         installation['dependencyOverrides'] != false ||
         installation['transitiveClosureRequired'] != true ||
         installation['localPathResolution'] != false ||
@@ -61,9 +64,22 @@ void main(List<String> arguments) {
       }
       _checkTemplate(
         File('${root.path}/$pubspecPath'),
-        release['releaseVersion']! as String,
+        workspace['version']! as String,
         errors,
       );
+    }
+    if (workspace['channel'] != 'stable') {
+      final candidateUpgradeCommands = <String>[
+        for (final canary in canaries)
+          for (final command in _strings(canary['commands']))
+            if (command.contains(' fleet upgrade ')) command,
+      ];
+      if (candidateUpgradeCommands.isNotEmpty) {
+        errors.add(
+          'Candidate Git canaries must not exercise stable-only fleet '
+          'upgrade commands.',
+        );
+      }
     }
     final catalog = _object(contract['catalog']);
     final packages = _object(catalog['packages']).keys.toSet();

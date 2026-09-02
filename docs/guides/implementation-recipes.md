@@ -131,10 +131,22 @@ and its memory/ObjectBox stores as the complete recipe.
 
 ## Observability
 
-Start local and provider-neutral:
+Start local and provider-neutral with the balanced privacy profile:
 
 ```dart
-final telemetry = ObservabilityRuntime();
+final telemetry = ObservabilityRuntime.withPrivacy(
+  privacyPolicy: ObservabilityPrivacyPolicy.fromProfile(
+    profile: ObservabilityPrivacyProfile.balanced,
+  ),
+  destinations: <ObservabilityDestinationRegistration>[
+    ObservabilityDestinationRegistration.local(
+      name: 'developer',
+      logSinks: const <PreparedLogSinkRegistration>[
+        PreparedLogSinkRegistration.owned(PreparedDeveloperLogSink()),
+      ],
+    ),
+  ],
+);
 try {
   telemetry.logger.info('Application started.');
   // Inject telemetry.reporter and telemetry.tracing into consumers.
@@ -143,9 +155,11 @@ try {
 }
 ```
 
-Before adding a destination, define an allowlist and redaction policy. Never
+Before adding a destination, define classifications and destination policy.
+Only immutable prepared events enter its independent bounded queue. Never
 record credentials, authorization, cookies, bodies, headers, queries, DSNs,
-identity, or identifying paths. Expected `Err` values remain command state;
+identity, or identifying paths without an explicit policy decision. Expected
+`Err` values remain command state;
 unexpected crashes may be reported once and are rethrown. Install one
 `FlutterErrorBinding`, chain/restore previous handlers, and transfer only valid
 W3C trace context between isolates.

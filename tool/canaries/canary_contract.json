@@ -1,11 +1,13 @@
 {
-  "schemaVersion": 3,
-  "releaseVersion": "1.0.0",
+  "schemaVersion": 4,
+  "workspaceVersion": "1.1.0-rc.1",
   "gitInstallation": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "ref": "v1.0.0",
+    "ref": "v1.1.0-rc.1",
     "tagPattern": "v{{version}}",
     "annotatedTagRequired": true,
+    "localDisposableTag": true,
+    "remoteTagRequired": false,
     "dependencyOverrides": false,
     "transitiveClosureRequired": true,
     "localPathResolution": false,
@@ -120,14 +122,12 @@
         "flutter test",
         "flutter build web --release",
         "flutter build web --release",
-        "flutter build linux --release",
-        "dart run dartitect_cli:dartitect fleet upgrade . --to=1.0.0 --apply --json"
+        "flutter build linux --release"
       ],
       "coverage": [
         "large_30_feature_matrix",
         "application_session_context_ownership",
         "web_linux_incremental_builds",
-        "fleet_upgrade_zero_residual",
         "openapi_feature_selection",
         "typed_openapi_operation_runtime",
         "renderer_migration_chain",

@@ -58,11 +58,12 @@ String buildDependencySnippet(
   );
   if (contract is! Map<String, Object?> ||
       contract['dependencyOrder'] is! List<Object?> ||
-      contract['internalDependency'] is! Map<String, Object?>) {
+      contract['distributedInternalDependency'] is! Map<String, Object?>) {
     throw const FormatException('Invalid package release contract.');
   }
   final order = (contract['dependencyOrder']! as List<Object?>).cast<String>();
-  final dependency = contract['internalDependency']! as Map<String, Object?>;
+  final dependency =
+      contract['distributedInternalDependency']! as Map<String, Object?>;
   final requested = selectedPackages.toSet();
   final unknown = requested.difference(order.toSet()).toList()..sort();
   if (unknown.isNotEmpty) {

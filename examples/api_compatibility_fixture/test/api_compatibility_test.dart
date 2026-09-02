@@ -4,6 +4,7 @@ import 'package:dartitect_api_compatibility_fixture/adapter_author_api.dart';
 import 'package:dartitect_api_compatibility_fixture/application_api.dart';
 import 'package:dartitect_api_compatibility_fixture/extension_author_api.dart';
 import 'package:dartitect_api_compatibility_fixture/generated_api.dart';
+import 'package:dartitect_api_compatibility_fixture/observability_1_0_api.dart';
 import 'package:dartitect_api_compatibility_fixture/tooling_api.dart';
 import 'package:test/test.dart';
 
@@ -20,5 +21,9 @@ void main() {
     expect(generatedBinding().isOwned, isTrue);
     expect(adapterRoute().value, '/tasks/{id}');
     expect(contractTool(Directory.current), isNotNull);
+
+    final observability = observabilityRuntimeFromOneDotZero();
+    expect(await observability.flush(const Duration(seconds: 1)), isTrue);
+    await observability.disposeAsync();
   });
 }

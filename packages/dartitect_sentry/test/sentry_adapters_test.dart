@@ -5,7 +5,7 @@ import 'package:sentry/sentry.dart' as sentry show SpanStatus;
 import 'package:test/test.dart';
 
 void main() {
-  test('log sink maps breadcrumbs and events with sanitized data', () async {
+  test('1.0 log sink defensively redacts raw breadcrumbs and events', () async {
     final hub = _RecordingHub();
     final sink = SentryLogSink(hub: hub);
 
@@ -40,7 +40,7 @@ void main() {
   });
 
   test(
-    'error reporter maps handled, mechanism, fingerprint, and severity',
+    '1.0 error reporter defensively redacts and preserves event semantics',
     () async {
       final hub = _RecordingHub();
       final reporter = SentryErrorReporter(hub: hub);
@@ -101,6 +101,110 @@ void main() {
     expect(span.context.traceId, parent.traceId);
     expect(hub.closeCalls, 0);
   });
+
+  test(
+    'prepared adapters preserve an approved value without redacting twice',
+    () async {
+      final hub = _RecordingHub();
+      final runtime = ObservabilityRuntime.withPrivacy(
+        privacyPolicy: ObservabilityPrivacyPolicy.fromProfile(
+          profile: ObservabilityPrivacyProfile.diagnostic,
+          destinationOverrides: <ObservabilityDestinationPrivacyOverrides>[
+            ObservabilityDestinationPrivacyOverrides(
+              name: 'sentry',
+              kind: ObservabilityDestinationKind.remote,
+              rules: ObservabilityPrivacyOverrides(
+                allow: <ObservabilityDataClass>{
+                  ObservabilityDataClass.errorMessage,
+                  ObservabilityDataClass.email,
+                },
+              ),
+            ),
+          ],
+          riskAcceptance: const ObservabilityRiskAcceptance.explicit(
+            reason: 'Synthetic identity in an isolated adapter test.',
+          ),
+        ),
+        destinations: <ObservabilityDestinationRegistration>[
+          ObservabilityDestinationRegistration.remote(
+            name: 'sentry',
+            logSinks: <PreparedLogSinkRegistration>[
+              PreparedLogSinkRegistration.borrowed(
+                SentryLogSink.sanitizedInput(hub: hub),
+              ),
+            ],
+            errorReporters: <ErrorReporterRegistration>[
+              ErrorReporterRegistration.borrowed(
+                SentryErrorReporter.sanitizedInput(hub: hub),
+              ),
+            ],
+            tracers: <TracerRegistration>[
+              TracerRegistration.borrowed(
+                SentryTracer.sanitizedInput(hub: hub),
+              ),
+            ],
+            samplingPolicy: FixedSamplingPolicy(logRate: 1, spanRate: 1),
+          ),
+        ],
+      );
+
+      runtime.logger.error(
+        'synthetic@example.com',
+        context: ObservabilityContext(
+          attributes: <String, Object?>{
+            'approved': ObservabilityClassifiedValue<Object?>(
+              'synthetic@example.com',
+              classes: <ObservabilityDataClass>{ObservabilityDataClass.email},
+            ),
+          },
+        ),
+      );
+      runtime.reporter.report(
+        ErrorEvent(
+          timestamp: DateTime.utc(2026),
+          error: StateError('raw error text must not be projected'),
+          stackTrace: StackTrace.current,
+          context: ObservabilityContext(
+            attributes: <String, Object?>{
+              'approved': ObservabilityClassifiedValue<Object?>(
+                'synthetic@example.com',
+                classes: <ObservabilityDataClass>{ObservabilityDataClass.email},
+              ),
+            },
+          ),
+        ),
+      );
+      final span = runtime.tracing.startSpan(
+        'approved span',
+        attributes: <String, Object?>{
+          'status': ObservabilityClassifiedValue<Object?>(
+            'ready',
+            classes: <ObservabilityDataClass>{
+              ObservabilityDataClass.safeStatus,
+            },
+          ),
+        },
+      );
+      await span.end(status: SpanStatus.ok);
+      await runtime.flushDetailed();
+
+      expect(hub.events.first.message!.formatted, 'synthetic@example.com');
+      expect(
+        hub.events.first.contexts['dartitect'],
+        containsPair('approved', 'synthetic@example.com'),
+      );
+      expect(hub.events.last.user, isNull);
+      expect(hub.events.last.contexts['dartitect'], isNotNull);
+      expect(hub.events.last.tags!.keys.toSet(), <String>{
+        'dartitect.mechanism',
+        'dartitect.handled',
+      });
+      expect(hub.spans.single.data, containsPair('status', 'ready'));
+      expect(hub.closeCalls, 0);
+      await runtime.disposeAsync();
+      expect(hub.closeCalls, 0);
+    },
+  );
 }
 
 final class _RecordingHub implements Hub {

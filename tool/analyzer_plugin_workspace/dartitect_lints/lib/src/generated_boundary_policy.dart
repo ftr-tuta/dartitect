@@ -53,6 +53,21 @@ abstract final class DartitectRuleCodes {
 
   /// Stable DT1045 diagnostic code.
   static const String temporaryDisposableHostValue = 'DT1045';
+
+  /// Stable DT1050 diagnostic code.
+  static const String sensitiveLogInterpolation = 'DT1050';
+
+  /// Stable DT1051 diagnostic code.
+  static const String dioLogInterceptorConflict = 'DT1051';
+
+  /// Stable DT1052 diagnostic code.
+  static const String productionRiskAcceptance = 'DT1052';
+
+  /// Stable DT1053 diagnostic code.
+  static const String unclassifiedCustomCapture = 'DT1053';
+
+  /// Stable DT1054 diagnostic code.
+  static const String legacySentryPreparedRegistration = 'DT1054';
 }
 
 /// Generated Native-First boundary policy shared without package coupling.

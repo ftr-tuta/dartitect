@@ -1,5 +1,9 @@
 # Getting started
 
+The source workspace is currently the untagged `1.1.0-rc.1` candidate cohort.
+For public consumption, continue using the stable `1.0.0` / `v1.0.0` release;
+no candidate tag or GitHub Release exists.
+
 ## Choose the boundary
 
 Start only in a new Dart or Flutter project. Dartitect does not provide an

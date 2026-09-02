@@ -220,6 +220,47 @@ final class DartitectBoundaryRule extends MultiAnalysisRule {
     uniqueName: 'DartitectLint.temporaryDisposableHostValue',
   );
 
+  /// Sensitive value interpolated directly into a logger message.
+  static const sensitiveLogInterpolation = LintCode(
+    'dartitect_sensitive_log_interpolation',
+    'Sensitive HTTP or credential data must not be interpolated into a logger message.',
+    correctionMessage:
+        'Attach an ObservabilityClassifiedValue to structured context instead.',
+    uniqueName: 'DartitectLint.sensitiveLogInterpolation',
+  );
+
+  /// Dio LogInterceptor composed beside classified Dartitect capture.
+  static const dioLogInterceptorConflict = LintCode(
+    'dartitect_dio_log_interceptor_conflict',
+    'Dio LogInterceptor bypasses Dartitect classified observability capture.',
+    correctionMessage: 'Remove LogInterceptor and keep DioObservabilityInterceptor as the only telemetry interceptor.',
+    uniqueName: 'DartitectLint.dioLogInterceptorConflict',
+  );
+
+  /// High-risk acknowledgement placed in production source.
+  static const productionRiskAcceptance = LintCode(
+    'dartitect_production_risk_acceptance',
+    'ObservabilityRiskAcceptance must be limited to reviewed test or QA source.',
+    correctionMessage: 'Remove the high-risk remote allow or move the controlled policy to QA-only source.',
+    uniqueName: 'DartitectLint.productionRiskAcceptance',
+  );
+
+  /// Custom value captured without an explicit classification wrapper.
+  static const unclassifiedCustomCapture = LintCode(
+    'dartitect_unclassified_custom_capture',
+    'A custom telemetry value requires ObservabilityClassifiedValue.',
+    correctionMessage: 'Wrap the value with explicit classes or register a reviewed projector.',
+    uniqueName: 'DartitectLint.unclassifiedCustomCapture',
+  );
+
+  /// Legacy Sentry adapter registered in a prepared privacy runtime.
+  static const legacySentryPreparedRegistration = LintCode(
+    'dartitect_legacy_sentry_prepared_registration',
+    'A privacy runtime destination must use a prepared Sentry adapter.',
+    correctionMessage: 'Use the sanitizedInput constructor for the Sentry sink, reporter, or tracer.',
+    uniqueName: 'DartitectLint.legacySentryPreparedRegistration',
+  );
+
   /// Whether reviewed generated infrastructure may retain [uri].
   ///
   /// Provider generators may legitimately import their SDK internals and
@@ -255,6 +296,11 @@ final class DartitectBoundaryRule extends MultiAnalysisRule {
     ecosystemException,
     invalidConfiguration,
     temporaryDisposableHostValue,
+    sensitiveLogInterpolation,
+    dioLogInterceptorConflict,
+    productionRiskAcceptance,
+    unclassifiedCustomCapture,
+    legacySentryPreparedRegistration,
   ];
 
   @override
@@ -272,6 +318,7 @@ final class DartitectBoundaryRule extends MultiAnalysisRule {
       ..addAnnotation(this, visitor)
       ..addMethodInvocation(this, visitor)
       ..addInstanceCreationExpression(this, visitor)
+      ..addStringInterpolation(this, visitor)
       ..addCatchClause(this, visitor)
       ..addMapLiteralEntry(this, visitor);
   }
@@ -301,8 +348,12 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
 
   @override
   void visitCompilationUnit(CompilationUnit node) {
-    if (_resolution.configurationError == null) return;
-    _reportAtToken(node.beginToken, DartitectBoundaryRule.invalidConfiguration);
+    if (_resolution.configurationError != null) {
+      _reportAtToken(
+        node.beginToken,
+        DartitectBoundaryRule.invalidConfiguration,
+      );
+    }
   }
 
   @override
@@ -409,6 +460,7 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
   @override
   void visitMethodInvocation(MethodInvocation node) {
     if (_generated) return;
+    _inspectPrivacyInvocation(node);
     final target = node.target?.toSource();
     final method = node.methodName.name;
     if (target == 'DartitectScope' &&
@@ -461,7 +513,9 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
 
   @override
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    if (_generated || !_importsDartitectFlutter(node)) return;
+    if (_generated) return;
+    _inspectPrivacyConstruction(node);
+    if (!_importsDartitectFlutter(node)) return;
     final constructor = node.constructorName;
     if (constructor.name?.name != 'value') return;
     final host = constructor.type.name.lexeme;
@@ -480,6 +534,16 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
   }
 
   @override
+  void visitStringInterpolation(StringInterpolation node) {
+    if (_generated ||
+        !_sensitiveInterpolation.hasMatch(node.toSource()) ||
+        !_isLoggerInterpolation(node)) {
+      return;
+    }
+    _reportAtNode(node, DartitectBoundaryRule.sensitiveLogInterpolation);
+  }
+
+  @override
   void visitCatchClause(CatchClause node) {
     if (_generated || node.body.statements.isNotEmpty) return;
     _reportAtNode(node.body, DartitectBoundaryRule.emptyCatch);
@@ -487,7 +551,14 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
 
   @override
   void visitMapLiteralEntry(MapLiteralEntry node) {
-    if (_generated || node.key is! StringLiteral) return;
+    if (_generated) return;
+    if (_isUnclassifiedCustomCapture(node)) {
+      _reportAtNode(
+        node.value,
+        DartitectBoundaryRule.unclassifiedCustomCapture,
+      );
+    }
+    if (node.key is! StringLiteral) return;
     final key = (node.key as StringLiteral).stringValue?.toLowerCase();
     if (key == null ||
         !_sensitiveKeys.hasMatch(key) ||
@@ -495,6 +566,146 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
       return;
     }
     _reportAtNode(node.key, DartitectBoundaryRule.sensitiveMetadataKey);
+  }
+
+  void _inspectPrivacyConstruction(InstanceCreationExpression node) {
+    final type = node.constructorName.type.name.lexeme;
+    final constructorSource = node.constructorName.toSource();
+    if (type == 'LogInterceptor' && _usesSafeDioInterceptor) {
+      _reportAtNode(node, DartitectBoundaryRule.dioLogInterceptorConflict);
+    }
+    if (constructorSource == 'ObservabilityRiskAcceptance.explicit' &&
+        !_isQaSource) {
+      _reportAtNode(node, DartitectBoundaryRule.productionRiskAcceptance);
+    }
+    if (_usesPrivacyRuntime &&
+        constructorSource == type &&
+        const <String>{
+          'SentryLogSink',
+          'SentryErrorReporter',
+          'SentryTracer',
+        }.contains(type) &&
+        _hasRegistrationAncestor(node, const <String>{
+          'PreparedLogSinkRegistration',
+          'ErrorReporterRegistration',
+          'TracerRegistration',
+        })) {
+      _reportAtNode(
+        node,
+        DartitectBoundaryRule.legacySentryPreparedRegistration,
+      );
+    }
+  }
+
+  void _inspectPrivacyInvocation(MethodInvocation node) {
+    final target = node.target?.toSource();
+    final method = node.methodName.name;
+    if (target == null &&
+        method == 'LogInterceptor' &&
+        _usesSafeDioInterceptor) {
+      _reportAtNode(node, DartitectBoundaryRule.dioLogInterceptorConflict);
+    }
+    if (_usesPrivacyRuntime &&
+        target == null &&
+        const <String>{
+          'SentryLogSink',
+          'SentryErrorReporter',
+          'SentryTracer',
+        }.contains(method) &&
+        _hasRegistrationAncestor(node, const <String>{
+          'PreparedLogSinkRegistration',
+          'ErrorReporterRegistration',
+          'TracerRegistration',
+        })) {
+      _reportAtNode(
+        node,
+        DartitectBoundaryRule.legacySentryPreparedRegistration,
+      );
+    }
+  }
+
+  bool _isUnclassifiedCustomCapture(MapLiteralEntry entry) {
+    final value = entry.value;
+    final type = switch (value) {
+      InstanceCreationExpression(:final constructorName) =>
+        constructorName.type.name.lexeme,
+      MethodInvocation(:final target, :final methodName)
+          when target == null &&
+              (methodName.element is ConstructorElement ||
+                  _typeLikeName.hasMatch(methodName.name)) =>
+        methodName.name,
+      _ => null,
+    };
+    if (type == null) return false;
+    if (_safeCaptureTypes.contains(type)) return false;
+    var cursor = entry.parent;
+    for (var depth = 0; depth < 10 && cursor != null; depth += 1) {
+      if (cursor is InstanceCreationExpression &&
+          const <String>{
+            'ObservabilityContext',
+            'ObservabilityLogEvent',
+            'ErrorEvent',
+          }.contains(cursor.constructorName.type.name.lexeme)) {
+        return true;
+      }
+      if (cursor is MethodInvocation &&
+          const <String>{
+            'addEvent',
+            'event',
+            'log',
+            'report',
+            'setAttribute',
+            'startSpan',
+          }.contains(cursor.methodName.name)) {
+        return true;
+      }
+      cursor = cursor.parent;
+    }
+    return false;
+  }
+
+  bool _isLoggerInterpolation(AstNode node) {
+    var cursor = node.parent;
+    for (var depth = 0; depth < 12 && cursor != null; depth += 1) {
+      if (cursor is MethodInvocation &&
+          const <String>{
+            'debug',
+            'error',
+            'event',
+            'fatal',
+            'info',
+            'log',
+            'warning',
+          }.contains(cursor.methodName.name)) {
+        final target = cursor.target?.toSource().toLowerCase();
+        if (target != null && target.endsWith('logger')) return true;
+      }
+      if (cursor is InstanceCreationExpression &&
+          cursor.constructorName.type.name.lexeme == 'ObservabilityLogEvent') {
+        return true;
+      }
+      cursor = cursor.parent;
+    }
+    return false;
+  }
+
+  static bool _hasRegistrationAncestor(
+    AstNode node,
+    Set<String> acceptedTypes,
+  ) {
+    var cursor = node.parent;
+    for (var depth = 0; depth < 8 && cursor != null; depth += 1) {
+      if (cursor is InstanceCreationExpression &&
+          acceptedTypes.contains(cursor.constructorName.type.name.lexeme)) {
+        return true;
+      }
+      if (cursor is MethodInvocation &&
+          acceptedTypes.contains(cursor.target?.toSource())) {
+        return true;
+      }
+      cursor = cursor.parent;
+    }
+    return false;
   }
 
   bool _isTelemetryMetadata(MapLiteralEntry entry) {
@@ -688,10 +899,50 @@ final class _BoundaryVisitor extends SimpleAstVisitor<void> {
         }.contains,
       );
 
+  bool get _usesSafeDioInterceptor =>
+      RegExp(r'\bDioObservabilityInterceptor\b')
+          .hasMatch((context.currentUnit ?? context.definingUnit).content);
+
+  bool get _usesPrivacyRuntime =>
+      RegExp(r'\bObservabilityRuntime\s*\.\s*withPrivacy\b')
+          .hasMatch((context.currentUnit ?? context.definingUnit).content);
+
+  bool get _isQaSource {
+    final segments = _sourceSegments
+        .map((segment) => segment.toLowerCase())
+        .toList(growable: false);
+    return segments.any(
+          const <String>{
+            'qa',
+            'test',
+            'testing',
+            'fixture',
+            'fixtures',
+          }.contains,
+        ) ||
+        segments.last.endsWith('_qa.dart');
+  }
+
   static final _sensitiveKeys = RegExp(
     r'(^|[_-])(authorization|cookie|password|passwd|secret|token|api[_-]?key|dsn)($|[_-])',
     caseSensitive: false,
   );
+
+  static final _sensitiveInterpolation = RegExp(
+    r'\b(authorization|token|password|cookie|body|headers?|query)\b',
+    caseSensitive: false,
+  );
+
+  static const _safeCaptureTypes = <String>{
+    'DateTime',
+    'Duration',
+    'ObservabilityClassifiedValue',
+    'ObservabilityErrorProjection',
+    'ObservabilityStackTraceProjection',
+    'Uri',
+  };
+
+  static final _typeLikeName = RegExp(r'^[A-Z][A-Za-z0-9_]*$');
 
   static bool _isFromPackages(
     Element? element,

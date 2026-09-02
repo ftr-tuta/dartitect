@@ -14,9 +14,17 @@ Expose cancellation, transport, HTTP, and configuration failures as distinct
 types, and map only `DioException`; programming errors continue to throw. A
 `CancelToken` is cooperative and does not prove transport preemption.
 
-Instrument method/protocol/status only. Never record headers, bodies, query
-strings, credentials, or user information. Propagate through the configured W3C
-propagator and reject duplicate Dartitect/`sentry_dio` instrumentation.
+`DioObservabilityInterceptor` uses
+`DioObservabilityCapturePolicy.metadataOnly()` by default. That path records
+fixed method/protocol/status/error-type facts and zero payload. Transport
+capture policy is separate from destination privacy policy.
+
+`DioObservabilityCapturePolicy.diagnostic` is an explicit investigation mode.
+Every captured field must carry reviewed classifications, and only JSON-safe
+maps/lists/scalars are inspected. Streams, multipart values, bytes, and files
+are never consumed. Remove Dio `LogInterceptor`: it can capture outside the
+sanitizer. Propagate only through the configured W3C propagator and reject
+duplicate Dartitect/`sentry_dio` instrumentation.
 
 ## ObjectBox
 
@@ -30,9 +38,23 @@ files, assume web support, or transfer a Store object across isolates.
 
 ## Sentry
 
-Borrow an injected, consumer-initialized Hub in `SentryLogSink`,
-`SentryErrorReporter`, and `SentryTracer`. Never set DSN, environment, identity,
-or sampling, and never close the Hub. Test with a fake Hub and zero network.
+Borrow an injected, consumer-initialized Hub. Legacy `SentryLogSink`,
+`SentryErrorReporter`, and `SentryTracer` remain defensive when connected to the
+compatible runtime. Behind `ObservabilityRuntime.withPrivacy`, register only
+`SentryLogSink.sanitizedInput`, `SentryErrorReporter.sanitizedInput`, and
+`SentryTracer.sanitizedInput`; prepared events are not redacted twice.
+Map approved bounded context to Sentry `extra`/context, keep tags allowlisted,
+and never create an automatic `SentryUser`. Never set DSN, environment,
+identity, or sampling, and never close the Hub. Test with a fake Hub and zero
+network.
+
+## Sync observability
+
+Import `package:dartitect_observability/dartitect_observability_sync.dart` only
+when a sync composition needs the payload-free adapter. The dependency is from
+observability to sync; `dartitect_sync` remains independent and never imports or
+emits telemetry automatically. Consumer dataset keys require an explicit value
+classifier before they can be included.
 
 ## Reusable adapters
 

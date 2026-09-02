@@ -265,6 +265,11 @@ errors, and zero remaining listeners/timers after teardown.
 
 ## Related packages and guides
 
+`dartitect_sync` emits no telemetry automatically and does not depend on
+observability. A composition that needs payload-free sync facts may separately
+import `package:dartitect_observability/dartitect_observability_sync.dart`; the
+adapter owns explicit classification for any consumer dataset key.
+
 Use `dartitect_drift` or `dartitect_objectbox` for consumer-owned checkpoint,
 journal, and transaction adapters; `dartitect_isolates` for a typed native
 worker; and `dartitect_flutter` for local-authority presentation. Read

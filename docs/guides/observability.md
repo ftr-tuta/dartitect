@@ -1,99 +1,130 @@
 # Observability
 
-## Safe defaults
+## Compatibility and safe default
 
-Create `ObservabilityRuntime` explicitly. Developer logging is the default;
-remote reporting/tracing require an explicit provider at composition. Never use
-global telemetry objects.
+The `1.0.0` `ObservabilityRuntime`, `Redactor`, Dio telemetry, and direct Sentry
+adapters remain available without deprecation. Existing applications do not
+change behavior. New graphs should opt into destination-aware preparation with
+the `balanced` profile:
 
 ```dart
-final runtime = ObservabilityRuntime(
-  samplingPolicy: FixedSamplingPolicy(spanRate: 1),
+final runtime = ObservabilityRuntime.withPrivacy(
+  privacyPolicy: ObservabilityPrivacyPolicy.fromProfile(
+    profile: ObservabilityPrivacyProfile.balanced,
+  ),
+  destinations: <ObservabilityDestinationRegistration>[
+    ObservabilityDestinationRegistration.local(
+      name: 'developer',
+      logSinks: const <PreparedLogSinkRegistration>[
+        PreparedLogSinkRegistration.owned(PreparedDeveloperLogSink()),
+      ],
+    ),
+  ],
 );
-final span = runtime.tracing.startSpan('Load catalog');
-try {
-  await loadCatalog();
-  await span.end(status: SpanStatus.ok);
-} catch (error, stackTrace) {
-  await span.end(
-    status: SpanStatus.error,
-    error: error,
-    stackTrace: stackTrace,
-  );
-  rethrow;
-} finally {
-  await runtime.disposeAsync();
-}
+
+runtime.logger.info('Application started.');
+await runtime.flush(const Duration(seconds: 1));
+await runtime.disposeAsync();
 ```
 
-## Data policy
+Only private-constructor prepared events enter destination queues. A producer
+cannot bypass the sanitizer by naming a constructor `sanitizedInput`, and a
+queue never retains a closure over a raw event.
 
-Sanitize before every destination. Do not record authorization, cookies,
-tokens, passwords, bodies, headers, query strings, DSNs, identity, or identifying
-paths. Errors and fatal events are not sampled away. Destination failures stay
-isolated from application behavior.
+## Profiles and resolution
+
+Profiles are reviewed starting points, not consent decisions:
+
+| Profile | Local destinations | Remote destinations |
+| --- | --- | --- |
+| `strict` | Allow bounded safe facts; mask operational values; deny sensitive data | Allow bounded safe facts; mask operational values; deny sensitive data |
+| `balanced` | Allow safe facts; mask identity, error messages, and operational identifiers | Allow safe facts; mask operational identifiers; deny identity and error messages |
+| `diagnostic` | Allow explicitly classified bounded HTTP/error diagnostics except credentials, authorization, cookies, binary, multipart, and file content | Keep high-risk classes denied and mask paths, queries, and stacks unless a narrower reviewed rule applies |
+
+Rules are resolved independently for every leaf classification. Each leaf may
+find a rule on itself or a dotted ancestor; the results for multiple classes
+then combine as `deny > mask > allow`. This order cannot be overridden.
+
+Overrides can be global, apply to all local or remote destinations, or apply to
+one validated named destination. Allowing a high-risk class at a remote
+destination requires `ObservabilityRiskAcceptance.explicit`. Its reason is
+configuration evidence and is never emitted as telemetry. Use `explain` or the
+payload-free diagnostics view to inspect the winning action and rule source.
+
+## Classification, masking, and bounded sanitization
+
+Wrap consumer values in `ObservabilityClassifiedValue` with one or more
+`ObservabilityDataClass` values. Application-defined dotted classes participate
+in the same hierarchy. Built-in classifiers may supplement classifications;
+they cannot erase an explicit class.
+
+Masking can replace a complete value, preserve reviewed Unicode-safe edges, or
+preserve a Unicode-safe center. The sanitizer handles only built-in safe types,
+explicit classified values, or values accepted by an explicit projector. It
+never calls `toString()` on unknown objects or arbitrary map keys.
+
+Deterministic limits cover nesting depth, collection size, total visited nodes,
+text code points, stack frames, and classification work. Identity-cycle
+detection, collision-safe masked keys, inline secret detectors, URI/HTTP/error/
+stack projections, and immutable results prevent work amplification and raw
+retention. Structural budgets are required test gates; elapsed-time benchmarks
+are informative and calibrated for the host.
+
+## Destinations, diagnostics, and flush
+
+Each `ObservabilityDestinationRegistration` has a validated unique name,
+local/remote kind, capabilities, sampling state, bounded queue, ownership, and
+failure counters. Conflicting ownership or duplicate registrations fail during
+composition. A slow or failing remote sink, reporter, or tracer cannot block or
+fail a local destination.
+
+`diagnostics` returns a fresh immutable snapshot containing only counts and
+queue facts. `flush(Duration)` retains its compatible aggregate behavior;
+`flushDetailed(Duration)` returns completion, timeout, and isolated failure
+counts by destination.
 
 ## Tracing
 
-Accept only valid W3C `traceparent`; forward optional `tracestate`; baggage is
-off by default. End every span exactly once in `finally`. Transfer only validated
-context between isolates.
+Accept only valid W3C `traceparent`. `tracestate` has separate validation and
+privacy policy and is never transformed into an attribute, tag, or baggage
+item. Baggage remains off by default. End every span exactly once in `finally`,
+and transfer only validated trace data between isolates.
 
-## Errors
+## Dio and Sentry
 
-Expected `Err<F>` values remain command state. Unexpected crashes may be
-reported once with a sanitized mechanism, handled state, fingerprint, and
-attributes, then rethrown.
+Dio capture policy is independent of destination policy. Metadata-only capture
+is the default and records no payload. Diagnostic capture requires explicit
+classifications and accepts only JSON-safe structures; it never consumes
+streams, multipart values, bytes, or files. Remove `LogInterceptor` and reject
+duplicate Dartitect or `sentry_dio` capture.
 
-## Payload-free reactive events
+Prepared Sentry adapters are constructed with `.sanitizedInput` and can be
+registered only behind the destination-aware runtime. They map approved context
+to bounded Sentry context/extra data, limit tags, borrow the consumer's Hub, and
+never create a `SentryUser`. Legacy adapters remain defensive and redact again
+when used directly; prepared adapters do not perform a second redaction pass.
 
-`ReactiveOwner` and `MutationCommand` can emit `ReactiveChangeEvent` values to
-an injected `ReactiveObserver`. Events contain only a fixed source/kind, an
-exact `ChangeCause` identity registered at composition, monotonic revisions,
-monotonic duration, and listener count. They never contain domain values,
-entity or idempotency keys, error messages, stack traces, or user identity.
+## Payload-free runtime diagnostics
 
-Use `ReactiveJournal` only as an opt-in, memory-only diagnostic ring. Its
-default capacity is 200, old entries are overwritten, and disposal clears the
-ring permanently. Declare ownership explicitly when registering it. A failing
-observer is reported once, disabled, and cannot change runtime state or the
-exception seen by the caller.
+Diagnostics protocol v2 remains exactly three read-only service extensions for
+capabilities, snapshots, and deltas. It is unchanged by this feature. Privacy
+inspection uses the separate `ext.dartitect.observabilityPrivacy` registration,
+which exposes schema, profile, masking mode, effective class actions, queue
+counts, failure counts, and sanitization counts. It exposes no values, samples,
+messages, stacks, keys, or risk-acceptance reasons.
 
-```dart
-final journal = ReactiveJournal();
-final owner = ReactiveOwner(
-  observer: ReactiveObserverRegistration.owned(
-    journal,
-    dispose: journal.dispose,
-  ),
-);
-```
+Reactive, sync, Drift, ObjectBox, jobs, transfer, isolate, Workmanager, and
+Flutter integrations emit only reviewed payload-free facts. The optional sync
+adapter is imported from `dartitect_observability_sync.dart`; `dartitect_sync`
+does not depend on observability.
 
-For a telemetry destination, inject `ReactiveObserverLoggerAdapter` instead.
-It emits only the fixed `reactive.change` message and allowlisted facts through
-`ObservabilityRuntime`; normal redaction then runs again before every sink. A
-Sentry integration is the same chain ending in `SentryLogSink`, whose Hub stays
-borrowed. There is no persistence or network destination by default.
+## Errors and ownership
 
-## Stable local diagnostics protocol v2
+Expected `Err<F>` values remain application state. Unexpected crashes may be
+reported once with reviewed classifications and then rethrown. Stop producers
+and bindings, flush/dispose the runtime, and only then close consumer-owned
+provider SDKs. Rebuild the graph in every isolate.
 
-Diagnostics protocol v2 is separate from telemetry payloads. It covers fixed
-owner, node, command, resource, family, effect, sync, and isolate categories
-using only fixed lifecycle phases, opaque process-local IDs, monotonic sequence,
-generation, and revision. The exact decoder rejects unknown fields. Do not
-derive its IDs from users, entities, operations, routes, queries, or provider
-identifiers.
-
-Inject a `DartitectDiagnosticReporterRegistration` into one
-`DartitectDiagnosticsEmitter`. The bounded `DartitectDiagnosticBuffer` is local
-and memory-only; disposal clears all retained event references. Destination
-failure and reentrancy are isolated by `SafeDartitectDiagnosticReporter`.
-Detail can be off, lifecycle-only, or complete local topology without changing
-application behavior. The construction/reporting surface is stable under ADR
-0044; there is no remote exporter or global Flutter hook by default.
-
-## Flutter and providers
-
-Install one `FlutterErrorBinding`, chain/restore prior handlers, and prevent
-recursion. Sentry adapters borrow a consumer-initialized Hub and never configure
-or close it.
+The privacy API is additive and does not introduce config v4. Generated
+developer wiring selects `balanced`; remote providers still require explicit
+consumer composition and policy review.

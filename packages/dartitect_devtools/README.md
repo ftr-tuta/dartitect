@@ -3,8 +3,9 @@
 ## Purpose
 
 An optional development-only bridge from Dartitect diagnostics protocol v2 to
-three isolate-local read-only VM service extensions, plus a bundled Flutter Web
-DevTools inspector.
+three isolate-local read-only VM service extensions, plus a separate
+payload-free observability privacy extension and a bundled Flutter Web DevTools
+inspector.
 
 ## When to use
 
@@ -26,7 +27,10 @@ Product builds install no service extensions.
 
 An application-owned diagnostics emitter writes payload-free protocol-v2 events
 to a bounded buffer. Explicit registration exposes capabilities, a snapshot,
-and event deltas for that isolate. The inspector reads those RPCs only.
+and event deltas for that isolate. Protocol v2 retains exactly these three RPCs.
+An independent `ObservabilityPrivacyDevToolsRegistration` may expose the
+borrowed privacy runtime's profile, effective actions, queue/failure counters,
+and sanitization counters through `ext.dartitect.observabilityPrivacy`.
 
 ## Minimal workflow
 
@@ -43,6 +47,8 @@ final registration = DartitectDevToolsRegistration.register(
 `DartitectDevToolsRegistration` installs the exact service-extension allowlist.
 The three public method constants and `dartitectReadOnlyServiceExtensions` let
 tests verify discovery. A registrar interface supports deterministic tests.
+`ObservabilityPrivacyDevToolsRegistration` owns only the separate read-only
+handler; it borrows and never disposes the observability runtime.
 
 ## Ownership and lifecycle
 
@@ -60,6 +66,7 @@ application or trigger runtime work.
 
 - No retry, cancel, clear, mutation, arbitrary metadata, or payload RPC.
 - No URL, domain key, error text, stack, credential, or user identifier.
+- No privacy value, sample, message, key, stack, or risk-acceptance reason.
 - No product-mode registration or remote exporter.
 - No cross-isolate aggregate pretending to be one authoritative snapshot.
 

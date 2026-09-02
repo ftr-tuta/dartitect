@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:yaml/yaml.dart';
 
+import 'release_contract.dart';
+
 /// Enforces the GitHub-only lockstep distribution policy fail-closed.
 void main(List<String> arguments) {
   try {
@@ -12,12 +14,13 @@ void main(List<String> arguments) {
         File('${root.path}/tool/distribution_policy.json').readAsStringSync(),
       ),
     );
+    final cohorts = ReleaseCohortContract.read(root);
     final release = _object(policy['release']);
     final dependency = _object(policy['internalDependency']);
     final errors = <String>[];
     if (policy['schemaVersion'] != 1 ||
-        policy['releaseVersion'] != '1.0.0' ||
-        policy['releaseTag'] != 'v1.0.0' ||
+        policy['releaseVersion'] != cohorts.distributed.version ||
+        policy['releaseTag'] != cohorts.distributed.tag ||
         policy['repository'] != 'https://github.com/ftr-tuta/dartitect.git' ||
         policy['packageCount'] != 25 ||
         policy['lockstep'] != true ||
@@ -60,15 +63,15 @@ void main(List<String> arguments) {
       _checkPackage(
         root,
         package,
-        policy['releaseVersion']! as String,
-        dependency,
+        cohorts.workspace.version,
+        cohorts.workspaceDependency,
         errors,
       );
     }
-    _checkRootMetadata(root, policy['releaseVersion']! as String, errors);
+    _checkRootMetadata(root, cohorts.workspace.version, errors);
     _checkWorkflows(root, release['workflow']! as String, errors);
     _checkForbiddenMechanisms(root, errors);
-    _checkGeneratedConsumer(root, policy, errors);
+    _checkGeneratedConsumer(root, cohorts, errors);
     _checkActiveDocuments(root, policy, errors);
 
     if (errors.isNotEmpty) {
@@ -78,7 +81,8 @@ void main(List<String> arguments) {
     }
     stdout.writeln(
       'Distribution policy passed for ${packages.length} lockstep packages at '
-      '${policy['releaseTag']} with GitHub-only resolution.',
+      '${cohorts.workspace.version}; public consumption remains '
+      '${policy['releaseTag']}.',
     );
   } on Object catch (error) {
     stderr.writeln('Distribution policy could not be checked: $error');
@@ -205,6 +209,20 @@ void _checkWorkflows(
       if (!write || !source.startsWith('name: Release\n')) {
         errors.add('Release must be the sole contents: write workflow.');
       }
+      final contractGate = source.indexOf(
+        'Load stable release contract and reject prereleases',
+      );
+      final toolchainInstall = source.indexOf('name: Install Flutter');
+      if (contractGate < 0 ||
+          toolchainInstall < 0 ||
+          contractGate > toolchainInstall ||
+          !source.contains('Release refuses workspace cohort') ||
+          source.contains('RELEASE_TAG: v1.0.0')) {
+        errors.add(
+          'Release must derive its tag from the contract and reject '
+          'prereleases before release preparation.',
+        );
+      }
       if (!source.contains(
             'https://api.github.com/repos/\${GITHUB_REPOSITORY}/rulesets/21525640',
           ) ||
@@ -281,7 +299,7 @@ void _checkForbiddenMechanisms(Directory root, List<String> errors) {
 
 void _checkGeneratedConsumer(
   Directory root,
-  Map<String, Object?> policy,
+  ReleaseCohortContract cohorts,
   List<String> errors,
 ) {
   final file = File('${root.path}/tool/generated_project_matrix.dart');
@@ -291,10 +309,12 @@ void _checkGeneratedConsumer(
   }
   final source = file.readAsStringSync();
   for (final required in <String>[
-    'url: ${policy['repository']}',
+    'url: ${cohorts.workspaceDependency['url']}',
     r'path: packages/$package',
     "tag_pattern: 'v{{version}}'",
-    'version: ${policy['releaseVersion']}',
+    "final cohort = contract['workspaceCohort']!",
+    "final version = cohort['version']! as String;",
+    r'version: $version',
   ]) {
     if (!source.contains(required)) {
       errors.add('Generated-project matrix lacks canonical Git descriptors.');

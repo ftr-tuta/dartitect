@@ -114,8 +114,10 @@ jobs:
         run: |
           git config user.name ftr
           git config user.email ftr@tuta.com
-          git tag --delete v1.0.0 2>/dev/null || true
-          git tag --annotate v1.0.0 --message "Dartitect 1.0.0 generated-project canary"
+          candidate_tag="$(jq -r '.workspaceCohort.derivedTag' tool/package_release_contract.json)"
+          workspace_version="$(jq -r '.workspaceCohort.version' tool/package_release_contract.json)"
+          git tag --delete "$candidate_tag" 2>/dev/null || true
+          git tag --annotate "$candidate_tag" --message "Dartitect ${workspace_version} generated-project canary"
           git clone --bare . "${RUNNER_TEMP:?}/dartitect-generated-projects.git"
           dart run tool/generated_project_matrix.dart --builds
       - name: Verify pinned shared UI goldens
@@ -584,7 +586,7 @@ jobs:
         run: git diff --exit-code -- .
 
   git-consumption:
-    name: Git consumption / v1.0.0
+    name: Git consumption / workspace candidate
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
@@ -611,8 +613,10 @@ jobs:
         run: |
           git config user.name ftr
           git config user.email ftr@tuta.com
-          git tag --delete v1.0.0 2>/dev/null || true
-          git tag --annotate v1.0.0 --message "Dartitect 1.0.0 Git release canary"
+          candidate_tag="$(jq -r '.workspaceCohort.derivedTag' tool/package_release_contract.json)"
+          workspace_version="$(jq -r '.workspaceCohort.version' tool/package_release_contract.json)"
+          git tag --delete "$candidate_tag" 2>/dev/null || true
+          git tag --annotate "$candidate_tag" --message "Dartitect ${workspace_version} Git release canary"
           git clone --bare . "${RUNNER_TEMP:?}/dartitect.git"
       - name: Validate all consumers through Git only
         env:
@@ -622,7 +626,7 @@ jobs:
         run: >-
           dart run tool/run_git_canaries.dart
           --repository=https://github.com/ftr-tuta/dartitect.git
-          --ref=v1.0.0
+          --ref="$(jq -r '.workspaceCohort.derivedTag' tool/package_release_contract.json)"
       - name: Validate CLI installation from the release tag
         env:
           GIT_CONFIG_COUNT: 1
@@ -631,7 +635,7 @@ jobs:
         run: >-
           dart install https://github.com/ftr-tuta/dartitect.git
           --git-path packages/dartitect_cli
-          --git-ref v1.0.0
+          --git-ref "$(jq -r '.workspaceCohort.derivedTag' tool/package_release_contract.json)"
       - name: Confirm tracked files are unchanged
         if: always()
         run: git diff --exit-code -- .

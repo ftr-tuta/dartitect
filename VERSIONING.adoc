@@ -3,7 +3,9 @@
 
 == Permanent lockstep
 
-All 25 packages share +1.0.0+ and are distributed together by the annotated +v1.0.0+ tag. Every future release updates all packages, so +v1.0.1+ contains every package at +1.0.1+.
+All 25 packages in the development workspace share +1.1.0-rc.1+. Its channel is +candidate+ and its derivable tag is +v1.1.0-rc.1+; that tag is not materialized.
+
+The latest stable distribution available to consumers remains +1.0.0+ at the immutable +v1.0.0+ tag. A workspace candidate does not change the recommended public dependency until a separately authorized stable release is materialized.
 
 Independent package patch ranges and registry publication are not supported. Internal Dartitect dependencies use the canonical Git descriptor with +tag_pattern: 'v{{version}}'+ and the same exact version as the release tag.
 

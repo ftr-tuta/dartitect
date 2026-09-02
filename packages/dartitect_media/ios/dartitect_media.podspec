@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'dartitect_media'
-  s.version          = '1.0.0'
+  s.version          = '1.1.0-rc.1'
   s.summary          = 'Explicit Android and iOS gallery image boundary.'
   s.description      = 'Typed gallery access and image save without automatic permission requests.'
   s.homepage         = 'https://github.com/ftr-tuta/dartitect'

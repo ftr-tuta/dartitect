@@ -1,10 +1,20 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "series": "1.x",
-  "releaseVersion": "1.0.0",
-  "releaseTag": "v1.0.0",
+  "workspaceCohort": {
+    "version": "1.1.0-rc.1",
+    "channel": "candidate",
+    "derivedTag": "v1.1.0-rc.1",
+    "tagMaterialized": false
+  },
+  "distributedCohort": {
+    "version": "1.0.0",
+    "channel": "stable",
+    "tag": "v1.0.0",
+    "available": true
+  },
   "packageCount": 25,
-  "publicEntrypointCount": 32,
+  "publicEntrypointCount": 33,
   "distribution": {
     "kind": "github-release",
     "repository": "https://github.com/ftr-tuta/dartitect.git",
@@ -17,14 +27,55 @@
   },
   "lockstep": {
     "enabled": true,
-    "version": "1.0.0",
-    "tag": "v1.0.0",
+    "version": "1.1.0-rc.1",
+    "derivedTag": "v1.1.0-rc.1",
     "futurePatchRule": "every release updates all packages to the tag version"
   },
-  "internalDependency": {
+  "workspaceInternalDependency": {
     "url": "https://github.com/ftr-tuta/dartitect.git",
+    "pathPrefix": "packages/",
+    "tagPattern": "v{{version}}",
+    "version": "1.1.0-rc.1"
+  },
+  "distributedInternalDependency": {
+    "url": "https://github.com/ftr-tuta/dartitect.git",
+    "pathPrefix": "packages/",
     "tagPattern": "v{{version}}",
     "version": "1.0.0"
+  },
+  "workspaceVersionSources": {
+    "manifests": [
+      "pubspec.yaml",
+      "examples/adapters_app/pubspec.yaml",
+      "examples/api_compatibility_fixture/pubspec.yaml",
+      "examples/model_generator_fixture/pubspec.yaml",
+      "examples/paved_road_canary/pubspec.yaml",
+      "examples/reference_app/pubspec.yaml",
+      "examples/thin_consumer_canary/pubspec.yaml",
+      "tool/analyzer_plugin_fixture/dependencies/dartitect/pubspec.yaml",
+      "tool/analyzer_plugin_fixture/dependencies/dartitect_flutter/pubspec.yaml",
+      "tool/analyzer_plugin_workspace/dartitect_lints/pubspec.yaml",
+      "tool/analyzer_plugin_workspace/dartitect_modeling_analyzer/pubspec.yaml",
+      "tool/canaries/adapters/pubspec.yaml",
+      "tool/canaries/drift_provider/pubspec.yaml",
+      "tool/canaries/large_consumer/pubspec.yaml",
+      "tool/canaries/large_consumer_source/pubspec.yaml",
+      "tool/canaries/minimal/pubspec.yaml",
+      "tool/canaries/modeling/pubspec.yaml",
+      "tool/canaries/native_capabilities/pubspec.yaml",
+      "tool/canaries/offline_first/pubspec.yaml",
+      "tool/canaries/thin_consumer/pubspec.yaml",
+      "tool/canaries/tooling/pubspec.yaml",
+      "tool/dartitect_devtools_extension/pubspec.yaml"
+    ],
+    "nativeManifests": [
+      "packages/dartitect_media/ios/dartitect_media.podspec",
+      "packages/dartitect_privacy/ios/dartitect_privacy.podspec"
+    ],
+    "structuredDerivatives": [
+      "tool/api_surface.snapshot.json",
+      "tool/canaries/canary_contract.json"
+    ]
   },
   "inventoryDecisions": {
     "dartitect": "keep-minimal-core",
@@ -81,36 +132,36 @@
     "dartitect_workmanager": "packages/dartitect_workmanager"
   },
   "packages": {
-    "dartitect": {"version": "1.0.0", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
-    "dartitect_cli": {"version": "1.0.0", "platforms": ["Dart VM"], "stability": "stable"},
-    "dartitect_devtools": {"version": "1.0.0", "platforms": ["Dart VM", "Flutter development", "DevTools web"], "stability": "stable"},
-    "dartitect_dio": {"version": "1.0.0", "platforms": ["Dio platforms"], "stability": "stable"},
-    "dartitect_drift": {"version": "1.0.0", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
-    "dartitect_flutter": {"version": "1.0.0", "platforms": ["Flutter"], "stability": "stable"},
-    "dartitect_flutter_testing": {"version": "1.0.0", "platforms": ["Flutter test VM", "Chrome"], "stability": "stable dev-only"},
-    "dartitect_geometry": {"version": "1.0.0", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
-    "dartitect_isolates": {"version": "1.0.0", "platforms": ["Dart VM", "Flutter native"], "stability": "stable"},
-    "dartitect_jobs": {"version": "1.0.0", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
-    "dartitect_lints": {"version": "1.0.0", "platforms": ["Dart analyzer"], "stability": "stable"},
-    "dartitect_locale_br": {"version": "1.0.0", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
-    "dartitect_mcp": {"version": "1.0.0", "platforms": ["Dart VM", "STDIO"], "stability": "stable"},
-    "dartitect_media": {"version": "1.0.0", "platforms": ["Android", "iOS", "Flutter other notSupported"], "stability": "stable"},
-    "dartitect_modeling": {"version": "1.0.0", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
-    "dartitect_modeling_analyzer": {"version": "1.0.0", "platforms": ["Dart VM", "Dart analyzer"], "stability": "stable"},
-    "dartitect_objectbox": {"version": "1.0.0", "platforms": ["Android", "iOS", "Linux", "macOS", "Windows"], "stability": "stable"},
-    "dartitect_observability": {"version": "1.0.0", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
-    "dartitect_privacy": {"version": "1.0.0", "platforms": ["iOS", "Flutter non-iOS notSupported"], "stability": "stable"},
-    "dartitect_resilience": {"version": "1.0.0", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
-    "dartitect_sentry": {"version": "1.0.0", "platforms": ["Dart", "Flutter"], "stability": "stable"},
-    "dartitect_sync": {"version": "1.0.0", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
-    "dartitect_testing": {"version": "1.0.0", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
-    "dartitect_transfer": {"version": "1.0.0", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
-    "dartitect_workmanager": {"version": "1.0.0", "platforms": ["Android", "iOS", "macOS", "web preview", "Linux preview", "Windows unsupported"], "stability": "stable"}
+    "dartitect": {"version": "1.1.0-rc.1", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
+    "dartitect_cli": {"version": "1.1.0-rc.1", "platforms": ["Dart VM"], "stability": "stable"},
+    "dartitect_devtools": {"version": "1.1.0-rc.1", "platforms": ["Dart VM", "Flutter development", "DevTools web"], "stability": "stable"},
+    "dartitect_dio": {"version": "1.1.0-rc.1", "platforms": ["Dio platforms"], "stability": "stable"},
+    "dartitect_drift": {"version": "1.1.0-rc.1", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
+    "dartitect_flutter": {"version": "1.1.0-rc.1", "platforms": ["Flutter"], "stability": "stable"},
+    "dartitect_flutter_testing": {"version": "1.1.0-rc.1", "platforms": ["Flutter test VM", "Chrome"], "stability": "stable dev-only"},
+    "dartitect_geometry": {"version": "1.1.0-rc.1", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
+    "dartitect_isolates": {"version": "1.1.0-rc.1", "platforms": ["Dart VM", "Flutter native"], "stability": "stable"},
+    "dartitect_jobs": {"version": "1.1.0-rc.1", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
+    "dartitect_lints": {"version": "1.1.0-rc.1", "platforms": ["Dart analyzer"], "stability": "stable"},
+    "dartitect_locale_br": {"version": "1.1.0-rc.1", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
+    "dartitect_mcp": {"version": "1.1.0-rc.1", "platforms": ["Dart VM", "STDIO"], "stability": "stable"},
+    "dartitect_media": {"version": "1.1.0-rc.1", "platforms": ["Android", "iOS", "Flutter other notSupported"], "stability": "stable"},
+    "dartitect_modeling": {"version": "1.1.0-rc.1", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
+    "dartitect_modeling_analyzer": {"version": "1.1.0-rc.1", "platforms": ["Dart VM", "Dart analyzer"], "stability": "stable"},
+    "dartitect_objectbox": {"version": "1.1.0-rc.1", "platforms": ["Android", "iOS", "Linux", "macOS", "Windows"], "stability": "stable"},
+    "dartitect_observability": {"version": "1.1.0-rc.1", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
+    "dartitect_privacy": {"version": "1.1.0-rc.1", "platforms": ["iOS", "Flutter non-iOS notSupported"], "stability": "stable"},
+    "dartitect_resilience": {"version": "1.1.0-rc.1", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
+    "dartitect_sentry": {"version": "1.1.0-rc.1", "platforms": ["Dart", "Flutter"], "stability": "stable"},
+    "dartitect_sync": {"version": "1.1.0-rc.1", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
+    "dartitect_testing": {"version": "1.1.0-rc.1", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
+    "dartitect_transfer": {"version": "1.1.0-rc.1", "platforms": ["Dart", "Flutter", "web"], "stability": "stable"},
+    "dartitect_workmanager": {"version": "1.1.0-rc.1", "platforms": ["Android", "iOS", "macOS", "web preview", "Linux preview", "Windows unsupported"], "stability": "stable"}
   },
   "dependencyOrder": [
     "dartitect", "dartitect_geometry", "dartitect_locale_br", "dartitect_privacy",
-    "dartitect_devtools", "dartitect_flutter", "dartitect_isolates", "dartitect_jobs", "dartitect_media", "dartitect_modeling", "dartitect_observability", "dartitect_resilience", "dartitect_transfer",
-    "dartitect_flutter_testing", "dartitect_modeling_analyzer", "dartitect_sentry", "dartitect_sync", "dartitect_workmanager",
+    "dartitect_isolates", "dartitect_jobs", "dartitect_media", "dartitect_modeling", "dartitect_resilience", "dartitect_sync", "dartitect_observability", "dartitect_devtools", "dartitect_flutter", "dartitect_transfer",
+    "dartitect_flutter_testing", "dartitect_modeling_analyzer", "dartitect_sentry", "dartitect_workmanager",
     "dartitect_dio", "dartitect_drift", "dartitect_objectbox", "dartitect_testing",
     "dartitect_cli", "dartitect_lints", "dartitect_mcp"
   ],
@@ -125,7 +176,7 @@
   "gitRelease": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
     "tag": "v1.0.0",
-    "materialized": false,
+    "materialized": true,
     "annotated": true,
     "signed": false,
     "protected": true,

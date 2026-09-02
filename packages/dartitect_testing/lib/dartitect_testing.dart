@@ -14,6 +14,7 @@ export 'src/isolate_harness.dart';
 export 'src/lifecycle_harness.dart';
 export 'src/manual_clock.dart';
 export 'src/manual_scheduler.dart';
+export 'src/observability_privacy_harness.dart';
 export 'src/owned_graph_harness.dart';
 export 'src/owned_scope_harness.dart';
 export 'src/paved_road_harnesses.dart';

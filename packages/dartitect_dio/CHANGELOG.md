@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Complete developer documentation, managed skill guidance, and documentation quality gates.
+- Add explicit classified JSON telemetry capture while keeping metadata-only capture as the zero-payload default.
 
 ## 1.0.0
 

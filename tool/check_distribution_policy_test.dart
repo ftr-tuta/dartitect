@@ -36,8 +36,8 @@ void main() {
     ),
     'divergent version': (fixture) => fixture.replace(
       'packages/dartitect/pubspec.yaml',
-      'version: 1.0.0',
-      'version: 1.0.1',
+      'version: 1.1.0-rc.1',
+      'version: 1.1.0-rc.2',
     ),
     'wrong Git URL': (fixture) => fixture.replace(
       'packages/dartitect_dio/pubspec.yaml',
@@ -57,9 +57,9 @@ void main() {
     'hosted Dartitect dependency': (fixture) => fixture.replacePattern(
       'packages/dartitect_dio/pubspec.yaml',
       RegExp(
-        r'  dartitect:\n    git:\n      url: [^\n]+\n      path: [^\n]+\n      tag_pattern: [^\n]+\n    version: 1\.0\.0',
+        r'  dartitect:\n    git:\n      url: [^\n]+\n      path: [^\n]+\n      tag_pattern: [^\n]+\n    version: 1\.1\.0-rc\.1',
       ),
-      '  dartitect: 1.0.0',
+      '  dartitect: 1.1.0-rc.1',
     ),
     'registry publication mechanism': (fixture) => fixture.append(
       '.github/workflows/release.yaml',
@@ -85,6 +85,11 @@ void main() {
           '.immutable == true',
           '.immutable == false',
         ),
+    'missing prerelease refusal gate': (fixture) => fixture.replace(
+      '.github/workflows/release.yaml',
+      'Release refuses workspace cohort',
+      'Release contract rejected',
+    ),
     'generated Dartitect override': (fixture) => fixture.append(
       'tool/generated_project_matrix.dart',
       '\n// dependency_overrides:\n',
@@ -115,6 +120,7 @@ final class _Fixture {
     ) as Map<String, Object?>;
     final paths = <String>{
       'tool/distribution_policy.json',
+      'tool/package_release_contract.json',
       'tool/generated_project_matrix.dart',
       'pubspec.yaml',
       'tool/dartitect_devtools_extension/pubspec.yaml',

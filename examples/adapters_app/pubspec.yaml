@@ -14,49 +14,49 @@ dependencies:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0-rc.1
   dartitect_dio:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_dio
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0-rc.1
   dartitect_flutter:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_flutter
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0-rc.1
   dartitect_media:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_media
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0-rc.1
   dartitect_objectbox:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_objectbox
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0-rc.1
   dartitect_observability:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_observability
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0-rc.1
   dartitect_privacy:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_privacy
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0-rc.1
   dartitect_sentry:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_sentry
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0-rc.1
   dio: ^5.11.0
   flutter:
     sdk: flutter

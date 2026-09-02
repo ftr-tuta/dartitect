@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Complete developer documentation, managed skill guidance, and documentation quality gates.
+- Add prepared-input adapters that avoid double redaction while keeping legacy adapters defensively sanitized and borrowed-Hub ownership unchanged.
 
 ## 1.0.0
 

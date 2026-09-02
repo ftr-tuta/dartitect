@@ -26,10 +26,10 @@ configuration.
 ## Mental model and data flow
 
 The application creates a Sentry Hub. At composition, Dartitect adapters borrow
-that Hub and are registered with `ObservabilityRuntime`. Application facts pass
-through neutral contracts, redaction, and runtime policy before reaching the
-adapter. The adapter maps the sanitized event to Sentry and never takes Hub
-ownership.
+that Hub. Legacy adapters connected to the compatible runtime remain defensive
+and redact their input. The `.sanitizedInput` adapters accept only private-
+constructor prepared events from `ObservabilityRuntime.withPrivacy`, so values
+are not redacted twice. Neither path takes Hub ownership.
 
 ## Minimal workflow
 
@@ -55,6 +55,12 @@ The packaged example uses no DSN and performs no network request.
 - `SentryErrorReporter` maps unexpected errors with explicit mechanism and
   handled state.
 - `SentryTracer` maps provider-neutral spans and status to Sentry spans.
+- `SentryLogSink.sanitizedInput`, `SentryErrorReporter.sanitizedInput`, and
+  `SentryTracer.sanitizedInput` create prepared-only adapters for a privacy
+  runtime destination.
+
+Prepared mappings keep tags allowlisted, place only approved bounded values in
+Sentry context/extra data, and never create an automatic `SentryUser`.
 
 Payload-free reactive events reach Sentry only through
 `ReactiveObserverLoggerAdapter`, `ObservabilityRuntime`, and `SentryLogSink`.
@@ -68,8 +74,8 @@ transfer either live object.
 
 ## Failure, cancellation, and concurrency
 
-Provider failures remain isolated by the observability runtime and cannot
-replace application outcomes. End spans exactly once. Cancellation is recorded
+Provider failures remain isolated per destination by the observability runtime
+and cannot replace application outcomes. End spans exactly once. Cancellation is recorded
 only through reviewed safe mechanism/status data; this package does not cancel
 application work. The Sentry SDK owns provider concurrency while Dartitect
 runtime bounds and drains its own dispatch.

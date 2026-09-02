@@ -4,6 +4,11 @@ Dartitect 1.0.0 is distributed exclusively by the annotated `v1.0.0` tag and
 its immutable GitHub Release. There is no supported Dartitect registry channel.
 External packages continue to resolve from their normal registries.
 
+The repository workspace may contain the untagged `1.1.0-rc.1` candidate
+cohort. `v1.1.0-rc.1` is derivable but is not materialized or distributed, so
+do not use it in consumer manifests. The recommended public version remains
+`1.0.0` / `v1.0.0` until a separately authorized release exists.
+
 ## Declare direct packages
 
 Declare only packages imported directly by the consumer. Use the exact URL,
