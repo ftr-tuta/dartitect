@@ -241,6 +241,69 @@ Future<void> main(List<String> arguments) async {
       );
     }
 
+    final previewSource = _read(
+      root,
+      'packages/dartitect_flutter_testing/lib/src/preview_matrix.dart',
+      failures,
+    );
+    final orderedPreviewTokens = <String>[
+      "name: 'compact'",
+      'size: Size(360, 640)',
+      "name: 'compact-200-percent'",
+      'size: Size(430, 932)',
+      "name: 'medium'",
+      'size: Size(768, 1024)',
+      "name: 'expanded'",
+      'size: Size(1440, 900)',
+    ];
+    var cursor = -1;
+    for (final token in orderedPreviewTokens) {
+      final next = previewSource.indexOf(token, cursor + 1);
+      require(
+        next > cursor,
+        'Preview implementation is missing ordered $token.',
+      );
+      cursor = next;
+    }
+    require(
+      previewSource.contains(
+        'final class DartitectPreviewMatrix extends MultiPreview',
+      ),
+      'DartitectPreviewMatrix must be a final MultiPreview subtype.',
+    );
+    require(
+      RegExp(r'group: _dartitectPreviewGroup')
+                  .allMatches(previewSource)
+                  .length ==
+              4 &&
+          previewSource.contains("const _dartitectPreviewGroup = 'Dartitect'"),
+      'Every preview must use the Dartitect group.',
+    );
+
+    final previewFixture = _read(
+      root,
+      'packages/dartitect_flutter_testing/lib/src/dev/preview_fixture.dart',
+      failures,
+    );
+    require(
+      previewFixture.contains('@DartitectPreviewMatrix()') &&
+          previewFixture.contains('PreviewTaskViewData') &&
+          previewFixture.contains('VoidCallback'),
+      'Preview-safe fixture evidence is incomplete.',
+    );
+    for (final prohibited in const <String>[
+      'dart:io',
+      'dart:ffi',
+      'package:dio/',
+      'package:dartitect_drift/',
+      'package:dartitect_objectbox/',
+    ]) {
+      require(
+        !previewFixture.contains(prohibited),
+        'Preview fixture reaches prohibited $prohibited.',
+      );
+    }
+
     if (failures.isNotEmpty) throw StateError(failures.join('\n'));
     stdout.writeln(
       'ui-quality-v2 passed: seven executable techniques, 25 packages, '
