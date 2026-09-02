@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "matrixKind": "curated-not-cartesian",
+  "emissionScales": [0, 1, 32, 1000, 100000],
+  "inputShapes": ["eager", "sync-generator", "async-generator", "batches"],
+  "blockingGates": [
+    "bounded-admission",
+    "consumer-backpressure",
+    "cleanup-before-terminal",
+    "stable-public-order",
+    "single-flight-borrowed-ports",
+    "one-classification-per-node",
+    "zero-residual-work",
+    "deterministic-scan-events"
+  ],
+  "informativeMetrics": [
+    "firstItemMicros",
+    "totalMicros",
+    "rssBytes",
+    "p50Micros",
+    "p95Micros"
+  ],
+  "comparisonPolicy": "same-runner-only",
+  "slices": {
+    "core": {
+      "path": "packages/dartitect/benchmark/incremental_operation_benchmark_test.dart",
+      "evidence": ["100000", "sync-generator", "async-generator", "batches", "maximumActiveConsumers", "cleanupComplete", "ProcessInfo.currentRss", "p50Micros", "p95Micros"]
+    },
+    "flutter": {
+      "path": "packages/dartitect_flutter/benchmark/incremental_command_benchmark_test.dart",
+      "evidence": ["IncrementalPublication.coalesceFrame", "lessThan(iterations)", "frames.flush", "command.isDisposed"]
+    },
+    "sync": {
+      "path": "packages/dartitect_sync/benchmark/incremental_sync_benchmark_test.dart",
+      "evidence": ["confirmedStepCount", "maximumActiveWrites", "SyncExecutionPolicy.boundedParallel(4)"]
+    },
+    "isolates": {
+      "path": "packages/dartitect_isolates/benchmark/worker_pool_benchmark_test.dart",
+      "evidence": ["preserveOrder: false", "TransferableTypedData", "activeRequestCount", "queuedRequestCount"]
+    },
+    "observability": {
+      "path": "packages/dartitect_observability/benchmark/privacy_fanout_benchmark_test.dart",
+      "evidence": ["destinations': 4", "classifier.markerCalls", "droppedEvents"]
+    },
+    "cli": {
+      "path": "packages/dartitect_cli/benchmark/progressive_scan_benchmark_test.dart",
+      "evidence": ["ProjectScanner", "ProjectSourceIndex", "ProjectScanFileAnalyzed", "warm.cacheHits"]
+    }
+  }
+}
