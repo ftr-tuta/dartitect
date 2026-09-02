@@ -5,6 +5,7 @@ import 'package:dartitect/dartitect.dart';
 import '../../../app/app_runtime.dart';
 import '../../../composition/reference_factories.dart' show ReferenceTransport;
 import '../application/offline_first_task_session.dart';
+import '../presentation/tasks_view_model.dart';
 
 final class ReferenceTasksLocalPort {
   const ReferenceTasksLocalPort(this.runtime);
@@ -28,22 +29,6 @@ final class ReferenceTasksMapper {
   const ReferenceTasksMapper();
 }
 
-final class ReferenceTasksRepository {
-  const ReferenceTasksRepository(this.port);
-
-  final ReferenceTasksLocalPort port;
-
-  OfflineFirstTaskSession get session => port.runtime.tasks;
-}
-
-final class ReferenceTasksViewModel {
-  const ReferenceTasksViewModel(this.repository);
-
-  final ReferenceTasksRepository repository;
-
-  OfflineFirstTaskSession get session => repository.session;
-}
-
 @DartitectFeatureFactory('tasks')
 final class TasksFactory {
   const TasksFactory();
@@ -61,11 +46,10 @@ final class TasksFactory {
 
   ReferenceTasksMapper createMapper() => const ReferenceTasksMapper();
 
-  ReferenceTasksRepository createRepository(
+  LocalFirstTaskRepository createRepository(
     ReferenceTasksLocalPort localPort,
-  ) => ReferenceTasksRepository(localPort);
+  ) => localPort.runtime.tasks;
 
-  ReferenceTasksViewModel createViewModel(
-    ReferenceTasksRepository repository,
-  ) => ReferenceTasksViewModel(repository);
+  TasksViewModel createViewModel(LocalFirstTaskRepository repository) =>
+      TasksViewModel(repository);
 }

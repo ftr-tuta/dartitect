@@ -9,6 +9,7 @@ import '../domain/task.dart';
 import '../domain/task_repository.dart';
 import 'offline_task_store.dart';
 import 'task_remote.dart';
+import 'task_repository.dart';
 
 /// Sanitized dependents-first teardown phase for workload diagnostics.
 enum TaskSessionDisposePhase {
@@ -62,8 +63,8 @@ final class TaskSessionDiagnostics {
 }
 
 /// Explicit feature composition for local-first pages and durable mutations.
-final class OfflineFirstTaskSession implements AsyncDisposable {
-  OfflineFirstTaskSession._({
+final class LocalFirstTaskRepository implements TaskRepository {
+  LocalFirstTaskRepository._({
     required this.store,
     required this.remote,
     required this.local,
@@ -74,7 +75,7 @@ final class OfflineFirstTaskSession implements AsyncDisposable {
   });
 
   /// Creates, seeds, and activates a 10k-row reference workload.
-  static Future<OfflineFirstTaskSession> create({
+  static Future<LocalFirstTaskRepository> create({
     required OfflineTaskStore store,
     required TaskRemote remote,
     int seedCount = 10000,
@@ -132,7 +133,7 @@ final class OfflineFirstTaskSession implements AsyncDisposable {
       checkpoints: store,
       journal: store.syncJournal,
     );
-    final session = OfflineFirstTaskSession._(
+    final session = LocalFirstTaskRepository._(
       store: store,
       remote: remote,
       local: local,
@@ -158,6 +159,9 @@ final class OfflineFirstTaskSession implements AsyncDisposable {
   /// Owned local-authority paged collection.
   final PagedLiveResource<TaskCursor, int, Task, TaskFailure> paged;
 
+  @override
+  PagedLiveResource<TaskCursor, int, Task, TaskFailure> get tasks => paged;
+
   /// Owned per-task durable mutation lanes.
   final MutationCommand<TaskMutation, int, void, TaskFailure> mutations;
 
@@ -173,6 +177,9 @@ final class OfflineFirstTaskSession implements AsyncDisposable {
 
   /// Stable diagnostics readable after teardown.
   TaskSessionDiagnostics get diagnostics => _diagnostics;
+
+  @override
+  bool get isOffline => remote.mode == ReferenceRemoteMode.offline;
 
   /// Refreshes the active query from its first page.
   Future<CommandOutcome<PageWriteReceipt<TaskCursor>, TaskFailure>> refresh() {
@@ -253,6 +260,22 @@ final class OfflineFirstTaskSession implements AsyncDisposable {
     return mutations.recoverPending();
   }
 
+  @override
+  Future<Result<void, TaskFailure>> setOffline(bool offline) async {
+    remote.mode = offline
+        ? ReferenceRemoteMode.offline
+        : ReferenceRemoteMode.online;
+    if (offline) return const Ok<void>(null);
+    final recovered = await mutations.recoverPending();
+    return switch (recovered) {
+      Ok<Object?>() => const Ok<void>(null),
+      Err<Object>(:final failure, :final stackTrace) => Err<TaskFailure>(
+        failure as TaskFailure,
+        stackTrace,
+      ),
+    };
+  }
+
   /// Re-delivers a known operation with its original idempotency key.
   Future<
     CommandOutcome<
@@ -308,6 +331,18 @@ final class OfflineFirstTaskSession implements AsyncDisposable {
       ..foreground = value
       ..lifecycleTransitions += 1;
   }
+
+  @override
+  TaskRepositoryDiagnostics diagnosticsSnapshot() => TaskRepositoryDiagnostics(
+    storeKind: store.engineName,
+    journalEntries: journal.length,
+    remoteRequests: remote.diagnostics.mutationRequests,
+    activeWatchers: store.diagnostics.activeWatchers,
+    activeQueries: store.diagnostics.activeQueries,
+    activeWorkers:
+        store.diagnostics.activeBackgroundTasks +
+        diagnostics.activeIsolateWorkers,
+  );
 
   @override
   Future<void> disposeAsync() => _disposeFuture ??= _dispose();

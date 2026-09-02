@@ -41,7 +41,7 @@ final class AppRuntime implements AsyncDisposable, DartitectScopeValue {
           forceMemory: forceMemory,
         );
     try {
-      final tasks = await OfflineFirstTaskSession.create(
+      final tasks = await LocalFirstTaskRepository.create(
         store: selectedStore,
         remote: remote ?? ReferenceTaskRemote(),
       );
@@ -56,7 +56,7 @@ final class AppRuntime implements AsyncDisposable, DartitectScopeValue {
   }
 
   /// Task feature's owned offline-first session.
-  final OfflineFirstTaskSession tasks;
+  final LocalFirstTaskRepository tasks;
 
   /// Application-owned local observability runtime.
   final ObservabilityRuntime observability;

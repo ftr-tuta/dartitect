@@ -12,7 +12,9 @@ import '../../../composition/application_module.wiring.dartitect.g.dart';
 
 import 'package:dartitect_reference_app/app/app_runtime.dart';
 import 'package:dartitect_reference_app/composition/reference_factories.dart';
+import 'package:dartitect_reference_app/features/tasks/application/offline_first_task_session.dart';
 import 'package:dartitect_reference_app/features/tasks/composition/tasks_factory.dart';
+import 'package:dartitect_reference_app/features/tasks/presentation/tasks_view_model.dart';
 
 /// Exact contexts selected by the Tasks feature profile.
 final class TasksInfrastructure {
@@ -39,15 +41,14 @@ final class TasksRuntime {
 
   final TasksFactory factory;
   final TasksInfrastructure infrastructure;
-  final ReferenceTasksRepository repository;
+  final LocalFirstTaskRepository repository;
   final ReferenceTasksLocalPort localPort;
   final ReferenceTasksRemotePort remotePort;
   final ReferenceTasksMapper mapper;
   final ReferenceTasksLocalAuthority localAuthority;
 
   /// Creates consumer-owned presentation state from the typed runtime.
-  ReferenceTasksViewModel createViewModel() =>
-      factory.createViewModel(repository);
+  TasksViewModel createViewModel() => factory.createViewModel(repository);
 
   /// Constructs the exact profile closure inside the host transaction.
   static Future<TasksRuntime> create(
@@ -65,7 +66,11 @@ final class TasksRuntime {
     );
     final mapper = factory.createMapper();
     final localAuthority = factory.createLocalAuthority(localPort);
-    final repository = factory.createRepository(localPort);
+    final repository = transaction.own<LocalFirstTaskRepository>(
+      factory.createRepository(localPort),
+      (value) => value.disposeAsync(),
+      label: 'feature.tasks.repository',
+    );
     return TasksRuntime(
       factory: factory,
       infrastructure: infrastructure,
@@ -95,13 +100,13 @@ final class TasksFeatureHost extends StatelessWidget {
   final TasksFactory factory;
   final WidgetBuilder loading;
   final FeatureFailureBuilder failure;
-  final FeatureReadyBuilder<TasksRuntime, ReferenceTasksViewModel> ready;
-  final FeatureViewModelStarter<ReferenceTasksViewModel>? start;
+  final FeatureReadyBuilder<TasksRuntime, TasksViewModel> ready;
+  final FeatureViewModelStarter<TasksViewModel>? start;
   final FutureOr<void> Function()? onDisposed;
 
   @override
   Widget build(BuildContext context) =>
-      FeatureHost<ApplicationGraph, TasksRuntime, ReferenceTasksViewModel>(
+      FeatureHost<ApplicationGraph, TasksRuntime, TasksViewModel>(
         parent: graph,
         generationKey: factory,
         createGraph: (parent, transaction) =>

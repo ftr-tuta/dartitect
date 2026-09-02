@@ -56,23 +56,9 @@ final class _ReferenceAppState extends State<ReferenceApp> {
           builder: (context, session, child) => switch (session) {
             SessionActive<ReferenceSessionDescription>() => MaterialApp(
               key: const ValueKey<String>('authenticated-shell'),
-              home: TasksFeatureHost(
+              home: _AuthenticatedTasksRoute(
                 graph: widget.graph,
-                factory: const TasksFactory(),
-                onDisposed: runtime.confirmAuthenticatedRoutesRemoved,
-                loading: (_) => const Scaffold(
-                  body: Center(child: CircularProgressIndicator.adaptive()),
-                ),
-                failure: (_, failure, retry) => Scaffold(
-                  body: Center(
-                    child: TextButton(
-                      onPressed: retry,
-                      child: const Text('Retry Tasks'),
-                    ),
-                  ),
-                ),
-                ready: (_, feature, viewModel) =>
-                    TasksPage(session: viewModel.session),
+                runtime: runtime,
               ),
             ),
             SessionForcedLogout<ReferenceSessionDescription>() =>
@@ -117,6 +103,42 @@ final class _ReferenceAppState extends State<ReferenceApp> {
   @override
   void dispose() {
     _errorBinding?.dispose();
+    super.dispose();
+  }
+}
+
+final class _AuthenticatedTasksRoute extends StatefulWidget {
+  const _AuthenticatedTasksRoute({required this.graph, required this.runtime});
+
+  final ApplicationGraph graph;
+  final AppRuntime runtime;
+
+  @override
+  State<_AuthenticatedTasksRoute> createState() =>
+      _AuthenticatedTasksRouteState();
+}
+
+final class _AuthenticatedTasksRouteState
+    extends State<_AuthenticatedTasksRoute> {
+  @override
+  Widget build(BuildContext context) => TasksFeatureHost(
+    graph: widget.graph,
+    factory: const TasksFactory(),
+    loading: (_) => const Scaffold(
+      body: Center(child: CircularProgressIndicator.adaptive()),
+    ),
+    failure: (_, failure, retry) => Scaffold(
+      body: Center(
+        child: TextButton(onPressed: retry, child: const Text('Retry Tasks')),
+      ),
+    ),
+    start: (viewModel) => viewModel.start(),
+    ready: (_, feature, viewModel) => TasksPage(viewModel: viewModel),
+  );
+
+  @override
+  void dispose() {
+    widget.runtime.confirmAuthenticatedRoutesRemoved();
     super.dispose();
   }
 }

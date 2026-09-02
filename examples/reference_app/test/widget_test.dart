@@ -127,6 +127,86 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await tester.pump();
   });
+
+  testWidgets(
+    'responsive branches preserve query, selection, scroll, and focus',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(500, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      late AppRuntime runtime;
+      await tester.runAsync(() async {
+        runtime = await AppRuntime.create(forceMemory: true);
+      });
+      addTearDown(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+        unawaited(runtime.disposeAsync());
+      });
+      await tester.pumpWidget(
+        ReferenceApp(
+          graph: ApplicationGraph(
+            referenceRuntime: runtime,
+            referenceTransport: const ReferenceTransport(),
+          ),
+        ),
+      );
+      await _pumpUntil(
+        tester,
+        () => find.text('Inspect explicit composition').evaluate().isNotEmpty,
+      );
+      expect(
+        find.byKey(const ValueKey<String>('compact-layout')),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byTooltip('Select Inspect explicit composition'));
+      await tester.pump();
+      final listFinder = find.byKey(const PageStorageKey<String>('tasks-list'));
+      final scroll = tester.widget<ListView>(listFinder).controller!;
+      scroll.jumpTo(240);
+      await tester.pump();
+      final retainedOffset = scroll.offset;
+      await tester.tap(find.byKey(const ValueKey<String>('tasks-search')));
+      await tester.enterText(
+        find.byKey(const ValueKey<String>('tasks-search')),
+        'retained query',
+      );
+      final search = tester.widget<TextField>(
+        find.byKey(const ValueKey<String>('tasks-search')),
+      );
+      expect(search.focusNode!.hasFocus, isTrue);
+
+      await tester.binding.setSurfaceSize(const Size(800, 900));
+      await tester.pump();
+      expect(
+        find.byKey(const ValueKey<String>('medium-layout')),
+        findsOneWidget,
+      );
+      await tester.binding.setSurfaceSize(const Size(1200, 900));
+      await tester.pump();
+      expect(
+        find.byKey(const ValueKey<String>('expanded-layout')),
+        findsOneWidget,
+      );
+      expect(
+        tester
+            .widget<TextField>(
+              find.byKey(const ValueKey<String>('tasks-search')),
+            )
+            .controller!
+            .text,
+        'retained query',
+      );
+      expect(search.focusNode!.hasFocus, isTrue);
+      expect(scroll.offset, retainedOffset);
+      expect(find.text('Mark complete'), findsOneWidget);
+      await _pumpUntil(
+        tester,
+        () => !runtime.tasks.paged.isBusy,
+        attempts: 100,
+      );
+    },
+  );
 }
 
 Future<void> _pumpUntil(

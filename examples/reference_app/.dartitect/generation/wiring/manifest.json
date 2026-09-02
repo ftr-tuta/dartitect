@@ -7,9 +7,9 @@
       "path": "lib/composition/application_module.wiring.dartitect.g.dart",
       "source": "dartitect.json",
       "rendererId": "wiring.application",
-      "rendererVersion": 3,
+      "rendererVersion": 4,
       "semanticSchemaVersion": 2,
-      "inputDigest": "96eda990fe9e104e8bb60a712cca9ac7d2b9db52d712a3d2b598d5eff693e9db",
+      "inputDigest": "88dd065988dfa21232c85d62e1839db50627d3676b1c75dc72cc5fab14222d4d",
       "outputDigest": "b2b91662ddc32656a1f8abdc30699ed4c58d05315dcbbfe9ed6f6baa537c7eb2"
     },
     {
@@ -18,7 +18,7 @@
       "rendererId": "wiring.session",
       "rendererVersion": 3,
       "semanticSchemaVersion": 2,
-      "inputDigest": "96eda990fe9e104e8bb60a712cca9ac7d2b9db52d712a3d2b598d5eff693e9db",
+      "inputDigest": "88dd065988dfa21232c85d62e1839db50627d3676b1c75dc72cc5fab14222d4d",
       "outputDigest": "5e17fbe4e4f41f6305153c3938562fb98c045671fa6912c3f86c6de730f3a45d"
     },
     {
@@ -28,7 +28,7 @@
       "rendererVersion": 3,
       "semanticSchemaVersion": 1,
       "inputDigest": "f01b1bfa799d454d708776baff4e9d9dd91c97b1f6a77a061543a2ddabc6f2f0",
-      "outputDigest": "c251b3d37fb469e48a7709fe7c931a54e003768018700549b3b701f83cace2a8"
+      "outputDigest": "59928052a39660dc249233a1fad9d86672d04fb1bc6da987643980789c8ea211"
     },
     {
       "path": "test/support/tasks_feature_harness.wiring.dartitect.g.dart",

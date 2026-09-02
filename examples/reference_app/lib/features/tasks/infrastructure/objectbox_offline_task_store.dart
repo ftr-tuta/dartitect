@@ -56,6 +56,9 @@ final class ObjectBoxOfflineTaskStore implements OfflineTaskStore {
   bool get isNativeObjectBox => true;
 
   @override
+  String get engineName => 'ObjectBox';
+
+  @override
   Future<void> seed(int count) async {
     _ensureActive();
     if (_tasks.count() != 0) return;

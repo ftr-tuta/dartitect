@@ -30,6 +30,9 @@ final class MemoryOfflineTaskStore implements OfflineTaskStore {
   bool get isNativeObjectBox => false;
 
   @override
+  String get engineName => 'memory';
+
+  @override
   Future<void> seed(int count) async {
     _ensureActive();
     if (_tasks.isNotEmpty) return;
