@@ -175,56 +175,56 @@ packages:
       path: "../../packages/dartitect"
       relative: true
     source: path
-    version: "1.1.0-rc.3"
+    version: "1.1.0"
   dartitect_drift:
     dependency: "direct main"
     description:
       path: "../../packages/dartitect_drift"
       relative: true
     source: path
-    version: "1.1.0-rc.3"
+    version: "1.1.0"
   dartitect_flutter:
     dependency: "direct main"
     description:
       path: "../../packages/dartitect_flutter"
       relative: true
     source: path
-    version: "1.1.0-rc.3"
+    version: "1.1.0"
   dartitect_jobs:
     dependency: "direct main"
     description:
       path: "../../packages/dartitect_jobs"
       relative: true
     source: path
-    version: "1.1.0-rc.3"
+    version: "1.1.0"
   dartitect_objectbox:
     dependency: "direct main"
     description:
       path: "../../packages/dartitect_objectbox"
       relative: true
     source: path
-    version: "1.1.0-rc.3"
+    version: "1.1.0"
   dartitect_observability:
     dependency: "direct main"
     description:
       path: "../../packages/dartitect_observability"
       relative: true
     source: path
-    version: "1.1.0-rc.3"
+    version: "1.1.0"
   dartitect_resilience:
     dependency: "direct main"
     description:
       path: "../../packages/dartitect_resilience"
       relative: true
     source: path
-    version: "1.1.0-rc.3"
+    version: "1.1.0"
   dartitect_sync:
     dependency: "direct main"
     description:
       path: "../../packages/dartitect_sync"
       relative: true
     source: path
-    version: "1.1.0-rc.3"
+    version: "1.1.0"
   drift:
     dependency: "direct main"
     description:

@@ -87,8 +87,11 @@ void _validatePolicy(
   }
   if (!_same(_stringsOrNull(policy['repositoryArtifacts']), const <String>[
     '.github/workflows/ci.yaml',
+    '.github/workflows/release.yaml',
     'docs/release/sbom.spdx.json',
     'docs/release/dependency-licenses.json',
+    'docs/release/1.1.0-readiness.adoc',
+    'docs/release/1.1.0-publication-runbook.adoc',
     'tool/api_surface.snapshot.json',
     'tool/actions_readiness_policy.json',
     'tool/distribution_policy.json',
@@ -99,6 +102,7 @@ void _validatePolicy(
     'tool/github_ruleset_policy.json',
     'tool/github_release_ruleset_policy.json',
     'tool/check_ci_security_policy.dart',
+    'tool/check_release_readiness.dart',
     'tool/flutter_quality_performance_contract.json',
     'tool/ui_quality_contract.json',
   ])) {

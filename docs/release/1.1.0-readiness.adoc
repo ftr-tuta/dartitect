@@ -1,0 +1,84 @@
+= Dartitect 1.1.0 Actions readiness
+
+Document status:: Stable release evidence
+Version:: `1.1.0`
+Tag:: `v1.1.0` (annotated, unsigned, protected)
+Distribution:: Immutable GitHub Release; Git dependencies only
+Packages:: 25
+Public entrypoints:: 35
+Public API baseline:: `1.0.0`
+Required branch check:: `CI / Required`
+Formal artifact:: `actions-readiness-v1`
+
+This record defines the evidence required to publish the exact merged `1.1.0`
+source. It does not authorize a different version, source SHA, CI run, tag, or
+distribution channel.
+
+== Stable cohort identity
+
+The workspace cohort, distributed cohort, lockstep manifest, internal Git
+dependency descriptors, stable-candidate contract, `ui-quality-v2`, generated
+SDK inventory, canary contract, native podspecs, and consumer guidance all name
+`1.1.0` and `v1.1.0`. The release contract marks the stable tag as materialized
+because the immutable Release transaction consumes the same source that carries
+the final distributed metadata.
+
+All packages retain `publish_to: none`. Dartitect is not published to pub.dev,
+GHCR, another registry, or a model/evaluation service. Consumer descriptors use
+`https://github.com/ftr-tuta/dartitect.git`, a package-specific `packages/`
+path, `tag_pattern: 'v{{version}}'`, and exact version `1.1.0`, with no local
+path or dependency override.
+
+== Required hosted evidence
+
+`CI / Required` coordinates these eight job identifiers:
+
+* Linux, with Flutter 3.47.1 floor and current stable matrix cells;
+* Windows with Flutter 3.47.1;
+* macOS and iOS with Flutter 3.47.1;
+* Android API 34 hosted emulator;
+* Drift Web in Chrome;
+* clean-clone release audit;
+* Git consumption from the release cohort;
+* OSV merge-candidate scan.
+
+The eight identifiers produce nine executions because Linux has two cells.
+There is no paid quality service, model call, external evaluator, API key, or
+privately managed runner in this gate.
+
+Only a successful `push` run on `main` produces `actions-readiness-v1`. The
+artifact binds the exact source SHA and tree, workflow run and attempt, every
+required job conclusion, five native evidence manifests, and SHA-256 digests
+for repository release inputs. A pull-request run is technical merge evidence
+but cannot authorize publication.
+
+== Functional and compatibility evidence
+
+The deterministic graph covers formatting, Dart and Flutter analysis, every
+package suite, analyzer parity, examples, disposable previews, canaries,
+Drift native and Web, ObjectBox native, Android/iOS/Linux/macOS/Windows/Web
+build evidence, clean-clone auditing, and Git-only consumption.
+
+`ui-quality-v2` binds responsive constraints, DevTools runtime inspection,
+preview-safe reusable widgets, MVVM, provider-neutral repositories,
+multiplatform behavior, and tests to hosted Actions evidence. Its only public
+addition is `DartitectPreviewMatrix`.
+
+The API snapshot retains the `1.0.0` baseline and requires the `1.1.0` surface
+to be additive. The topology remains exactly 25 packages and 35 public
+entrypoints. Release checks reject path dependencies, dependency overrides,
+partial changelog cohorts, registry publication mechanisms, stale generated
+artifacts, and noncanonical authorship.
+
+== Publication boundary
+
+Immediately before dispatch, an administrator must verify immutable Releases
+are enabled, ruleset `21525640` is active for `refs/tags/v*` with deletion and
+non-fast-forward protection and no bypass actors, and both tag and Release
+`v1.1.0` are absent. The operator then supplies only the exact current `main`
+SHA and the successful `CI` push run that created its readiness artifact.
+
+The manual `Release` workflow fails closed unless all stable contracts are the
+exact self-consistent `1.1.0` cohort. It derives the tag and title from those
+contracts, verifies the source and CI identities before any write, and performs
+the transaction defined by the version-specific publication runbook.

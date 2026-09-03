@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Join the `1.1.0-rc.3` bounded lifecycle-evidence cohort in lockstep.
+- No changes have been accepted after the stable 1.1.0 release.
+
+## 1.1.0 - 2026-09-03
+
+- Join the `1.1.0` bounded lifecycle-evidence cohort in lockstep.
 - Add fixed-size `IsolateWorkerPool` execution with bounded in-flight and FIFO
   queue admission, ordered or completion-order stream mapping, and drain-first
   disposal.
@@ -10,7 +14,7 @@
   requests whose effects may already have applied.
 - Add optional drain-aware request cancellation to `IsolateWorker` and preserve
   `TransferableTypedData` ownership transfer without runtime materialization.
-- Version-only lockstep candidate; isolate diagnostics remain payload-free.
+- Version-only stable release; isolate diagnostics remain payload-free.
 
 ## 1.0.0
 

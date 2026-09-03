@@ -217,10 +217,14 @@ void _checkWorkflows(
           toolchainInstall < 0 ||
           contractGate > toolchainInstall ||
           !source.contains('Release refuses workspace cohort') ||
+          !source.contains('EXPECTED_RELEASE_VERSION: "1.1.0"') ||
+          !source.contains(
+            'Release contract is not the exact self-consistent stable 1.1.0 cohort.',
+          ) ||
           source.contains('RELEASE_TAG: v1.0.0')) {
         errors.add(
-          'Release must derive its tag from the contract and reject '
-          'prereleases before release preparation.',
+          'Release must pin 1.1.0, prove contract consistency, derive its tag, '
+          'and reject prereleases before release preparation.',
         );
       }
       if (!source.contains(

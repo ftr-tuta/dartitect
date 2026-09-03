@@ -1,10 +1,9 @@
 # Dartitect documentation
 
 This is the canonical task-oriented entrypoint for Dartitect documentation.
-Public guidance is maintained in English. The workspace is the untagged
-`1.1.0-rc.3` candidate cohort, while the latest public distribution remains
-the stable GitHub-only `1.0.0` / `v1.0.0` release. Candidate source guidance
-does not authorize a tag, GitHub Release, publication, or stable promotion.
+Public guidance is maintained in English. The workspace and latest public
+distribution are the stable GitHub-only `1.1.0` / `v1.1.0` cohort. All 25
+packages resolve from that one annotated, immutable Release tag.
 
 ## Adopt Dartitect in a greenfield project
 
@@ -103,6 +102,11 @@ does not authorize a tag, GitHub Release, publication, or stable promotion.
 - [1.1.0-rc.3 readiness](release/1.1.0-rc.3-readiness.adoc) records the
   executable Flutter quality candidate and its exact-SHA hosted evidence. It is
   not publication authority.
+- [1.1.0 readiness](release/1.1.0-readiness.adoc) defines the exact stable
+  technical evidence consumed for publication.
+- [1.1.0 publication runbook](release/1.1.0-publication-runbook.adoc) records
+  the one-version immutable GitHub transaction and is never reused for a later
+  version.
 - [Research](research/) and [work records](work/) preserve the evidence,
   assumptions, and status that applied when each record was written. They may
   contain superseded RC terminology and must not be read as current guidance.

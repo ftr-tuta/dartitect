@@ -2,9 +2,8 @@
 
 ## Scope
 
-The distributed `dartitect_mcp 1.0.0` is local and STDIO-only. The source
-workspace is the untagged `1.1.0-rc.3` candidate and retains the same transport
-boundary. It uses
+The distributed `dartitect_mcp 1.1.0` is local and STDIO-only. The stable
+workspace retains the same transport boundary. It uses
 `dart_mcp 0.5.2`. Streamable HTTP, OAuth/authorization, remote ChatGPT plugins,
 MCP UI, arbitrary shell/files, scaffolding `create`, and access to running
 applications are out of scope. The bounded `dartitect_preview_create_feature`
@@ -22,7 +21,7 @@ dev_dependencies:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_mcp
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0
 ```
 
 Then run `dart run dartitect_mcp:dartitect_mcp --root .`. See the
@@ -91,7 +90,7 @@ provider status. Deep doctor is opt-in and time-bounded.
 development or a supported SDK upgrade. It uses the strict scan as evidence
 and never returns an application-conversion plan.
 
-Stable `1.0.0` provides the confined, closed-schema tools and config-v3/fleet
+Stable `1.1.0` provides the confined, closed-schema tools and config-v3/fleet
 metadata:
 
 - `dartitect_preview_create_feature`;
@@ -110,7 +109,7 @@ Resources are generated from maintained project sources:
 - `dartitect://config/v3`.
 
 There is no free-form file resource.
-The candidate catalog includes the privacy-bypass diagnostics `DT1050` through
+The stable catalog includes the privacy-bypass diagnostics `DT1050` through
 `DT1054` and routes destination-policy questions to the observability skill.
 MCP still cannot read runtime payloads or invoke the DevTools privacy RPC.
 The guide catalog includes the ecosystem selection matrix and implementation

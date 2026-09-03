@@ -16,7 +16,7 @@ void main() {
     expect(output, contains('url: https://github.com/ftr-tuta/dartitect.git'));
     expect(output, contains('path: packages/dartitect_flutter'));
     expect(output, contains("tag_pattern: 'v{{version}}'"));
-    expect(output, contains('version: 1.0.0'));
+    expect(output, contains('version: 1.1.0'));
     expect(output, isNot(contains('dependency_overrides')));
   });
 

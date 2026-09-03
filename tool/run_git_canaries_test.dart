@@ -3,10 +3,10 @@ import 'package:test/test.dart';
 import 'run_git_canaries.dart';
 
 void main() {
-  test('stable upgrade runs only for the distributed 1.0.0 cohort', () {
-    expect(gitCanaryRunsLegacyStableUpgrade('1.0.0'), isTrue);
-    expect(gitCanaryRunsLegacyStableUpgrade('1.1.0-rc.2'), isFalse);
-    expect(gitCanaryRunsLegacyStableUpgrade('1.1.0'), isFalse);
+  test('stable upgrade runs only for the distributed 1.1.0 cohort', () {
+    expect(gitCanaryRunsStableUpgrade('1.0.0'), isFalse);
+    expect(gitCanaryRunsStableUpgrade('1.1.0-rc.2'), isFalse);
+    expect(gitCanaryRunsStableUpgrade('1.1.0'), isTrue);
   });
 
   test('local canary redirects canonical transitive Git dependencies', () {

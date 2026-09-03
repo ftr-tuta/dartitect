@@ -101,14 +101,11 @@ Future<void> main(List<String> arguments) async {
 
     require(contract['schemaVersion'] == 2, 'Unsupported contract schema.');
     require(contract['artifact'] == 'ui-quality-v2', 'Wrong artifact name.');
-    require(contract['goal'] == 'RC3-FLUTTER-QUALITY', 'Wrong quality goal.');
+    require(contract['goal'] == 'V1.1-FLUTTER-QUALITY', 'Wrong quality goal.');
+    require(contract['releaseVersion'] == '1.1.0', 'Wrong cohort version.');
     require(
-      contract['releaseVersion'] == '1.1.0-rc.3',
-      'Wrong cohort version.',
-    );
-    require(
-      contract['stableVersion'] == '1.0.0',
-      'The distributed stable version changed.',
+      contract['stableVersion'] == '1.1.0',
+      'The distributed stable version is not 1.1.0.',
     );
     require(contract['mode'] == 'native-strict', 'Native Strict is required.');
 
@@ -123,7 +120,7 @@ Future<void> main(List<String> arguments) async {
       _same(_strings(contract['publicAdditions']), const <String>[
         'DartitectPreviewMatrix',
       ]),
-      'The RC3 public addition is not exact.',
+      'The 1.1 public addition is not exact.',
     );
     require(
       _same(_strings(contract['requiredEvidence']), _requiredEvidence),
@@ -215,7 +212,7 @@ Future<void> main(List<String> arguments) async {
             actual['size'] == expected.$2 &&
             actual['brightness'] == expected.$3 &&
             actual['textScale'] == expected.$4,
-        'Preview row $index differs from the RC3 contract.',
+        'Preview row $index differs from the 1.1 contract.',
       );
     }
     require(

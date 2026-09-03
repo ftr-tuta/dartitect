@@ -2,8 +2,12 @@
 
 ## Unreleased
 
-- Join the `1.1.0-rc.3` architecture-boundary cohort in lockstep.
-- Version-only lockstep candidate; no public behavior change.
+- No changes have been accepted after the stable 1.1.0 release.
+
+## 1.1.0 - 2026-09-03
+
+- Join the `1.1.0` architecture-boundary cohort in lockstep.
+- Version-only stable release; no public behavior change.
 
 ## 1.0.0
 

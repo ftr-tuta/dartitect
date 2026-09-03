@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+- No changes have been accepted after the stable 1.1.0 release.
+
+## 1.1.0 - 2026-09-03
+
 - Add offline `codex doctor --flutter`, transactional Flutter skill setup, and
   the seven-technique `inspect flutter-quality` evidence report for
-  `1.1.0-rc.3`.
+  `1.1.0`.
 - Add Dart semantics, incremental execution, and runtime-performance skills,
   with catalog-derived managed-skill counts and routing validation.
 - Add deterministic progressive scan events, bounded four-file analysis,
@@ -14,7 +18,10 @@
   completed scan without a second analysis pass.
 - Add the non-blocking `inspect execution-model` heuristic corpus with
   DT2200-DT2211 findings that never change its successful inspection exit code.
-- Add `balanced` observability privacy scaffolding, privacy-bypass scan diagnostics, and candidate-aware release tooling.
+- Add `balanced` observability privacy scaffolding, privacy-bypass scan
+  diagnostics, and stable release tooling.
+- Promote generated Git descriptors, the fleet dependency/config migration,
+  and disposable Git canaries to the stable `1.1.0` cohort.
 - Traverse resolved dependency graphs with a deque-backed tooling queue.
 
 ## 1.0.0

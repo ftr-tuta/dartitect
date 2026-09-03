@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Add `1.1.0-rc.3` semantic presentation, preview, resource, and rendering
+- No changes have been accepted after the stable 1.1.0 release.
+
+## 1.1.0 - 2026-09-03
+
+- Add `1.1.0` semantic presentation, preview, resource, and rendering
   diagnostics `DT3120`–`DT3145` with shared CLI parity fixtures.
 - Add analyzer diagnostics for observability privacy bypasses with CLI scan parity.
 

@@ -95,7 +95,7 @@ polylabel-derived approach retains its ISC notice in
 
 ## Availability
 
-Dartitect `1.0.0` is distributed only by the annotated `v1.0.0` tag and
+Dartitect `1.1.0` is distributed only by the annotated `v1.1.0` tag and
 its immutable GitHub Release. Declare this package directly with the canonical
 Git descriptor; its transitive Dartitect dependencies resolve from the same tag
 without overrides. See the

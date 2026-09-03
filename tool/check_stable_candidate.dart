@@ -22,9 +22,9 @@ Future<void> main(List<String> arguments) async {
         : const <String>[];
     if (value is! Map<String, Object?> ||
         value['schemaVersion'] != 4 ||
-        value['goal'] != 'V1-18' ||
+        value['goal'] != 'V1.1-18' ||
         value['authority'] != 'github-actions' ||
-        value['stableVersion'] != '1.0.0' ||
+        value['stableVersion'] != '1.1.0' ||
         value['requiresExactMainSha'] != true ||
         value['requiresReadinessArtifact'] != 'actions-readiness-v1' ||
         value['requiresUiQualityEvidence'] != 'ui-quality-v2' ||

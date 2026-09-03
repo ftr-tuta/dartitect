@@ -16,7 +16,7 @@ Use `docs/README.md` as the public documentation entrypoint and
 `tool/documentation_contract.json` as the current/migration/historical/generated
 classification. Keep public guidance in English, do not modernize historical
 ADRs or handoffs, and remove duplicate guide formats. Every package changelog
-starts with `# Changelog`, a uniform `## Unreleased` section, and then `1.0.0`
+starts with `# Changelog`, a uniform `## Unreleased` section, and then `1.1.0`
 as its first numbered version.
 
 Documentation or skill changes must pass `check_public_docs`,

@@ -5,7 +5,7 @@ Install `dartitect_cli`, run read-only discovery first, and review every preview
 ```console
 dart install https://github.com/ftr-tuta/dartitect.git \
   --git-path packages/dartitect_cli \
-  --git-ref v1.0.0
+  --git-ref v1.1.0
 dartitect inspect --json
 dartitect scan
 dartitect doctor
@@ -22,8 +22,8 @@ dartitect fleet policy apps/a --root . --bundle=tool/fleet_policy_bundle.json --
 dartitect create app shop --targets=android,ios,web
 dartitect create feature orders --profile=offline-full --scope=session --targets=android,ios,web --storage-context=primary --transport=api --pagination=cursor --headless-targets=android,ios
 dartitect wiring sync --dry-run --json
-dartitect fleet upgrade apps/a --root . --to=1.0.0 --json
-dartitect fleet upgrade apps/a --root . --to=1.0.0 --apply --json
+dartitect fleet upgrade apps/a --root . --to=1.1.0 --json
+dartitect fleet upgrade apps/a --root . --to=1.1.0 --apply --json
 ```
 
 Mutating counterparts are `init` and `codex sync` without `--dry-run`. `create` generators also

@@ -431,14 +431,14 @@ final class DartitectFleetService {
     );
   }
 
-  /// Applies the registered migration chain from RC10 to stable 1.0.0.
+  /// Applies the registered migration chain through stable 1.1.0.
   Future<DartitectFleetReport> applyUpgrade(
     Iterable<String> roots, {
     required String targetCohort,
   }) async {
-    if (targetCohort != '1.0.0') {
+    if (targetCohort != '1.1.0') {
       throw const FormatException(
-        'Fleet apply supports only the exact RC10-to-1.0.0 migration chain.',
+        'Fleet apply supports only the exact migration chain to 1.1.0.',
       );
     }
     final projects = await _projects(roots);
@@ -503,12 +503,12 @@ final class DartitectFleetService {
     _FleetProject project,
     String targetCohort,
   ) async {
-    if (targetCohort != '1.0.0') {
-      throw const FormatException('Fleet upgrade accepts only --to=1.0.0.');
+    if (targetCohort != '1.1.0') {
+      throw const FormatException('Fleet upgrade accepts only --to=1.1.0.');
     }
     final pubspec = await File(_join(project.directory.path, 'pubspec.yaml'))
         .readAsString();
-    _requireUpgradeableDependencies(pubspec);
+    _requireUpgradeableDependencies(pubspec, targetCohort);
     final dependency = await DartitectProjectService(project.directory)
         .previewDependencyUpgrade(targetCohort);
     final operations = <String>[...dependency.operations];
@@ -731,7 +731,10 @@ final class DartitectFleetService {
           ];
   }
 
-  static void _requireUpgradeableDependencies(String pubspec) {
+  static void _requireUpgradeableDependencies(
+    String pubspec,
+    String targetCohort,
+  ) {
     final dependencies = _declaredDartitectDependencies(pubspec)
         .where((dependency) => dependency['section'] != 'dependency_overrides');
     if (dependencies.isEmpty) {
@@ -739,7 +742,10 @@ final class DartitectFleetService {
         'Fleet stable migration requires at least one Dartitect dependency.',
       );
     }
-    DartitectProjectService.renderDependencyUpgradeSource(pubspec, '1.0.0');
+    DartitectProjectService.renderDependencyUpgradeSource(
+      pubspec,
+      targetCohort,
+    );
   }
 
   Future<T> _withFleetLocks<T>(

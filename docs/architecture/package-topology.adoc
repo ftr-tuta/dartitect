@@ -116,7 +116,6 @@ order and lockstep constraint are checked from
 +tool/package_release_contract.json+; directory/alphabetical order is not a
 publication contract.
 
-The source DAG above belongs to the untagged `1.1.0-rc.3` candidate cohort.
-The latest distributed stable DAG remains the immutable `1.0.0` / `v1.0.0`
-release. This topology statement does not materialize a candidate tag or
-authorize publication.
+The source and distributed DAG above belong to the stable `1.1.0` cohort at
+the immutable `v1.1.0` GitHub Release. All 25 packages move together and expose
+35 reviewed public entrypoints.

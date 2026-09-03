@@ -53,6 +53,15 @@ void main(List<String> arguments) {
         (cohorts.workspace.isPrerelease && cohorts.workspace.tagMaterialized)) {
       errors.add('Workspace channel or tag materialization is invalid.');
     }
+    if (!cohorts.workspace.isPrerelease &&
+        (!cohorts.workspace.tagMaterialized ||
+            version != distributedVersion ||
+            tag != distributedTag)) {
+      errors.add(
+        'A stable workspace must exactly match the materialized distributed '
+        'cohort.',
+      );
+    }
     if (cohorts.distributed.semanticVersion.major != 1 ||
         cohorts.distributed.isPrerelease ||
         cohorts.distributed.channel != 'stable' ||
@@ -90,7 +99,8 @@ void main(List<String> arguments) {
         distribution['packageSource'] != 'git' ||
         distribution['registryPublication'] != false ||
         distribution['annotatedTag'] != true ||
-        distribution['immutableRelease'] != true) {
+        distribution['immutableRelease'] != true ||
+        distribution['latestRelease'] != true) {
       errors.add('GitHub-only distribution policy is incomplete.');
     }
 
@@ -310,7 +320,9 @@ void _validateArtifactPolicy(
       release['materialized'] != cohorts.distributed.available ||
       release['annotated'] != true ||
       release['signed'] != false ||
+      release['protected'] != true ||
       release['transitiveOverrides'] != false ||
+      release['localPathDependencies'] != false ||
       release['registryPublication'] != false ||
       release['immutable'] != true) {
     errors.add('Git release policy is incomplete.');

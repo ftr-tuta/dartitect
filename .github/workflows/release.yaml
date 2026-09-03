@@ -29,6 +29,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       SOURCE_SHA: ${{ inputs.source_sha }}
       CI_RUN_ID: ${{ inputs.ci_run_id }}
+      EXPECTED_RELEASE_VERSION: "1.1.0"
       GITHUB_API_VERSION: "2026-03-10"
     steps:
       - name: Validate input shapes
@@ -56,12 +57,66 @@ jobs:
           workspace_version="$(jq -er '.workspaceCohort.version' tool/package_release_contract.json)"
           channel="$(jq -er '.workspaceCohort.channel' tool/package_release_contract.json)"
           release_tag="$(jq -er '.workspaceCohort.derivedTag' tool/package_release_contract.json)"
-          [[ "$channel" == "stable" && "$workspace_version" != *-* ]] || {
+          expected_tag="v${EXPECTED_RELEASE_VERSION}"
+          [[ "$workspace_version" == "$EXPECTED_RELEASE_VERSION" && "$channel" == "stable" && "$workspace_version" != *-* ]] || {
             echo "Release refuses workspace cohort ${workspace_version} on channel ${channel}." >&2
             exit 1
           }
-          [[ "$release_tag" == "v${workspace_version}" ]] || {
-            echo "Derived release tag differs from the stable workspace version." >&2
+          jq -e --arg version "$EXPECTED_RELEASE_VERSION" --arg tag "$expected_tag" '
+            .workspaceCohort == {
+              version: $version,
+              channel: "stable",
+              derivedTag: $tag,
+              tagMaterialized: true
+            } and
+            .distributedCohort == {
+              version: $version,
+              channel: "stable",
+              tag: $tag,
+              available: true
+            } and
+            .lockstep.enabled == true and
+            .lockstep.version == $version and
+            .lockstep.derivedTag == $tag and
+            .workspaceInternalDependency.version == $version and
+            .distributedInternalDependency.version == $version and
+            .gitRelease.tag == $tag and
+            .gitRelease.materialized == true and
+            .gitRelease.annotated == true and
+            .gitRelease.immutable == true and
+            .distribution.kind == "github-release" and
+            .distribution.packageSource == "git" and
+            .distribution.registryPublication == false and
+            .distribution.latestRelease == true
+          ' tool/package_release_contract.json >/dev/null || {
+            echo "Release contract is not the exact self-consistent stable 1.1.0 cohort." >&2
+            exit 1
+          }
+          jq -e --arg version "$EXPECTED_RELEASE_VERSION" --arg tag "$expected_tag" '
+            .releaseVersion == $version and
+            .releaseTag == $tag and
+            .internalDependency.version == $version and
+            .publishTo == "none" and
+            .release.immutable == true and
+            .release.registryPublication == false
+          ' tool/distribution_policy.json >/dev/null || {
+            echo "Distribution policy differs from the exact stable 1.1.0 cohort." >&2
+            exit 1
+          }
+          jq -e --arg version "$EXPECTED_RELEASE_VERSION" '
+            .stableVersion == $version and .promotionBlockers == []
+          ' tool/stable_candidate_contract.json >/dev/null || {
+            echo "Stable candidate contract differs from 1.1.0." >&2
+            exit 1
+          }
+          jq -e --arg version "$EXPECTED_RELEASE_VERSION" '
+            .releaseVersion == $version and .stableVersion == $version
+          ' tool/ui_quality_contract.json >/dev/null || {
+            echo "UI quality contract differs from stable 1.1.0." >&2
+            exit 1
+          }
+          [[ "$release_tag" == "$expected_tag" ]] || {
+            echo "Derived release tag differs from the exact stable version." >&2
             exit 1
           }
           {

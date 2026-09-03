@@ -8,15 +8,18 @@ truth for cross-package changes and migration guidance.
 
 ## Unreleased
 
-### Candidate state
+- No changes have been accepted after the stable `1.1.0` release.
 
-- Workspace cohort: `1.1.0-rc.3`.
-- Channel: `candidate`.
-- Latest stable distribution: `1.0.0` / `v1.0.0`.
-- Derivable candidate tag: `v1.1.0-rc.3`.
-- Candidate tag materialized: `false`.
-- No tag, GitHub Release, publication, or stable promotion is authorized by
-  this changelog.
+## 1.1.0 - 2026-09-03
+
+### Release state
+
+- Workspace and distributed cohort: `1.1.0`.
+- Channel: `stable`.
+- Stable GitHub-only distribution: `1.1.0` / `v1.1.0`.
+- Annotated tag materialized: `true`.
+- Package count: 25; reviewed public entrypoints: 35.
+- Registry publication: disabled.
 
 ### Added
 
@@ -44,7 +47,7 @@ truth for cross-package changes and migration guidance.
 
 - Add opt-in `dartitect_incremental.dart` and
   `dartitect_flutter_incremental.dart` entrypoints without adding a package or
-  changing the stable 1.0 entrypoints. The public candidate inventory is 25
+  changing the stable 1.0 entrypoints. The public release inventory is 25
   packages and 35 entrypoints.
 - Add cold sync, explicitly closeable sync, and async incremental producers;
   count/weight limits; backpressure; partial fold; bounded collection; reports;
@@ -67,7 +70,7 @@ truth for cross-package changes and migration guidance.
 - Add non-blocking `inspect execution-model` diagnostics DT2200-DT2211 and MCP
   count-only scan progress that never publishes source, finding text, or path.
 - Add the managed `$dartitect-dart`, `$dartitect-incremental`, and
-  `$dartitect-performance` skills, ADRs 0048/0049, a candidate guide, five
+  `$dartitect-performance` skills, ADRs 0048/0049, an incremental guide, five
   focused examples, and curated structural benchmark slices.
 
 #### Runtime efficiency foundations
@@ -153,6 +156,9 @@ truth for cross-package changes and migration guidance.
 - Add a transactional, preview-first `tool/set_release_version.dart` command.
 - Parameterize local disposable-tag canaries and make the `Release` workflow
   fail closed for prerelease workspace cohorts before release preparation.
+- Pin the immutable Release transaction to the exact self-consistent `1.1.0`
+  cohort and promote generated descriptors, fleet upgrade, and Git canaries to
+  that stable version.
 
 ### Changed
 
@@ -168,7 +174,7 @@ truth for cross-package changes and migration guidance.
   payload-free by default.
 - Keep `dartitect_privacy` exclusively focused on App Tracking Transparency.
 - Allow all 25 package changelogs to carry non-empty package-specific
-  `Unreleased` bodies while retaining `1.0.0` as the first numbered version.
+  `Unreleased` bodies while retaining `1.1.0` as the first numbered version.
 
 ### Security
 
@@ -193,8 +199,8 @@ truth for cross-package changes and migration guidance.
   privacy.
 - The `dartitect_sync` interface remains unchanged; its observability adapter
   is exposed from a separate observability entrypoint.
-- All Dartitect packages move together to `1.1.0-rc.3`; packages without a
-  functional change receive a version-only lockstep candidate entry.
+- All Dartitect packages move together to `1.1.0`; packages without a
+  functional change receive a version-only stable lockstep entry.
 
 ### Migration from 1.0.0
 
@@ -208,8 +214,8 @@ adapters only behind that runtime; continue using legacy adapters for direct,
 defensively redacted integration. Keep Dio metadata-only capture unless a
 bounded classified capture policy has been explicitly reviewed.
 
-The latest recommended public dependency remains `1.0.0` from `v1.0.0` until a
-separate stable-release plan is authorized and completed.
+The recommended public dependency is `1.1.0` from the immutable `v1.1.0`
+GitHub Release.
 
 ## 1.0.0 - 2026-09-01
 

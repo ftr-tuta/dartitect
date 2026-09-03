@@ -14,6 +14,8 @@
       "docs/README.md",
       "docs/architecture/package-topology.adoc",
       "docs/implementation-status.adoc",
+      "docs/release/1.1.0-readiness.adoc",
+      "docs/release/1.1.0-publication-runbook.adoc",
       "docs/guides/adapters.md",
       "docs/guides/commands-results-effects.md",
       "docs/guides/composition-lifecycle-isolates.md",

@@ -12,7 +12,7 @@ Future<void> main(List<String> arguments) async {
     '--untracked-files=all',
   ]);
   if (status.stdout.trim().isNotEmpty) {
-    throw StateError('Git-tag canaries require a clean candidate tree.');
+    throw StateError('Git-tag canaries require a clean release tree.');
   }
   final tag = await _resolveAnnotatedTag(workspace, options);
   final contract = _object(
@@ -230,14 +230,14 @@ Future<Map<String, Object?>> _runCanary({
       await run('flutter', const <String>['build', 'web', '--release']);
       await run('flutter', const <String>['build', 'web', '--release']);
       await run('flutter', const <String>['build', 'linux', '--release']);
-      if (gitCanaryRunsLegacyStableUpgrade(releaseVersion)) {
+      if (gitCanaryRunsStableUpgrade(releaseVersion)) {
         await run('dart', const <String>[
           'run',
           'dartitect_cli:dartitect',
           'fleet',
           'upgrade',
           '.',
-          '--to=1.0.0',
+          '--to=1.1.0',
           '--apply',
           '--json',
         ]);
@@ -353,13 +353,12 @@ Future<Map<String, Object?>> _runCanary({
   };
 }
 
-/// Whether a Git canary should exercise the legacy stable-upgrade command.
+/// Whether a Git canary should exercise the stable-upgrade command.
 ///
-/// Candidate cohorts validate consumption from their disposable candidate tag,
-/// but must not reinterpret the stable-only `--to=1.0.0` migration as a
-/// candidate downgrade.
-bool gitCanaryRunsLegacyStableUpgrade(String workspaceVersion) =>
-    workspaceVersion == '1.0.0';
+/// Candidate cohorts validate consumption from their disposable tag, while the
+/// stable cohort also proves the idempotent upgrade path.
+bool gitCanaryRunsStableUpgrade(String workspaceVersion) =>
+    workspaceVersion == '1.1.0';
 
 /// Redirects canonical internal Git dependencies to a disposable candidate
 /// repository without changing the dependency descriptors recorded in source.

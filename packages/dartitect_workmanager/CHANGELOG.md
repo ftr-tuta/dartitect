@@ -2,9 +2,13 @@
 
 ## Unreleased
 
-- Add exhaustive `1.1.0-rc.3` supported/unsupported capability projection
+- No changes have been accepted after the stable 1.1.0 release.
+
+## 1.1.0 - 2026-09-03
+
+- Add exhaustive `1.1.0` supported/unsupported capability projection
   evidence.
-- Version-only lockstep candidate; Workmanager diagnostics remain payload-free.
+- Version-only stable release; Workmanager diagnostics remain payload-free.
 
 ## 1.0.0
 

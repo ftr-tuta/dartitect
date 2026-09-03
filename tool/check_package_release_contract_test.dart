@@ -38,8 +38,8 @@ void main() {
     );
     await pubspec.writeAsString(
       (await pubspec.readAsString()).replaceFirst(
-        'version: 1.1.0-rc.3',
-        'version: 1.1.0-rc.4',
+        'version: 1.1.0',
+        'version: 1.1.1',
       ),
     );
 
@@ -112,6 +112,26 @@ void main() {
     expect(result.exitCode, 1);
     expect(result.stderr, contains('tag materialization'));
   });
+
+  test(
+    'rejects a stable workspace split from the distributed cohort',
+    () async {
+      final fixture = await _Fixture.create();
+      addTearDown(fixture.dispose);
+      await fixture.updateContract((contract) {
+        final distributed =
+            contract['distributedCohort']! as Map<String, Object?>;
+        distributed
+          ..['version'] = '1.0.0'
+          ..['tag'] = 'v1.0.0';
+      });
+
+      final result = await fixture.check();
+
+      expect(result.exitCode, 1);
+      expect(result.stderr, contains('stable workspace must exactly match'));
+    },
+  );
 
   test('accepts package-specific non-empty Unreleased entries', () async {
     final fixture = await _Fixture.create();

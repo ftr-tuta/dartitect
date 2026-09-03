@@ -16,34 +16,37 @@ void main() {
     expect(await DartitectLockCompatibility.inspect(lock), isEmpty);
   });
 
-  test('accepts one workspace candidate cohort for local canaries', () async {
+  test('rejects a future candidate outside the stable manifest', () async {
     final lock = await _temporaryLock(<String, _Locked>{
-      'dartitect': const _Locked(version: '1.1.0-rc.3'),
-      'dartitect_cli': const _Locked(version: '1.1.0-rc.3'),
-      'dartitect_observability': const _Locked(version: '1.1.0-rc.3'),
-    });
-
-    expect(await DartitectLockCompatibility.inspect(lock), isEmpty);
-  });
-
-  test('rejects mixed stable and workspace candidate cohorts', () async {
-    final lock = await _temporaryLock(<String, _Locked>{
-      'dartitect': const _Locked(),
-      'dartitect_observability': const _Locked(version: '1.1.0-rc.3'),
+      'dartitect': const _Locked(version: '1.2.0-rc.1'),
+      'dartitect_cli': const _Locked(version: '1.2.0-rc.1'),
+      'dartitect_observability': const _Locked(version: '1.2.0-rc.1'),
     });
 
     final findings = await DartitectLockCompatibility.inspect(lock);
 
-    expect(findings, hasLength(2));
+    expect(findings, hasLength(3));
     expect(
       findings.map((finding) => finding.reason),
-      everyElement('versions must use one lockstep cohort'),
+      everyElement('version must be 1.1.0'),
     );
+  });
+
+  test('rejects a future candidate mixed with the stable cohort', () async {
+    final lock = await _temporaryLock(<String, _Locked>{
+      'dartitect': const _Locked(),
+      'dartitect_observability': const _Locked(version: '1.2.0-rc.1'),
+    });
+
+    final findings = await DartitectLockCompatibility.inspect(lock);
+
+    expect(findings, hasLength(1));
+    expect(findings.single.reason, 'version must be 1.1.0');
   });
 
   test('rejects every non-canonical Git coordinate', () async {
     final lock = await _temporaryLock(<String, _Locked>{
-      'dartitect': const _Locked(version: '1.0.1'),
+      'dartitect': const _Locked(version: '1.1.1'),
       'dartitect_cli': const _Locked(source: 'hosted'),
       'dartitect_flutter': const _Locked(
         url: 'https://example.invalid/sdk.git',
@@ -55,14 +58,14 @@ void main() {
 
     final findings = await DartitectLockCompatibility.inspect(lock);
     final reasons = findings.map((item) => item.reason).toList();
-    expect(reasons, contains('version must be 1.0.0'));
+    expect(reasons, contains('version must be 1.1.0'));
     expect(reasons, contains('source must be git'));
     expect(reasons, contains('Git URL is not canonical'));
     expect(reasons, contains('Git path must be packages/dartitect_testing'));
     expect(reasons, contains('tag-pattern must be v{{version}}'));
     expect(reasons, contains('resolved-ref must be a full Git SHA'));
     expect(
-      findings.every((item) => item.expectedRange == '1.0.0 from v1.0.0'),
+      findings.every((item) => item.expectedRange == '1.1.0 from v1.1.0'),
       isTrue,
     );
   });
@@ -140,7 +143,7 @@ Future<File> _temporaryLock(Map<String, _Locked> entries) async {
 
 final class _Locked {
   const _Locked({
-    this.version = '1.0.0',
+    this.version = '1.1.0',
     this.source = 'git',
     this.url = 'https://github.com/ftr-tuta/dartitect.git',
     this.path,

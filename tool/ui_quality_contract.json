@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "artifact": "ui-quality-v2",
-  "goal": "RC3-FLUTTER-QUALITY",
-  "releaseVersion": "1.1.0-rc.3",
-  "stableVersion": "1.0.0",
+  "goal": "V1.1-FLUTTER-QUALITY",
+  "releaseVersion": "1.1.0",
+  "stableVersion": "1.1.0",
   "topology": {"packages": 25, "publicEntrypoints": 35},
   "mode": "native-strict",
   "entrypoints": [

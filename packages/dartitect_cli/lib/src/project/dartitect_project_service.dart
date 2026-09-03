@@ -735,13 +735,13 @@ final class DartitectProjectService {
   }
 
   static String _validatedTargetCohort(String? value) {
-    if (value != '1.0.0') {
+    if (value != '1.1.0') {
       throw const DartitectChangeException(
         'invalid_target_cohort',
-        'The target cohort must be the stable 1.0.0 release.',
+        'The target cohort must be the stable 1.1.0 release.',
       );
     }
-    return '1.0.0';
+    return '1.1.0';
   }
 
   static String _renderDependencyUpgrade(String source, String target) {
@@ -869,7 +869,11 @@ final class DartitectProjectService {
     final declaredVersion = '${descriptor['version'] ?? '1.0.0-rc.10'}';
     if (git['url'] != 'https://github.com/ftr-tuta/dartitect.git' ||
         git['path'] != 'packages/$package' ||
-        !const <String>{'1.0.0-rc.10', '1.0.0'}.contains(declaredVersion)) {
+        !const <String>{
+          '1.0.0-rc.10',
+          '1.0.0',
+          '1.1.0',
+        }.contains(declaredVersion)) {
       throw DartitectChangeException(
         'unsupported_dependency_source',
         'Dependency $package has non-canonical Git coordinates.',
@@ -893,7 +897,7 @@ final class DartitectProjectService {
     lines.removeAt(header);
   }
 
-  /// Applies the closed RC10-to-stable Git codemod without touching disk.
+  /// Applies the closed Git cohort codemod without touching disk.
   static String renderDependencyUpgradeSource(String source, String target) =>
       _renderDependencyUpgrade(source, _validatedTargetCohort(target));
 

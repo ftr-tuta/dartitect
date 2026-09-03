@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Route the `1.1.0-rc.3` Dartitect Flutter quality skill while requiring real
+- No changes have been accepted after the stable 1.1.0 release.
+
+## 1.1.0 - 2026-09-03
+
+- Route the `1.1.0` Dartitect Flutter quality skill while requiring real
   runtime MCP discovery and explicit missing-tool evidence.
 - Emit payload-free analyzed/total scan progress only when an MCP request
   supplies a progress token, while preserving the paginated terminal response.
