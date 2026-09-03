@@ -1152,7 +1152,7 @@ description: Implement or audit executable Flutter quality in a Native Strict Da
 ## When to use
 
 Use this skill when Flutter quality must be demonstrated by source, previews,
-runtime inspection, tests, platforms, or agent-evaluation evidence.
+runtime inspection, tests, platforms, or deterministic Actions evidence.
 
 ## When not to use
 
@@ -1189,7 +1189,7 @@ for structural budgets and informative measurements.
 Require explicit analyze, strict audit, preview compilation, runtime inspection,
 tests, and platform evidence. Mark unavailable MCP or a missing applicable
 dimension as not evidenced. Never store transcripts, screenshots, semantics,
-or visible content in evaluation receipts.
+or visible content in test or Actions artifacts.
 ''',
       'references/architecture-and-previews.md': r'''# Architecture and previews
 
@@ -1246,9 +1246,10 @@ Compile discovered previews from a temporary copy with
 Chrome, and supported hosted builds. Prove previews and widget tests invoke no
 network or plugin boundary.
 
-An exact-SHA agent-evaluation compares baseline, official skills, and official
-skills plus Dartitect with one model/configuration/sandbox. The complete variant
-must pass structural scorers and prove real MCP in the DevTools case.
+The coordinated GitHub Actions graph must pass the exact merge candidate. Its
+eight job identifiers cover nine hosted executions because Linux runs both the
+Flutter floor and current stable cells. `CI / Required` fails closed if any
+coordinated job fails, is cancelled, or is skipped.
 ''',
       'references/performance.md': r'''# Performance evidence
 

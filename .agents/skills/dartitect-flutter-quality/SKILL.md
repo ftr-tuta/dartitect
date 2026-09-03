@@ -8,7 +8,7 @@ description: Implement or audit executable Flutter quality in a Native Strict Da
 ## When to use
 
 Use this skill when Flutter quality must be demonstrated by source, previews,
-runtime inspection, tests, platforms, or agent-evaluation evidence.
+runtime inspection, tests, platforms, or deterministic Actions evidence.
 
 ## When not to use
 
@@ -45,7 +45,7 @@ for structural budgets and informative measurements.
 Require explicit analyze, strict audit, preview compilation, runtime inspection,
 tests, and platform evidence. Mark unavailable MCP or a missing applicable
 dimension as not evidenced. Never store transcripts, screenshots, semantics,
-or visible content in evaluation receipts.
+or visible content in test or Actions artifacts.
 
 ## Dartitect inclusion gate
 

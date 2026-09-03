@@ -34,11 +34,11 @@ truth for cross-package changes and migration guidance.
   store, its outbox, and the remote service.
 - Add preview, resize, keyboard, pointer, offline/reconnect, forced-logout,
   10,000-row, structural frame/rebuild, and zero-residual-resource canaries.
-- Add a pinned, Docker-isolated agent evaluation corpus with 21 required and 63
-  trend evaluations; retained receipts are payload-free.
-- Require deterministic platform evidence and a successful
-  `Flutter Quality Evals / Required` check on the exact candidate head before
-  `CI / Required` can pass.
+- Bind every `ui-quality-v2` technique to deterministic hosted GitHub Actions
+  evidence across eight coordinated jobs and nine executions, including both
+  Linux Flutter cells.
+- Keep `CI / Required` dependent on every platform, native, security, audit,
+  canary, and Git-consumption job without a paid external evaluation gate.
 
 #### Incremental execution
 

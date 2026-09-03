@@ -6,7 +6,7 @@
   "requiresExactMainSha": true,
   "requiresReadinessArtifact": "actions-readiness-v1",
   "requiresUiQualityEvidence": "ui-quality-v2",
-  "requiresAgentEvaluationCheck": "Flutter Quality Evals / Required",
+  "requiresDeterministicActionsEvidence": "CI / Required",
   "requiresDistributionPolicy": "tool/distribution_policy.json",
   "requiredCheck": "CI / Required",
   "requiredNativeCells": [

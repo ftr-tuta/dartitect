@@ -8,7 +8,7 @@ Responsive layout, runtime inspection, reusable widgets, MVVM, repositories,
 multi-platform behavior, and tests can be described accurately while still
 remaining unverified in a real Flutter application. Static analysis alone
 cannot prove runtime constraints, preview isolation, interaction behavior,
-resource cleanup, or whether an agent actually used available Flutter tooling.
+resource cleanup, or whether available Flutter tooling was actually used.
 Timing measurements are also misleading when runners, Flutter versions, build
 modes, fixtures, and observation windows differ.
 
@@ -16,9 +16,9 @@ modes, fixtures, and observation windows differ.
 
 Define `ui-quality-v2` as the executable quality contract for the untagged
 `1.1.0-rc.3` workspace candidate. Each of the seven techniques declares the
-skills, diagnostics, preview and runtime observations, tests, agent evaluations,
-canaries, and six target platforms that provide its evidence. Native Strict
-remains the architecture mode. The only public API addition is
+skills, diagnostics, preview and runtime observations, tests, GitHub Actions
+jobs, canaries, and six target platforms that provide its evidence. Native
+Strict remains the architecture mode. The only public API addition is
 `DartitectPreviewMatrix` in the existing Flutter testing entrypoint.
 
 Use Flutter's official `dart-flutter@dart-flutter` Codex plugin and the MCP
@@ -41,25 +41,18 @@ unconstrained images. Frame timing and memory remain informative until the
 runner, Flutter version, build mode, fixture, and measurement window have an
 equivalent baseline.
 
-For an exact review SHA, the default-branch manual workflow runs the required
-agent-evaluation matrix with pinned Flutter eval and plugin repositories. It
-publishes `Flutter Quality Evals / Required` on that SHA. Receipts contain only
-identifiers, configuration, counts, aggregate scores, tool/skill usage, and
-digests; transcripts, screenshots, semantics, and visible content are not
-retained.
-
 Keep `CI / Required` as the only protected aggregate status. It builds the
-GitHub merge candidate but queries the required evaluation for the exact PR
-head, or the exact push SHA on `main`, after every deterministic dependency has
-succeeded. Until that external check is successful the aggregate remains red;
-after the protected manual evaluation, rerun the failed aggregate job. The
-three-repetition trend suite is manual and never publishes the required check.
+GitHub merge candidate and depends on eight coordinated jobs: Linux, Windows,
+macOS, Android emulator, Drift Web, clean-clone audit, Git consumption, and
+OSV. The two-cell Linux matrix makes nine deterministic hosted executions. On
+`main`, the same aggregate records `actions-readiness-v1` with exact job,
+native-manifest, repository-artifact, SHA, tree, run, and attempt evidence.
 
 == Consequences
 
 Flutter quality claims become reproducible through API tests, CLI output,
 analyzer parity, preview compilation, canary journeys, structural performance
-evidence, platform builds, and exact-SHA agent evaluations. Missing MCP remains
-explicit missing evidence rather than an invented tool. The latest distributed
+evidence and platform builds across the coordinated Actions graph. Missing MCP
+remains explicit missing evidence rather than an invented tool. The latest distributed
 stable cohort stays `1.0.0`; this candidate does not authorize a tag, GitHub
 Release, package publication, or stable promotion.

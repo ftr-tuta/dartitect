@@ -13,6 +13,7 @@ Compile discovered previews from a temporary copy with
 Chrome, and supported hosted builds. Prove previews and widget tests invoke no
 network or plugin boundary.
 
-An exact-SHA agent-evaluation compares baseline, official skills, and official
-skills plus Dartitect with one model/configuration/sandbox. The complete variant
-must pass structural scorers and prove real MCP in the DevTools case.
+The coordinated GitHub Actions graph must pass the exact merge candidate. Its
+eight job identifiers cover nine hosted executions because Linux runs both the
+Flutter floor and current stable cells. `CI / Required` fails closed if any
+coordinated job fails, is cancelled, or is skipped.

@@ -23,11 +23,12 @@ The untagged candidate preserves 25 packages and exposes 35 reviewed public
 entrypoints. `ui-quality-v2` makes responsive constraints, DevTools runtime
 inspection, reusable preview widgets, MVVM, repositories, multiplatform
 behavior, and tests executable through static diagnostics, preview compilation,
-canary journeys, structural performance evidence, and agent evaluations.
+canary journeys, structural performance evidence, and deterministic hosted
+GitHub Actions jobs.
 
 `CI / Required` remains the only protected aggregate status. It fails closed
-unless all deterministic jobs succeed and `Flutter Quality Evals / Required`
-has succeeded for the exact candidate head. The latest stable distribution
+unless all eight coordinated jobs succeed across nine executions, including
+both Linux matrix cells. The latest stable distribution
 remains the immutable `1.0.0` / `v1.0.0`; RC3 creates no tag, Release, registry
 publication, or stable promotion.
 

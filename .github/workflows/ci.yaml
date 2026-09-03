@@ -9,7 +9,6 @@ on:
 
 permissions:
   contents: read
-  checks: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -82,7 +81,6 @@ jobs:
         run: |
           dart run tool/check_ui_quality.dart
           dart run tool/check_flutter_quality_performance.dart
-          dart run tool/check_agent_evals.dart
       - name: Verify workspace with native ObjectBox
         run: dart run tool/verify.dart --skip-get --native-objectbox
       - name: Reproduce the 12-scenario change-tax study
@@ -713,32 +711,6 @@ jobs:
           if ! jq -e 'all(.[]; .result == "success")' <<<"$DARTITECT_NEEDS_JSON" >/dev/null; then
             echo "At least one coordinated CI job did not conclude success." >&2
             jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<<"$DARTITECT_NEEDS_JSON" >&2
-            exit 1
-          fi
-      - name: Require the successful exact-HEAD Flutter quality evaluation
-        env:
-          GH_TOKEN: ${{ github.token }}
-          DARTITECT_EVAL_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        shell: bash
-        run: |
-          check_runs="$(
-            gh api --method GET \
-              "repos/${GITHUB_REPOSITORY}/commits/${DARTITECT_EVAL_SHA}/check-runs?per_page=100"
-          )"
-          if ! jq -e --arg sha "$DARTITECT_EVAL_SHA" '
-            [
-              .check_runs[]
-              | select(
-                  .name == "Flutter Quality Evals / Required"
-                  and .head_sha == $sha
-                  and .status == "completed"
-                )
-            ]
-            | sort_by(.completed_at)
-            | last
-            | .conclusion == "success"
-          ' <<<"$check_runs" >/dev/null; then
-            echo "No successful Flutter Quality Evals / Required check exists for ${DARTITECT_EVAL_SHA}." >&2
             exit 1
           fi
       - name: Download current-run native manifests

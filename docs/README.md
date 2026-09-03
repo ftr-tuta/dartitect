@@ -36,7 +36,7 @@ does not authorize a tag, GitHub Release, publication, or stable promotion.
   [credential generations](guides/credential-generations.md).
 - Apply the [executable business-neutral Flutter quality](guides/ui-quality.md)
   contract to consumer-owned Material or Cupertino presentation. ADR 0050
-  records its preview, runtime, static, test, performance, and eval evidence
+  records its preview, runtime, static, test, performance, and Actions evidence
   boundaries.
 
 ## Add persistence, transport, and optional capabilities

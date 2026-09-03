@@ -158,7 +158,6 @@ Future<void> main(List<String> arguments) async {
       'run',
       'tool/check_flutter_quality_performance.dart',
     ]),
-    const _Command('dart', <String>['run', 'tool/check_agent_evals.dart']),
     const _Command('dart', <String>[
       'run',
       'tool/check_stable_candidate.dart',
@@ -207,7 +206,6 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>[
       'test',
       'tool/check_flutter_quality_performance_test.dart',
-      'tool/check_agent_evals_test.dart',
     ]),
     const _Command('dart', <String>[
       'test',

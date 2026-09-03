@@ -36,10 +36,21 @@ const _techniqueEvidence = <String>[
   'preview',
   'runtime',
   'tests',
-  'evals',
+  'actions',
   'canaries',
   'platforms',
 ];
+const _coordinatedJobs = <String>[
+  'linux',
+  'windows',
+  'macos',
+  'android-emulator',
+  'drift-web',
+  'clean-clone',
+  'git-consumption',
+  'osv',
+];
+const _linuxMatrixCells = <String>['Flutter 3.47.1 (floor)', 'Flutter stable'];
 const _platforms = <String>[
   'android',
   'ios',
@@ -156,8 +167,8 @@ Future<void> main(List<String> arguments) async {
         '$name is not routed through dartitect-flutter-quality.',
       );
       require(
-        _same(_strings(technique['evals']), <String>[name]),
-        '$name does not map to its aggregate agent eval case.',
+        _strings(technique['actions']).every(_coordinatedJobs.contains),
+        '$name references an unknown deterministic Actions job.',
       );
       require(
         _same(_strings(technique['platforms']), _platforms),
@@ -224,17 +235,31 @@ Future<void> main(List<String> arguments) async {
       ]),
       'Timing and memory must remain informative.',
     );
-    final agentEvaluations = _map(contract['agentEvaluations']);
+    final actions = _map(contract['githubActionsEvidence']);
     require(
-      agentEvaluations['corpus'] == 'tool/agent_evals/corpus.json' &&
-          agentEvaluations['checker'] == 'tool/check_agent_evals.dart' &&
-          agentEvaluations['requiredEvaluations'] == 21 &&
-          agentEvaluations['trendEvaluations'] == 63 &&
-          agentEvaluations['sandbox'] == 'docker',
-      'Agent evaluation evidence is incomplete.',
+      actions['workflow'] == '.github/workflows/ci.yaml' &&
+          actions['requiredCheck'] == 'CI / Required' &&
+          actions['readinessArtifact'] == 'actions-readiness-v1' &&
+          _same(_strings(actions['coordinatedJobs']), _coordinatedJobs) &&
+          _same(_strings(actions['linuxMatrixCells']), _linuxMatrixCells) &&
+          actions['coordinatedExecutions'] == 9 &&
+          actions['hostedRunnersOnly'] == true,
+      'Deterministic GitHub Actions evidence is incomplete.',
     );
-    _mustExist(root, '${agentEvaluations['corpus']}', failures);
-    _mustExist(root, '${agentEvaluations['checker']}', failures);
+    final ci = _read(root, '${actions['workflow']}', failures);
+    for (final job in _coordinatedJobs) {
+      require(
+        ci.contains('      - $job'),
+        'CI / Required does not coordinate $job.',
+      );
+    }
+    for (final cell in _linuxMatrixCells) {
+      require(ci.contains('label: $cell'), 'Linux matrix is missing $cell.');
+    }
+    require(
+      ci.contains('name: CI / Required'),
+      'The deterministic Actions aggregate is missing.',
+    );
     final privacy = _map(contract['privacy']);
     require(
       privacy.length == 4 && privacy.values.every((value) => value == false),
@@ -323,7 +348,7 @@ Future<void> main(List<String> arguments) async {
     stdout.writeln(
       'ui-quality-v2 passed: seven executable techniques, 25 packages, '
       '35 entrypoints, six platforms, official Flutter tooling, and '
-      'payload-free evidence.',
+      'nine deterministic GitHub Actions executions.',
     );
   } on Object catch (error) {
     stderr.writeln('UI quality validation failed: $error');

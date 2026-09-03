@@ -181,7 +181,7 @@ content to telemetry.
 
 The `ui-quality-v2` artifact turns seven practices into required evidence. A
 technique is evidenced only when its applicable static, preview, runtime, test,
-evaluation, canary, and platform observations are present:
+Actions, canary, and platform observations are present:
 
 | Technique | Blocking evidence |
 | --- | --- |
@@ -242,7 +242,7 @@ I/O, FFI, network clients, or global state. Compile previews from a temporary
 copy with `flutter widget-preview start --no-launch-previewer` so discovery
 evidence does not modify the real tree.
 
-## Runtime, performance, and evaluation evidence
+## Runtime, performance, and GitHub Actions evidence
 
 The analyzer proves Flutter and Dartitect library/type identity before emitting
 an error. The syntax-only CLI scanner uses at most warning severity when
@@ -258,18 +258,17 @@ access; and constrained images. Frame build/raster percentiles and memory are
 informative until runner, Flutter version, build mode, fixture, and observation
 window match a recorded baseline.
 
-The required exact-SHA agent-evaluation matrix compares baseline, official
-Flutter skills, and official skills plus Dartitect. Its receipt is payload-free:
-only the SHA, pins, model/configuration, counts, aggregate scores, tool/skill
-usage, and digests are retained. Transcripts, screenshots, semantics, and
-visible screen content are excluded.
+The hosted `CI` graph supplies deterministic evidence through eight coordinated
+jobs: Linux, Windows, macOS, Android emulator, Drift Web, clean-clone audit, Git
+consumption, and OSV. Linux runs the Flutter 3.47.1 floor and current stable
+cells, so the aggregate covers nine executions. Every `ui-quality-v2` technique
+maps to one or more of these jobs.
 
 Repository validation runs the executable contracts directly:
 
 ```console
 dart run tool/check_ui_quality.dart
 dart run tool/check_flutter_quality_performance.dart
-dart run tool/check_agent_evals.dart
 dart run tool/check_flutter_previews.dart
 ```
 
@@ -279,10 +278,8 @@ from the existing package cache, and runs
 reviewed preview functions to appear in the compiled scaffold and deletes the
 temporary evidence afterward.
 
-For a PR head, dispatch the protected `Flutter Quality Evals` workflow with the
-exact SHA, model, and `required` suite. It uses one repetition for all 21 cells
-and is the only suite allowed to publish `Flutter Quality Evals / Required`.
-The optional `trend` suite runs 63 cells with three repetitions and cannot
-satisfy the gate. Once the required check succeeds, rerun the failed
-`CI / Required` aggregate for that same head. The aggregate remains the only
-status configured in branch protection.
+`CI / Required` consumes all eight job conclusions and fails closed when any
+job is failed, cancelled, or skipped. For a push to `main`, it additionally
+creates and validates `actions-readiness-v1`, binding the exact SHA, tree, run,
+attempt, job conclusions, native manifests, and repository-artifact digests.
+The aggregate remains the only status configured in branch protection.

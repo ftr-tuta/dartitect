@@ -468,28 +468,6 @@ final Size Function() readSize = () => const Size();
     expect(scan.violations, isEmpty);
   });
 
-  test('ignores deliberately invalid agent evaluation sources', () async {
-    final root = await Directory.systemTemp.createTemp('dartitect-evals-');
-    addTearDown(() => root.delete(recursive: true));
-    await _write(root, 'pubspec.yaml', 'name: sample\n');
-    await _write(root, 'lib/current.dart', 'void current() {}\n');
-    await _write(
-      root,
-      'tool/agent_evals/fixtures/broken.dart',
-      "import 'package:provider/provider.dart';\n",
-    );
-    await _write(
-      root,
-      'tool/agent_evals/scorers/hidden_test.dart',
-      "import 'package:provider/provider.dart';\n",
-    );
-
-    final scan = await ProjectScanner(root).scan();
-
-    expect(scan.dartFileCount, 1);
-    expect(scan.violations, isEmpty);
-  });
-
   test(
     'conditional imports are checked and suppressions need a reason',
     () async {

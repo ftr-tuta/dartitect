@@ -28,8 +28,7 @@ Future<void> main(List<String> arguments) async {
         value['requiresExactMainSha'] != true ||
         value['requiresReadinessArtifact'] != 'actions-readiness-v1' ||
         value['requiresUiQualityEvidence'] != 'ui-quality-v2' ||
-        value['requiresAgentEvaluationCheck'] !=
-            'Flutter Quality Evals / Required' ||
+        value['requiresDeterministicActionsEvidence'] != 'CI / Required' ||
         value['requiresDistributionPolicy'] !=
             'tool/distribution_policy.json' ||
         value['requiredCheck'] != 'CI / Required' ||

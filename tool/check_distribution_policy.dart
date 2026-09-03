@@ -188,19 +188,11 @@ void _checkWorkflows(
         (file) => file.path.endsWith('.yaml') || file.path.endsWith('.yml'),
       )
       .toList();
-  final expected = <String>{
-    'ci.yaml',
-    'flutter_quality_evals.yml',
-    'security.yaml',
-    'release.yaml',
-  };
+  final expected = <String>{'ci.yaml', 'security.yaml', 'release.yaml'};
   final actual = workflows.map((file) => portableBasename(file.path)).toSet();
   if (actual.difference(expected).isNotEmpty ||
       expected.difference(actual).isNotEmpty) {
-    errors.add(
-      'Workflows must be exactly CI, Flutter Quality Evals, Security, and '
-      'Release.',
-    );
+    errors.add('Workflows must be exactly CI, Security, and Release.');
   }
   for (final workflow in workflows) {
     final name = portableBasename(workflow.path);

@@ -42,7 +42,7 @@
       "preview": ["DartitectPreviewMatrix", "DartitectUiMatrix"],
       "runtime": ["constraints", "overflow", "window-resize", "focus", "scroll"],
       "tests": ["widget-matrix", "resize-journey", "10k-items"],
-      "evals": ["constraintsResponsive"],
+      "actions": ["linux"],
       "canaries": ["paved_road_canary", "reference_app"],
       "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
     },
@@ -52,7 +52,7 @@
       "preview": ["preview-runtime-isolation"],
       "runtime": ["flutter-mcp", "widget-tree", "runtime-errors", "performance-overlay"],
       "tests": ["mcp-discovery", "runtime-inspection"],
-      "evals": ["devtoolsRuntime"],
+      "actions": ["linux"],
       "canaries": ["paved_road_canary", "reference_app"],
       "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
     },
@@ -62,7 +62,7 @@
       "preview": ["discovery", "compile", "immutable-fixtures", "pure-callbacks"],
       "runtime": ["previewer", "preview-safe-boundaries"],
       "tests": ["preview-smoke", "callback-purity", "exhaustive-states"],
-      "evals": ["reusableWidgetsPreviews"],
+      "actions": ["linux"],
       "canaries": ["paved_road_canary", "thin_consumer_canary", "reference_app"],
       "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
     },
@@ -72,7 +72,7 @@
       "preview": ["view-data", "pure-callbacks"],
       "runtime": ["route-lifecycle", "commands", "effects", "restart-latest"],
       "tests": ["view-model", "generation-cancellation", "mounted-effects"],
-      "evals": ["mvvm"],
+      "actions": ["linux", "windows", "macos"],
       "canaries": ["paved_road_canary", "reference_app"],
       "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
     },
@@ -86,7 +86,7 @@
       "preview": ["synthetic-repository-free-fixtures"],
       "runtime": ["local-first", "outbox", "offline-reconnect", "single-store"],
       "tests": ["memory-contract", "drift-contract", "objectbox-contract"],
-      "evals": ["repositories"],
+      "actions": ["linux", "windows", "macos", "android-emulator", "drift-web"],
       "canaries": ["reference_app"],
       "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
     },
@@ -96,7 +96,7 @@
       "preview": ["compact", "medium", "expanded"],
       "runtime": ["keyboard", "mouse", "touch", "adaptive-capabilities"],
       "tests": ["chrome", "hosted-builds", "native-capability-projection"],
-      "evals": ["multiplatform"],
+      "actions": ["linux", "windows", "macos", "android-emulator", "drift-web"],
       "canaries": ["paved_road_canary", "native_capabilities", "reference_app"],
       "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
     },
@@ -111,7 +111,7 @@
       "preview": ["compile-smoke", "no-network", "no-plugin"],
       "runtime": ["framework-errors", "late-publication", "residual-resources"],
       "tests": ["unit", "widget", "integration", "structural-performance"],
-      "evals": ["tests"],
+      "actions": ["linux", "windows", "macos", "android-emulator", "drift-web", "clean-clone", "git-consumption", "osv"],
       "canaries": ["paved_road_canary", "thin_consumer_canary", "reference_app"],
       "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
     }
@@ -155,12 +155,17 @@
     ],
     "informative": ["frame-time", "memory"]
   },
-  "agentEvaluations": {
-    "corpus": "tool/agent_evals/corpus.json",
-    "checker": "tool/check_agent_evals.dart",
-    "requiredEvaluations": 21,
-    "trendEvaluations": 63,
-    "sandbox": "docker"
+  "githubActionsEvidence": {
+    "workflow": ".github/workflows/ci.yaml",
+    "requiredCheck": "CI / Required",
+    "readinessArtifact": "actions-readiness-v1",
+    "coordinatedJobs": [
+      "linux", "windows", "macos", "android-emulator", "drift-web",
+      "clean-clone", "git-consumption", "osv"
+    ],
+    "linuxMatrixCells": ["Flutter 3.47.1 (floor)", "Flutter stable"],
+    "coordinatedExecutions": 9,
+    "hostedRunnersOnly": true
   },
   "privacy": {
     "uploadsTranscripts": false,

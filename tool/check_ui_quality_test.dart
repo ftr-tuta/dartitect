@@ -37,4 +37,31 @@ void main() {
     expect(result.exitCode, isNot(0));
     expect(result.stderr, contains('Expected 25 packages'));
   });
+
+  test('rejects a divergent coordinated Actions execution count', () async {
+    final sourceRoot = Directory.current.absolute;
+    final root = await Directory.systemTemp.createTemp('ui-quality-actions-');
+    addTearDown(() => root.delete(recursive: true));
+    final contract = jsonDecode(
+      File('${sourceRoot.path}/tool/ui_quality_contract.json')
+          .readAsStringSync(),
+    ) as Map<String, Object?>;
+    (contract['githubActionsEvidence']!
+            as Map<String, Object?>)['coordinatedExecutions'] =
+        8;
+    final file = File('${root.path}/tool/ui_quality_contract.json');
+    await file.parent.create(recursive: true);
+    await file.writeAsString(jsonEncode(contract));
+
+    final result = await Process.run(Platform.resolvedExecutable, <String>[
+      '${sourceRoot.path}/tool/check_ui_quality.dart',
+      '--root=${root.path}',
+    ]);
+
+    expect(result.exitCode, isNot(0));
+    expect(
+      result.stderr,
+      contains('Deterministic GitHub Actions evidence is incomplete'),
+    );
+  });
 }
