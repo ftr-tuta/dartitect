@@ -737,6 +737,7 @@ jobs:
         with:
           name: actions-readiness-v1
           path: build/actions-readiness-v1
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 90
       - name: Confirm tracked files are unchanged

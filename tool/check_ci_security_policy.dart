@@ -180,6 +180,7 @@ void _auditWorkflows(Directory root, List<String> errors) {
     'tool/check_native_evidence.dart',
     'tool/create_actions_readiness.dart',
     'name: actions-readiness-v1',
+    'include-hidden-files: true',
     'retention-days: 90',
   ]) {
     if (!ci.contains(required)) {
