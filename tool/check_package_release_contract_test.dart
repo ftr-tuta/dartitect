@@ -38,8 +38,8 @@ void main() {
     );
     await pubspec.writeAsString(
       (await pubspec.readAsString()).replaceFirst(
-        'version: 1.1.0-rc.2',
         'version: 1.1.0-rc.3',
+        'version: 1.1.0-rc.4',
       ),
     );
 

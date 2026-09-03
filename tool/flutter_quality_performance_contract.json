@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "artifact": "flutter-quality-performance-v1",
+  "scope": "test-only-canary-support",
+  "collectors": [
+    "firstFrameMicros",
+    "usefulStateMicros",
+    "firstSearchResultMicros",
+    "buildP50Micros",
+    "buildP95Micros",
+    "rasterP50Micros",
+    "rasterP95Micros",
+    "framesAboveBudget",
+    "rebuilds",
+    "materializedRows",
+    "totalRows",
+    "maxQueuedCommands",
+    "cancellations",
+    "disposals",
+    "frameworkErrors",
+    "overflows",
+    "latePublications",
+    "residualResources",
+    "rssDeltaBytes"
+  ],
+  "structuralBlockers": [
+    "zero-overflow",
+    "zero-framework-error",
+    "zero-late-publication",
+    "zero-residual-resource",
+    "rows-materialized-under-100-of-10000",
+    "state-preserved-on-resize",
+    "no-heavy-ui-work",
+    "no-preview-network-or-plugin",
+    "images-constrained"
+  ],
+  "informative": [
+    "frame-time",
+    "memory",
+    "rebuild-counts",
+    "queue-depth",
+    "cancellation-and-disposal-counts"
+  ],
+  "thresholds": {
+    "frameTime": false,
+    "memory": false
+  },
+  "baselineEquivalence": [
+    "runner",
+    "flutterVersion",
+    "buildMode",
+    "fixture",
+    "observationWindow"
+  ],
+  "staticEvidence": {
+    "noHeavyUiWork": "dartitect ui audit --strict",
+    "noPreviewNetworkOrPlugin": "dartitect inspect flutter-quality",
+    "imagesConstrained": "DT3144"
+  },
+  "canaries": {
+    "pavedRoad": {
+      "test": "examples/paved_road_canary/test/flutter_quality_performance_test.dart",
+      "probe": "examples/paved_road_canary/test/support/flutter_quality_probe.dart",
+      "workload": "responsive-command-cleanup"
+    },
+    "referenceApp": {
+      "test": "examples/reference_app/test/flutter_quality_performance_test.dart",
+      "probe": "examples/reference_app/test/support/flutter_quality_probe.dart",
+      "workload": "10000-row-local-first"
+    }
+  }
+}

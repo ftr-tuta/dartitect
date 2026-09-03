@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 
 void main() {
   test(
-    'stable policy requires exact native cells and UI quality evidence',
+    'stable policy requires native cells and deterministic Actions evidence',
     () async {
       final sourceRoot = Directory.current.absolute;
       final checker = '${sourceRoot.path}/tool/check_stable_candidate.dart';
@@ -34,7 +34,12 @@ void main() {
       ]);
 
       expect(accepted.exitCode, 0);
-      expect(accepted.stdout, contains('ui-quality-v1'));
+      expect(accepted.stdout, contains('ui-quality-v2'));
+      expect(
+        File('${Directory.current.path}/tool/stable_candidate_contract.json')
+            .readAsStringSync(),
+        contains('requiresDeterministicActionsEvidence'),
+      );
       expect(rejected.exitCode, 1);
     },
   );

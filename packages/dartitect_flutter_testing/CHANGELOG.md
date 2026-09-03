@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add the four-row `DartitectPreviewMatrix` public annotation and preview-safe
+  synthetic fixture evidence for `1.1.0-rc.3`.
 - Version-only lockstep candidate; no public behavior change.
 
 ## 1.0.0

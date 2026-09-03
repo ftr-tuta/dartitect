@@ -5,6 +5,8 @@ import 'package:dartitect/dartitect.dart'
     show CancellationSource, FeatureProfile;
 
 import '../blueprints/blueprint_service.dart';
+import '../codex/codex_skill_synchronizer.dart';
+import '../codex/flutter_codex_doctor.dart';
 import '../config/dartitect_config.dart';
 import '../contracts/openapi_contract_service.dart';
 import '../diagnostics/models.dart';
@@ -15,6 +17,7 @@ import '../generation/scaffolds.dart';
 import '../generation/wiring_service.dart';
 import '../inspect/consumer_tax.dart';
 import '../inspect/execution_model.dart';
+import '../inspect/flutter_quality.dart';
 import '../model/model_generator.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
@@ -144,6 +147,10 @@ final class DartitectCliRunner {
     Directory root,
     _CliArguments arguments,
   ) async {
+    final flutterQuality =
+        command == 'inspect' &&
+        arguments.positionals.firstOrNull == 'flutter-quality';
+    if (flutterQuality) return _inspectFlutterQuality(root, arguments);
     final executionModel =
         command == 'inspect' &&
         arguments.positionals.length == 1 &&
@@ -231,6 +238,41 @@ final class DartitectCliRunner {
       _writeEnvelope(envelope, json: arguments.flags.contains('json'));
     }
     return envelope.exitCode;
+  }
+
+  Future<int> _inspectFlutterQuality(
+    Directory root,
+    _CliArguments arguments,
+  ) async {
+    final unsupported = arguments.flags.difference(const <String>{
+      'json',
+      'verbose',
+    });
+    if (arguments.positionals.length != 1 || unsupported.isNotEmpty) {
+      final detail = arguments.positionals.length != 1
+          ? 'Unexpected argument after flutter-quality.'
+          : 'Unknown flag: --${unsupported.first}';
+      _stderr.writeln(detail);
+      _stderr.writeln(
+        'Usage: dartitect inspect flutter-quality [--json] [--root PATH].',
+      );
+      return 64;
+    }
+    final report = await FlutterQualityInspector(root).inspect();
+    if (arguments.flags.contains('json')) {
+      _stdout.writeln(jsonEncode(report.toJson()));
+    } else {
+      _stdout.writeln(
+        'FLUTTER-QUALITY ${report.overallStatus.name.toUpperCase()}',
+      );
+      for (final entry in report.techniques.entries) {
+        _stdout.writeln(
+          '${entry.key} ${entry.value.status.name} '
+          '${entry.value.evidence.join(' | ')}',
+        );
+      }
+    }
+    return report.exitCode;
   }
 
   Future<int> _scanJsonLines(Directory root) async {
@@ -962,31 +1004,98 @@ final class _AppStringsDelegate extends LocalizationsDelegate<_AppStrings> {
   }
 
   Future<int> _codex(Directory root, _CliArguments arguments) async {
-    if (arguments.positionals.length != 1 ||
-        arguments.positionals.single != 'sync') {
+    if (arguments.positionals.length != 1) {
       throw const _UsageException(
-        'Usage: dartitect codex sync [--dry-run] [--overwrite-managed].',
+        'Usage: dartitect codex <doctor|setup|sync>.',
       );
     }
-    arguments.requireOnlyFlags(<String>{
-      'dry-run',
-      'overwrite-managed',
-      'verbose',
-    });
-    final service = DartitectProjectService(root);
-    final plan = await service.previewChange(
-      DartitectChangeKind.codexSync,
-      overwriteManaged: arguments.flags.contains('overwrite-managed'),
-    );
-    for (final operation in plan.operations) {
-      _stdout.writeln(operation);
+    switch (arguments.positionals.single) {
+      case 'doctor':
+        arguments.requireOnlyFlags(<String>{'flutter', 'json', 'verbose'});
+        if (!arguments.flags.contains('flutter')) {
+          throw const _UsageException(
+            'Usage: dartitect codex doctor --flutter [--json].',
+          );
+        }
+        final report = await FlutterCodexDoctor(root).inspect();
+        if (arguments.flags.contains('json')) {
+          _stdout.writeln(jsonEncode(report.toJson()));
+        } else {
+          _stdout.writeln(
+            'CODEX FLUTTER ${report.overallStatus.name.toUpperCase()}',
+          );
+          for (final check in report.checks) {
+            _stdout.writeln(
+              '${check.status.name.toUpperCase()} ${check.id} '
+              '${check.evidence.join(' | ')}',
+            );
+          }
+        }
+        return report.exitCode;
+      case 'setup':
+        arguments.requireOnlyFlags(<String>{
+          'flutter',
+          'dry-run',
+          'apply',
+          'verbose',
+        });
+        if (!arguments.flags.contains('flutter') ||
+            arguments.flags.contains('dry-run') ==
+                arguments.flags.contains('apply')) {
+          throw const _UsageException(
+            'Usage: dartitect codex setup --flutter --dry-run|--apply.',
+          );
+        }
+        final doctor = await FlutterCodexDoctor(root).inspect();
+        final plugin = doctor.checks.singleWhere(
+          (check) => check.id == 'officialPlugin',
+        );
+        final synchronizer = CodexSkillSynchronizer(root);
+        final result = await setupFlutterCodexSkills(
+          synchronizer,
+          dryRun: arguments.flags.contains('dry-run'),
+        );
+        for (final operation in result.operations) {
+          _stdout.writeln(operation);
+        }
+        if (result.dryRun) {
+          _stdout.writeln('DRY-RUN no files written.');
+        } else {
+          _stdout.writeln('APPLIED catalog-managed Dartitect skills only.');
+        }
+        if (plugin.status != FlutterCodexCheckStatus.pass &&
+            !plugin.evidence.join(' ').contains('was identified')) {
+          _stdout.writeln(
+            'Official plugin installation remains manual: '
+            'codex plugin add dart-flutter@dart-flutter',
+          );
+        }
+        return DartitectExitCode.success.code;
+      case 'sync':
+        arguments.requireOnlyFlags(<String>{
+          'dry-run',
+          'overwrite-managed',
+          'verbose',
+        });
+        final service = DartitectProjectService(root);
+        final plan = await service.previewChange(
+          DartitectChangeKind.codexSync,
+          overwriteManaged: arguments.flags.contains('overwrite-managed'),
+        );
+        for (final operation in plan.operations) {
+          _stdout.writeln(operation);
+        }
+        if (arguments.flags.contains('dry-run')) {
+          _stdout.writeln('DRY-RUN no files written.');
+        } else {
+          await service.applyChange(plan);
+        }
+        return DartitectExitCode.success.code;
+      default:
+        throw _UsageException(
+          'Unknown codex command "${arguments.positionals.single}".',
+        );
     }
-    if (arguments.flags.contains('dry-run')) {
-      _stdout.writeln('DRY-RUN no files written.');
-    } else {
-      await service.applyChange(plan);
-    }
-    return DartitectExitCode.success.code;
   }
 
   Future<int> _model(Directory root, _CliArguments arguments) async {
@@ -1589,12 +1698,16 @@ Read-only commands:
                                     Scan files and architecture boundaries.
   ui audit [--json|--sarif] [--strict]
                                     Audit adaptive and accessible UI source.
+  codex doctor --flutter [--json]  Diagnose Flutter/Codex tooling offline.
+  codex setup --flutter --dry-run|--apply
+                                    Sync only managed Dartitect skill assets.
   codex sync [--dry-run] [--overwrite-managed]
-                                    Install managed, focused Codex skills.
+                                    Preserve the compatible skill synchronizer.
   doctor [--json] [--deep] [--release]
                                     Validate toolchain, config, and project.
   inspect [--json]                  Emit consolidated architecture metadata.
   inspect execution-model [--json] Report bounded runtime-efficiency heuristics.
+  inspect flutter-quality [--json]  Report seven executable Flutter practices.
   inspect --consumer-tax [--json]   Measure consumer plumbing and capability closure.
   verify [--json|--sarif]           Verify architecture, models, and providers.
   model check [--json]              Validate generated model freshness.
@@ -1633,7 +1746,8 @@ Mutating commands (all accept --dry-run):
   create viewmodel <name>           Create a native ViewModel and test.
   create repository <name>          Create a contract and fake.
   create service <name>             Create a constructor-injected service.
-Exit codes: 0 success, 1 findings/conflicts, 2 usage/config, 3 internal/IO.''';
+Exit codes: 0 success, 1 findings/conflicts, 2 usage/config, 3 internal/IO,
+64 Flutter quality usage.''';
 }
 
 final class _CliArguments {

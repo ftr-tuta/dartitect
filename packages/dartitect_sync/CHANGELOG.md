@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `1.1.0-rc.3` local-first outbox, reconnect, and generation-safe search
+  evidence for the provider-neutral repository boundary.
 - Add `SyncDataset.incremental`, confirmed-step progress, and strict
   checkpoint-before-next-pull backpressure with partial receipts.
 - Add sequential and bounded-parallel DAG execution policies with stable report

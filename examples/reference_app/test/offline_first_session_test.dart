@@ -181,11 +181,12 @@ void main() {
   );
 }
 
-Future<OfflineFirstTaskSession> _memorySession({ReferenceTaskRemote? remote}) =>
-    OfflineFirstTaskSession.create(
-      store: MemoryOfflineTaskStore(),
-      remote: remote ?? ReferenceTaskRemote(),
-    );
+Future<LocalFirstTaskRepository> _memorySession({
+  ReferenceTaskRemote? remote,
+}) => LocalFirstTaskRepository.create(
+  store: MemoryOfflineTaskStore(),
+  remote: remote ?? ReferenceTaskRemote(),
+);
 
 MutationExecution<TaskMutation, int, void, TaskFailure> _execution(
   CommandOutcome<
@@ -202,7 +203,7 @@ MutationExecution<TaskMutation, int, void, TaskFailure> _execution(
         .value;
 
 Future<List<OutboxOperation<int, TaskMutation>>> _operations(
-  OfflineFirstTaskSession session,
+  LocalFirstTaskRepository session,
 ) async {
   final source = CancellationSource();
   try {

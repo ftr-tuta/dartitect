@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Join the `1.1.0-rc.3` bounded command-evidence cohort in lockstep.
 - Evict completed job receipts through an O(1) deque-backed FIFO.
 
 ## 1.0.0

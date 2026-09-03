@@ -216,10 +216,13 @@ dart run dartitect_cli:dartitect inspect --json
 dart run dartitect_cli:dartitect scan
 dart run dartitect_cli:dartitect doctor
 dart run dartitect_cli:dartitect inspect --consumer-tax --json
+dart run dartitect_cli:dartitect inspect flutter-quality --json
 dart run dartitect_cli:dartitect contracts check api/openapi.yaml --json
 dart run dartitect_cli:dartitect model check --json
 dart run dartitect_cli:dartitect wiring sync --dry-run --json
 dart run dartitect_cli:dartitect codex sync --dry-run
+dart run dartitect_cli:dartitect codex doctor --flutter --json
+dart run dartitect_cli:dartitect codex setup --flutter --dry-run
 ```
 
 Preview mutating operations before applying them. Generated-once files become
@@ -274,8 +277,8 @@ READMEs. Drift accepts consumer-owned native and web executors. ObjectBox has no
 web support. The CLI, modeling analyzer, and MCP server run on the Dart VM.
 
 All 25 packages permanently share one lockstep workspace version. This source
-branch is the untagged `1.1.0-rc.2` candidate cohort; its derivable candidate
-tag is `v1.1.0-rc.2`, but that tag is not materialized and is not a public
+branch is the untagged `1.1.0-rc.3` candidate cohort; its derivable candidate
+tag is `v1.1.0-rc.3`, but that tag is not materialized and is not a public
 distribution. The latest stable distribution remains the immutable GitHub
 Release for `v1.0.0`. Consumers should continue declaring `1.0.0`; transitive
 Dartitect packages resolve from the same stable tag without overrides:

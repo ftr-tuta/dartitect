@@ -10,15 +10,35 @@ truth for cross-package changes and migration guidance.
 
 ### Candidate state
 
-- Workspace cohort: `1.1.0-rc.2`.
+- Workspace cohort: `1.1.0-rc.3`.
 - Channel: `candidate`.
 - Latest stable distribution: `1.0.0` / `v1.0.0`.
-- Derivable candidate tag: `v1.1.0-rc.2`.
+- Derivable candidate tag: `v1.1.0-rc.3`.
 - Candidate tag materialized: `false`.
 - No tag, GitHub Release, publication, or stable promotion is authorized by
   this changelog.
 
 ### Added
+
+#### Executable Flutter quality
+
+- Add the public `DartitectPreviewMatrix`, four preview-safe synthetic fixtures,
+  and disposable Widget Previewer discovery/compilation evidence.
+- Add offline Codex Flutter doctor/setup commands, the seven-technique Flutter
+  quality inspector, and the managed `dartitect-flutter-quality` skill routed
+  through the six official Flutter plugin skills.
+- Add semantic and syntax-parity diagnostics `DT3120`–`DT3145` for MVVM,
+  repository, lifecycle, preview, lazy rendering, and rebuild boundaries.
+- Refactor the reference tasks flow through `TasksPage`, `TasksViewModel`, a
+  provider-neutral local-first repository, one selected Memory/Drift/ObjectBox
+  store, its outbox, and the remote service.
+- Add preview, resize, keyboard, pointer, offline/reconnect, forced-logout,
+  10,000-row, structural frame/rebuild, and zero-residual-resource canaries.
+- Bind every `ui-quality-v2` technique to deterministic hosted GitHub Actions
+  evidence across eight coordinated jobs and nine executions, including both
+  Linux Flutter cells.
+- Keep `CI / Required` dependent on every platform, native, security, audit,
+  canary, and Git-consumption job without a paid external evaluation gate.
 
 #### Incremental execution
 
@@ -173,7 +193,7 @@ truth for cross-package changes and migration guidance.
   privacy.
 - The `dartitect_sync` interface remains unchanged; its observability adapter
   is exposed from a separate observability entrypoint.
-- All Dartitect packages move together to `1.1.0-rc.2`; packages without a
+- All Dartitect packages move together to `1.1.0-rc.3`; packages without a
   functional change receive a version-only lockstep candidate entry.
 
 ### Migration from 1.0.0

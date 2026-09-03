@@ -2,7 +2,11 @@
   "configVersion": 3,
   "profile": "native_strict",
   "layers": {
-    "presentation": ["**/presentation/**"],
+    "presentation": [
+      "**/presentation/**",
+      "lib/src/dev/**",
+      "**/lib/src/dev/**"
+    ],
     "application": ["**/application/**"],
     "domain": ["**/domain/**"],
     "data": ["**/data/**"],

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedFor": "release baseline 1.1.0-rc.2",
+  "generatedFor": "release baseline 1.1.0-rc.3",
   "packages": [
     {
       "name": "_fe_analyzer_shared",
@@ -186,7 +186,7 @@
     },
     {
       "name": "dartitect",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
@@ -207,91 +207,91 @@
     },
     {
       "name": "dartitect_cli",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_devtools",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "MIT",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_dio",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_drift",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_flutter",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_flutter_testing",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_geometry",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_isolates",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_jobs",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "MIT",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_lints",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_locale_br",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_mcp",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_media",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
@@ -305,28 +305,28 @@
     },
     {
       "name": "dartitect_modeling",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_modeling_analyzer",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_objectbox",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_observability",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
@@ -340,7 +340,7 @@
     },
     {
       "name": "dartitect_privacy",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
@@ -354,49 +354,49 @@
     },
     {
       "name": "dartitect_resilience",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "MIT",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_sentry",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_sync",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_testing",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_transfer",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "MIT",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_workmanager",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
     },
     {
       "name": "dartitect_workspace",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
@@ -472,6 +472,13 @@
       "licenseFile": "LICENSE"
     },
     {
+      "name": "flutter_driver",
+      "version": "0.0.0",
+      "source": "sdk",
+      "license": "BSD-3-Clause",
+      "licenseFile": "SDK license"
+    },
+    {
       "name": "flutter_lints",
       "version": "6.0.0",
       "source": "hosted",
@@ -498,6 +505,13 @@
       "source": "hosted",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
+    },
+    {
+      "name": "fuchsia_remote_debug_protocol",
+      "version": "0.0.0",
+      "source": "sdk",
+      "license": "BSD-3-Clause",
+      "licenseFile": "SDK license"
     },
     {
       "name": "glob",
@@ -540,6 +554,13 @@
       "source": "hosted",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
+    },
+    {
+      "name": "integration_test",
+      "version": "0.0.0",
+      "source": "sdk",
+      "license": "BSD-3-Clause",
+      "licenseFile": "SDK license"
     },
     {
       "name": "io",
@@ -585,7 +606,7 @@
     },
     {
       "name": "large_consumer_canary",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
@@ -746,7 +767,7 @@
     },
     {
       "name": "paved_road_canary",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
@@ -920,6 +941,13 @@
       "licenseFile": "LICENSE"
     },
     {
+      "name": "sync_http",
+      "version": "0.3.1",
+      "source": "hosted",
+      "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
       "name": "term_glyph",
       "version": "1.2.2",
       "source": "hosted",
@@ -949,7 +977,7 @@
     },
     {
       "name": "thin_consumer_canary",
-      "version": "1.1.0-rc.2",
+      "version": "1.1.0-rc.3",
       "source": "root",
       "license": "BSD-3-Clause",
       "licenseFile": "LICENSE"
@@ -1008,6 +1036,13 @@
       "version": "3.0.3",
       "source": "hosted",
       "license": "BSD-3-Clause",
+      "licenseFile": "LICENSE"
+    },
+    {
+      "name": "webdriver",
+      "version": "3.1.0",
+      "source": "hosted",
+      "license": "Apache-2.0",
       "licenseFile": "LICENSE"
     },
     {

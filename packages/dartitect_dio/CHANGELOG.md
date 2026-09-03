@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Join the `1.1.0-rc.3` preview-safe repository cohort in lockstep.
 - Add explicit classified JSON telemetry capture while keeping metadata-only capture as the zero-payload default.
 
 ## 1.0.0

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add exhaustive `1.1.0-rc.3` pure capability-state projection evidence for
+  native examples.
 - Version-only lockstep candidate; no public behavior change.
 
 ## 1.0.0

@@ -31,25 +31,18 @@ final class CodexSkillSynchronizer {
 
   /// Recovers the last interrupted commit, favoring the consumer's old data.
   Future<void> recover() async {
-    if (!await _journal.exists()) return;
-    final decoded = jsonDecode(await _journal.readAsString());
-    final names =
-        decoded is Map<String, Object?> && decoded['skills'] is List<Object?>
-        ? (decoded['skills']! as List<Object?>).whereType<String>()
-        : const Iterable<String>.empty();
-    for (final name in names) {
+    final recovery = await _recoveryPlan();
+    if (recovery == null) return;
+    for (final name in recovery.names) {
       final target = Directory(_join(_skills.path, name));
       if (await target.exists()) await target.delete(recursive: true);
     }
-    if (await _backup.exists()) {
-      await for (final entity in _backup.list(followLinks: false)) {
-        if (entity is! Directory) continue;
-        final target = Directory(_join(_skills.path, _basename(entity.path)));
-        if (await target.exists()) await target.delete(recursive: true);
-        await entity.rename(target.path);
-      }
-      await _backup.delete();
+    for (final name in recovery.backedUpNames) {
+      final entity = Directory(_join(_backup.path, name));
+      final target = Directory(_join(_skills.path, name));
+      await entity.rename(target.path);
     }
+    await _backup.delete();
     await _journal.delete();
   }
 
@@ -57,10 +50,35 @@ final class CodexSkillSynchronizer {
   Future<CodexSyncResult> sync({
     bool dryRun = false,
     bool overwriteManaged = false,
+  }) => _sync(
+    dryRun: dryRun,
+    overwriteManaged: overwriteManaged,
+    createAgentsFile: true,
+  );
+
+  Future<CodexSyncResult> _sync({
+    required bool dryRun,
+    required bool overwriteManaged,
+    required bool createAgentsFile,
   }) async {
-    await recover();
-    final preview = await _preview(overwriteManaged: overwriteManaged);
-    if (dryRun) return preview;
+    final recovery = await _recoveryPlan();
+    final preview = await _preview(
+      overwriteManaged: overwriteManaged,
+      createAgentsFile: createAgentsFile,
+      recovery: recovery,
+    );
+    if (dryRun) {
+      return recovery == null
+          ? preview
+          : CodexSyncResult(
+              operations: <String>[
+                'RECOVER interrupted Dartitect skill transaction',
+                ...preview.operations,
+              ],
+              dryRun: true,
+            );
+    }
+    if (recovery != null) await recover();
     final desired = _desiredFiles();
 
     final operations = preview.operations;
@@ -93,7 +111,7 @@ final class CodexSkillSynchronizer {
         await Directory(_join(stage.path, name)).rename(target.path);
       }
       final agents = File(_join(root.path, 'AGENTS.md'));
-      if (!await agents.exists()) {
+      if (createAgentsFile && !await agents.exists()) {
         await agents.writeAsString(
           '# Dartitect workspace\n\nUse the focused skills under `.agents/skills` and preserve explicit ownership boundaries.\n',
           flush: true,
@@ -111,11 +129,19 @@ final class CodexSkillSynchronizer {
   }
 
   /// Plans synchronization without recovering or writing transaction files.
-  Future<CodexSyncResult> preview({bool overwriteManaged = false}) =>
-      _preview(overwriteManaged: overwriteManaged);
+  Future<CodexSyncResult> preview({bool overwriteManaged = false}) => _preview(
+    overwriteManaged: overwriteManaged,
+    createAgentsFile: true,
+    recovery: null,
+  );
 
-  Future<CodexSyncResult> _preview({required bool overwriteManaged}) async {
-    if (await _journal.exists() || await _backup.exists()) {
+  Future<CodexSyncResult> _preview({
+    required bool overwriteManaged,
+    required bool createAgentsFile,
+    required _RecoveryPlan? recovery,
+  }) async {
+    if (recovery == null &&
+        (await _journal.exists() || await _backup.exists())) {
       throw FileSystemException(
         'An interrupted Codex sync must be recovered before preview',
         _relative(_journal.path),
@@ -126,15 +152,20 @@ final class CodexSkillSynchronizer {
     final operations = <String>[];
     for (final entry in desired.entries) {
       final target = Directory(_join(_skills.path, entry.key));
-      if (!await target.exists()) {
+      final effective = recovery?.names.contains(entry.key) ?? false
+          ? recovery!.backedUpNames.contains(entry.key)
+                ? Directory(_join(_backup.path, entry.key))
+                : null
+          : target;
+      if (effective == null || !await effective.exists()) {
         operations.add('CREATE .agents/skills/${entry.key}');
         continue;
       }
-      final manifest = File(_join(target.path, '.dartitect-skill.json'));
+      final manifest = File(_join(effective.path, '.dartitect-skill.json'));
       if (!await manifest.exists()) {
         throw FileSystemException(
           'Refusing to replace an unmanaged skill',
-          _relative(target.path),
+          _relative(effective.path),
         );
       }
       final decoded = jsonDecode(await manifest.readAsString());
@@ -145,7 +176,8 @@ final class CodexSkillSynchronizer {
         );
       }
       final recordedHash = decoded['contentHash'];
-      final currentHash = await _hashDirectory(target);
+      final recordedVersion = decoded['sdkVersion'];
+      final currentHash = await _hashDirectory(effective);
       if (recordedHash != currentHash && !overwriteManaged) {
         throw FileSystemException(
           'Managed skill has local changes; use --overwrite-managed to replace it',
@@ -154,14 +186,83 @@ final class CodexSkillSynchronizer {
       }
       final desiredHash = _hashFiles(entry.value);
       operations.add(
-        desiredHash == currentHash
+        desiredHash == currentHash &&
+                recordedVersion == CommandEnvelope.sdkVersion
             ? 'NO-OP .agents/skills/${entry.key}'
             : 'UPDATE .agents/skills/${entry.key}',
       );
     }
     final agents = File(_join(root.path, 'AGENTS.md'));
-    if (!await agents.exists()) operations.add('CREATE AGENTS.md');
+    if (createAgentsFile && !await agents.exists()) {
+      operations.add('CREATE AGENTS.md');
+    }
     return CodexSyncResult(operations: operations, dryRun: true);
+  }
+
+  Future<_RecoveryPlan?> _recoveryPlan() async {
+    final journalExists = await _journal.exists();
+    final backupExists = await _backup.exists();
+    if (!journalExists && !backupExists) return null;
+    if (!journalExists || !backupExists) {
+      throw FileSystemException(
+        'Irrecoverable Codex sync transaction state',
+        journalExists ? _relative(_journal.path) : _relative(_backup.path),
+      );
+    }
+    Object? decoded;
+    try {
+      decoded = jsonDecode(await _journal.readAsString());
+    } on FormatException {
+      throw FileSystemException(
+        'Invalid Codex sync transaction journal',
+        _relative(_journal.path),
+      );
+    }
+    final rawNames =
+        decoded is Map<String, Object?> &&
+            decoded['schemaVersion'] == 1 &&
+            decoded['phase'] == 'staged' &&
+            decoded['skills'] is List<Object?>
+        ? decoded['skills']! as List<Object?>
+        : null;
+    if (rawNames == null ||
+        rawNames.isEmpty ||
+        rawNames.any(
+          (name) =>
+              name is! String ||
+              !RegExp(r'^dartitect-[a-z0-9-]+$').hasMatch(name) ||
+              !dartitectSkillCatalog.any((skill) => skill.name == name),
+        )) {
+      throw FileSystemException(
+        'Invalid Codex sync transaction journal',
+        _relative(_journal.path),
+      );
+    }
+    final names = rawNames.cast<String>().toSet();
+    if (names.length != rawNames.length) {
+      throw FileSystemException(
+        'Duplicate skill in Codex sync transaction journal',
+        _relative(_journal.path),
+      );
+    }
+    final backedUpNames = <String>{};
+    await for (final entity in _backup.list(followLinks: false)) {
+      if (entity is! Directory) {
+        throw FileSystemException(
+          'Invalid entry in Codex sync transaction backup',
+          _relative(entity.path),
+        );
+      }
+      final name = _basename(entity.path);
+      if (!names.contains(name)) {
+        throw FileSystemException(
+          'Unexpected skill in Codex sync transaction backup',
+          _relative(entity.path),
+        );
+      }
+      backedUpNames.add(name);
+    }
+    return _RecoveryPlan(names: names, backedUpNames: backedUpNames);
   }
 
   Map<String, Map<String, String>> _desiredFiles() =>
@@ -206,4 +307,21 @@ final class CodexSkillSynchronizer {
 
   static String _join(String left, String right) =>
       '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
+}
+
+/// Internal CLI bridge that excludes non-catalog workspace files from setup.
+Future<CodexSyncResult> setupFlutterCodexSkills(
+  CodexSkillSynchronizer synchronizer, {
+  required bool dryRun,
+}) => synchronizer._sync(
+  dryRun: dryRun,
+  overwriteManaged: false,
+  createAgentsFile: false,
+);
+
+final class _RecoveryPlan {
+  const _RecoveryPlan({required this.names, required this.backedUpNames});
+
+  final Set<String> names;
+  final Set<String> backedUpNames;
 }

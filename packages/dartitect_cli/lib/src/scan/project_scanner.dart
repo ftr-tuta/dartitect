@@ -828,11 +828,12 @@ final class ProjectScanner {
   }) async {
     cancellation.throwIfCancelled();
     final relativeDirectory = _relative(directory.path);
+    final normalizedDirectory = relativeDirectory.replaceAll('\\', '/');
     if (relativeDirectory != '.' &&
         await File(_join(directory.path, 'pubspec.yaml')).exists()) {
       return;
     }
-    final segments = relativeDirectory.replaceAll('\\', '/').split('/');
+    final segments = normalizedDirectory.split('/');
     if (segments.any(
       const <String>{
         '.dart_tool',

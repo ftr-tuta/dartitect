@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Validate the `1.1.0-rc.3` common local-first repository contract against the
+  Drift store.
 - Version-only lockstep candidate; Drift telemetry remains payload-free with no automatic SQL or value capture.
 
 ## 1.0.0

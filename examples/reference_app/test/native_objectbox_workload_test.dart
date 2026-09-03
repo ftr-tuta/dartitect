@@ -59,7 +59,7 @@ void main() {
       final firstStore = await ObjectBoxOfflineTaskStore.open(
         directoryPath: directory.path,
       );
-      final first = await OfflineFirstTaskSession.create(
+      final first = await LocalFirstTaskRepository.create(
         store: firstStore,
         remote: ReferenceTaskRemote(mode: ReferenceRemoteMode.offline),
       );
@@ -75,7 +75,7 @@ void main() {
       final secondStore = await ObjectBoxOfflineTaskStore.open(
         directoryPath: directory.path,
       );
-      final second = await OfflineFirstTaskSession.create(
+      final second = await LocalFirstTaskRepository.create(
         store: secondStore,
         remote: ReferenceTaskRemote(),
       );

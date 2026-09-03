@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add exhaustive `1.1.0-rc.3` supported/unsupported capability projection
+  evidence.
 - Version-only lockstep candidate; Workmanager diagnostics remain payload-free.
 
 ## 1.0.0

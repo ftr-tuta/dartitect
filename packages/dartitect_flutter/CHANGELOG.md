@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `1.1.0-rc.3` executable MVVM, responsive-state, and bounded-rebuild
+  evidence without expanding the public Flutter surface.
 - Use tombstoned listener registries with O(1) identity removal and safe
   reentrant dispatch across reactive primitives.
 - Replace quadratic computed ordering and form-history shifts with stable

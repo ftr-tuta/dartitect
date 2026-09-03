@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Join the `1.1.0-rc.3` restart-latest search evidence cohort in lockstep.
 - Replace bulkhead queue shifts with an O(1) deque-backed FIFO.
 
 ## 1.0.0

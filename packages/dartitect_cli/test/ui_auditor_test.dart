@@ -105,6 +105,59 @@ Widget build(BuildContext context) => OrientationBuilder(
     expect(sarif['version'], '2.1.0');
     expect(jsonOutput.toString(), isNot(contains(root.path)));
   });
+
+  test(
+    'semantic Flutter quality codes stay advisory in syntax-only audit',
+    () async {
+      final workspace = _workspaceRoot();
+      final result = await DartitectUiAuditor(
+        Directory('${workspace.path}/tool/analyzer_plugin_fixture'),
+      ).audit();
+      const semanticCodes = <String>{
+        'DT3120',
+        'DT3121',
+        'DT3122',
+        'DT3123',
+        'DT3124',
+        'DT3125',
+        'DT3126',
+        'DT3127',
+        'DT3128',
+        'DT3130',
+        'DT3131',
+        'DT3132',
+        'DT3140',
+        'DT3141',
+        'DT3142',
+        'DT3143',
+        'DT3144',
+        'DT3145',
+      };
+
+      expect(
+        result.findings.map((finding) => finding.code).toSet(),
+        containsAll(semanticCodes),
+      );
+      expect(
+        result.violations.where(
+          (violation) => semanticCodes.contains(violation.code),
+        ),
+        isEmpty,
+      );
+    },
+  );
+}
+
+Directory _workspaceRoot() {
+  var directory = Directory.current.absolute;
+  while (directory.parent.path != directory.path) {
+    if (File('${directory.path}/tool/boundary_parity_corpus.json')
+        .existsSync()) {
+      return directory;
+    }
+    directory = directory.parent;
+  }
+  throw StateError('Could not locate the Dartitect workspace root.');
 }
 
 Future<Directory> _fixture() async {

@@ -38,10 +38,18 @@ The automated workload covers:
 - native ObjectBox close/reopen of the same directory and durable outbox
   recovery.
 
+The test-only performance workload records first-frame/useful-state/search,
+frame timing percentiles, rebuilds, queue/cancellation/disposal counts, the 10k
+virtualization census, and residual resources. Structural invariants block;
+timing and memory remain informative until an equivalent baseline exists.
+
 Run the normal deterministic suite:
 
 ```text
 flutter test examples/reference_app
+flutter test examples/reference_app/test/flutter_quality_performance_test.dart
+flutter test -d linux \
+  examples/reference_app/integration_test/flutter_quality_journey_test.dart
 ```
 
 Run the verified native ObjectBox gate on the current host:
@@ -57,11 +65,14 @@ the platform loader path.
 
 ## Ownership and recovery
 
-`AppRuntime` owns one `OfflineFirstTaskSession`. The session owns the paged
+`AppRuntime` opens one `LocalFirstTaskRepository`. The generated feature graph
+owns its teardown after the ViewModel. The repository owns the paged
 resource, mutation lanes, local observation, bounded in-memory journal, Dio
-client, background executor, and store. Disposal proceeds in that order. The
-widgets borrow the session and own only route callbacks, controllers, and
-lifecycle observation.
+client, background executor, and exactly one selected Memory, Drift, or
+ObjectBox store. There is no dual-write or implicit migration between engines.
+Disposal proceeds in that order. `TasksViewModel` owns commands, effects,
+selection, and query state; widgets borrow it and retain only route callbacks,
+controllers, navigation, and lifecycle observation.
 
 Expected failures are typed and durable. Offline remains pending; reject and
 conflict remain visible for consumer policy; uncertain delivery requires an

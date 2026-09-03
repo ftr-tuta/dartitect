@@ -2,7 +2,7 @@
 
 This is the canonical task-oriented entrypoint for Dartitect documentation.
 Public guidance is maintained in English. The workspace is the untagged
-`1.1.0-rc.2` candidate cohort, while the latest public distribution remains
+`1.1.0-rc.3` candidate cohort, while the latest public distribution remains
 the stable GitHub-only `1.0.0` / `v1.0.0` release. Candidate source guidance
 does not authorize a tag, GitHub Release, publication, or stable promotion.
 
@@ -34,8 +34,10 @@ does not authorize a tag, GitHub Release, publication, or stable promotion.
   commands and ViewModels are insufficient.
 - Keep authenticated work generation-scoped with
   [credential generations](guides/credential-generations.md).
-- Apply the [business-neutral UI quality](guides/ui-quality.md) boundary to
-  consumer-owned Material or Cupertino presentation.
+- Apply the [executable business-neutral Flutter quality](guides/ui-quality.md)
+  contract to consumer-owned Material or Cupertino presentation. ADR 0050
+  records its preview, runtime, static, test, performance, and Actions evidence
+  boundaries.
 
 ## Add persistence, transport, and optional capabilities
 
@@ -97,6 +99,9 @@ does not authorize a tag, GitHub Release, publication, or stable promotion.
   evidence only. It is not a reusable release runbook or publication authority.
 - [1.1.0-rc.2 readiness](release/1.1.0-rc.2-readiness.adoc) records the
   incremental execution candidate and its still-pending hosted evidence. It is
+  not publication authority.
+- [1.1.0-rc.3 readiness](release/1.1.0-rc.3-readiness.adoc) records the
+  executable Flutter quality candidate and its exact-SHA hosted evidence. It is
   not publication authority.
 - [Research](research/) and [work records](work/) preserve the evidence,
   assumptions, and status that applied when each record was written. They may

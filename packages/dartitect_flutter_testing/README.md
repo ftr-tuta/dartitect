@@ -2,14 +2,15 @@
 
 ## Purpose
 
-Dev-only Flutter UI scenario, accessibility, and cleanup harnesses for
+Dev-only Flutter preview, UI scenario, accessibility, and cleanup harnesses for
 Dartitect consumers. The package owns no themes, locales, text, navigation,
 screens, controls, or goldens.
 
 ## When to use
 
 Add this package as a development dependency when a Flutter consumer needs a
-small, repeatable responsive and accessibility matrix around its real app root.
+small, repeatable device preview or responsive/accessibility matrix around its
+real app root.
 Use the exercise callback for product-specific focus, keyboard, navigation,
 action, and state assertions.
 
@@ -40,6 +41,13 @@ The standard rows cover `360x640`, `430x932`, `768x1024`, `1024x768`, and
 `1440x900`, normal and 200% text, LTR and RTL, light and dark brightness, high
 contrast, and reduced motion without constructing every combination.
 
+`DartitectPreviewMatrix` is a constant `MultiPreview` annotation with only four
+device rows: compact 360x640 light at 100%, compact 430x932 dark at 200%, medium
+768x1024 light at 100%, and expanded 1440x900 light at 100%. Accessibility,
+directionality, contrast, motion, semantics, focus, and keyboard remain only in
+`DartitectUiMatrix`. The package's synthetic discovery fixture lives under the
+private `lib/src/dev` namespace and is not exported by the public entrypoint.
+
 ## Minimal workflow
 
 ```dart
@@ -59,6 +67,8 @@ testDartitectUiMatrix(
 
 ## Public API tour
 
+- `DartitectPreviewMatrix` supplies the four ordered `Dartitect` widget
+  previews without runtime setup or a public performance API.
 - `DartitectUiScenario` records one paired surface and classifies it with the
   consumer-selected `DartitectLayoutBreakpoints`.
 - `DartitectUiMatrix` validates a non-empty set of unique, finite scenarios and
@@ -91,11 +101,16 @@ their existing commands, forms, queries, resources, and effects.
 - No claim that the five paired rows replace consumer-specific device,
   interaction, route, input-method, or native integration coverage.
 - No hidden state preservation across responsive layout branches.
+- No store, adapter, plugin, native I/O, FFI, network, global initialization,
+  or application lifecycle in preview functions.
 
 ## Testing
 
 Run `flutter test packages/dartitect_flutter_testing` for the VM boundary and
 `flutter test --platform chrome` inside the package for the web engine boundary.
+Run `flutter widget-preview start --no-launch-previewer` against a temporary
+package copy to prove preview discovery and compilation without changing the
+source tree.
 Consumer suites should add explicit focus, keyboard, action, navigation, and
 localized semantics assertions, plus only the shared-layout goldens they need.
 

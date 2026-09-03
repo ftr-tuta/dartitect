@@ -3,7 +3,7 @@
 ## Scope
 
 The distributed `dartitect_mcp 1.0.0` is local and STDIO-only. The source
-workspace is the untagged `1.1.0-rc.2` candidate and retains the same transport
+workspace is the untagged `1.1.0-rc.3` candidate and retains the same transport
 boundary. It uses
 `dart_mcp 0.5.2`. Streamable HTTP, OAuth/authorization, remote ChatGPT plugins,
 MCP UI, arbitrary shell/files, scaffolding `create`, and access to running
@@ -32,6 +32,21 @@ Stdout is reserved for newline-delimited JSON-RPC. Internal diagnostics use
 stderr. The process accepts repeated `--root` arguments; all must already exist.
 
 ## Codex
+
+For Flutter SDK and DevTools integration, install Flutter's official plugin as
+an explicit user action and begin a new session:
+
+```console
+codex plugin add dart-flutter@dart-flutter
+dartitect codex doctor --flutter
+dartitect codex setup --flutter --dry-run
+```
+
+The plugin supplies its own `dart mcp-server` and six official Flutter skills.
+Dartitect discovers those capabilities at runtime and never invents a missing
+tool. Setup is offline and synchronizes only catalog-managed Dartitect skills;
+it never installs the plugin, calls `npx`, modifies global Codex configuration,
+or creates `.vscode/mcp.json`.
 
 ```console
 codex mcp add dartitect -- dart run dartitect_mcp:dartitect_mcp --root .

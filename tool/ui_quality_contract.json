@@ -1,48 +1,176 @@
 {
-  "schemaVersion": 1,
-  "artifact": "ui-quality-v1",
-  "goal": "V1S-18",
-  "releaseVersion": "1.0.0",
-  "topology": {"packages": 25, "publicEntrypoints": 33},
+  "schemaVersion": 2,
+  "artifact": "ui-quality-v2",
+  "goal": "RC3-FLUTTER-QUALITY",
+  "releaseVersion": "1.1.0-rc.3",
+  "stableVersion": "1.0.0",
+  "topology": {"packages": 25, "publicEntrypoints": 35},
+  "mode": "native-strict",
   "entrypoints": [
     "package:dartitect_flutter/dartitect_flutter_ui.dart",
     "package:dartitect_flutter_testing/dartitect_flutter_testing.dart"
   ],
-  "builders": [
-    "DartitectFormSnapshotBuilder",
-    "DartitectQueryStateBuilder",
-    "ResourcePresentationBuilder"
+  "publicAdditions": ["DartitectPreviewMatrix"],
+  "officialPlugin": {
+    "selector": "dart-flutter@dart-flutter",
+    "mcpCommand": "dart mcp-server",
+    "skills": [
+      "flutter-add-integration-test",
+      "flutter-add-widget-preview",
+      "flutter-add-widget-test",
+      "flutter-apply-architecture-best-practices",
+      "flutter-build-responsive-layout",
+      "flutter-fix-layout-issues"
+    ]
+  },
+  "requiredEvidence": [
+    "analyze",
+    "audit",
+    "preview",
+    "runtimeInspection",
+    "tests",
+    "platforms"
   ],
-  "matrix": [
-    {"size": "360x640", "textScale": 1.0, "direction": "ltr", "brightness": "light", "highContrast": false, "reducedMotion": false},
-    {"size": "430x932", "textScale": 2.0, "direction": "rtl", "brightness": "dark", "highContrast": true, "reducedMotion": true},
-    {"size": "768x1024", "textScale": 1.0, "direction": "rtl", "brightness": "light", "highContrast": true, "reducedMotion": false},
-    {"size": "1024x768", "textScale": 2.0, "direction": "ltr", "brightness": "dark", "highContrast": false, "reducedMotion": true},
-    {"size": "1440x900", "textScale": 1.0, "direction": "ltr", "brightness": "light", "highContrast": true, "reducedMotion": true}
-  ],
+  "techniques": {
+    "constraintsResponsive": {
+      "skills": [
+        "flutter-build-responsive-layout",
+        "flutter-fix-layout-issues",
+        "dartitect-flutter-quality"
+      ],
+      "diagnostics": ["DT3101", "DT3102", "DT3140", "DT3141", "DT3142", "DT3143", "DT3144", "DT3145"],
+      "preview": ["DartitectPreviewMatrix", "DartitectUiMatrix"],
+      "runtime": ["constraints", "overflow", "window-resize", "focus", "scroll"],
+      "tests": ["widget-matrix", "resize-journey", "10k-items"],
+      "actions": ["linux"],
+      "canaries": ["paved_road_canary", "reference_app"],
+      "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
+    },
+    "devtoolsRuntime": {
+      "skills": ["dartitect-flutter-quality"],
+      "diagnostics": ["DT3126", "DT3127", "DT3128"],
+      "preview": ["preview-runtime-isolation"],
+      "runtime": ["flutter-mcp", "widget-tree", "runtime-errors", "performance-overlay"],
+      "tests": ["mcp-discovery", "runtime-inspection"],
+      "actions": ["linux"],
+      "canaries": ["paved_road_canary", "reference_app"],
+      "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
+    },
+    "reusableWidgetsPreviews": {
+      "skills": ["flutter-add-widget-preview", "dartitect-flutter-quality"],
+      "diagnostics": ["DT3122", "DT3130", "DT3131", "DT3132"],
+      "preview": ["discovery", "compile", "immutable-fixtures", "pure-callbacks"],
+      "runtime": ["previewer", "preview-safe-boundaries"],
+      "tests": ["preview-smoke", "callback-purity", "exhaustive-states"],
+      "actions": ["linux"],
+      "canaries": ["paved_road_canary", "thin_consumer_canary", "reference_app"],
+      "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
+    },
+    "mvvm": {
+      "skills": ["flutter-apply-architecture-best-practices", "dartitect-flutter-quality"],
+      "diagnostics": ["DT3120", "DT3121", "DT3122", "DT3123", "DT3124", "DT3125", "DT3126", "DT3127", "DT3128"],
+      "preview": ["view-data", "pure-callbacks"],
+      "runtime": ["route-lifecycle", "commands", "effects", "restart-latest"],
+      "tests": ["view-model", "generation-cancellation", "mounted-effects"],
+      "actions": ["linux", "windows", "macos"],
+      "canaries": ["paved_road_canary", "reference_app"],
+      "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
+    },
+    "repositories": {
+      "skills": [
+        "flutter-apply-architecture-best-practices",
+        "flutter-add-integration-test",
+        "dartitect-flutter-quality"
+      ],
+      "diagnostics": ["DT3120", "DT3121", "DT3123"],
+      "preview": ["synthetic-repository-free-fixtures"],
+      "runtime": ["local-first", "outbox", "offline-reconnect", "single-store"],
+      "tests": ["memory-contract", "drift-contract", "objectbox-contract"],
+      "actions": ["linux", "windows", "macos", "android-emulator", "drift-web"],
+      "canaries": ["reference_app"],
+      "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
+    },
+    "multiplatform": {
+      "skills": ["flutter-add-integration-test", "flutter-build-responsive-layout", "dartitect-flutter-quality"],
+      "diagnostics": ["DT3002", "DT3144", "DT3145"],
+      "preview": ["compact", "medium", "expanded"],
+      "runtime": ["keyboard", "mouse", "touch", "adaptive-capabilities"],
+      "tests": ["chrome", "hosted-builds", "native-capability-projection"],
+      "actions": ["linux", "windows", "macos", "android-emulator", "drift-web"],
+      "canaries": ["paved_road_canary", "native_capabilities", "reference_app"],
+      "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
+    },
+    "tests": {
+      "skills": [
+        "flutter-add-integration-test",
+        "flutter-add-widget-test",
+        "flutter-add-widget-preview",
+        "dartitect-flutter-quality"
+      ],
+      "diagnostics": ["DT3130", "DT3131", "DT3132", "DT3140", "DT3141"],
+      "preview": ["compile-smoke", "no-network", "no-plugin"],
+      "runtime": ["framework-errors", "late-publication", "residual-resources"],
+      "tests": ["unit", "widget", "integration", "structural-performance"],
+      "actions": ["linux", "windows", "macos", "android-emulator", "drift-web", "clean-clone", "git-consumption", "osv"],
+      "canaries": ["paved_road_canary", "thin_consumer_canary", "reference_app"],
+      "platforms": ["android", "ios", "linux", "macos", "windows", "web"]
+    }
+  },
   "diagnosticParity": {
     "corpus": "tool/boundary_parity_corpus.json",
     "checker": "tool/check_boundary_parity.dart",
-    "errors": ["DT3001", "DT3002"],
-    "warnings": ["DT3101", "DT3102", "DT3103", "DT3104", "DT3105", "DT3106"]
-  },
-  "skill": ".agents/skills/dartitect-ui/SKILL.md",
-  "scaffold": "packages/dartitect_cli/lib/src/cli/dartitect_cli_runner.dart",
-  "canary": {
-    "root": "examples/paved_road_canary",
-    "controls": ["MaterialApp", "Scaffold", "FilledButton", "TextButton", "NavigationBar", "NavigationRail", "CircularProgressIndicator.adaptive", "Switch.adaptive", "CupertinoButton"],
-    "states": ["loading", "stale", "empty", "expected failure", "crash"],
-    "tests": [
-      "test/ui_quality_matrix_test.dart",
-      "test/ui_quality_state_gallery_test.dart",
-      "test/shared_layout_golden_test.dart"
+    "objectiveErrors": ["DT3001", "DT3002"],
+    "semanticErrors": [
+      "DT3120", "DT3121", "DT3122", "DT3123", "DT3124", "DT3125",
+      "DT3126", "DT3127", "DT3128", "DT3130", "DT3131", "DT3132",
+      "DT3140", "DT3141", "DT3142", "DT3143", "DT3144", "DT3145"
     ],
-    "goldens": [
-      "test/goldens/shared_compact.png",
-      "test/goldens/shared_medium.png",
-      "test/goldens/shared_expanded.png"
-    ],
-    "platformBuilds": ["android", "ios", "web", "linux", "windows", "macos"]
+    "syntacticWarnings": [
+      "DT3101", "DT3102", "DT3103", "DT3104", "DT3105", "DT3106",
+      "DT3120", "DT3121", "DT3122", "DT3123", "DT3124", "DT3125",
+      "DT3126", "DT3127", "DT3128", "DT3130", "DT3131", "DT3132",
+      "DT3140", "DT3141", "DT3142", "DT3143", "DT3144", "DT3145"
+    ]
   },
-  "privacy": {"uploadsScreenshots": false, "uploadsSemantics": false, "uploadsScreenContent": false}
+  "previewMatrices": {
+    "device": [
+      {"name": "compact", "size": "360x640", "brightness": "light", "textScale": 1.0},
+      {"name": "compact-200-percent", "size": "430x932", "brightness": "dark", "textScale": 2.0},
+      {"name": "medium", "size": "768x1024", "brightness": "light", "textScale": 1.0},
+      {"name": "expanded", "size": "1440x900", "brightness": "light", "textScale": 1.0}
+    ],
+    "accessibility": "DartitectUiMatrix"
+  },
+  "performance": {
+    "blocking": [
+      "zero-overflow",
+      "zero-framework-error",
+      "zero-late-publication",
+      "zero-residual-resource",
+      "rows-materialized-under-100-of-10000",
+      "state-preserved-on-resize",
+      "no-heavy-ui-work",
+      "no-preview-network-or-plugin",
+      "images-constrained"
+    ],
+    "informative": ["frame-time", "memory"]
+  },
+  "githubActionsEvidence": {
+    "workflow": ".github/workflows/ci.yaml",
+    "requiredCheck": "CI / Required",
+    "readinessArtifact": "actions-readiness-v1",
+    "coordinatedJobs": [
+      "linux", "windows", "macos", "android-emulator", "drift-web",
+      "clean-clone", "git-consumption", "osv"
+    ],
+    "linuxMatrixCells": ["Flutter 3.47.1 (floor)", "Flutter stable"],
+    "coordinatedExecutions": 9,
+    "hostedRunnersOnly": true
+  },
+  "privacy": {
+    "uploadsTranscripts": false,
+    "uploadsScreenshots": false,
+    "uploadsSemantics": false,
+    "uploadsScreenContent": false
+  }
 }

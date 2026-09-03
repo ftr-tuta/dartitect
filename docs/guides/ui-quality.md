@@ -165,7 +165,121 @@ makes warnings fail the command. CLI and analyzer use the same versioned parity
 corpus. Reviewed suppressions use the existing narrow code/path, owner, reason,
 and expiry contract.
 
+Resolved analyzer errors add three executable groups: `DT3120`–`DT3128` for
+presentation/MVVM and lifecycle ownership, `DT3130`–`DT3132` for preview purity,
+and `DT3140`–`DT3145` for lazy and bounded rendering. The offline CLI reserves
+the identical codes but emits only warnings when syntax cannot prove library,
+type, or inheritance identity. The parity corpus includes positive and negative
+cases, aliases, indirect exports, and safe homonyms.
+
 Keep goldens only for shared compact, medium, and expanded layouts on a fixed
 runner, font, and renderer. Semantics and behavior are the primary gate. No
 Dartitect test, audit, or golden uploads screenshots, semantics, or screen
 content to telemetry.
+
+## Executable Flutter quality contract
+
+The `ui-quality-v2` artifact turns seven practices into required evidence. A
+technique is evidenced only when its applicable static, preview, runtime, test,
+Actions, canary, and platform observations are present:
+
+| Technique | Blocking evidence |
+| --- | --- |
+| Constraint-driven responsiveness | constraint inspection, resize state preservation, bounded lazy rows, focus and scroll journeys |
+| DevTools runtime work | real Flutter MCP discovery, widget/runtime inspection, and explicit missing-tool evidence |
+| Reusable widgets and previews | preview discovery and compilation with immutable synthetic fixtures and pure callbacks |
+| MVVM | ViewModel-owned state, commands and effects; route-owned Flutter lifecycle; generation-fenced search |
+| Repositories | provider-neutral contract, exactly one composed store, local-first outbox behavior, offline/reconnect tests |
+| Multi-platform behavior | keyboard, mouse, touch, adaptive capability projection, Chrome, and hosted platform builds |
+| Tests | unit, widget, preview, integration, structural performance, and zero-residual-resource evidence |
+
+Run the two local inspectors without writes:
+
+```console
+dartitect inspect flutter-quality
+dartitect codex doctor --flutter
+```
+
+`fail` and `notEvidenced` are blocking. `warning` remains non-blocking unless
+the enclosing strict gate promotes warnings. `notApplicable` is excluded from
+aggregation and becomes the overall result only when no technique applies.
+
+## Official Flutter tooling for Codex
+
+Flutter integration comes from the official `dart-flutter@dart-flutter`
+plugin. Installation remains an explicit user action:
+
+```console
+codex plugin add dart-flutter@dart-flutter
+```
+
+Start a new Codex session after installation. Dartitect discovers the plugin's
+six Flutter skills by their names and discovers MCP tools at runtime through
+the plugin's `dart mcp-server`. It never invents an unavailable tool. The setup
+command synchronizes only the Dartitect catalog into the workspace:
+
+```console
+dartitect codex setup --flutter --dry-run
+dartitect codex setup --flutter --apply
+```
+
+Setup is offline and never runs the plugin command, `npx`, dependency
+installation, or a global configuration change. `.vscode/mcp.json`, when
+present, is reported only as external editor configuration; it is not Codex
+configuration and is never created or edited.
+
+## Preview matrix and isolation
+
+Annotate dev-only preview functions with `@DartitectPreviewMatrix()`. It emits
+four ordered device scenarios: compact 360x640 light at 100%, compact 430x932
+dark at 200%, medium 768x1024 light at 100%, and expanded 1440x900 light at
+100%. RTL, contrast, reduced motion, semantics, focus, and keyboard checks stay
+exclusively in `DartitectUiMatrix`; the preview matrix does not duplicate them.
+
+A preview may construct only immutable synthetic view data and pure callbacks.
+It cannot initialize application lifecycle, stores, adapters, plugins, native
+I/O, FFI, network clients, or global state. Compile previews from a temporary
+copy with `flutter widget-preview start --no-launch-previewer` so discovery
+evidence does not modify the real tree.
+
+## Runtime, performance, and GitHub Actions evidence
+
+The analyzer proves Flutter and Dartitect library/type identity before emitting
+an error. The syntax-only CLI scanner uses at most warning severity when
+identity cannot be established; `--strict` preserves the existing promotion
+behavior. Runtime evidence records real MCP availability, constraints, Flutter
+framework errors, late publication, and cleanup without storing screen content.
+
+Structural invariants block the gate: zero overflow, framework error, late
+publication, or residual subscriptions/watchers/timers/workers; fewer than 100
+materialized rows before scrolling a 10,000-item fixture; state preserved on
+resize; no heavy/provider work in presentation; no preview network/plugin
+access; and constrained images. Frame build/raster percentiles and memory are
+informative until runner, Flutter version, build mode, fixture, and observation
+window match a recorded baseline.
+
+The hosted `CI` graph supplies deterministic evidence through eight coordinated
+jobs: Linux, Windows, macOS, Android emulator, Drift Web, clean-clone audit, Git
+consumption, and OSV. Linux runs the Flutter 3.47.1 floor and current stable
+cells, so the aggregate covers nine executions. Every `ui-quality-v2` technique
+maps to one or more of these jobs.
+
+Repository validation runs the executable contracts directly:
+
+```console
+dart run tool/check_ui_quality.dart
+dart run tool/check_flutter_quality_performance.dart
+dart run tool/check_flutter_previews.dart
+```
+
+The preview check archives committed `HEAD` into a temporary directory, resolves
+from the existing package cache, and runs
+`flutter widget-preview start --no-launch-previewer` there. It requires all four
+reviewed preview functions to appear in the compiled scaffold and deletes the
+temporary evidence afterward.
+
+`CI / Required` consumes all eight job conclusions and fails closed when any
+job is failed, cancelled, or skipped. For a push to `main`, it additionally
+creates and validates `actions-readiness-v1`, binding the exact SHA, tree, run,
+attempt, job conclusions, native manifests, and repository-artifact digests.
+The aggregate remains the only status configured in branch protection.

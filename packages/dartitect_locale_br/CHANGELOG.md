@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Join the `1.1.0-rc.3` multiplatform quality cohort in lockstep.
 - Version-only lockstep candidate; no public behavior change.
 
 ## 1.0.0

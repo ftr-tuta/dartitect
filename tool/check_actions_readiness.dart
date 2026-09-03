@@ -86,6 +86,7 @@ void _validatePolicy(
     errors.add('The readiness policy native matrix is not the nominal five.');
   }
   if (!_same(_stringsOrNull(policy['repositoryArtifacts']), const <String>[
+    '.github/workflows/ci.yaml',
     'docs/release/sbom.spdx.json',
     'docs/release/dependency-licenses.json',
     'tool/api_surface.snapshot.json',
@@ -97,6 +98,8 @@ void _validatePolicy(
     'tool/build_release_assets.dart',
     'tool/github_ruleset_policy.json',
     'tool/github_release_ruleset_policy.json',
+    'tool/check_ci_security_policy.dart',
+    'tool/flutter_quality_performance_contract.json',
     'tool/ui_quality_contract.json',
   ])) {
     errors.add('The readiness repository artifact set is not exact.');

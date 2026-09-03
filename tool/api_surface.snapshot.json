@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "sdkVersion": "1.1.0-rc.2",
+  "sdkVersion": "1.1.0-rc.3",
   "entrypoints": {
     "packages/dartitect/lib/dartitect.dart": {
       "defaultAudience": "application-facing",
@@ -70197,6 +70197,51 @@
                 "final"
               ],
               "type": "bool"
+            }
+          ]
+        },
+        {
+          "name": "DartitectPreviewMatrix",
+          "kind": "class",
+          "audience": "tooling-test",
+          "declaration": "final class DartitectPreviewMatrix extends MultiPreview",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "MultiPreview",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "tooling-test",
+              "declaration": "DartitectPreviewMatrix()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DartitectPreviewMatrix",
+              "parameters": []
+            },
+            {
+              "name": "previews",
+              "kind": "field",
+              "audience": "tooling-test",
+              "declaration": "List<Preview> previews",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [
+                "final"
+              ],
+              "type": "List<Preview>"
             }
           ]
         },

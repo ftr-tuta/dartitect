@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Validate the `1.1.0-rc.3` common local-first repository contract against one
+  selected ObjectBox store without dual-write or automatic engine migration.
 - Version-only lockstep candidate; ObjectBox telemetry remains payload-free with no automatic path, ID, or query capture.
 
 ## 1.0.0

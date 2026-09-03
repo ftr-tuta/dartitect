@@ -3,4 +3,5 @@ targets:
     builders:
       drift_dev:
         generate_for:
+          - lib/features/tasks/infrastructure/drift_task_database.dart
           - test/infrastructure/drift_audit_database.dart

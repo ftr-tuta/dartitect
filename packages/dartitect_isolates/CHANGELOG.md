@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Join the `1.1.0-rc.3` bounded lifecycle-evidence cohort in lockstep.
 - Add fixed-size `IsolateWorkerPool` execution with bounded in-flight and FIFO
   queue admission, ordered or completion-order stream mapping, and drain-first
   disposal.

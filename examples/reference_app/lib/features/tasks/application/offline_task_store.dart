@@ -50,6 +50,9 @@ abstract interface class OfflineTaskStore
   /// Whether this implementation uses a real generated ObjectBox Store.
   bool get isNativeObjectBox;
 
+  /// Stable provider name used only for payload-free diagnostics.
+  String get engineName;
+
   /// Lifecycle census that remains readable after disposal.
   TaskStoreDiagnostics get diagnostics;
 

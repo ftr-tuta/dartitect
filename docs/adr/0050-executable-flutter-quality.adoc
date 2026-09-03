@@ -1,0 +1,58 @@
+= ADR 0050: Executable Flutter quality evidence
+:status: accepted
+:date: 2026-09-02
+
+== Context
+
+Responsive layout, runtime inspection, reusable widgets, MVVM, repositories,
+multi-platform behavior, and tests can be described accurately while still
+remaining unverified in a real Flutter application. Static analysis alone
+cannot prove runtime constraints, preview isolation, interaction behavior,
+resource cleanup, or whether available Flutter tooling was actually used.
+Timing measurements are also misleading when runners, Flutter versions, build
+modes, fixtures, and observation windows differ.
+
+== Decision
+
+Define `ui-quality-v2` as the executable quality contract for the untagged
+`1.1.0-rc.3` workspace candidate. Each of the seven techniques declares the
+skills, diagnostics, preview and runtime observations, tests, GitHub Actions
+jobs, canaries, and six target platforms that provide its evidence. Native
+Strict remains the architecture mode. The only public API addition is
+`DartitectPreviewMatrix` in the existing Flutter testing entrypoint.
+
+Use Flutter's official `dart-flutter@dart-flutter` Codex plugin and the MCP
+server exposed by `dart mcp-server`. Plugin installation is an explicit manual
+user action. Dartitect may diagnose its presence and synchronize only its own
+catalog-managed skills; it does not create editor MCP configuration, install
+plugins, invoke package runners, add dependencies, access the network, or alter
+global Codex configuration.
+
+Preview closures use immutable synthetic fixtures and pure callbacks. They may
+not reach stores, adapters, plugins, `dart:io`, `dart:ffi`, network clients,
+application lifecycle, or global initialization. Semantic analyzer diagnostics
+use library, type, and inheritance identity. The syntax-only CLI scanner reports
+an unproved identity as a warning, which the existing strict gate may promote.
+
+Block only structural performance invariants: no overflow, framework error,
+late publication, residual resource, excessive eager row materialization,
+state loss on resize, heavy/provider work in presentation, preview I/O, or
+unconstrained images. Frame timing and memory remain informative until the
+runner, Flutter version, build mode, fixture, and measurement window have an
+equivalent baseline.
+
+Keep `CI / Required` as the only protected aggregate status. It builds the
+GitHub merge candidate and depends on eight coordinated jobs: Linux, Windows,
+macOS, Android emulator, Drift Web, clean-clone audit, Git consumption, and
+OSV. The two-cell Linux matrix makes nine deterministic hosted executions. On
+`main`, the same aggregate records `actions-readiness-v1` with exact job,
+native-manifest, repository-artifact, SHA, tree, run, and attempt evidence.
+
+== Consequences
+
+Flutter quality claims become reproducible through API tests, CLI output,
+analyzer parity, preview compilation, canary journeys, structural performance
+evidence and platform builds across the coordinated Actions graph. Missing MCP
+remains explicit missing evidence rather than an invented tool. The latest distributed
+stable cohort stays `1.0.0`; this candidate does not authorize a tag, GitHub
+Release, package publication, or stable promotion.

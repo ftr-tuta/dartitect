@@ -153,6 +153,12 @@
       "packages/dartitect_flutter/lib/dartitect_flutter_ui.dart",
       "packages/dartitect_flutter_testing/lib/dartitect_flutter_testing.dart"
     ],
+    "dartitect-flutter-quality": [
+      "packages/dartitect_flutter/lib/dartitect_flutter_ui.dart",
+      "packages/dartitect_flutter_testing/lib/dartitect_flutter_testing.dart",
+      "packages/dartitect_cli/lib/dartitect_cli.dart",
+      "packages/dartitect_lints/lib/main.dart"
+    ],
     "dartitect-mcp": [
       "packages/dartitect_mcp/lib/dartitect_mcp.dart"
     ],
@@ -219,6 +225,12 @@
       "references/presentation.md",
       "references/verification.md"
     ],
+    "dartitect-flutter-quality": [
+      "references/architecture-and-previews.md",
+      "references/performance.md",
+      "references/runtime-devtools-and-mcp.md",
+      "references/tests-and-evidence.md"
+    ],
     "dartitect-testing": [
       "references/platform-and-background.md",
       "references/provider-fixtures.md",
@@ -262,6 +274,7 @@
     "localMcp": ["dartitect-mcp"],
     "immutableModels": ["dartitect-modeling"],
     "flutterPresentation": ["dartitect-ui"],
+    "flutterQuality": ["dartitect-flutter-quality"],
     "dartRuntimeSemantics": ["dartitect-dart"],
     "incrementalOperations": ["dartitect-incremental"],
     "runtimePerformance": ["dartitect-performance"]

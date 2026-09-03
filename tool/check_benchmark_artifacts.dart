@@ -2,12 +2,32 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-void main() {
+void main(List<String> arguments) {
   final root = File.fromUri(Platform.script).parent.parent.absolute;
   final workspace = Directory('${root.path}/tool/benchmark_workspace');
   final rawFile = File('${workspace.path}/artifacts/raw.json');
   final environmentFile = File('${workspace.path}/artifacts/environment.json');
   final reportFile = File('${workspace.path}/artifacts/report.adoc');
+  if (arguments.length == 1 && arguments.single == '--update-lock-hash') {
+    final environment = _object(jsonDecode(environmentFile.readAsStringSync()));
+    environment['comparatorLockFnv1a'] = _fnv1a(
+      File('${workspace.path}/pubspec.lock').readAsStringSync(),
+    );
+    environmentFile.writeAsStringSync(
+      '${const JsonEncoder.withIndent('  ').convert(environment)}\n',
+      flush: true,
+    );
+    stdout.writeln('Updated benchmark comparator lockfile metadata.');
+    return;
+  }
+  if (arguments.isNotEmpty) {
+    stderr.writeln(
+      'Usage: dart run tool/check_benchmark_artifacts.dart '
+      '[--update-lock-hash]',
+    );
+    exitCode = 64;
+    return;
+  }
   final errors = <String>[];
   for (final file in <File>[rawFile, environmentFile, reportFile]) {
     if (!file.existsSync()) errors.add('Missing ${_relative(root, file)}.');

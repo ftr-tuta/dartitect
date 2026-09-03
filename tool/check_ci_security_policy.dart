@@ -80,7 +80,6 @@ void _auditWorkflows(Directory root, List<String> errors) {
         ..sort((left, right) => left.path.compareTo(right.path));
   const expectedWorkflowNames = <String>{
     'ci.yaml',
-    'flutter_quality_evals.yml',
     'release.yaml',
     'security.yaml',
   };
@@ -166,6 +165,10 @@ void _auditWorkflows(Directory root, List<String> errors) {
     'DARTITECT_CI_RUNNER_ID: ubuntu-24.04-flutter-3.47.1',
     r'change-tax-${{ github.run_attempt }}',
     'name: CI / Required',
+    'dart run tool/check_flutter_previews.dart',
+    'integration_test/flutter_quality_journey_test.dart',
+    'libstdc++-12-dev xvfb',
+    'dart run tool/check_flutter_quality_performance.dart',
     'android-media-current-emulator',
     'Drift Web / Chrome 2.34.3',
     'dart run tool/run_drift_web_fixture.dart',
@@ -181,6 +184,23 @@ void _auditWorkflows(Directory root, List<String> errors) {
   ]) {
     if (!ci.contains(required)) {
       errors.add('CI authorship audit is missing required policy: $required');
+    }
+  }
+  final headlessFlutterJourneys = RegExp(
+    r'run:\s+xvfb-run --auto-servernum flutter test -d linux '
+    r'integration_test/flutter_quality_journey_test\.dart',
+  ).allMatches(ci).length;
+  if (headlessFlutterJourneys != 2) {
+    errors.add(
+      'CI must run exactly two Linux Flutter quality journeys under Xvfb.',
+    );
+  }
+  for (final cell in const <String>[
+    'label: Flutter 3.47.1 (floor)',
+    'label: Flutter stable',
+  ]) {
+    if (!ci.contains(cell)) {
+      errors.add('CI must retain both coordinated Linux matrix cells.');
     }
   }
   for (final job in const <String>[

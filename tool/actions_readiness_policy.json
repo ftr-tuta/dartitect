@@ -30,6 +30,7 @@
     "ios-current-simulator"
   ],
   "repositoryArtifacts": [
+    ".github/workflows/ci.yaml",
     "docs/release/sbom.spdx.json",
     "docs/release/dependency-licenses.json",
     "tool/api_surface.snapshot.json",
@@ -41,6 +42,8 @@
     "tool/build_release_assets.dart",
     "tool/github_ruleset_policy.json",
     "tool/github_release_ruleset_policy.json",
+    "tool/check_ci_security_policy.dart",
+    "tool/flutter_quality_performance_contract.json",
     "tool/ui_quality_contract.json"
   ],
   "release": {

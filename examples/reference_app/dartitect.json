@@ -8,6 +8,8 @@
     "infrastructure": ["**/infrastructure/**"],
     "presentation": [
       "**/presentation/**",
+      "lib/src/dev/**",
+      "**/lib/src/dev/**",
       "**/*_page.dart",
       "**/*_view.dart",
       "**/*_view_model.dart"
@@ -17,6 +19,7 @@
     "lib/main.dart",
     "lib/app/**",
     "test/**",
+    "integration_test/**",
     "**/composition/**",
     "**/*_composition_root.dart"
   ],
