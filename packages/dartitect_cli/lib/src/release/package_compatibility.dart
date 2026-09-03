@@ -59,13 +59,17 @@ abstract final class DartitectLockCompatibility {
     }
     final supportedVersions = <String>{
       DartitectReleaseManifest.distributedVersion,
-      DartitectReleaseManifest.workspaceVersion,
+      if (DartitectReleaseManifest.workspaceVersion !=
+          DartitectReleaseManifest.distributedVersion)
+        DartitectReleaseManifest.workspaceVersion,
     };
     final mixedSupportedCohorts =
         graphVersions.length > 1 &&
         graphVersions.every(supportedVersions.contains);
     final expectation =
         graphVersions.length == 1 &&
+            DartitectReleaseManifest.workspaceVersion !=
+                DartitectReleaseManifest.distributedVersion &&
             graphVersions.single == DartitectReleaseManifest.workspaceVersion
         ? const _LockExpectation.workspace()
         : const _LockExpectation.distributed();

@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Join the `1.1.0-rc.3` payload-free runtime inspection cohort in lockstep.
+- No changes have been accepted after the stable 1.1.0 release.
+
+## 1.1.0 - 2026-09-03
+
+- Join the `1.1.0` payload-free runtime inspection cohort in lockstep.
 - Add prepared-input adapters that avoid double redaction while keeping legacy adapters defensively sanitized and borrowed-Hub ownership unchanged.
 
 ## 1.0.0

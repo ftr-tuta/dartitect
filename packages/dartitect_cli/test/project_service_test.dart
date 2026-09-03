@@ -376,7 +376,7 @@ dependency_overrides:
       final commands = <String>[];
       final service = DartitectProjectService(root);
 
-      final plan = await service.previewDependencyUpgrade('1.0.0');
+      final plan = await service.previewDependencyUpgrade('1.1.0');
       final receipt = await _withUpgradeCommandRunner((
         project,
         executable,
@@ -387,14 +387,14 @@ dependency_overrides:
       }, () => service.applyChange(plan));
       final result = await pubspec.readAsString();
 
-      expect(plan.targetCohort, '1.0.0');
+      expect(plan.targetCohort, '1.1.0');
       expect(receipt.changed, isTrue);
       expect(result, contains('# direct dependencies stay ordered'));
       expect(result, contains('dartitect: # core'));
       expect(result, contains('path: packages/dartitect'));
       expect(result, contains('path: packages/dartitect_testing'));
       expect(result, contains("tag_pattern: 'v{{version}}'"));
-      expect(result, contains('version: 1.0.0'));
+      expect(result, contains('version: 1.1.0'));
       expect(result, contains('  http: ^1.0.0'));
       expect(result, contains('  meta: ^1.0.0 # external override'));
       expect(result, isNot(contains('path: ../dartitect')));
@@ -423,12 +423,12 @@ dependencies:
 
     final result = DartitectProjectService.renderDependencyUpgradeSource(
       source,
-      '1.0.0',
+      '1.1.0',
     );
 
     expect(result, contains('path: packages/dartitect_flutter'));
     expect(result, contains("tag_pattern: 'v{{version}}'"));
-    expect(result, contains('version: 1.0.0'));
+    expect(result, contains('version: 1.1.0'));
     expect(result, isNot(contains('ref:')));
   });
 
@@ -440,11 +440,11 @@ dependencies:
 
     final first = DartitectProjectService.renderDependencyUpgradeSource(
       source,
-      '1.0.0',
+      '1.1.0',
     );
     final second = DartitectProjectService.renderDependencyUpgradeSource(
       first,
-      '1.0.0',
+      '1.1.0',
     );
 
     expect(first, second);
@@ -461,7 +461,7 @@ dependencies:
   dartitect: 1.0.0-rc.10
 ''');
     final service = DartitectProjectService(root);
-    final plan = await service.previewDependencyUpgrade('1.0.0');
+    final plan = await service.previewDependencyUpgrade('1.1.0');
     await pubspec.writeAsString('''name: fixture
 dependencies:
   dartitect: ^1.0.0-rc.10
@@ -483,7 +483,7 @@ dependencies:
     path: ../sdk
 ''');
     await expectLater(
-      service.previewDependencyUpgrade('1.0.0'),
+      service.previewDependencyUpgrade('1.1.0'),
       throwsA(
         isA<DartitectChangeException>().having(
           (error) => error.code,
@@ -507,7 +507,7 @@ dependencies:
       await pubspec.writeAsString(original);
       await lockfile.writeAsString('original lock\n');
       final service = DartitectProjectService(root);
-      final plan = await service.previewDependencyUpgrade('1.0.0');
+      final plan = await service.previewDependencyUpgrade('1.1.0');
 
       await expectLater(
         _withUpgradeCommandRunner((project, executable, arguments) async {
@@ -548,7 +548,7 @@ dependencies:
     await pubspec.writeAsString(original);
     await lockfile.writeAsString('original lock\n');
     final service = DartitectProjectService(root);
-    final plan = await service.previewDependencyUpgrade('1.0.0');
+    final plan = await service.previewDependencyUpgrade('1.1.0');
     final transaction = Directory('${root.path}/.dartitect');
     await transaction.create();
     await File('${transaction.path}/dependency-upgrade.pubspec.backup')
@@ -570,7 +570,7 @@ dependencies:
     );
 
     expect(receipt.changed, isTrue);
-    expect(await pubspec.readAsString(), contains('version: 1.0.0'));
+    expect(await pubspec.readAsString(), contains('version: 1.1.0'));
     expect(
       File('${transaction.path}/dependency-upgrade.transaction.json')
           .existsSync(),

@@ -224,14 +224,14 @@ final class DartitectFleetCanaryService {
         'tag',
         '--annotate',
         '--force',
-        'v1.0.0',
+        'v1.1.0',
         candidateCommit,
         '--message=Dartitect fleet Git canary',
       ], temporary.path);
       final taggedCommit = await _runRequired('git', <String>[
         '--git-dir=${remote.path}',
         'rev-parse',
-        'refs/tags/v1.0.0^{}',
+        'refs/tags/v1.1.0^{}',
       ], temporary.path);
       if ('${taggedCommit.stdout}'.trim() != candidateCommit) {
         throw StateError('Fleet canary tag did not peel to the candidate.');
@@ -350,7 +350,7 @@ final class DartitectFleetCanaryService {
         '      url: $_repository',
         '      path: packages/$package',
         "      tag_pattern: 'v{{version}}'",
-        '    version: 1.0.0',
+        '    version: 1.1.0',
       ]);
     }
     await pubspecFile.writeAsString(rendered.join(lineEnding), flush: true);

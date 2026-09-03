@@ -9,7 +9,7 @@ dartitect fleet check apps/a apps/b --root . --json
 dartitect fleet inventory apps/a apps/b --root . --json
 dartitect fleet impact --from=before.json --to=after.json --root . --json
 dartitect fleet upgrade apps/a apps/b \
-  --root . --to=1.0.0 --apply --json
+  --root . --to=1.1.0 --apply --json
 ```
 
 Upgrade preview is deterministic across the complete cohort. Apply acquires a

@@ -4,12 +4,13 @@ The stable contract starts at +configVersion: 3+ with
 +profile: native_strict+. Normal configuration loading accepts only version 3.
 
 Versions 1 and 2 are accepted only by the explicit, transactional migration
-commands. Preview first, then apply the reviewed stable migration:
+commands. The registered chain upgrades legacy config and Dartitect Git
+dependencies through the stable 1.1.0 cohort. Preview first, then apply:
 
 [source,console]
 ----
-dartitect fleet upgrade . --to=1.0.0 --dry-run --json
-dartitect fleet upgrade . --to=1.0.0 --apply --json
+dartitect fleet upgrade . --to=1.1.0 --dry-run --json
+dartitect fleet upgrade . --to=1.1.0 --apply --json
 ----
 
 Ordinary parsing rejects versions 1 and 2 without modifying the project.
@@ -17,12 +18,25 @@ Migration preserves supported extension fields, journals every write, validates
 the upgraded project, and rolls back on failure. Generated-once consumer source
 is never a configuration migration target.
 
+== Upgrading the 1.0.0 package cohort to 1.1.0
+
+Change every direct Dartitect Git descriptor to +version: 1.1.0+ and resolve
+the annotated +v1.1.0+ tag. Do not mix versions, tags, branches, local paths,
+or dependency overrides. Commit the resulting lockfile and verify that all
+Dartitect entries resolve from the same repository commit.
+
+No source migration is required for existing 1.0 APIs. Version 1.1.0 adds
+opt-in incremental entrypoints, destination-aware observability, and
++DartitectPreviewMatrix+; existing applications retain their prior behavior
+until they adopt those surfaces. The +fleet upgrade --to=1.1.0+ command above
+combines the dependency and registered config/renderer migrations atomically.
+
 == Opting into destination-aware observability
 
-The untagged `1.1.0-rc.2` workspace includes the optional privacy-aware runtime; it
+The stable `1.1.0` cohort includes the optional privacy-aware runtime; it
 does not introduce config v4 and does not change existing `1.0.0` runtime,
 `Redactor`, Dio metadata, or direct Sentry behavior. Existing source can remain
-unchanged. Candidate evaluation may instead create a new composition with
+unchanged. Applications may instead create a new composition with
 `ObservabilityRuntime.withPrivacy`, select a reviewed profile, replace raw
 destinations with prepared destination registrations, and add explicit
 classification only for values the application intends to observe.
@@ -31,5 +45,4 @@ Keep `balanced` as the generated default. Review local, remote, and named
 overrides independently; a high-risk remote allow requires explicit risk
 acceptance. Replace Dio `LogInterceptor` with metadata-only Dartitect capture,
 and use Sentry `.sanitizedInput` adapters only inside the prepared runtime.
-This is source migration guidance, not permission to consume an unmaterialized
-candidate tag. Public consumers remain on `1.0.0` / `v1.0.0`.
+Public consumers resolve the complete `1.1.0` cohort from `v1.1.0`.

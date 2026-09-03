@@ -1,25 +1,24 @@
 = Dartitect implementation and release status
 :toc:
 
-Snapshot:: 2026-09-02
-Release status:: *RELEASED*
-Release tag:: `v1.0.0`
-Release source:: `747e3f17cc20c0afd13d5702c17ddc5d7330f00c`
+Snapshot:: 2026-09-03
+Release status:: *STABLE 1.1.0 PREPARED FOR PUBLICATION*
+Release tag:: `v1.1.0` (manual immutable transaction pending)
+Release source:: Exact merged `main` SHA recorded after preparation merge
 Distribution:: Immutable GitHub Release; Git dependencies only
-Workspace candidate:: `1.1.0-rc.3` / *IN REVIEW*
-Feature policy:: *RC3 QUALITY GATE*
+Workspace cohort:: `1.1.0` / *STABLE*
+Feature policy:: *STABLE 1.1 QUALITY GATE*
 Toolchain floor:: Dart 3.13 / Flutter 3.47.1 stable
-Stable topology:: 25 packages / 32 public entrypoints
-Workspace candidate topology:: 25 packages / 35 public entrypoints
+Stable topology:: 25 packages / 35 public entrypoints
 
 `tool/goal_gates.json` preserves the implementation roadmap state recorded
 before publication; its `IN_PROGRESS` fields are historical and are not the
 current release status. GitHub Actions supplied the formal technical evidence.
 Local commands remain development feedback and do not authorize a release.
 
-== 1.1.0-rc.3 workspace candidate
+== 1.1.0 stable release cohort
 
-The untagged candidate preserves 25 packages and exposes 35 reviewed public
+The stable cohort preserves 25 packages and exposes 35 reviewed public
 entrypoints. `ui-quality-v2` makes responsive constraints, DevTools runtime
 inspection, reusable preview widgets, MVVM, repositories, multiplatform
 behavior, and tests executable through static diagnostics, preview compilation,
@@ -28,9 +27,9 @@ GitHub Actions jobs.
 
 `CI / Required` remains the only protected aggregate status. It fails closed
 unless all eight coordinated jobs succeed across nine executions, including
-both Linux matrix cells. The latest stable distribution
-remains the immutable `1.0.0` / `v1.0.0`; RC3 creates no tag, Release, registry
-publication, or stable promotion.
+both Linux matrix cells. The GitHub-only distribution is `1.1.0` / `v1.1.0`;
+the manual Release workflow binds its immutable publication to the exact
+successful `main` run and creates no registry publication.
 
 [cols="1,2,5",options="header"]
 |===
@@ -87,6 +86,13 @@ goldens, and hosted Android/iOS/Web/Linux/Windows/macOS build cells.
 | The manual GitHub-only publication verified the successful `main` run and
 readiness hashes, created annotated tag `v1.0.0`, and published the immutable
 GitHub Release. No registry publication occurred.
+
+| V1.1-18
+| READY
+| The stable 1.1.0 contracts, 25-package cohort, 35-entrypoint API inventory,
+`ui-quality-v2`, deterministic hosted evidence, Git-only consumption, and
+version-specific immutable publication runbook are prepared. Publication still
+requires the exact merged `main` CI artifact and explicit operator confirmation.
 |===
 
 == Hosted-only invariant
@@ -104,7 +110,7 @@ simulator availability failure makes `CI / Required` fail.
 * dependency-free core and isolated optional capabilities;
 * fresh graph construction and reverse teardown in every isolate.
 
-Stable `1.0.0` promotion completed with the machine-readable `ui-quality-v1`
-and Actions-readiness evidence. Future documentation and skill corrections stay
+Stable `1.1.0` promotion uses machine-readable `ui-quality-v2` and
+Actions-readiness evidence. Future documentation and skill corrections stay
 under the uniform `Unreleased` changelog section. They do not authorize a
-`1.0.1` release, tag, or publication workflow.
+`1.1.1` release, tag, or publication workflow.

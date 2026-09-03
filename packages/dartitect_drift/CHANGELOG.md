@@ -2,9 +2,13 @@
 
 ## Unreleased
 
-- Validate the `1.1.0-rc.3` common local-first repository contract against the
+- No changes have been accepted after the stable 1.1.0 release.
+
+## 1.1.0 - 2026-09-03
+
+- Validate the `1.1.0` common local-first repository contract against the
   Drift store.
-- Version-only lockstep candidate; Drift telemetry remains payload-free with no automatic SQL or value capture.
+- Version-only stable release; Drift telemetry remains payload-free with no automatic SQL or value capture.
 
 ## 1.0.0
 

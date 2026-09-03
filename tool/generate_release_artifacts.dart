@@ -100,7 +100,7 @@ String _versioning(
 
 All ${contract['packageCount']} packages in the development workspace share +${cohorts.workspace.version}+. Its channel is +${cohorts.workspace.channel}+ and its derivable tag is +${cohorts.workspace.tag}+; that tag is ${cohorts.workspace.tagMaterialized ? 'materialized' : 'not materialized'}.
 
-The latest stable distribution available to consumers remains +${cohorts.distributed.version}+ at the immutable +${cohorts.distributed.tag}+ tag. A workspace candidate does not change the recommended public dependency until a separately authorized stable release is materialized.
+The latest stable distribution available to consumers is +${cohorts.distributed.version}+ at the immutable +${cohorts.distributed.tag}+ tag. ${cohorts.workspace.isPrerelease ? 'A workspace candidate does not change the recommended public dependency until a separately authorized stable release is materialized.' : 'The stable workspace and distributed cohorts are identical and use the same materialized tag.'}
 
 Independent package patch ranges and registry publication are not supported. Internal Dartitect dependencies use the canonical Git descriptor with +tag_pattern: 'v{{version}}'+ and the same exact version as the release tag.
 

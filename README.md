@@ -276,12 +276,10 @@ The workspace requires Dart `^3.13.0`; Flutter packages require Flutter
 READMEs. Drift accepts consumer-owned native and web executors. ObjectBox has no
 web support. The CLI, modeling analyzer, and MCP server run on the Dart VM.
 
-All 25 packages permanently share one lockstep workspace version. This source
-branch is the untagged `1.1.0-rc.3` candidate cohort; its derivable candidate
-tag is `v1.1.0-rc.3`, but that tag is not materialized and is not a public
-distribution. The latest stable distribution remains the immutable GitHub
-Release for `v1.0.0`. Consumers should continue declaring `1.0.0`; transitive
-Dartitect packages resolve from the same stable tag without overrides:
+All 25 packages permanently share one lockstep workspace version. The stable
+workspace and distributed cohorts are `1.1.0`; consumers use the annotated
+`v1.1.0` tag and its immutable, latest GitHub Release. Transitive Dartitect
+packages resolve from the same stable tag without overrides:
 
 ```yaml
 dependencies:
@@ -290,12 +288,12 @@ dependencies:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0
 ```
 
 External dependencies continue to use their normal registries. See the
 [Git release consumption guide](docs/guides/git-release-consumption.md) and the
-[release page](https://github.com/ftr-tuta/dartitect/releases/tag/v1.0.0).
+[release page](https://github.com/ftr-tuta/dartitect/releases/tag/v1.1.0).
 
 ## Security, contribution, and license
 

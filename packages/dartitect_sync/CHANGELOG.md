@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Add `1.1.0-rc.3` local-first outbox, reconnect, and generation-safe search
+- No changes have been accepted after the stable 1.1.0 release.
+
+## 1.1.0 - 2026-09-03
+
+- Add `1.1.0` local-first outbox, reconnect, and generation-safe search
   evidence for the provider-neutral repository boundary.
 - Add `SyncDataset.incremental`, confirmed-step progress, and strict
   checkpoint-before-next-pull backpressure with partial receipts.

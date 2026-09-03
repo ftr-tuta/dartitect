@@ -86,6 +86,8 @@ Future<void> main(List<String> arguments) async {
     'docs/release/dependency-licenses.json',
     'docs/release/advisory-audit.adoc',
     'docs/release/publication-runbook.adoc',
+    'docs/release/1.1.0-readiness.adoc',
+    'docs/release/1.1.0-publication-runbook.adoc',
     'docs/release/package-cohorts.adoc',
     'docs/release/rc10-handoff.adoc',
     'tool/api_surface.snapshot.json',

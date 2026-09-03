@@ -1,8 +1,8 @@
 # Getting started
 
-The source workspace is currently the untagged `1.1.0-rc.3` candidate cohort.
-For public consumption, continue using the stable `1.0.0` / `v1.0.0` release;
-no candidate tag or GitHub Release exists.
+The source workspace and public distribution are the stable `1.1.0` cohort.
+Consume every direct Dartitect package from the annotated `v1.1.0` tag and its
+immutable GitHub Release.
 
 ## Choose the boundary
 
@@ -33,7 +33,7 @@ dependencies:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0
 ```
 
 Generate other official direct-dependency snippets with
@@ -46,7 +46,7 @@ Install the CLI from the same release tag:
 ```console
 dart install https://github.com/ftr-tuta/dartitect.git \
   --git-path packages/dartitect_cli \
-  --git-ref v1.0.0
+  --git-ref v1.1.0
 ```
 
 ## Compose

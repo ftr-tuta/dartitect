@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+- No changes have been accepted after the stable 1.1.0 release.
+
+## 1.1.0 - 2026-09-03
+
 - Add the four-row `DartitectPreviewMatrix` public annotation and preview-safe
-  synthetic fixture evidence for `1.1.0-rc.3`.
-- Version-only lockstep candidate; no public behavior change.
+  synthetic fixture evidence for `1.1.0`.
+- Version-only stable release; no public behavior change.
 
 ## 1.0.0
 

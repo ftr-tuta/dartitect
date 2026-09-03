@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Join the `1.1.0-rc.3` executable Flutter quality cohort in lockstep.
+- No changes have been accepted after the stable 1.1.0 release.
+
+## 1.1.0 - 2026-09-03
+
+- Join the `1.1.0` executable Flutter quality cohort in lockstep.
 - Replace FIFO shifts with deque-backed command queues and progress retention.
 - Keep bounded local-history weight accounting in O(1).
 - Add the opt-in `dartitect_incremental.dart` entrypoint with cold sync/async

@@ -1,0 +1,105 @@
+= Immutable GitHub Release runbook for Dartitect 1.1.0
+
+Document status:: Authorized version-specific procedure; publication pending
+Version:: `1.1.0`
+Tag:: `v1.1.0` (annotated, unsigned, protected)
+Workflow:: `.github/workflows/release.yaml`
+Distribution:: GitHub-only
+Source SHA:: Recorded after the release-preparation PR is merged
+CI run ID:: Recorded from the successful exact-source `main` push
+Release run ID:: Recorded after the manual transaction
+
+This runbook applies only to `1.1.0`. It must never be reused for another
+version or source. It creates no pub.dev publication, container, paid model
+evaluation, API secret, or privately hosted evidence.
+
+== Operator preflight
+
+Immediately before dispatch, an authenticated repository administrator must
+verify all of the following without changing repository state:
+
+* `GET /repos/ftr-tuta/dartitect/immutable-releases` reports `enabled: true`;
+* ruleset `21525640` is active, targets tags, includes only `refs/tags/v*`,
+  protects deletion and non-fast-forward updates, and has no bypass actors;
+* the remote `main` HEAD is the intended stable `1.1.0` source;
+* the successful `CI` push run for that exact SHA contains one successful
+  `CI / Required` job and an unexpired `actions-readiness-v1` artifact;
+* the diagnostic `Security` workflow has succeeded for the same `main` source;
+* neither the Git tag nor a GitHub Release named `v1.1.0` exists.
+
+Any ambiguity stops the procedure. A green pull request, local validation, or
+candidate run is not publication authority.
+
+== Exact dispatch
+
+After explicit human confirmation, dispatch `Release` on `main` with only:
+
+* `source_sha`: the full lowercase SHA at current remote `main` HEAD;
+* `ci_run_id`: the successful `CI` push run that produced
+  `actions-readiness-v1` for that SHA.
+
+The workflow pins `EXPECTED_RELEASE_VERSION` to `1.1.0`, then proves that the
+workspace, distributed, lockstep, internal-dependency, Git Release,
+distribution, stable-candidate, and UI-quality contracts all describe the same
+stable `1.1.0` / `v1.1.0` cohort. It rejects prereleases and derives
+`RELEASE_TAG=v1.1.0` and `RELEASE_TITLE=Dartitect 1.1.0` from the checked source.
+
+== Read-only transaction checks
+
+Before any repository write, the workflow proves:
+
+. `source_sha` equals current remote `main` HEAD;
+. the public enforcement portion of tag ruleset `21525640` matches policy;
+. `ci_run_id` is a successful `CI` push run for that exact SHA;
+. the run contains one successful `CI / Required` job;
+. `actions-readiness-v1` matches the SHA, tree, run ID, attempt, eight jobs,
+  five native cells, and every copied artifact hash;
+. stable-candidate, package-release, UI-quality, and distribution checks pass;
+. any existing tag or Release state is either absent or exactly the idempotent
+  retry state defined below.
+
+== Deterministic assets
+
+The workflow builds exactly:
+
+* `actions-readiness-v1.json`;
+* `release-provenance.json`;
+* `dartitect-git-manifest.json`;
+* `dependency-snippets.zip`, with one descriptor per package plus the five
+  supported profiles;
+* `sbom.spdx.json`;
+* `dependency-licenses.json`;
+* `SHA256SUMS`.
+
+`SHA256SUMS` covers every other asset. The workflow uploads assets to a draft,
+downloads them again, verifies names, bytes, and SHA-256 digests, and publishes
+only after the round trip succeeds.
+
+== Annotated tag and immutable Release
+
+The workflow creates an annotated Git tag object through the GitHub API, then
+creates `refs/tags/v1.1.0` and verifies that the peeled commit equals
+`source_sha`. It creates the exact draft Release with `--verify-tag`, uploads
+and verifies the deterministic asset set, and publishes it as stable and
+latest. Final checks require `immutable: true` and successful GitHub Release
+and asset attestations.
+
+The transaction is idempotent only in these exact states:
+
+* an existing matching annotated tag continues;
+* an existing matching draft may replace only its expected draft assets;
+* an already published Release succeeds only after exact identity,
+  immutability, asset, checksum, and attestation verification;
+* every divergent tag, Release, body, title, target, or asset fails without
+  deletion, movement, or overwrite.
+
+After publication, any correction requires `v1.1.1`. The immutable `v1.1.0`
+Release is never edited or recreated.
+
+== Post-publication record
+
+Record the released source SHA, exact CI run ID and attempt, Release workflow
+run ID, annotated tag object, peeled commit, Release URL and ID, immutable and
+latest state, asset inventory, and successful clean Git-consumption result in a
+documentation-only pull request. Then require `CI / Required` on the resulting
+`main` and preserve this runbook as an executed historical record.

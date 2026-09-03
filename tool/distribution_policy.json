@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "releaseVersion": "1.0.0",
-  "releaseTag": "v1.0.0",
+  "releaseVersion": "1.1.0",
+  "releaseTag": "v1.1.0",
   "repository": "https://github.com/ftr-tuta/dartitect.git",
   "packageCount": 25,
   "lockstep": true,
@@ -10,7 +10,7 @@
     "url": "https://github.com/ftr-tuta/dartitect.git",
     "pathPrefix": "packages/",
     "tagPattern": "v{{version}}",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "release": {
     "workflow": ".github/workflows/release.yaml",
@@ -30,13 +30,15 @@
     "docs/guides/git-release-consumption.md",
     "docs/guides/fleet-tooling.md",
     "docs/guides/mcp.md",
-    "docs/release/1.0-readiness.adoc",
-    "docs/release/publication-runbook.adoc"
+    "docs/release/1.1.0-readiness.adoc",
+    "docs/release/1.1.0-publication-runbook.adoc"
   ],
   "historicalDocuments": [
     "docs/release/rc8-handoff.adoc",
     "docs/release/rc9-handoff.adoc",
     "docs/release/rc10-handoff.adoc",
-    "docs/release/signed-bundle-channel.adoc"
+    "docs/release/signed-bundle-channel.adoc",
+    "docs/release/1.0-readiness.adoc",
+    "docs/release/publication-runbook.adoc"
   ]
 }

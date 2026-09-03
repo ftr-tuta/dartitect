@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Add `1.1.0-rc.3` executable MVVM, responsive-state, and bounded-rebuild
+- No changes have been accepted after the stable 1.1.0 release.
+
+## 1.1.0 - 2026-09-03
+
+- Add `1.1.0` executable MVVM, responsive-state, and bounded-rebuild
   evidence without expanding the public Flutter surface.
 - Use tombstoned listener registries with O(1) identity removal and safe
   reentrant dispatch across reactive primitives.

@@ -1,6 +1,6 @@
 name: paved_road_canary
 description: Synthetic RC5 canary for Dartitect paved-road contracts.
-version: 1.1.0-rc.3
+version: 1.1.0
 publish_to: none
 
 environment:
@@ -14,37 +14,37 @@ dependencies:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect
       tag_pattern: 'v{{version}}'
-    version: 1.1.0-rc.3
+    version: 1.1.0
   dartitect_devtools:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_devtools
       tag_pattern: 'v{{version}}'
-    version: 1.1.0-rc.3
+    version: 1.1.0
   dartitect_flutter:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_flutter
       tag_pattern: 'v{{version}}'
-    version: 1.1.0-rc.3
+    version: 1.1.0
   dartitect_jobs:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_jobs
       tag_pattern: 'v{{version}}'
-    version: 1.1.0-rc.3
+    version: 1.1.0
   dartitect_resilience:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_resilience
       tag_pattern: 'v{{version}}'
-    version: 1.1.0-rc.3
+    version: 1.1.0
   dartitect_transfer:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_transfer
       tag_pattern: 'v{{version}}'
-    version: 1.1.0-rc.3
+    version: 1.1.0
   flutter:
     sdk: flutter
 
@@ -54,13 +54,13 @@ dev_dependencies:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_flutter_testing
       tag_pattern: 'v{{version}}'
-    version: 1.1.0-rc.3
+    version: 1.1.0
   dartitect_testing:
     git:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_testing
       tag_pattern: 'v{{version}}'
-    version: 1.1.0-rc.3
+    version: 1.1.0
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter

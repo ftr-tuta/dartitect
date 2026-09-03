@@ -9,7 +9,7 @@ dev_dependencies:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_lints
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0
 ```
 
 Enable it at the top level of `analysis_options.yaml`:

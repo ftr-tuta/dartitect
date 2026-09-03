@@ -1462,7 +1462,7 @@ final class _AppStringsDelegate extends LocalizationsDelegate<_AppStrings> {
           );
         }
         if (arguments.options['to'] == null) {
-          throw const _UsageException('fleet upgrade requires --to=1.0.0.');
+          throw const _UsageException('fleet upgrade requires --to=1.1.0.');
         }
         report = arguments.flags.contains('apply')
             ? await service.applyUpgrade(
@@ -1652,7 +1652,7 @@ final class _AppStringsDelegate extends LocalizationsDelegate<_AppStrings> {
       '      url: https://github.com/ftr-tuta/dartitect.git\n'
       '      path: packages/$package\n'
       "      tag_pattern: 'v{{version}}'\n"
-      '    version: 1.0.0\n';
+      '    version: 1.1.0\n';
 
   static String _firstLine(String output) {
     final sanitized = output.trim().split(RegExp(r'\r?\n')).firstOrNull ?? '';
@@ -1719,8 +1719,8 @@ Read-only commands:
   fleet check <root...>            Scan explicit fleet roots without writes.
   fleet policy <root...> --bundle=PATH --sha256=DIGEST
                                     Audit with a pinned local policy bundle.
-  fleet upgrade <root...> --to=1.0.0 --apply [--json]
-                                    Migrate RC10 to GitHub-only stable lockstep.
+  fleet upgrade <root...> --to=1.1.0 --apply [--json]
+                                    Migrate a supported cohort to stable 1.1.0.
 
 Convergent synchronizers (preview by default):
   model sync [--dry-run|--apply] [--json]

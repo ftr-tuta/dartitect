@@ -1,9 +1,8 @@
 # Incremental operations
 
-The source workspace contains the untagged `1.1.0-rc.3` candidate API described
-here. The distributed stable cohort remains `1.0.0` / `v1.0.0`, which does not
-contain these incremental entrypoints. This guide is candidate source guidance,
-not permission to create a tag, Release, or publication.
+The stable `1.1.0` / `v1.1.0` cohort contains the opt-in incremental APIs
+described here. Applications on `1.0.0` must upgrade the complete lockstep
+cohort before importing these entrypoints.
 
 ## Choose incremental execution deliberately
 

@@ -20,10 +20,17 @@ Future<void> main(List<String> arguments) async {
       ),
     );
     if (cohorts.workspace.isPrerelease ||
-        cohorts.workspace.channel != 'stable') {
+        cohorts.workspace.channel != 'stable' ||
+        !cohorts.workspace.tagMaterialized ||
+        cohorts.workspace.version != cohorts.distributed.version ||
+        cohorts.workspace.tag != cohorts.distributed.tag ||
+        !cohorts.distributed.available ||
+        cohorts.workspaceDependency['version'] != cohorts.workspace.version ||
+        cohorts.distributedDependency['version'] !=
+            cohorts.distributed.version) {
       throw StateError(
-        'Release assets reject the ${cohorts.workspace.channel} workspace '
-        'cohort ${cohorts.workspace.version}.',
+        'Release assets reject a prerelease or split stable cohort: '
+        '${cohorts.workspace.version} / ${cohorts.distributed.version}.',
       );
     }
     if (options.output.existsSync()) {

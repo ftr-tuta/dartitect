@@ -1,13 +1,11 @@
 # Git release consumption
 
-Dartitect 1.0.0 is distributed exclusively by the annotated `v1.0.0` tag and
+Dartitect 1.1.0 is distributed exclusively by the annotated `v1.1.0` tag and
 its immutable GitHub Release. There is no supported Dartitect registry channel.
 External packages continue to resolve from their normal registries.
 
-The repository workspace may contain the untagged `1.1.0-rc.3` candidate
-cohort. `v1.1.0-rc.3` is derivable but is not materialized or distributed, so
-do not use it in consumer manifests. The recommended public version remains
-`1.0.0` / `v1.0.0` until a separately authorized release exists.
+The repository workspace and distributed cohort are identical at `1.1.0`.
+Do not consume branches, commit SHAs, prerelease names, or a mixture of tags.
 
 ## Declare direct packages
 
@@ -21,7 +19,7 @@ dependencies:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect
       tag_pattern: 'v{{version}}'
-    version: 1.0.0
+    version: 1.1.0
 ```
 
 For another package, change both the dependency name and `path`; keep the URL,
@@ -44,12 +42,12 @@ The profiles are core, Flutter, Drift, ObjectBox, and tooling.
 ```console
 dart install https://github.com/ftr-tuta/dartitect.git \
   --git-path packages/dartitect_cli \
-  --git-ref v1.0.0
+  --git-ref v1.1.0
 ```
 
 ## Verify the lockfile
 
-Commit `pubspec.lock`. Every Dartitect entry must report version `1.0.0`, source
+Commit `pubspec.lock`. Every Dartitect entry must report version `1.1.0`, source
 `git`, URL `https://github.com/ftr-tuta/dartitect.git`, its own
 `packages/<package>` path, `tag-pattern: v{{version}}`, and the same full
 `resolved-ref`. `dartitect doctor` enforces this graph.

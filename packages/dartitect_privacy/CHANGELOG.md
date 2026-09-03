@@ -2,9 +2,13 @@
 
 ## Unreleased
 
-- Add exhaustive `1.1.0-rc.3` pure capability-state projection evidence for
+- No changes have been accepted after the stable 1.1.0 release.
+
+## 1.1.0 - 2026-09-03
+
+- Add exhaustive `1.1.0` pure capability-state projection evidence for
   native examples.
-- Version-only lockstep candidate; the package remains exclusively the App Tracking Transparency boundary.
+- Version-only stable release; the package remains exclusively the App Tracking Transparency boundary.
 
 ## 1.0.0
 

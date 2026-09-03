@@ -9,7 +9,7 @@ void main() {
     addTearDown(fixture.dispose);
     final before = await fixture.contract.readAsString();
 
-    final result = await fixture.run('1.1.0-rc.4');
+    final result = await fixture.run('1.2.0-rc.1');
 
     expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
     expect(result.stdout, contains('Previewing workspace cohort'));
@@ -31,7 +31,7 @@ void main() {
       );
       final canaryLines = await canary.readAsLines();
 
-      final result = await fixture.run('1.1.0-rc.4', apply: true);
+      final result = await fixture.run('1.2.0-rc.1', apply: true);
 
       expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
       final contract = jsonDecode(
@@ -39,25 +39,25 @@ void main() {
       ) as Map<String, Object?>;
       expect(
         contract['workspaceCohort'],
-        containsPair('version', '1.1.0-rc.4'),
+        containsPair('version', '1.2.0-rc.1'),
       );
       expect(contract['workspaceCohort'], containsPair('channel', 'candidate'));
       expect(
         contract['workspaceCohort'],
         containsPair('tagMaterialized', false),
       );
-      expect(contract['distributedCohort'], containsPair('version', '1.0.0'));
+      expect(contract['distributedCohort'], containsPair('version', '1.1.0'));
       expect(
         await File(
           '${fixture.root.path}/packages/dartitect_observability/pubspec.yaml',
         ).readAsString(),
-        contains('version: 1.1.0-rc.4'),
+        contains('version: 1.2.0-rc.1'),
       );
-      expect(await canary.readAsString(), contains('v1.1.0-rc.4'));
+      expect(await canary.readAsString(), contains('v1.2.0-rc.1'));
       expect(
         await File('${fixture.root.path}/tool/api_surface.snapshot.json')
             .readAsString(),
-        contains('"sdkVersion": "1.1.0-rc.4"'),
+        contains('"sdkVersion": "1.2.0-rc.1"'),
       );
       expect(
         await fixture.contract.readAsLines(),
@@ -75,7 +75,7 @@ void main() {
     final result = await fixture.run('0.9.9', apply: true);
 
     expect(result.exitCode, 64);
-    expect(result.stderr, contains('not precede distributed 1.0.0'));
+    expect(result.stderr, contains('not precede distributed 1.1.0'));
     expect(await fixture.contract.readAsString(), before);
   });
 
@@ -87,7 +87,7 @@ void main() {
       '${fixture.root.path}/tool/dartitect_devtools_extension/pubspec.yaml',
     ).delete();
 
-    final result = await fixture.run('1.1.0-rc.4', apply: true);
+    final result = await fixture.run('1.2.0-rc.1', apply: true);
 
     expect(result.exitCode, 1);
     expect(result.stderr, contains('Missing version source'));

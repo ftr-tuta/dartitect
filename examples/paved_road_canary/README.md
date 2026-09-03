@@ -1,6 +1,6 @@
 # Paved-road canary
 
-This synthetic Flutter application exercises the stable `1.0.0` paved road without
+This synthetic Flutter application exercises the stable `1.1.0` paved road without
 credentials, private APIs, durable domain records, or product business rules.
 Its cache declaration covers an application-local authority profile. The tests
 verify hosts, typed progress, explicit lazy computation, versioned UI
