@@ -1,18 +1,27 @@
 = Dartitect 1.1.0 Actions readiness
 
-Document status:: Stable release evidence
+Document status:: Executed historical release evidence
 Version:: `1.1.0`
 Tag:: `v1.1.0` (annotated, unsigned, protected)
 Distribution:: Immutable GitHub Release; Git dependencies only
+Source SHA:: `ccabd79a8f88ec7e0ae60a2b75903e75c36942ff`
+Source tree:: `b5f90d88db3ac18f456659f885880c47b66e3820`
+CI run:: `33792060525`, attempt 1
+Required job:: `CI / Required` (`100784235754`)
+Readiness artifact:: `actions-readiness-v1` (`9909246965`)
+Security run:: `33796372066`, attempt 1
+Release run:: `33796547228`, attempt 1
+Annotated tag object:: `6ffbc7828065ccede017ad6a95d2deb8d0be8d01`
+GitHub Release:: `382279133`; stable, latest, and immutable
 Packages:: 25
 Public entrypoints:: 35
 Public API baseline:: `1.0.0`
 Required branch check:: `CI / Required`
 Formal artifact:: `actions-readiness-v1`
 
-This record defines the evidence required to publish the exact merged `1.1.0`
-source. It does not authorize a different version, source SHA, CI run, tag, or
-distribution channel.
+This record preserves the evidence that authorized publication of the exact
+merged `1.1.0` source. It does not authorize a different version, source SHA,
+CI run, tag, or distribution channel.
 
 == Stable cohort identity
 
@@ -70,15 +79,24 @@ entrypoints. Release checks reject path dependencies, dependency overrides,
 partial changelog cohorts, registry publication mechanisms, stale generated
 artifacts, and noncanonical authorship.
 
-== Publication boundary
+== Executed publication boundary
 
-Immediately before dispatch, an administrator must verify immutable Releases
-are enabled, ruleset `21525640` is active for `refs/tags/v*` with deletion and
-non-fast-forward protection and no bypass actors, and both tag and Release
-`v1.1.0` are absent. The operator then supplies only the exact current `main`
-SHA and the successful `CI` push run that created its readiness artifact.
+Immediately before dispatch, an administrator verified that immutable Releases
+were enabled, ruleset `21525640` was active for `refs/tags/v*` with deletion
+and non-fast-forward protection and no bypass actors, and both tag and Release
+`v1.1.0` were absent. The operator supplied only source SHA
+`ccabd79a8f88ec7e0ae60a2b75903e75c36942ff` and successful `CI` push run
+`33792060525`, which created the unexpired readiness artifact `9909246965`.
 
-The manual `Release` workflow fails closed unless all stable contracts are the
-exact self-consistent `1.1.0` cohort. It derives the tag and title from those
-contracts, verifies the source and CI identities before any write, and performs
-the transaction defined by the version-specific publication runbook.
+The downloaded artifact contained all 24 signed inputs, including the two
+workflow files beneath `repository/.github/`, and every recorded SHA-256 digest
+matched. Diagnostic `Security` run `33796372066` succeeded for the same source.
+Manual `Release` run `33796547228` then verified the exact self-consistent
+stable cohort, derived the tag and title from those contracts, checked the
+source and CI identities before any write, and completed the immutable
+transaction defined by the version-specific publication runbook.
+
+The annotated tag peels to the authorized source, the seven published assets
+and their attestations verified successfully, and all nine clean Git
+consumption canaries passed against the public `v1.1.0` ref. The immutable
+Release is the only materialized distribution for this cohort.
