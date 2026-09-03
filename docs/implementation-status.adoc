@@ -2,9 +2,11 @@
 :toc:
 
 Snapshot:: 2026-09-03
-Release status:: *STABLE 1.1.0 PREPARED FOR PUBLICATION*
-Release tag:: `v1.1.0` (manual immutable transaction pending)
-Release source:: Exact merged `main` SHA recorded after preparation merge
+Release status:: *STABLE 1.1.0 PUBLISHED*
+Release tag:: `v1.1.0` (annotated, stable, latest, and immutable)
+Release source:: `ccabd79a8f88ec7e0ae60a2b75903e75c36942ff`
+Release workflow:: `33796547228`, attempt 1
+GitHub Release:: `382279133`; https://github.com/ftr-tuta/dartitect/releases/tag/v1.1.0[Dartitect 1.1.0]
 Distribution:: Immutable GitHub Release; Git dependencies only
 Workspace cohort:: `1.1.0` / *STABLE*
 Feature policy:: *STABLE 1.1 QUALITY GATE*
@@ -28,8 +30,8 @@ GitHub Actions jobs.
 `CI / Required` remains the only protected aggregate status. It fails closed
 unless all eight coordinated jobs succeed across nine executions, including
 both Linux matrix cells. The GitHub-only distribution is `1.1.0` / `v1.1.0`;
-the manual Release workflow binds its immutable publication to the exact
-successful `main` run and creates no registry publication.
+the manual Release workflow bound its immutable publication to the exact successful
+`main` run `33792060525` and created no registry publication.
 
 [cols="1,2,5",options="header"]
 |===
@@ -88,11 +90,14 @@ readiness hashes, created annotated tag `v1.0.0`, and published the immutable
 GitHub Release. No registry publication occurred.
 
 | V1.1-18
-| READY
-| The stable 1.1.0 contracts, 25-package cohort, 35-entrypoint API inventory,
-`ui-quality-v2`, deterministic hosted evidence, Git-only consumption, and
-version-specific immutable publication runbook are prepared. Publication still
-requires the exact merged `main` CI artifact and explicit operator confirmation.
+| COMPLETED
+| Exact-source CI run `33792060525` supplied the complete readiness artifact;
+diagnostic Security run `33796372066` also passed. Authorized Release run
+`33796547228` created annotated tag object
+`6ffbc7828065ccede017ad6a95d2deb8d0be8d01`, which peels to the authorized
+source, and stable/latest/immutable GitHub Release `382279133`. All seven asset
+attestations and all nine clean public-tag consumption canaries passed. No
+registry publication occurred.
 |===
 
 == Hosted-only invariant
@@ -110,7 +115,7 @@ simulator availability failure makes `CI / Required` fail.
 * dependency-free core and isolated optional capabilities;
 * fresh graph construction and reverse teardown in every isolate.
 
-Stable `1.1.0` promotion uses machine-readable `ui-quality-v2` and
+Stable `1.1.0` promotion used machine-readable `ui-quality-v2` and
 Actions-readiness evidence. Future documentation and skill corrections stay
 under the uniform `Unreleased` changelog section. They do not authorize a
 `1.1.1` release, tag, or publication workflow.

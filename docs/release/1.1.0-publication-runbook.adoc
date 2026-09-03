@@ -1,17 +1,46 @@
 = Immutable GitHub Release runbook for Dartitect 1.1.0
 
-Document status:: Authorized version-specific procedure; publication pending
+Document status:: Executed historical record; immutable publication complete
 Version:: `1.1.0`
 Tag:: `v1.1.0` (annotated, unsigned, protected)
 Workflow:: `.github/workflows/release.yaml`
 Distribution:: GitHub-only
-Source SHA:: Recorded after the release-preparation PR is merged
-CI run ID:: Recorded from the successful exact-source `main` push
-Release run ID:: Recorded after the manual transaction
+Source SHA:: `ccabd79a8f88ec7e0ae60a2b75903e75c36942ff`
+Source tree:: `b5f90d88db3ac18f456659f885880c47b66e3820`
+CI run ID:: `33792060525`, attempt 1
+Security run ID:: `33796372066`, attempt 1
+Release run ID:: `33796547228`, attempt 1
+Annotated tag object:: `6ffbc7828065ccede017ad6a95d2deb8d0be8d01`
+Peeled commit:: `ccabd79a8f88ec7e0ae60a2b75903e75c36942ff`
+GitHub Release:: `382279133`; https://github.com/ftr-tuta/dartitect/releases/tag/v1.1.0[Dartitect 1.1.0]
+Published at:: `2026-09-03T19:28:09Z`
 
-This runbook applies only to `1.1.0`. It must never be reused for another
-version or source. It creates no pub.dev publication, container, paid model
+This runbook was executed only for `1.1.0`. It must never be reused for another
+version or source. It created no pub.dev publication, container, paid model
 evaluation, API secret, or privately hosted evidence.
+
+== Executed transaction result
+
+The authenticated preflight reported immutable Releases enabled and tag
+ruleset `21525640` active for only `refs/tags/v*`, with deletion and
+non-fast-forward protection and no bypass actors. The final `main` source was
+`ccabd79a8f88ec7e0ae60a2b75903e75c36942ff`. Its successful push run
+`33792060525` contained one successful `CI / Required` job (`100784235754`)
+and unexpired `actions-readiness-v1` artifact `9909246965`. Diagnostic
+`Security` run `33796372066` succeeded for the same SHA. The tag and Release
+were absent before the authorized dispatch.
+
+An earlier fail-closed dispatch, run `33786725145`, stopped before any write
+because the uploaded readiness artifact omitted the hidden
+`repository/.github/` directory. PR #24 enabled hidden-file upload and made the
+setting part of the CI security-policy audit. The corrected artifact contained
+all 24 signed inputs and every SHA-256 digest matched before the final dispatch.
+
+Release run `33796547228` completed the transaction. Annotated tag object
+`6ffbc7828065ccede017ad6a95d2deb8d0be8d01` peels to the authorized source.
+GitHub Release `382279133` is stable, latest, non-draft, non-prerelease, and
+immutable. `gh release verify v1.1.0` and all seven individual
+`gh release verify-asset` checks succeeded.
 
 == Operator preflight
 
@@ -75,6 +104,48 @@ The workflow builds exactly:
 downloads them again, verifies names, bytes, and SHA-256 digests, and publishes
 only after the round trip succeeds.
 
+== Published asset inventory
+
+[cols="4,1,7",options="header"]
+|===
+| Asset | Bytes | SHA-256
+
+| `actions-readiness-v1.json`
+| 5727
+| `62eb9276582eb923331eb734621d2293e0f333ae2b7fcbd091dea0f49316aea0`
+
+| `dartitect-git-manifest.json`
+| 3870
+| `cd76d2f444972f433ca3c6206acdc112d3fd4d0903ef5870d39c0b7acafc1738`
+
+| `dependency-licenses.json`
+| 25365
+| `7fc4788759ecf93dfae85515306c3fb139ddb6dfb1a4fa3a391c11007e44bb2e`
+
+| `dependency-snippets.zip`
+| 10913
+| `ac85b697128494c21363c251545ea00565a4e61b15ec5e6eac0d1645cc5574a9`
+
+| `release-provenance.json`
+| 336
+| `7e0f7c57e3f30a588e2f656d4af6902360b07971336c64961ef92f628b3adc66`
+
+| `sbom.spdx.json`
+| 165930
+| `281ead1f0a73b70d5981d6bef02cef3bd5df5a8cd407a549a7fe817581111744`
+
+| `SHA256SUMS`
+| 538
+| `a5f00c2951c0ce6115c01e9ad979357c00742d80a30c5af7a0591b6db1cf9d50`
+|===
+
+Strict checksum validation succeeded for all six assets covered by
+`SHA256SUMS`. The snippets archive contains one descriptor for each of the 25
+packages and all five supported profiles. Release provenance records source
+SHA `ccabd79a8f88ec7e0ae60a2b75903e75c36942ff`, source tree
+`b5f90d88db3ac18f456659f885880c47b66e3820`, CI run `33792060525`, and the
+readiness digest shown above.
+
 == Annotated tag and immutable Release
 
 The workflow creates an annotated Git tag object through the GitHub API, then
@@ -96,10 +167,17 @@ The transaction is idempotent only in these exact states:
 After publication, any correction requires `v1.1.1`. The immutable `v1.1.0`
 Release is never edited or recreated.
 
-== Post-publication record
+== Post-publication validation
 
-Record the released source SHA, exact CI run ID and attempt, Release workflow
-run ID, annotated tag object, peeled commit, Release URL and ID, immutable and
-latest state, asset inventory, and successful clean Git-consumption result in a
-documentation-only pull request. Then require `CI / Required` on the resulting
-`main` and preserve this runbook as an executed historical record.
+The public tag was consumed from a clean environment with the repository URL
+and exact `v1.1.0` ref used by the official snippets. All nine canaries passed:
+modeling, thin consumer, large consumer, minimal, offline first, Drift
+provider, native capabilities, adapters, and tooling. The result resolved to
+the annotated tag object and peeled source recorded above, used Git package
+sources, and contained neither local path dependencies nor registry Dartitect
+dependencies. It was recorded at `2026-09-03T19:47:00.187618Z`.
+
+This documentation-only pull request records the released source, exact CI and
+workflow runs, tag identity, immutable/latest Release state, asset inventory,
+attestations, and clean Git-consumption result. The record remains historical;
+the immutable `v1.1.0` transaction is never rerun or modified.
