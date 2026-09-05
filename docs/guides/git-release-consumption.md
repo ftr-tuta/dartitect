@@ -4,7 +4,10 @@ Dartitect 1.1.0 is distributed exclusively by the annotated `v1.1.0` tag and
 its immutable GitHub Release. There is no supported Dartitect registry channel.
 External packages continue to resolve from their normal registries.
 
-The repository workspace and distributed cohort are identical at `1.1.0`.
+The repository prepares `1.2.0` while preserving the recorded `1.1.0`
+distribution. The new Release assets resolve `v1.2.0`; its immutable Release
+and attestation record actual publication without rewriting this source
+record. The CLI bundled in a stable release generates that release's cohort.
 Do not consume branches, commit SHAs, prerelease names, or a mixture of tags.
 
 ## Declare direct packages

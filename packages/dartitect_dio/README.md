@@ -119,6 +119,11 @@ files. Metadata-only remains the production default.
 Route templates validate shape but do not define an application's endpoint or
 authorization policy.
 
+Optional `DioRetryAfterPolicy` adds bounded typed metadata to HTTP failures.
+It borrows an explicit receipt clock and `RetryAfterParser`; the client performs
+one request per execution. See [HTTP retry budgets](../../docs/guides/http-retry-feedback.md)
+for consumer-owned classification and shared admission.
+
 ## Testing
 
 Run `dart test` with a deterministic Dio adapter and network disabled. Cover

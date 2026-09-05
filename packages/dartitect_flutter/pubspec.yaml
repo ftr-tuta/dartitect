@@ -1,6 +1,6 @@
 name: dartitect_flutter
 description: Native Flutter lifecycle, command, selector, and scope primitives for Dartitect.
-version: 1.1.0
+version: 1.2.0
 publish_to: none
 repository: https://github.com/ftr-tuta/dartitect
 issue_tracker: https://github.com/ftr-tuta/dartitect/issues
@@ -17,7 +17,7 @@ dependencies:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect
       tag_pattern: 'v{{version}}'
-    version: 1.1.0
+    version: 1.2.0
   flutter:
     sdk: flutter
 
@@ -27,6 +27,6 @@ dev_dependencies:
       url: https://github.com/ftr-tuta/dartitect.git
       path: packages/dartitect_observability
       tag_pattern: 'v{{version}}'
-    version: 1.1.0
+    version: 1.2.0
   flutter_test:
     sdk: flutter

@@ -13,4 +13,5 @@ export 'src/interceptors.dart';
 export 'src/json_client.dart';
 export 'src/observability_capture.dart';
 export 'src/result_mapping.dart';
+export 'src/retry_after.dart';
 export 'src/route_template.dart';

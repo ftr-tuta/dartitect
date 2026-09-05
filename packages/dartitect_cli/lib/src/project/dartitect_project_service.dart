@@ -13,6 +13,7 @@ import '../generation/generation_engine.dart';
 import '../generation/scaffolds.dart';
 import '../model/model_generator.dart';
 import '../policy/ecosystem_policy.dart';
+import '../release/generated_release_manifest.dart';
 import '../release/package_compatibility.dart';
 import '../scan/baseline.dart';
 import '../scan/project_scanner.dart';
@@ -735,13 +736,13 @@ final class DartitectProjectService {
   }
 
   static String _validatedTargetCohort(String? value) {
-    if (value != '1.1.0') {
+    if (value != DartitectReleaseManifest.consumptionVersion) {
       throw const DartitectChangeException(
         'invalid_target_cohort',
-        'The target cohort must be the stable 1.1.0 release.',
+        'The target cohort must be the bundled stable ${DartitectReleaseManifest.consumptionVersion} release.',
       );
     }
-    return '1.1.0';
+    return DartitectReleaseManifest.consumptionVersion;
   }
 
   static String _renderDependencyUpgrade(String source, String target) {
@@ -873,6 +874,7 @@ final class DartitectProjectService {
           '1.0.0-rc.10',
           '1.0.0',
           '1.1.0',
+          DartitectReleaseManifest.consumptionVersion,
         }.contains(declaredVersion)) {
       throw DartitectChangeException(
         'unsupported_dependency_source',

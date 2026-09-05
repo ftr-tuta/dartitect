@@ -34,10 +34,10 @@ void main() {
       'publish_to: none\n',
       '',
     ),
-    'divergent version': (fixture) => fixture.replace(
+    'divergent version': (fixture) => fixture.replacePattern(
       'packages/dartitect/pubspec.yaml',
-      'version: 1.1.0',
-      'version: 1.1.1',
+      RegExp(r'^version: .+$', multiLine: true),
+      'version: 1.0.1',
     ),
     'wrong Git URL': (fixture) => fixture.replace(
       'packages/dartitect_dio/pubspec.yaml',
@@ -57,7 +57,7 @@ void main() {
     'hosted Dartitect dependency': (fixture) => fixture.replacePattern(
       'packages/dartitect_dio/pubspec.yaml',
       RegExp(
-        r'  dartitect:\n    git:\n      url: [^\n]+\n      path: [^\n]+\n      tag_pattern: [^\n]+\n    version: 1\.1\.0',
+        r'  dartitect:\n    git:\n      url: [^\n]+\n      path: [^\n]+\n      tag_pattern: [^\n]+\n    version: [^\n]+',
       ),
       '  dartitect: 1.1.0',
     ),
@@ -90,9 +90,9 @@ void main() {
       'Release refuses workspace cohort',
       'Release contract rejected',
     ),
-    'missing exact stable release pin': (fixture) => fixture.replace(
+    'missing exact stable release pin': (fixture) => fixture.replacePattern(
       '.github/workflows/release.yaml',
-      'EXPECTED_RELEASE_VERSION: "1.1.0"',
+      RegExp(r'EXPECTED_RELEASE_VERSION: "[^"]+"'),
       'EXPECTED_RELEASE_VERSION: "1.1.1"',
     ),
     'generated Dartitect override': (fixture) => fixture.append(

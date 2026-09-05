@@ -3,6 +3,9 @@ import 'dart:math';
 
 import 'package:dartitect/dartitect.dart';
 
+import 'retry_after.dart';
+import 'retry_budget.dart';
+
 /// Clock injected into resilience policies.
 abstract interface class ResilienceClock {
   /// Current UTC time.
@@ -118,7 +121,9 @@ final class ExponentialBackoff implements BackoffStrategy {
   Duration delayAfter(int failedAttempt) {
     _requireFailedAttempt(failedAttempt);
     var microseconds = initial.inMicroseconds;
+    if (multiplier == 1) return initial;
     for (var index = 1; index < failedAttempt; index += 1) {
+      if (microseconds > maximum.inMicroseconds ~/ multiplier) return maximum;
       microseconds *= multiplier;
       if (microseconds >= maximum.inMicroseconds) return maximum;
     }
@@ -152,7 +157,7 @@ final class FullJitter implements JitterStrategy {
   Duration apply(Duration delay, ResilienceRandom random) {
     if (delay <= Duration.zero) return Duration.zero;
     final value = random.nextDouble();
-    if (value < 0 || value >= 1) {
+    if (!value.isFinite || value < 0 || value >= 1) {
       throw StateError('ResilienceRandom must return a value in [0, 1).');
     }
     return Duration(microseconds: (delay.inMicroseconds * value).floor());
@@ -174,16 +179,21 @@ enum RetryDecisionKind {
 /// Closed decision produced only for an expected typed failure.
 final class RetryDecision {
   /// Stops without another attempt.
-  const RetryDecision.stop() : kind = RetryDecisionKind.stop;
+  const RetryDecision.stop() : kind = RetryDecisionKind.stop, retryAfter = null;
 
   /// Allows another bounded attempt.
-  const RetryDecision.retry() : kind = RetryDecisionKind.retry;
+  const RetryDecision.retry({this.retryAfter}) : kind = RetryDecisionKind.retry;
 
   /// Records an uncertain outcome that forbids automatic retry.
-  const RetryDecision.uncertain() : kind = RetryDecisionKind.uncertain;
+  const RetryDecision.uncertain()
+    : kind = RetryDecisionKind.uncertain,
+      retryAfter = null;
 
   /// Decision category.
   final RetryDecisionKind kind;
+
+  /// Optional server feedback; invalid or excessive hints stop automatic retry.
+  final RetryAfterHint? retryAfter;
 }
 
 /// Attempt, elapsed-time, backoff, jitter, and failure classification policy.
@@ -251,31 +261,85 @@ final class RetryExecutor {
     required RetryPolicy<F> policy,
     required CancellationSignal cancellation,
     DateTime? deadline,
+    RetryBudget? budget,
   }) async {
     if (deadline != null && !deadline.isUtc) {
       throw ArgumentError.value(deadline, 'deadline', 'Must use UTC.');
     }
     final started = _clock.now().toUtc();
+    var lastObserved = started;
+    Result<T, F>? previous;
     for (var attempt = 1; ; attempt += 1) {
+      void checkAdmission(CancellationSignal signal) {
+        signal.throwIfCancelled();
+        _throwIfDeadline(deadline);
+        final now = _clock.now().toUtc();
+        if (now.isBefore(lastObserved)) {
+          throw const _RetryAdmissionRefused(
+            RetryBudgetExceededException(RetryBudgetStop.clockRegression),
+          );
+        }
+        lastObserved = now;
+        if (now.difference(started) >= policy.maxElapsed) {
+          throw const _RetryAdmissionRefused(
+            RetryBudgetExceededException(RetryBudgetStop.elapsed),
+          );
+        }
+        final reason = budget?.stopReason;
+        if (reason != null) {
+          throw _RetryAdmissionRefused(RetryBudgetExceededException(reason));
+        }
+      }
+
+      Result<T, F> result;
+      try {
+        checkAdmission(cancellation);
+        if (budget == null) {
+          result = await operation(attempt, cancellation);
+        } else {
+          result = await budget.bulkhead.run((signal) {
+            checkAdmission(signal);
+            try {
+              budget.startAttempt();
+            } on RetryBudgetExceededException catch (error) {
+              throw _RetryAdmissionRefused(error);
+            }
+            return operation(attempt, signal);
+          }, cancellation: cancellation);
+        }
+      } on _RetryAdmissionRefused catch (refused, stackTrace) {
+        if (previous == null) {
+          Error.throwWithStackTrace(refused.error, stackTrace);
+        }
+        return previous;
+      }
       cancellation.throwIfCancelled();
-      _throwIfDeadline(deadline);
-      final result = await operation(attempt, cancellation);
       if (result case Ok<dynamic>()) return result;
+      previous = result;
       final failure = (result as Err<Object>).failure as F;
       final decision = policy.classify(failure);
       if (decision.kind != RetryDecisionKind.retry ||
           attempt >= policy.maxAttempts) {
         return result;
       }
-      final delay = policy.jitter.apply(
+      if (decision.retryAfter?.kind == RetryAfterKind.invalid ||
+          decision.retryAfter?.kind == RetryAfterKind.excessive)
+        return result;
+      final jittered = policy.jitter.apply(
         policy.backoff.delayAfter(attempt),
         _random,
       );
+      if (jittered < Duration.zero) throw StateError('Negative retry delay.');
+      final minimum = decision.retryAfter?.minimumDelay ?? Duration.zero;
+      final delay = jittered < minimum ? minimum : jittered;
       final now = _clock.now().toUtc();
-      if (now.difference(started) + delay > policy.maxElapsed ||
-          deadline != null && !now.add(delay).isBefore(deadline)) {
+      if (now.isBefore(lastObserved) ||
+          delay >= policy.maxElapsed - now.difference(started) ||
+          deadline != null && delay >= deadline.difference(now) ||
+          budget != null && !budget.canWait(delay)) {
         return result;
       }
+      lastObserved = now;
       await _scheduler.wait(delay, cancellation);
     }
   }
@@ -291,4 +355,10 @@ void _requireFailedAttempt(int attempt) {
   if (attempt <= 0) {
     throw ArgumentError.value(attempt, 'failedAttempt', 'Must be positive.');
   }
+}
+
+final class _RetryAdmissionRefused implements Exception {
+  const _RetryAdmissionRefused(this.error);
+
+  final RetryBudgetExceededException error;
 }

@@ -32,6 +32,12 @@ Import `package:dartitect_sync/dartitect_sync.dart`. The package is pure Dart an
 supports the Dart VM, Flutter, and web. A host that runs work in another isolate
 must separately provide isolate/platform scheduling and transferable payloads.
 
+The optional `package:dartitect_sync/dartitect_sync_titect.dart` entrypoint
+provides eleven typed `titect-sync/1` documents, bounded byte/JSON codecs, exact
+numeric tokens, and an incremental binding. See the
+[Titect integration guide](../../docs/guides/titect-integration.md) for ownership,
+the preliminary Python pin, and unresolved paired conformance requirements.
+
 ## Mental model and data flow
 
 Choose one mechanism for each concern:

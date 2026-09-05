@@ -175,8 +175,31 @@ final class DartitectSemanticFactoryCompiler {
     if (requests.isEmpty) return const <DartitectSemanticFactoryIr>[];
     final boundary = await root.resolveSymbolicLinks();
     final packageName = await _readPackageName(requests.first.pointer);
+    // Only explicit factory roots are analysis entrypoints. Dependencies still
+    // resolve normally, but unrelated generated libraries are not scheduled in
+    // every fresh inspection session.
+    final sourcePaths = <String, String>{};
+    for (final request in requests) {
+      final source = request.source;
+      if (sourcePaths.containsKey(source.source)) continue;
+      final file = File(_join(root.path, source.source));
+      if (!await file.exists()) {
+        throw DartitectConfigException(
+          '${request.pointer}/source',
+          'factory source does not exist',
+        );
+      }
+      final resolvedPath = await file.resolveSymbolicLinks();
+      if (!_isWithin(resolvedPath, boundary)) {
+        throw DartitectConfigException(
+          '${request.pointer}/source',
+          'factory source resolves outside the project boundary',
+        );
+      }
+      sourcePaths[source.source] = resolvedPath;
+    }
     final collection = AnalysisContextCollection(
-      includedPaths: <String>[boundary],
+      includedPaths: sourcePaths.values.toSet().toList(),
       excludedPaths: <String>[
         _join(boundary, '.dart_tool'),
         _join(boundary, 'build'),
@@ -186,21 +209,7 @@ final class DartitectSemanticFactoryCompiler {
     final output = <DartitectSemanticFactoryIr>[];
     try {
       for (final request in requests) {
-        final source = request.source;
-        final file = File(_join(root.path, source.source));
-        if (!await file.exists()) {
-          throw DartitectConfigException(
-            '${request.pointer}/source',
-            'factory source does not exist',
-          );
-        }
-        final resolvedPath = await file.resolveSymbolicLinks();
-        if (!_isWithin(resolvedPath, boundary)) {
-          throw DartitectConfigException(
-            '${request.pointer}/source',
-            'factory source resolves outside the project boundary',
-          );
-        }
+        final resolvedPath = sourcePaths[request.source.source]!;
         var result = results[resolvedPath];
         if (result == null) {
           final analysis = await collection

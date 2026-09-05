@@ -5,10 +5,89 @@ import 'dart:typed_data';
 import 'package:dartitect/dartitect.dart';
 import 'package:dartitect_dio/dartitect_dio.dart';
 import 'package:dartitect_observability/dartitect_observability.dart';
+import 'package:dartitect_resilience/dartitect_resilience.dart';
 import 'package:dio/dio.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('opt-in Retry-After retains typed metadata and never replays', () async {
+    for (final fields in <List<String>?>[
+      null,
+      ['7'],
+      ['7', '8'],
+      ['999999'],
+      ['secret'],
+    ]) {
+      for (final enabled in [false, true]) {
+        var requests = 0;
+        final dio = Dio()
+          ..httpClientAdapter = _JsonAdapter((_) {
+            requests++;
+            return ResponseBody.fromString(
+              'private body',
+              503,
+              headers: {
+                if (fields != null) 'retry-after': fields,
+                'x-private': ['credential'],
+              },
+            );
+          });
+        addTearDown(dio.close);
+        final policy = enabled
+            ? DioRetryAfterPolicy(
+                parser: RetryAfterParser(
+                  maximumDelay: const Duration(minutes: 1),
+                ),
+                clock: const SystemResilienceClock(),
+              )
+            : null;
+        final client = DefaultDioJsonClient(dio, retryAfter: policy);
+        final result = await client.execute<int>(
+          DioEndpoint(
+            method: 'GET',
+            route: RouteTemplate('/health'),
+            decode: (_) => 1,
+            acceptedStatusCodes: {200},
+          ),
+        );
+        final failure = (result as Err<DioFailure>).failure as DioHttpFailure;
+        expect(failure.statusCode, 503);
+        expect(requests, 1);
+        if (!enabled) {
+          expect(failure.retryAfter, isNull);
+        } else {
+          expect(
+            failure.retryAfter!.kind,
+            fields == null
+                ? RetryAfterKind.absent
+                : fields.length != 1 || fields.single == 'secret'
+                ? RetryAfterKind.invalid
+                : fields.single == '7'
+                ? RetryAfterKind.valid
+                : RetryAfterKind.excessive,
+          );
+        }
+        expect(failure.toString(), isNot(contains('private')));
+        expect(failure.toString(), isNot(contains('secret')));
+        final captured = await captureDioException<int>(() async {
+          throw DioException(
+            requestOptions: RequestOptions(),
+            type: DioExceptionType.badResponse,
+            response: Response<void>(
+              requestOptions: RequestOptions(),
+              statusCode: 429,
+              headers: Headers.fromMap({
+                if (fields != null) 'retry-after': fields,
+              }),
+            ),
+          );
+        }, retryAfter: policy);
+        final mapped = (captured as Err<DioFailure>).failure as DioHttpFailure;
+        expect(mapped.retryAfter?.kind, failure.retryAfter?.kind);
+      }
+    }
+  });
+
   for (final method in const <String>[
     'GET',
     'POST',

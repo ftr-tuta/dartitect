@@ -3,7 +3,11 @@
   "authority": "github-actions",
   "workflow": "CI",
   "workflowPath": ".github/workflows/ci.yaml",
-  "events": ["pull_request", "merge_group", "push-main"],
+  "events": [
+    "pull_request",
+    "merge_group",
+    "push-main"
+  ],
   "requiredCheck": "CI / Required",
   "releaseBranch": "refs/heads/main",
   "formalEvent": "push",
@@ -18,6 +22,7 @@
     "macos",
     "android-emulator",
     "drift-web",
+    "titect-paired",
     "clean-clone",
     "git-consumption",
     "osv"
@@ -48,12 +53,21 @@
     "tool/check_ci_security_policy.dart",
     "tool/check_release_readiness.dart",
     "tool/flutter_quality_performance_contract.json",
-    "tool/ui_quality_contract.json"
+    "tool/ui_quality_contract.json",
+    "tool/titect_fixture/pin.json",
+    "tool/titect_fixture/vectors.json",
+    "tool/titect_evidence.dart",
+    "tool/check_titect_evidence.dart",
+    "tool/run_titect_conformance.py",
+    "tool/run_titect_recovery.py"
   ],
   "release": {
     "workflowPath": ".github/workflows/release.yaml",
     "manualOnly": true,
-    "requiredInputs": ["source_sha", "ci_run_id"]
+    "requiredInputs": [
+      "source_sha",
+      "ci_run_id"
+    ]
   },
   "localValidationCanDeclareReadiness": false,
   "hostedRunnersOnly": true

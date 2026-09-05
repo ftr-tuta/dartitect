@@ -15,7 +15,22 @@ const _forbiddenWebDependencies = <String>[
   'dartitect_objectbox',
 ];
 
-Future<void> main() async {
+Future<void> main(List<String> arguments) async {
+  final titect = arguments.contains('--titect-recovery');
+  final endpointText = Platform.environment['TITECT_HTTP_ENDPOINT'];
+  final evidencePath = Platform.environment['TITECT_WEB_EVIDENCE'];
+  if (titect && (endpointText == null || evidencePath == null)) {
+    throw StateError(
+      'TITECT_HTTP_ENDPOINT and TITECT_WEB_EVIDENCE are required.',
+    );
+  }
+  final endpoint = titect ? Uri.parse(endpointText!) : null;
+  if (endpoint != null &&
+      (endpoint.scheme != 'http' || endpoint.host != '127.0.0.1')) {
+    throw StateError('Titect fixture endpoint must use loopback HTTP.');
+  }
+  final evidence = <Map<String, Object?>>[];
+  var passed = false;
   final root = Directory.current;
   final temporary = await Directory.systemTemp.createTemp(
     'dartitect-drift-web-',
@@ -25,7 +40,13 @@ Future<void> main() async {
     await _downloadAndVerifySqlite(sqlite);
     final app = File('${temporary.path}/app.dart.js');
     final worker = File('${temporary.path}/drift_worker.dart.js');
-    await _compile(root, 'tool/drift_web_fixture/app.dart', app);
+    await _compile(
+      root,
+      titect
+          ? 'tool/titect_fixture/composition/web_app.dart'
+          : 'tool/drift_web_fixture/app.dart',
+      app,
+    );
     await _compile(root, 'tool/drift_web_fixture/worker.dart', worker);
     await _verifyDependencyGraph(temporary);
 
@@ -42,6 +63,8 @@ Future<void> main() async {
           app: app,
           worker: worker,
           diagnostics: diagnostics,
+          titectEndpoint: endpoint,
+          titectEvidence: evidence,
         );
       } catch (error, stackTrace) {
         for (final event in diagnostics) {
@@ -51,11 +74,19 @@ Future<void> main() async {
         rethrow;
       }
     }
+    passed = true;
     stdout.writeln(
-      'Task vertical Drift web canary passed: portable, isolated.',
+      titect
+          ? 'Titect persistent Chrome probes passed: portable, isolated.'
+          : 'Task vertical Drift web canary passed: portable, isolated.',
     );
   } finally {
     await _deleteTemporaryDirectory(temporary);
+    if (titect) {
+      await File(evidencePath!).writeAsString(
+        '${jsonEncode({'schemaVersion': 1, 'status': passed ? 'passed' : 'failed', 'profiles': evidence, 'browserClosed': true, 'serverClosed': true})}\n',
+      );
+    }
   }
 }
 
@@ -160,6 +191,8 @@ Future<void> _runProfile({
   required File app,
   required File worker,
   required List<String> diagnostics,
+  Uri? titectEndpoint,
+  required List<Map<String, Object?>> titectEvidence,
 }) async {
   final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
   final serverTask = _serve(
@@ -168,6 +201,7 @@ Future<void> _runProfile({
     sqlite: sqlite,
     app: app,
     worker: worker,
+    titectEndpoint: titectEndpoint,
   );
   Process? chrome;
   _CdpClient? cdp;
@@ -190,6 +224,10 @@ Future<void> _runProfile({
     _captureProcessOutput(chrome, diagnostics);
     final websocket = await _waitForDevTools(profileDirectory, chrome);
     cdp = await _CdpClient.connect(websocket, diagnostics);
+    if (titectEndpoint != null) {
+      titectEvidence.add(await _runTitectProfile(cdp, server.port, profile));
+      return;
+    }
 
     final databaseName = 'dartitect-${profile.name}-rc8';
     final primary = await _openPage(
@@ -254,6 +292,7 @@ Future<void> _serve(
   required File sqlite,
   required File app,
   required File worker,
+  Uri? titectEndpoint,
 }) async {
   await for (final request in server) {
     if (profile.isolated) {
@@ -289,10 +328,131 @@ Future<void> _serve(
         );
         await request.response.addStream(sqlite.openRead());
       default:
-        request.response.statusCode = HttpStatus.notFound;
+        if (titectEndpoint != null &&
+            request.uri.path.startsWith('/reference/')) {
+          await _proxyTitect(request, titectEndpoint);
+        } else {
+          request.response.statusCode = HttpStatus.notFound;
+        }
     }
     await request.response.close();
   }
+}
+
+Future<void> _proxyTitect(HttpRequest request, Uri endpoint) async {
+  final client = HttpClient();
+  try {
+    final target = endpoint.resolve(
+      request.uri.toString().replaceFirst('/reference', ''),
+    );
+    final outgoing = await client.openUrl(request.method, target);
+    for (final name in [
+      'content-type',
+      'idempotency-key',
+      'titect-sync-protocol',
+    ]) {
+      final value = request.headers.value(name);
+      if (value != null) outgoing.headers.set(name, value);
+    }
+    var received = 0;
+    await for (final chunk in request) {
+      received += chunk.length;
+      if (received > 4096) {
+        outgoing.abort();
+        throw StateError('Fixture request byte limit.');
+      }
+      outgoing.add(chunk);
+    }
+    final response = await outgoing.close();
+    request.response.statusCode = response.statusCode;
+    request.response.headers.contentType = ContentType.json;
+    var sent = 0;
+    await for (final chunk in response) {
+      sent += chunk.length;
+      if (sent > 1048576) throw StateError('Fixture response byte limit.');
+      request.response.add(chunk);
+    }
+  } finally {
+    client.close(force: true);
+  }
+}
+
+Future<Map<String, Object?>> _runTitectProfile(
+  _CdpClient cdp,
+  int port,
+  _WebProfile profile,
+) async {
+  final databaseName = 'titect-${profile.name}';
+  final statuses = <String>[];
+  final page = await _openPage(
+    cdp,
+    port,
+    role: 'reload',
+    databaseName: databaseName,
+  );
+  for (final barrier in ['response', 'checkpoint']) {
+    final status = await _waitForStatus(cdp, page, 'BARRIER:');
+    _requireSafeStatus(status);
+    if (!status.endsWith(':$barrier'))
+      throw StateError('Unexpected web recovery barrier.');
+    statuses.add(status);
+    // This discards the actual JS execution context and reopens the persisted DB.
+    await cdp.call(
+      'Page.reload',
+      sessionId: page.sessionId,
+      params: {'ignoreCache': true},
+    );
+    await _waitForExpression(
+      cdp,
+      page,
+      'document.body.textContent !== ${jsonEncode(status)}',
+    );
+  }
+  statuses.add(await _waitForStatus(cdp, page, 'PASS:'));
+  await cdp.call('Target.closeTarget', params: {'targetId': page.targetId});
+  final reopened = await _openPage(
+    cdp,
+    port,
+    role: 'reopen',
+    databaseName: databaseName,
+  );
+  statuses.add(await _waitForStatus(cdp, reopened, 'PASS:'));
+  await cdp.call('Target.closeTarget', params: {'targetId': reopened.targetId});
+  final old = await _openPage(
+    cdp,
+    port,
+    role: 'old',
+    databaseName: databaseName,
+  );
+  statuses.add(await _waitForStatus(cdp, old, 'READY:'));
+  final replacement = await _openPage(
+    cdp,
+    port,
+    role: 'replacement',
+    databaseName: databaseName,
+  );
+  statuses.add(await _waitForStatus(cdp, replacement, 'PASS:'));
+  statuses.add(await _waitForStatus(cdp, old, 'PASS:'));
+  for (final status in statuses) {
+    _requireSafeStatus(status);
+    if (status.startsWith('PASS:') && !status.endsWith(':closed'))
+      throw StateError('Web resources were not closed.');
+  }
+  final isolated = await _evaluate(cdp, replacement, 'crossOriginIsolated');
+  if (isolated != profile.isolated)
+    throw StateError('Web isolation profile changed.');
+  await cdp.call(
+    'Target.closeTarget',
+    params: {'targetId': replacement.targetId},
+  );
+  await cdp.call('Target.closeTarget', params: {'targetId': old.targetId});
+  return {
+    'profile': profile.name,
+    'reloads': 2,
+    'reopened': true,
+    'staleWriterRejected': true,
+    'statuses': statuses,
+  };
 }
 
 Future<void> _verifyWasmMime(int port, _WebProfile profile) async {
@@ -322,7 +482,9 @@ Future<void> _verifyWasmMime(int port, _WebProfile profile) async {
 }
 
 Future<String> _findChrome() async {
-  for (final executable in const <String>[
+  for (final executable in <String>[
+    if (Platform.environment['CHROME_EXECUTABLE'] case final String explicit)
+      explicit,
     'google-chrome',
     'google-chrome-stable',
     'chromium',

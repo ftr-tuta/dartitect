@@ -6,6 +6,7 @@ import 'package:crypto/crypto.dart';
 
 import 'dependency_snippets.dart';
 import 'release_contract.dart';
+import 'titect_evidence.dart';
 
 /// Builds the deterministic, checksummed assets for the immutable Release.
 Future<void> main(List<String> arguments) async {
@@ -21,15 +22,19 @@ Future<void> main(List<String> arguments) async {
     );
     if (cohorts.workspace.isPrerelease ||
         cohorts.workspace.channel != 'stable' ||
-        !cohorts.workspace.tagMaterialized ||
-        cohorts.workspace.version != cohorts.distributed.version ||
-        cohorts.workspace.tag != cohorts.distributed.tag ||
+        cohorts.workspace.tag != 'v${cohorts.workspace.version}' ||
+        cohorts.workspace.semanticVersion.compareTo(
+              cohorts.distributed.semanticVersion,
+            ) <
+            0 ||
+        cohorts.workspace.tagMaterialized !=
+            (cohorts.workspace.version == cohorts.distributed.version) ||
         !cohorts.distributed.available ||
         cohorts.workspaceDependency['version'] != cohorts.workspace.version ||
         cohorts.distributedDependency['version'] !=
             cohorts.distributed.version) {
       throw StateError(
-        'Release assets reject a prerelease or split stable cohort: '
+        'Release assets reject a prerelease or inconsistent stable cohort: '
         '${cohorts.workspace.version} / ${cohorts.distributed.version}.',
       );
     }
@@ -48,6 +53,35 @@ Future<void> main(List<String> arguments) async {
       throw StateError('Readiness identity differs from release inputs.');
     }
 
+    final paired = Directory('${options.readiness.parent.path}/titect');
+    validateTitectEvidence(
+      root: root,
+      evidence: paired,
+      sourceSha: options.sourceSha,
+      sourceTree: options.sourceTree,
+      runId: options.ciRunId,
+      runAttempt: options.ciRunAttempt,
+    );
+    final recorded = (readinessObject['artifactDigests']! as List<Object?>)
+        .cast<Map<String, Object?>>();
+    final pairedDigests = <String, String>{};
+    for (final name in titectEvidenceFiles) {
+      final source = File('${paired.path}/$name');
+      final hash = await _digest(source);
+      final matches = recorded
+          .where((entry) => entry['path'] == 'titect/$name')
+          .toList();
+      if (matches.length != 1 ||
+          matches.single['kind'] != 'paired-evidence' ||
+          matches.single['sha256'] != hash) {
+        throw StateError(
+          'Paired evidence digest differs from readiness: $name.',
+        );
+      }
+      await source.copy('${options.output.path}/titect-$name');
+      pairedDigests['titect-$name'] = hash;
+    }
+
     await _writeJson(
       File('${options.output.path}/release-provenance.json'),
       <String, Object?>{
@@ -58,7 +92,11 @@ Future<void> main(List<String> arguments) async {
         'ciRunId': options.ciRunId,
         'ciRunAttempt': options.ciRunAttempt,
         'readinessSha256': await _digest(readiness),
+        'pairedEvidenceSha256': pairedDigests,
         'distribution': 'github-only',
+        'previousDistribution': contract['distributedCohort'],
+        'sourceTagMaterialized': cohorts.workspace.tagMaterialized,
+        'publicationAuthority': 'immutable-github-release',
       },
     );
 
@@ -90,11 +128,11 @@ Future<void> main(List<String> arguments) async {
     final snippets = <String, List<int>>{
       for (final package in order)
         'packages/$package.yaml': utf8.encode(
-          buildDependencySnippet(root, <String>[package]),
+          buildDependencySnippet(root, <String>[package], workspace: true),
         ),
       for (final entry in dependencySnippetProfiles.entries)
         'profiles/${entry.key}.yaml': utf8.encode(
-          buildDependencySnippet(root, entry.value),
+          buildDependencySnippet(root, entry.value, workspace: true),
         ),
     };
     await File('${options.output.path}/dependency-snippets.zip')

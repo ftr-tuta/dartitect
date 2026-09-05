@@ -44,3 +44,7 @@ tool/objectbox_native_fixture/lib/objectbox.dll
 **/*_plan.adoc
 **/*-plan.adoc
 **/plan.adoc
+
+# Python interoperability fixture caches
+__pycache__/
+*.pyc

@@ -120,14 +120,11 @@ final class RetryClassification {
         'Must be positive.',
       );
     }
-    var microseconds = initialDelay.inMicroseconds;
-    for (var index = 1; index < failedAttempt; index += 1) {
-      microseconds *= multiplier;
-      if (microseconds >= maxDelay.inMicroseconds) return maxDelay;
-    }
-    return Duration(
-      microseconds: microseconds.clamp(0, maxDelay.inMicroseconds),
-    );
+    return ExponentialBackoff(
+      initial: initialDelay,
+      multiplier: multiplier,
+      maximum: maxDelay,
+    ).delayAfter(failedAttempt);
   }
 }
 
@@ -136,6 +133,7 @@ final class MutationFailurePolicy {
   /// Keeps the local change queued with [retry] semantics.
   const MutationFailurePolicy.queued({
     this.retry = const RetryClassification.manual(),
+    this.retryAfter,
   }) : disposition = CommitDisposition.queued,
        syncState = EntitySyncState.pending;
 
@@ -143,19 +141,22 @@ final class MutationFailurePolicy {
   const MutationFailurePolicy.rejected()
     : disposition = CommitDisposition.rejected,
       syncState = EntitySyncState.rejected,
-      retry = const RetryClassification.manual();
+      retry = const RetryClassification.manual(),
+      retryAfter = null;
 
   /// Records a conflict for consumer-owned reconciliation.
   const MutationFailurePolicy.conflicted()
     : disposition = CommitDisposition.rejected,
       syncState = EntitySyncState.conflicted,
-      retry = const RetryClassification.manual();
+      retry = const RetryClassification.manual(),
+      retryAfter = null;
 
   /// Records an explicitly uncertain expected transport outcome.
   const MutationFailurePolicy.uncertain()
     : disposition = CommitDisposition.uncertain,
       syncState = EntitySyncState.uncertain,
-      retry = const RetryClassification.manual();
+      retry = const RetryClassification.manual(),
+      retryAfter = null;
 
   /// Durable command disposition.
   final CommitDisposition disposition;
@@ -165,6 +166,9 @@ final class MutationFailurePolicy {
 
   /// Retry policy for this failure.
   final RetryClassification retry;
+
+  /// Optional server minimum; malformed or excessive feedback defers delivery.
+  final RetryAfterHint? retryAfter;
 }
 
 /// Immutable durable operation stored in the consumer-owned outbox schema.
@@ -313,6 +317,7 @@ final class MutationCommand<A, K, T, F extends Object>
     Future<void> Function(Duration delay, CancellationSignal signal)?
     waitBeforeRetry,
     RetryExecutor? retryExecutor,
+    RetryBudget? retryBudget,
     CommandCrashReporter reporter = const NoOpCommandCrashReporter(),
     ReactiveObserverRegistration observer =
         const ReactiveObserverRegistration.borrowed(NoOpReactiveObserver()),
@@ -327,6 +332,7 @@ final class MutationCommand<A, K, T, F extends Object>
            ? idGenerator ?? SecureUuidV4Generator()
            : idGenerator,
        _classifyFailure = classifyFailure ?? _manualQueue,
+       _retryBudget = retryBudget,
        _retryExecutor =
            retryExecutor ??
            RetryExecutor(
@@ -383,6 +389,7 @@ final class MutationCommand<A, K, T, F extends Object>
   final IdGenerator? _idGenerator;
   final MutationFailurePolicy Function(F failure) _classifyFailure;
   final RetryExecutor _retryExecutor;
+  final RetryBudget? _retryBudget;
   final CommandCrashReporter _reporter;
   final ReactiveObserverRegistration _observerRegistration;
   final ChangeCauseRegistry _causeRegistry;
@@ -660,7 +667,7 @@ final class MutationCommand<A, K, T, F extends Object>
                 final retry = policy.retry;
                 if (retry.kind == RetryKind.transient &&
                     operation.attempt < retry.maxAttempts) {
-                  return const RetryDecision.retry();
+                  return RetryDecision.retry(retryAfter: policy.retryAfter);
                 }
                 return policy.disposition == CommitDisposition.uncertain
                     ? const RetryDecision.uncertain()
@@ -673,6 +680,7 @@ final class MutationCommand<A, K, T, F extends Object>
               ),
             ),
             cancellation: signal,
+            budget: _retryBudget,
           );
 
       switch (delivered) {
@@ -776,6 +784,18 @@ final class MutationCommand<A, K, T, F extends Object>
             ? EntitySyncState.uncertain
             : EntitySyncState.pending;
         await _markBestEffort(operation.withState(syncState: state));
+        if (error is RetryBudgetExceededException ||
+            error is BulkheadRejectedException) {
+          return Ok<MutationExecution<A, K, T, F>>(
+            _execution(
+              operation.withState(syncState: state),
+              deliveryMayHaveCommitted
+                  ? CommitDisposition.uncertain
+                  : CommitDisposition.queued,
+              state,
+            ),
+          );
+        }
       }
       Error.throwWithStackTrace(error, stackTrace);
     }

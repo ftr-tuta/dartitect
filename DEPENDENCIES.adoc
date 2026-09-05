@@ -118,10 +118,12 @@ official test pins.
 | Critical rules remain available in `dartitect scan`.
 
 | dartitect_dio
-| dio 5.11.0, dartitect, dartitect_observability, dartitect_transfer
+| dio 5.11.0, dartitect, dartitect_observability, dartitect_transfer,
+dartitect_resilience
 | APPROVED EXCEPTION
 | An adapter must expose the actual client types and lifecycle while mapping
-provider-neutral transfer requests without owning remote protocol policy.
+provider-neutral transfer requests and bounded HTTP retry metadata without
+owning remote protocol or retry policy.
 | Compose `Dio` directly at the application root.
 
 | dartitect_objectbox

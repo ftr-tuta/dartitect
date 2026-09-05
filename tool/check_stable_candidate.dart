@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'release_contract.dart';
+
 const _nativeCells = <String>[
   'android-media-floor-build',
   'android-media-current-emulator',
@@ -13,6 +15,7 @@ Future<void> main(List<String> arguments) async {
   try {
     final options = _Options.parse(arguments);
     final root = options.root ?? File.fromUri(Platform.script).parent.parent;
+    final cohorts = ReleaseCohortContract.read(root);
     final value = jsonDecode(
       File('${root.path}/tool/stable_candidate_contract.json')
           .readAsStringSync(),
@@ -24,7 +27,8 @@ Future<void> main(List<String> arguments) async {
         value['schemaVersion'] != 4 ||
         value['goal'] != 'V1.1-18' ||
         value['authority'] != 'github-actions' ||
-        value['stableVersion'] != '1.1.0' ||
+        value['stableVersion'] != cohorts.workspace.version ||
+        cohorts.workspace.isPrerelease ||
         value['requiresExactMainSha'] != true ||
         value['requiresReadinessArtifact'] != 'actions-readiness-v1' ||
         value['requiresUiQualityEvidence'] != 'ui-quality-v2' ||

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 
+import '../release/generated_release_manifest.dart';
 import 'project_lock.dart';
 
 final RegExp _rendererId = RegExp(r'^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$');
@@ -11,7 +12,7 @@ final RegExp _rendererId = RegExp(r'^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$');
 /// Independent compatibility versions used by generation and reporting.
 abstract final class DartitectGenerationVersions {
   /// Package release version; never used as generated ownership identity.
-  static const String release = '1.1.0';
+  static const String release = DartitectReleaseManifest.workspaceVersion;
 
   /// Cross-component generation protocol version.
   static const int protocol = 1;

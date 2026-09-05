@@ -609,6 +609,13 @@ once and rethrown; if delivery may have committed, persist uncertainty and stop
 only that key lane until repository audit, a deliberate pending decision, and
 `resume(key)`. On a new session, `recoverPending()` deduplicates idempotency keys
 and drains pending records only; uncertain records require human/domain policy.
+
+Borrow a consumer-owned `RetryBudget` through `MutationCommand.retryBudget`
+when delivery shares a bootstrap/reconnect admission window. Budget rejection
+preserves pending data and identity. Pass typed HTTP feedback through
+`MutationFailurePolicy.queued(retryAfter: ...)`; invalid/excessive feedback
+defers delivery, and valid server minimums survive jitter. Dispose borrowers
+before the budget's borrowed `Bulkhead`; budgets do not own providers.
 ''',
       'references/sync-execution.md': r'''# Sync execution
 
@@ -618,6 +625,15 @@ fencing, progress, and deadlines. Use `HeadlessSyncEndpoint` for a versioned
 sync definition adapted through `dartitect_jobs`, bounded duplicate retention,
 separate acceptance and terminal acknowledgements, and a fresh graph per
 admitted request.
+
+Opt into `package:dartitect_sync/dartitect_sync_titect.dart` only for explicitly
+selected Titect wire contracts. Keep opaque cursors and exact numeric tokens;
+require checked narrowing, bounded reads and parser allocation, explicit
+capabilities, and the same retry/read budgets at leaf attempts. The consumer
+owns transport, authentication, schemas, integrity policy, durable application
+proof and atomic authority checks. Confirm the checkpoint before the next page.
+Run the pinned Python/Dart VM/Chrome corpus and real persistent recovery;
+preliminary or divergent evidence cannot establish release compatibility.
 
 For a dataset run, the repository operation commits remote results into the authoritative local
 transaction before returning a confirmed checkpoint. A failed dependency blocks
@@ -640,7 +656,11 @@ retried automatically.
 
 Use `RetryExecutor` only with explicit expected-failure classification, budget,
 deadline, and injected timing/randomness in tests. An uncertain result always
-stops retry. Use `JobDispatcher` for generic bounded headless definitions and
+stops retry. Share one `RetryBudget` across the leaf operations used by refresh,
+reconnect, outbox, and headless sync in the same isolate. Queue and retry waits
+consume the scope window. Keep retries at one layer and pass the same budget
+to participating executors; no cross-isolate authority is inferred.
+Use `JobDispatcher` for generic bounded headless definitions and
 one graph per job; scheduling, recurrence, credentials, schemas, and durable
 cross-process policy remain outside the SDK. Use `TransferEngine` for chunks,
 pause/resume/cancel, checksums, and post-commit checkpoints; remote protocol,
@@ -853,6 +873,11 @@ waiting to `CancelToken`, invalidate only that generation, and deduplicate
 concurrent 401 logout. Authenticated replay stays disabled unless the consumer
 supplies both a retry client and an explicit semantic idempotency policy. Permit
 at most one replay and never repeat streams or multipart/upload bodies.
+
+Opt into `DioRetryAfterPolicy` on `DefaultDioJsonClient` or
+`captureDioException` for bounded typed metadata. Inject `RetryAfterParser`
+limits and the receipt clock; no raw headers are retained and no retry
+interceptor is installed. The consumer classifies 429/503 and uncertain writes.
 
 Use `DioObservabilityCapturePolicy.metadataOnly()` by default for fixed
 method/protocol/status/error-type facts and zero payload. Diagnostic capture is
@@ -1663,7 +1688,10 @@ For documentation and skill changes, require the documentation classification,
 link/include, changelog-cohort, skill-reference, managed snapshot/hash, and MCP
 catalog gates. Normal config accepts v3 only; v1/v2 are transactional fleet
 migration inputs. `sdkVersion` follows the workspace cohort; public consumption
-continues to use the latest materialized distributed stable cohort.
+continues to use the recorded materialized distributed stable cohort. A newer
+prepared stable cohort keeps `tagMaterialized` false. Release assets use the
+prepared workspace version and record the prior distribution; the immutable
+GitHub Release and attestation establish actual publication.
 ''',
     },
   ),

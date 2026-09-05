@@ -17,6 +17,8 @@ void main() {
       final root = await Directory.systemTemp.createTemp('stable-policy-v2-');
       addTearDown(() => root.delete(recursive: true));
       await Directory('${root.path}/tool').create(recursive: true);
+      await File('${sourceRoot.path}/tool/package_release_contract.json')
+          .copy('${root.path}/tool/package_release_contract.json');
       final destination = File(
         '${root.path}/tool/stable_candidate_contract.json',
       );
@@ -41,6 +43,7 @@ void main() {
         contains('requiresDeterministicActionsEvidence'),
       );
       expect(rejected.exitCode, 1);
+      expect(rejected.stderr, contains('Stable Actions policy is incomplete'));
     },
   );
 }

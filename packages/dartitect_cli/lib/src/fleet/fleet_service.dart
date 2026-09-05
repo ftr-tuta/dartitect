@@ -14,6 +14,7 @@ import '../model/model_generator.dart';
 import '../model/primary_constructor_migration.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
+import '../release/generated_release_manifest.dart';
 import '../verification/verification_service.dart';
 import 'v1_config_migration.dart';
 
@@ -431,14 +432,14 @@ final class DartitectFleetService {
     );
   }
 
-  /// Applies the registered migration chain through stable 1.1.0.
+  /// Applies the registered migration chain through the bundled stable cohort.
   Future<DartitectFleetReport> applyUpgrade(
     Iterable<String> roots, {
     required String targetCohort,
   }) async {
-    if (targetCohort != '1.1.0') {
+    if (targetCohort != DartitectReleaseManifest.consumptionVersion) {
       throw const FormatException(
-        'Fleet apply supports only the exact migration chain to 1.1.0.',
+        'Fleet apply supports only the exact migration chain to ${DartitectReleaseManifest.consumptionVersion}.',
       );
     }
     final projects = await _projects(roots);
@@ -503,8 +504,10 @@ final class DartitectFleetService {
     _FleetProject project,
     String targetCohort,
   ) async {
-    if (targetCohort != '1.1.0') {
-      throw const FormatException('Fleet upgrade accepts only --to=1.1.0.');
+    if (targetCohort != DartitectReleaseManifest.consumptionVersion) {
+      throw const FormatException(
+        'Fleet upgrade accepts only --to=${DartitectReleaseManifest.consumptionVersion}.',
+      );
     }
     final pubspec = await File(_join(project.directory.path, 'pubspec.yaml'))
         .readAsString();

@@ -8,7 +8,9 @@ truth for cross-package changes and migration guidance.
 
 ## Unreleased
 
-- No changes have been accepted after the stable `1.1.0` release.
+- Prepare the `1.2.0` GitHub-only lockstep cohort while retaining the recorded `v1.1.0` distribution.
+- Add bounded Retry-After parsing and opt-in Dio metadata, shared retry admission, and outbox deferral that preserves durable identity.
+- Derive CLI generation, skills, upgrade targets, and Release snippets from the prepared cohort. Publication remains a separate immutable GitHub transaction.
 
 ## 1.1.0 - 2026-09-03
 
