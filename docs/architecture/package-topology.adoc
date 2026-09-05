@@ -12,7 +12,7 @@ dartitect
 ├── dartitect_isolates
 ├── dartitect_flutter
 ├── dartitect_observability (+ sync)
-│   ├── dartitect_dio (+ transfer)
+│   ├── dartitect_dio (+ transfer, resilience)
 │   ├── dartitect_sentry
 │   └── dartitect_devtools
 ├── dartitect_drift (+ observability, sync)

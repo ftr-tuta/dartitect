@@ -28,7 +28,11 @@ retried automatically.
 
 Use `RetryExecutor` only with explicit expected-failure classification, budget,
 deadline, and injected timing/randomness in tests. An uncertain result always
-stops retry. Use `JobDispatcher` for generic bounded headless definitions and
+stops retry. Share one `RetryBudget` across the leaf operations used by refresh,
+reconnect, outbox, and headless sync in the same isolate. Queue and retry waits
+consume the scope window. Keep retries at one layer and pass the same budget
+to participating executors; no cross-isolate authority is inferred.
+Use `JobDispatcher` for generic bounded headless definitions and
 one graph per job; scheduling, recurrence, credentials, schemas, and durable
 cross-process policy remain outside the SDK. Use `TransferEngine` for chunks,
 pause/resume/cancel, checksums, and post-commit checkpoints; remote protocol,

@@ -14,7 +14,8 @@ or rate limiter when those policies must be visible at composition.
 ## When not to use
 
 Do not use it to invent a universal failure taxonomy or to hide retry inside a
-repository. It does not define HTTP, auth, scheduling, storage, or idempotency.
+repository. It parses optional HTTP retry feedback but leaves status semantics, auth,
+scheduling, storage, and idempotency to the consumer.
 
 ## Platforms and entrypoints
 
@@ -48,6 +49,9 @@ final result = await RetryExecutor().execute<int, MyFailure>(
 `SingleFlight` shares matching work without sharing waiter cancellation.
 `CircuitBreaker`, `Bulkhead`, and `RateLimiter` bound admission and retention.
 Clock, scheduler, and randomness interfaces support deterministic evidence.
+`RetryAfterParser` distinguishes absent, valid, invalid, and excessive feedback.
+`RetryBudget` shares attempt, elapsed, bulkhead, and rate admission across
+consumer operations. See [HTTP retry budgets](../../docs/guides/http-retry-feedback.md).
 
 ## Ownership and lifecycle
 

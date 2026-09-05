@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "artifact": "ui-quality-v2",
   "goal": "V1.1-FLUTTER-QUALITY",
-  "releaseVersion": "1.1.0",
+  "releaseVersion": "1.2.0",
   "stableVersion": "1.1.0",
   "topology": {"packages": 25, "publicEntrypoints": 35},
   "mode": "native-strict",

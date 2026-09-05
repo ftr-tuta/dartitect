@@ -51,8 +51,9 @@ void main(List<String> arguments) {
 /// Builds one deterministic `dependencies` block for direct packages only.
 String buildDependencySnippet(
   Directory root,
-  Iterable<String> selectedPackages,
-) {
+  Iterable<String> selectedPackages, {
+  bool workspace = false,
+}) {
   final contract = jsonDecode(
     File('${root.path}/tool/package_release_contract.json').readAsStringSync(),
   );
@@ -63,7 +64,10 @@ String buildDependencySnippet(
   }
   final order = (contract['dependencyOrder']! as List<Object?>).cast<String>();
   final dependency =
-      contract['distributedInternalDependency']! as Map<String, Object?>;
+      contract[workspace
+              ? 'workspaceInternalDependency'
+              : 'distributedInternalDependency']!
+          as Map<String, Object?>;
   final requested = selectedPackages.toSet();
   final unknown = requested.difference(order.toSet()).toList()..sort();
   if (unknown.isNotEmpty) {

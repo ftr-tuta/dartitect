@@ -21,15 +21,19 @@ Future<void> main(List<String> arguments) async {
     );
     if (cohorts.workspace.isPrerelease ||
         cohorts.workspace.channel != 'stable' ||
-        !cohorts.workspace.tagMaterialized ||
-        cohorts.workspace.version != cohorts.distributed.version ||
-        cohorts.workspace.tag != cohorts.distributed.tag ||
+        cohorts.workspace.tag != 'v${cohorts.workspace.version}' ||
+        cohorts.workspace.semanticVersion.compareTo(
+              cohorts.distributed.semanticVersion,
+            ) <
+            0 ||
+        cohorts.workspace.tagMaterialized !=
+            (cohorts.workspace.version == cohorts.distributed.version) ||
         !cohorts.distributed.available ||
         cohorts.workspaceDependency['version'] != cohorts.workspace.version ||
         cohorts.distributedDependency['version'] !=
             cohorts.distributed.version) {
       throw StateError(
-        'Release assets reject a prerelease or split stable cohort: '
+        'Release assets reject a prerelease or inconsistent stable cohort: '
         '${cohorts.workspace.version} / ${cohorts.distributed.version}.',
       );
     }
@@ -59,6 +63,9 @@ Future<void> main(List<String> arguments) async {
         'ciRunAttempt': options.ciRunAttempt,
         'readinessSha256': await _digest(readiness),
         'distribution': 'github-only',
+        'previousDistribution': contract['distributedCohort'],
+        'sourceTagMaterialized': cohorts.workspace.tagMaterialized,
+        'publicationAuthority': 'immutable-github-release',
       },
     );
 
@@ -90,11 +97,11 @@ Future<void> main(List<String> arguments) async {
     final snippets = <String, List<int>>{
       for (final package in order)
         'packages/$package.yaml': utf8.encode(
-          buildDependencySnippet(root, <String>[package]),
+          buildDependencySnippet(root, <String>[package], workspace: true),
         ),
       for (final entry in dependencySnippetProfiles.entries)
         'profiles/${entry.key}.yaml': utf8.encode(
-          buildDependencySnippet(root, entry.value),
+          buildDependencySnippet(root, entry.value, workspace: true),
         ),
     };
     await File('${options.output.path}/dependency-snippets.zip')

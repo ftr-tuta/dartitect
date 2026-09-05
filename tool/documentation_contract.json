@@ -28,6 +28,7 @@
       "docs/guides/git-release-consumption.md",
       "docs/guides/implementation-recipes.md",
       "docs/guides/incremental-operations.md",
+      "docs/guides/http-retry-feedback.md",
       "docs/guides/mcp.md",
       "docs/guides/model-generation.md",
       "docs/guides/native-strict-matrix.md",

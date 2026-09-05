@@ -29,7 +29,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       SOURCE_SHA: ${{ inputs.source_sha }}
       CI_RUN_ID: ${{ inputs.ci_run_id }}
-      EXPECTED_RELEASE_VERSION: "1.1.0"
+      EXPECTED_RELEASE_VERSION: "1.2.0"
       GITHUB_API_VERSION: "2026-03-10"
     steps:
       - name: Validate input shapes
@@ -62,25 +62,28 @@ jobs:
             echo "Release refuses workspace cohort ${workspace_version} on channel ${channel}." >&2
             exit 1
           }
-          jq -e --arg version "$EXPECTED_RELEASE_VERSION" --arg tag "$expected_tag" '
+          distributed_version="$(jq -er '.distributedCohort.version' tool/package_release_contract.json)"
+          distributed_tag="v${distributed_version}"
+          jq -e --arg version "$EXPECTED_RELEASE_VERSION" --arg tag "$expected_tag" \
+            --arg distributed "$distributed_version" --arg distributed_tag "$distributed_tag" '
             .workspaceCohort == {
               version: $version,
               channel: "stable",
               derivedTag: $tag,
-              tagMaterialized: true
+              tagMaterialized: ($version == $distributed)
             } and
             .distributedCohort == {
-              version: $version,
+              version: $distributed,
               channel: "stable",
-              tag: $tag,
+              tag: $distributed_tag,
               available: true
             } and
             .lockstep.enabled == true and
             .lockstep.version == $version and
             .lockstep.derivedTag == $tag and
             .workspaceInternalDependency.version == $version and
-            .distributedInternalDependency.version == $version and
-            .gitRelease.tag == $tag and
+            .distributedInternalDependency.version == $distributed and
+            .gitRelease.tag == $distributed_tag and
             .gitRelease.materialized == true and
             .gitRelease.annotated == true and
             .gitRelease.immutable == true and
@@ -89,10 +92,10 @@ jobs:
             .distribution.registryPublication == false and
             .distribution.latestRelease == true
           ' tool/package_release_contract.json >/dev/null || {
-            echo "Release contract is not the exact self-consistent stable 1.1.0 cohort." >&2
+            echo "Release contract is not a consistent prepared stable cohort." >&2
             exit 1
           }
-          jq -e --arg version "$EXPECTED_RELEASE_VERSION" --arg tag "$expected_tag" '
+          jq -e --arg version "$distributed_version" --arg tag "$distributed_tag" '
             .releaseVersion == $version and
             .releaseTag == $tag and
             .internalDependency.version == $version and
@@ -100,19 +103,19 @@ jobs:
             .release.immutable == true and
             .release.registryPublication == false
           ' tool/distribution_policy.json >/dev/null || {
-            echo "Distribution policy differs from the exact stable 1.1.0 cohort." >&2
+            echo "Distribution policy differs from the recorded stable cohort." >&2
             exit 1
           }
           jq -e --arg version "$EXPECTED_RELEASE_VERSION" '
             .stableVersion == $version and .promotionBlockers == []
           ' tool/stable_candidate_contract.json >/dev/null || {
-            echo "Stable candidate contract differs from 1.1.0." >&2
+            echo "Stable candidate contract differs from the prepared cohort." >&2
             exit 1
           }
-          jq -e --arg version "$EXPECTED_RELEASE_VERSION" '
-            .releaseVersion == $version and .stableVersion == $version
+          jq -e --arg version "$EXPECTED_RELEASE_VERSION" --arg distributed "$distributed_version" '
+            .releaseVersion == $version and .stableVersion == $distributed
           ' tool/ui_quality_contract.json >/dev/null || {
-            echo "UI quality contract differs from stable 1.1.0." >&2
+            echo "UI quality contract differs from the prepared and recorded cohorts." >&2
             exit 1
           }
           [[ "$release_tag" == "$expected_tag" ]] || {
@@ -175,6 +178,19 @@ jobs:
               echo "ci_run_id has no unique successful CI / Required job." >&2
               exit 1
             }
+      - name: Require successful Security for the exact main SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          security_runs="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/security.yaml/runs?per_page=100" \
+            --header "X-GitHub-Api-Version: ${GITHUB_API_VERSION}")"
+          jq -e --arg sha "$SOURCE_SHA" '
+            [.workflow_runs[] | select(.head_sha == $sha and .head_branch == "main")][0] |
+            .name == "Security" and .conclusion == "success"
+          ' <<<"$security_runs" >/dev/null || {
+            echo "Security has no successful latest run for the exact main source SHA." >&2
+            exit 1
+          }
       - name: Download actions-readiness-v1 from the referenced run
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -201,10 +217,19 @@ jobs:
             --source-tree="$source_tree" \
             --ci-run-id="$CI_RUN_ID" \
             --ci-run-attempt="$CI_RUN_ATTEMPT"
+          awk '
+            /^## Unreleased$/ { in_notes = 1; found = 1; next }
+            in_notes && /^## / { exit }
+            in_notes { print; if (NF) content = 1 }
+            END { if (!found || !content) exit 1 }
+          ' CHANGELOG.md >build/release-changes.md
           jq -n \
+            --arg version "$EXPECTED_RELEASE_VERSION" \
             --arg sha "$SOURCE_SHA" \
             --argjson run "$CI_RUN_ID" \
-            '"Stable GitHub-only release of the 25-package Dartitect lockstep cohort.\n\nSource: `" + $sha + "`\nCI: https://github.com/${{ github.repository }}/actions/runs/" + ($run | tostring)' \
+            --arg previous "$(jq -er '.previousDistribution.tag' build/release-assets/release-provenance.json)" \
+            --rawfile changes build/release-changes.md \
+            '"Dartitect " + $version + " is the stable GitHub-only release of all 25 lockstep packages.\n\n## Changes\n" + $changes + "\n## Publication provenance\n\nThis immutable Release records publication of `v" + $version + "`. The source retains the previously confirmed `" + $previous + "` distribution. Dependency snippets and the Git manifest in these assets resolve all packages from `v" + $version + "`.\n\nSource: `" + $sha + "`\nCI: https://github.com/${{ github.repository }}/actions/runs/" + ($run | tostring) + "\n\nSee `release-provenance.json`, `SHA256SUMS`, and the asset attestations for exact build and integrity evidence."' \
             --raw-output >build/release-notes.md
       - name: Inspect tag and Release state before any write
         id: state
@@ -227,7 +252,7 @@ jobs:
               --arg tag "$RELEASE_TAG" \
               --arg sha "$SOURCE_SHA" \
               --arg message "$RELEASE_TITLE" \
-              '.tag == $tag and .object.type == "commit" and .object.sha == $sha and .message == $message' \
+              '.tag == $tag and .object.type == "commit" and .object.sha == $sha and .message == $message and .tagger.name == "ftr" and .tagger.email == "ftr@tuta.com"' \
               <<<"$tag_object" >/dev/null || {
                 echo "Existing annotated tag differs from the authorized transaction." >&2
                 exit 1
@@ -303,12 +328,12 @@ jobs:
         run: |
           set -euo pipefail
           api_header="X-GitHub-Api-Version: ${GITHUB_API_VERSION}"
+          jq -n --arg tag "$RELEASE_TAG" --arg message "$RELEASE_TITLE" \
+            --arg sha "$SOURCE_SHA" --arg date "$(git show -s --format=%cI "$SOURCE_SHA")" \
+            '{tag: $tag, message: $message, object: $sha, type: "commit", tagger: {name: "ftr", email: "ftr@tuta.com", date: $date}}' \
+            >build/release-tag-object.json
           tag_object="$(gh api "repos/${GITHUB_REPOSITORY}/git/tags" \
-            --header "$api_header" --method POST \
-            -f tag="$RELEASE_TAG" \
-            -f message="$RELEASE_TITLE" \
-            -f object="$SOURCE_SHA" \
-            -f type=commit)"
+            --header "$api_header" --method POST --input build/release-tag-object.json)"
           tag_object_sha="$(jq -er .sha <<<"$tag_object")"
           gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
             --header "$api_header" --method POST \

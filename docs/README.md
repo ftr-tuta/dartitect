@@ -1,9 +1,9 @@
 # Dartitect documentation
 
 This is the canonical task-oriented entrypoint for Dartitect documentation.
-Public guidance is maintained in English. The workspace and latest public
-distribution are the stable GitHub-only `1.1.0` / `v1.1.0` cohort. All 25
-packages resolve from that one annotated, immutable Release tag.
+Public guidance is maintained in English. The workspace prepares the stable `1.2.0` cohort. The recorded public
+distribution remains the GitHub-only `1.1.0` / `v1.1.0` cohort until the
+new immutable Release records publication of all 25 packages.
 
 ## Adopt Dartitect in a greenfield project
 
@@ -41,6 +41,7 @@ packages resolve from that one annotated, immutable Release tag.
 ## Add persistence, transport, and optional capabilities
 
 - Wire consumer-owned providers with [Adapters](guides/adapters.md).
+- Coordinate server feedback with [HTTP retry budgets](guides/http-retry-feedback.md).
 - Choose storage and synchronization boundaries in the
   [ecosystem selection matrix](guides/ecosystem-selection.md) and
   [implementation recipes](guides/implementation-recipes.md).

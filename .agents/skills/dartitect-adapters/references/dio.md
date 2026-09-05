@@ -16,6 +16,11 @@ concurrent 401 logout. Authenticated replay stays disabled unless the consumer
 supplies both a retry client and an explicit semantic idempotency policy. Permit
 at most one replay and never repeat streams or multipart/upload bodies.
 
+Opt into `DioRetryAfterPolicy` on `DefaultDioJsonClient` or
+`captureDioException` for bounded typed metadata. Inject `RetryAfterParser`
+limits and the receipt clock; no raw headers are retained and no retry
+interceptor is installed. The consumer classifies 429/503 and uncertain writes.
+
 Use `DioObservabilityCapturePolicy.metadataOnly()` by default for fixed
 method/protocol/status/error-type facts and zero payload. Diagnostic capture is
 explicit, requires classifications, and accepts only already-materialized

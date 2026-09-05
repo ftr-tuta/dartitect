@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'release_contract.dart';
+
 const _entrypoints = <String>[
   'package:dartitect_flutter/dartitect_flutter_ui.dart',
   'package:dartitect_flutter_testing/dartitect_flutter_testing.dart',
@@ -102,10 +104,14 @@ Future<void> main(List<String> arguments) async {
     require(contract['schemaVersion'] == 2, 'Unsupported contract schema.');
     require(contract['artifact'] == 'ui-quality-v2', 'Wrong artifact name.');
     require(contract['goal'] == 'V1.1-FLUTTER-QUALITY', 'Wrong quality goal.');
-    require(contract['releaseVersion'] == '1.1.0', 'Wrong cohort version.');
+    final cohorts = ReleaseCohortContract.read(root);
     require(
-      contract['stableVersion'] == '1.1.0',
-      'The distributed stable version is not 1.1.0.',
+      contract['releaseVersion'] == cohorts.workspace.version,
+      'Wrong cohort version.',
+    );
+    require(
+      contract['stableVersion'] == cohorts.distributed.version,
+      'The recorded distributed stable version differs.',
     );
     require(contract['mode'] == 'native-strict', 'Native Strict is required.');
 

@@ -558,6 +558,9 @@ jobs:
       - name: Exercise modeling and JSON in hosted Chrome
         run: dart test --platform chrome
         working-directory: packages/dartitect_modeling
+      - name: Exercise bounded HTTP feedback and shared retry budgets in Chrome
+        run: dart test --platform chrome
+        working-directory: packages/dartitect_resilience
       - name: Exercise Flutter UI runtime in hosted Chrome
         run: flutter test --platform chrome
         working-directory: packages/dartitect_flutter

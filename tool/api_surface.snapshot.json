@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "sdkVersion": "1.1.0",
+  "sdkVersion": "1.2.0",
   "entrypoints": {
     "packages/dartitect/lib/dartitect.dart": {
       "defaultAudience": "application-facing",
@@ -30793,7 +30793,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "adapter-author",
-              "declaration": "DefaultDioJsonClient(Dio dio)",
+              "declaration": "DefaultDioJsonClient(Dio dio, {DioRetryAfterPolicy? retryAfter})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [
@@ -30807,6 +30807,14 @@
                   "declaration": "Dio dio",
                   "type": "Dio",
                   "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "retryAfter",
+                  "declaration": "{DioRetryAfterPolicy? retryAfter}",
+                  "type": "DioRetryAfterPolicy?",
+                  "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
                 }
@@ -30823,6 +30831,18 @@
                 "final"
               ],
               "type": "Dio"
+            },
+            {
+              "name": "retryAfter",
+              "kind": "field",
+              "audience": "adapter-author",
+              "declaration": "DioRetryAfterPolicy? retryAfter",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "DioRetryAfterPolicy?"
             },
             {
               "name": "execute",
@@ -33330,7 +33350,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "adapter-author",
-              "declaration": "DioHttpFailure({required int? statusCode})",
+              "declaration": "DioHttpFailure({required int? statusCode, RetryAfterHint? retryAfter})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [
@@ -33346,8 +33366,28 @@
                   "kind": "requiredNamed",
                   "default": null,
                   "annotations": []
+                },
+                {
+                  "name": "retryAfter",
+                  "declaration": "{RetryAfterHint? retryAfter}",
+                  "type": "RetryAfterHint?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
                 }
               ]
+            },
+            {
+              "name": "retryAfter",
+              "kind": "field",
+              "audience": "adapter-author",
+              "declaration": "RetryAfterHint? retryAfter",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "RetryAfterHint?"
             },
             {
               "name": "statusCode",
@@ -34664,6 +34704,99 @@
                 "final"
               ],
               "type": "int"
+            }
+          ]
+        },
+        {
+          "name": "DioRetryAfterPolicy",
+          "kind": "class",
+          "audience": "adapter-author",
+          "declaration": "final class DioRetryAfterPolicy",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "adapter-author",
+              "declaration": "DioRetryAfterPolicy({required RetryAfterParser parser, required ResilienceClock clock})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "DioRetryAfterPolicy",
+              "parameters": [
+                {
+                  "name": "parser",
+                  "declaration": "{required RetryAfterParser parser}",
+                  "type": "RetryAfterParser",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "clock",
+                  "declaration": "{required ResilienceClock clock}",
+                  "type": "ResilienceClock",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "clock",
+              "kind": "field",
+              "audience": "adapter-author",
+              "declaration": "ResilienceClock clock",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "ResilienceClock"
+            },
+            {
+              "name": "parser",
+              "kind": "field",
+              "audience": "adapter-author",
+              "declaration": "RetryAfterParser parser",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "RetryAfterParser"
+            },
+            {
+              "name": "extract",
+              "kind": "method",
+              "audience": "adapter-author",
+              "declaration": "RetryAfterHint extract(Headers headers)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "RetryAfterHint",
+              "parameters": [
+                {
+                  "name": "headers",
+                  "declaration": "Headers headers",
+                  "type": "Headers",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
             }
           ]
         },
@@ -36389,7 +36522,7 @@
           "name": "captureDioException",
           "kind": "function",
           "audience": "adapter-author",
-          "declaration": "Future<Result<T, DioFailure>> captureDioException<T>(Future<T> Function() request)",
+          "declaration": "Future<Result<T, DioFailure>> captureDioException<T>(Future<T> Function() request, {DioRetryAfterPolicy? retryAfter})",
           "deprecated": false,
           "annotations": [],
           "modifiers": [
@@ -36410,6 +36543,14 @@
               "declaration": "Future<T> Function() request",
               "type": "Future<T> Function()",
               "kind": "requiredPositional",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "retryAfter",
+              "declaration": "{DioRetryAfterPolicy? retryAfter}",
+              "type": "DioRetryAfterPolicy?",
+              "kind": "optionalNamed",
               "default": null,
               "annotations": []
             }
@@ -97709,6 +97850,440 @@
           ]
         },
         {
+          "name": "RetryAfterHint",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class RetryAfterHint",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "absent",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "RetryAfterHint.absent()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "RetryAfterHint",
+              "parameters": []
+            },
+            {
+              "name": "excessive",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "RetryAfterHint.excessive()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "RetryAfterHint",
+              "parameters": []
+            },
+            {
+              "name": "invalid",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "RetryAfterHint.invalid()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "RetryAfterHint",
+              "parameters": []
+            },
+            {
+              "name": "valid",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "RetryAfterHint.valid(Duration minimumDelay)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "factory"
+              ],
+              "typeParameters": [],
+              "returnType": "RetryAfterHint",
+              "parameters": [
+                {
+                  "name": "minimumDelay",
+                  "declaration": "Duration minimumDelay",
+                  "type": "Duration",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "kind",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "RetryAfterKind kind",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "RetryAfterKind"
+            },
+            {
+              "name": "minimumDelay",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Duration? minimumDelay",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Duration?"
+            }
+          ]
+        },
+        {
+          "name": "RetryAfterParser",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class RetryAfterParser",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "RetryAfterParser({required Duration maximumDelay, int maximumFieldBytes = 128})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "RetryAfterParser",
+              "parameters": [
+                {
+                  "name": "maximumDelay",
+                  "declaration": "{required Duration maximumDelay}",
+                  "type": "Duration",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "maximumFieldBytes",
+                  "declaration": "{int maximumFieldBytes = 128}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "128",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "maximumDelay",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Duration maximumDelay",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Duration"
+            },
+            {
+              "name": "maximumFieldBytes",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maximumFieldBytes",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "parse",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "RetryAfterHint parse(String? field, {required DateTime receivedAt})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "RetryAfterHint",
+              "parameters": [
+                {
+                  "name": "field",
+                  "declaration": "String? field",
+                  "type": "String?",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "receivedAt",
+                  "declaration": "{required DateTime receivedAt}",
+                  "type": "DateTime",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "RetryBudget",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class RetryBudget",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "RetryBudget({required int maxAttempts, required Duration maxElapsed, required Bulkhead bulkhead, required RateLimiter rateLimiter, ResilienceClock clock = const SystemResilienceClock()})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "RetryBudget",
+              "parameters": [
+                {
+                  "name": "maxAttempts",
+                  "declaration": "{required int maxAttempts}",
+                  "type": "int",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "maxElapsed",
+                  "declaration": "{required Duration maxElapsed}",
+                  "type": "Duration",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "bulkhead",
+                  "declaration": "{required Bulkhead bulkhead}",
+                  "type": "Bulkhead",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "rateLimiter",
+                  "declaration": "{required RateLimiter rateLimiter}",
+                  "type": "RateLimiter",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "clock",
+                  "declaration": "{ResilienceClock clock = const SystemResilienceClock()}",
+                  "type": "ResilienceClock",
+                  "kind": "optionalNamed",
+                  "default": "const SystemResilienceClock()",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "bulkhead",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Bulkhead bulkhead",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Bulkhead"
+            },
+            {
+              "name": "maxAttempts",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maxAttempts",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "maxElapsed",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Duration maxElapsed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "Duration"
+            },
+            {
+              "name": "rateLimiter",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "RateLimiter rateLimiter",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "RateLimiter"
+            },
+            {
+              "name": "attemptsStarted",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "int get attemptsStarted",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "stopReason",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "RetryBudgetStop? get stopReason",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "RetryBudgetStop?",
+              "parameters": []
+            },
+            {
+              "name": "canWait",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "bool canWait(Duration delay)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": [
+                {
+                  "name": "delay",
+                  "declaration": "Duration delay",
+                  "type": "Duration",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "startAttempt",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void startAttempt()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "RetryBudgetExceededException",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class RetryBudgetExceededException implements Exception",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "Exception"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "RetryBudgetExceededException(RetryBudgetStop reason)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "RetryBudgetExceededException",
+              "parameters": [
+                {
+                  "name": "reason",
+                  "declaration": "RetryBudgetStop reason",
+                  "type": "RetryBudgetStop",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "reason",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "RetryBudgetStop reason",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "RetryBudgetStop"
+            }
+          ]
+        },
+        {
           "name": "RetryDecision",
           "kind": "class",
           "audience": "application-facing",
@@ -97727,7 +98302,7 @@
               "name": "retry",
               "kind": "constructor",
               "audience": "application-facing",
-              "declaration": "RetryDecision.retry()",
+              "declaration": "RetryDecision.retry({RetryAfterHint? retryAfter})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [
@@ -97735,7 +98310,16 @@
               ],
               "typeParameters": [],
               "returnType": "RetryDecision",
-              "parameters": []
+              "parameters": [
+                {
+                  "name": "retryAfter",
+                  "declaration": "{RetryAfterHint? retryAfter}",
+                  "type": "RetryAfterHint?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
             },
             {
               "name": "stop",
@@ -97776,6 +98360,18 @@
                 "final"
               ],
               "type": "RetryDecisionKind"
+            },
+            {
+              "name": "retryAfter",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "RetryAfterHint? retryAfter",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "RetryAfterHint?"
             }
           ]
         },
@@ -97835,7 +98431,7 @@
               "name": "execute",
               "kind": "method",
               "audience": "application-facing",
-              "declaration": "Future<Result<T, F>> execute<T, F extends Object>({required Future<Result<T, F>> Function(int, CancellationSignal) operation, required RetryPolicy<F> policy, required CancellationSignal cancellation, DateTime? deadline})",
+              "declaration": "Future<Result<T, F>> execute<T, F extends Object>({required Future<Result<T, F>> Function(int, CancellationSignal) operation, required RetryPolicy<F> policy, required CancellationSignal cancellation, DateTime? deadline, RetryBudget? budget})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -97883,6 +98479,14 @@
                   "name": "deadline",
                   "declaration": "{DateTime? deadline}",
                   "type": "DateTime?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "budget",
+                  "declaration": "{RetryBudget? budget}",
+                  "type": "RetryBudget?",
                   "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
@@ -98489,6 +99093,202 @@
                 "static"
               ],
               "type": "List<CircuitBreakerState>"
+            }
+          ]
+        },
+        {
+          "name": "RetryAfterKind",
+          "kind": "enum",
+          "audience": "application-facing",
+          "declaration": "enum RetryAfterKind",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "RetryAfterKind()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "RetryAfterKind",
+              "parameters": []
+            },
+            {
+              "name": "absent",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "RetryAfterKind absent",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "RetryAfterKind"
+            },
+            {
+              "name": "excessive",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "RetryAfterKind excessive",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "RetryAfterKind"
+            },
+            {
+              "name": "invalid",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "RetryAfterKind invalid",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "RetryAfterKind"
+            },
+            {
+              "name": "valid",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "RetryAfterKind valid",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "RetryAfterKind"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "List<RetryAfterKind> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<RetryAfterKind>"
+            }
+          ]
+        },
+        {
+          "name": "RetryBudgetStop",
+          "kind": "enum",
+          "audience": "application-facing",
+          "declaration": "enum RetryBudgetStop",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "RetryBudgetStop()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "RetryBudgetStop",
+              "parameters": []
+            },
+            {
+              "name": "attempts",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "RetryBudgetStop attempts",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "RetryBudgetStop"
+            },
+            {
+              "name": "clockRegression",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "RetryBudgetStop clockRegression",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "RetryBudgetStop"
+            },
+            {
+              "name": "elapsed",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "RetryBudgetStop elapsed",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "RetryBudgetStop"
+            },
+            {
+              "name": "rate",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "RetryBudgetStop rate",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "RetryBudgetStop"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "List<RetryBudgetStop> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<RetryBudgetStop>"
             }
           ]
         },
@@ -99554,7 +100354,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "application-facing",
-              "declaration": "MutationCommand<A, K, T, F>({required MutationOutboxStore<K, A, F> store, required Future<Result<T, F>> Function(OutboxOperation<K, A>, CancellationSignal) synchronize, String Function(K, A)? createIdempotencyKey, IdGenerator? idGenerator, MutationFailurePolicy Function(F)? classifyFailure, Future<void> Function(Duration, CancellationSignal)? waitBeforeRetry, RetryExecutor? retryExecutor, CommandCrashReporter reporter = const NoOpCommandCrashReporter(), ReactiveObserverRegistration observer = const ReactiveObserverRegistration.borrowed(NoOpReactiveObserver()), ChangeCauseRegistry? causeRegistry, int Function()? monotonicMicroseconds, int maxConcurrentKeys = 4, int maxQueuePerKey = 64})",
+              "declaration": "MutationCommand<A, K, T, F>({required MutationOutboxStore<K, A, F> store, required Future<Result<T, F>> Function(OutboxOperation<K, A>, CancellationSignal) synchronize, String Function(K, A)? createIdempotencyKey, IdGenerator? idGenerator, MutationFailurePolicy Function(F)? classifyFailure, Future<void> Function(Duration, CancellationSignal)? waitBeforeRetry, RetryExecutor? retryExecutor, RetryBudget? retryBudget, CommandCrashReporter reporter = const NoOpCommandCrashReporter(), ReactiveObserverRegistration observer = const ReactiveObserverRegistration.borrowed(NoOpReactiveObserver()), ChangeCauseRegistry? causeRegistry, int Function()? monotonicMicroseconds, int maxConcurrentKeys = 4, int maxQueuePerKey = 64})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -99613,6 +100413,14 @@
                   "name": "retryExecutor",
                   "declaration": "{RetryExecutor? retryExecutor}",
                   "type": "RetryExecutor?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "retryBudget",
+                  "declaration": "{RetryBudget? retryBudget}",
+                  "type": "RetryBudget?",
                   "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
@@ -100241,7 +101049,7 @@
               "name": "queued",
               "kind": "constructor",
               "audience": "application-facing",
-              "declaration": "MutationFailurePolicy.queued({RetryClassification retry = const RetryClassification.manual()})",
+              "declaration": "MutationFailurePolicy.queued({RetryClassification retry = const RetryClassification.manual(), RetryAfterHint? retryAfter})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [
@@ -100256,6 +101064,14 @@
                   "type": "RetryClassification",
                   "kind": "optionalNamed",
                   "default": "const RetryClassification.manual()",
+                  "annotations": []
+                },
+                {
+                  "name": "retryAfter",
+                  "declaration": "{RetryAfterHint? retryAfter}",
+                  "type": "RetryAfterHint?",
+                  "kind": "optionalNamed",
+                  "default": null,
                   "annotations": []
                 }
               ]
@@ -100311,6 +101127,18 @@
                 "final"
               ],
               "type": "RetryClassification"
+            },
+            {
+              "name": "retryAfter",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "RetryAfterHint? retryAfter",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "RetryAfterHint?"
             },
             {
               "name": "syncState",

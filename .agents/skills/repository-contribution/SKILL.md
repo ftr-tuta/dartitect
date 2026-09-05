@@ -43,8 +43,10 @@ For documentation and skill work, update
 hand-edit the catalog-managed skills, and update the local skill directly. Keep
 all 25 changelogs on the same non-empty `Unreleased` entry and keep `1.1.0` as
 the first numbered version. The current source cohort may be newer than the
-public version; consumption guidance stays on the latest materialized stable
-tag. Run documentation classification/link checks,
+public version, including a prepared stable version with an unmaterialized
+tag. Preserve the recorded distribution during preparation; release assets
+resolve the prepared cohort and the immutable GitHub Release records actual
+publication and provenance. Run documentation classification/link checks,
 skill coverage/reference/snapshot checks, the package release contract, managed
 skill validation, and generated-catalog freshness before committing.
 
