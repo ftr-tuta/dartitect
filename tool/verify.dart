@@ -210,6 +210,7 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>[
       'test',
       'tool/check_actions_readiness_test.dart',
+      'tool/titect_evidence_test.dart',
       'tool/check_release_readiness_test.dart',
     ]),
     const _Command('dart', <String>[

@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 
+import 'titect_evidence.dart';
+
 final _digestPattern = RegExp(r'^[0-9a-f]{64}$');
 
 /// Validates the immutable Actions readiness policy or a formal current-run
@@ -70,6 +72,7 @@ void _validatePolicy(
     'macos',
     'android-emulator',
     'drift-web',
+    'titect-paired',
     'clean-clone',
     'git-consumption',
     'osv',
@@ -105,6 +108,12 @@ void _validatePolicy(
     'tool/check_release_readiness.dart',
     'tool/flutter_quality_performance_contract.json',
     'tool/ui_quality_contract.json',
+    'tool/titect_fixture/pin.json',
+    'tool/titect_fixture/vectors.json',
+    'tool/titect_evidence.dart',
+    'tool/check_titect_evidence.dart',
+    'tool/run_titect_conformance.py',
+    'tool/run_titect_recovery.py',
   ])) {
     errors.add('The readiness repository artifact set is not exact.');
   }
@@ -220,6 +229,7 @@ Future<void> _validateFormal(
   final repositoryArtifacts =
       _stringsOrNull(policy['repositoryArtifacts']) ?? const <String>[];
   final expectedPaths = <String>{
+    for (final name in titectEvidenceFiles) 'titect/$name',
     for (final cell in nativeCells) 'native/$cell.json',
     for (final path in repositoryArtifacts) 'repository/$path',
   };
@@ -239,7 +249,8 @@ Future<void> _validateFormal(
         expected is! String ||
         !_digestPattern.hasMatch(expected) ||
         (item['kind'] != 'native-manifest' &&
-            item['kind'] != 'repository-artifact') ||
+            item['kind'] != 'repository-artifact' &&
+            item['kind'] != 'paired-evidence') ||
         !_sameSet(item.keys.toSet(), const <String>{
           'path',
           'kind',
@@ -251,6 +262,20 @@ Future<void> _validateFormal(
     final file = File('${artifactRoot.path}/$path');
     if (!file.existsSync() || await _digest(file) != expected) {
       errors.add('Readiness artifact was altered or is missing: $path.');
+    }
+  }
+  if (errors.isEmpty) {
+    try {
+      validateTitectEvidence(
+        root: root,
+        evidence: Directory('${artifactRoot.path}/titect'),
+        sourceSha: sourceSha!,
+        sourceTree: sourceTree,
+        runId: runId!,
+        runAttempt: runAttempt!,
+      );
+    } on Object catch (error) {
+      errors.add('$error');
     }
   }
 }

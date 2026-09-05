@@ -626,6 +626,15 @@ sync definition adapted through `dartitect_jobs`, bounded duplicate retention,
 separate acceptance and terminal acknowledgements, and a fresh graph per
 admitted request.
 
+Opt into `package:dartitect_sync/dartitect_sync_titect.dart` only for explicitly
+selected Titect wire contracts. Keep opaque cursors and exact numeric tokens;
+require checked narrowing, bounded reads and parser allocation, explicit
+capabilities, and the same retry/read budgets at leaf attempts. The consumer
+owns transport, authentication, schemas, integrity policy, durable application
+proof and atomic authority checks. Confirm the checkpoint before the next page.
+Run the pinned Python/Dart VM/Chrome corpus and real persistent recovery;
+preliminary or divergent evidence cannot establish release compatibility.
+
 For a dataset run, the repository operation commits remote results into the authoritative local
 transaction before returning a confirmed checkpoint. A failed dependency blocks
 only downstream datasets; independent branches continue.

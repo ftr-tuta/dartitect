@@ -48,6 +48,7 @@ const _coordinatedJobs = <String>[
   'macos',
   'android-emulator',
   'drift-web',
+  'titect-paired',
   'clean-clone',
   'git-consumption',
   'osv',
@@ -117,7 +118,7 @@ Future<void> main(List<String> arguments) async {
 
     final topology = _map(contract['topology']);
     require(topology['packages'] == 25, 'Expected 25 packages.');
-    require(topology['publicEntrypoints'] == 35, 'Expected 35 entrypoints.');
+    require(topology['publicEntrypoints'] == 36, 'Expected 36 entrypoints.');
     require(
       _same(_strings(contract['entrypoints']), _entrypoints),
       'UI entrypoint evidence is incomplete.',
@@ -245,7 +246,7 @@ Future<void> main(List<String> arguments) async {
           actions['readinessArtifact'] == 'actions-readiness-v1' &&
           _same(_strings(actions['coordinatedJobs']), _coordinatedJobs) &&
           _same(_strings(actions['linuxMatrixCells']), _linuxMatrixCells) &&
-          actions['coordinatedExecutions'] == 9 &&
+          actions['coordinatedExecutions'] == 10 &&
           actions['hostedRunnersOnly'] == true,
       'Deterministic GitHub Actions evidence is incomplete.',
     );
@@ -350,8 +351,8 @@ Future<void> main(List<String> arguments) async {
     if (failures.isNotEmpty) throw StateError(failures.join('\n'));
     stdout.writeln(
       'ui-quality-v2 passed: seven executable techniques, 25 packages, '
-      '35 entrypoints, six platforms, official Flutter tooling, and '
-      'nine deterministic GitHub Actions executions.',
+      '36 entrypoints, six platforms, official Flutter tooling, and '
+      'ten deterministic GitHub Actions executions.',
     );
   } on Object catch (error) {
     stderr.writeln('UI quality validation failed: $error');

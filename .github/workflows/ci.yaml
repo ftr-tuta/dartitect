@@ -678,6 +678,95 @@ jobs:
             -r
             ./
 
+  titect-paired:
+    name: Titect / Paired conformance and recovery
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: titect
+          POSTGRES_PASSWORD: titect-fixture-only
+          POSTGRES_DB: titect
+        ports:
+          - 55438:5432
+        options: >-
+          --health-cmd "pg_isready -U titect"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      CHROME_EXECUTABLE: /usr/bin/google-chrome
+      TITECT_POSTGRES_DSN: postgresql://titect:titect-fixture-only@127.0.0.1:55438/titect
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: "3.47.1"
+          channel: stable
+          cache: true
+      - name: Install Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14.4"
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.11.7"
+      - name: Resolve pinned consumer and reference dependencies
+        run: |
+          flutter pub get
+          python3 tool/prepare_titect_reference.py build/pytitect-reference
+          uv sync --project build/pytitect-reference --frozen --extra fastapi --extra sqlalchemy
+          uv sync --project build/pytitect-reference/examples/django_reference --frozen
+          google-chrome --version
+          dart build cli --root-package dartitect_drift -t tool/titect_fixture/composition/native_actor.dart -o build/titect-native
+      - name: Reject deliberate wire and evidence drift
+        run: python3 tool/titect_fixture_tools_test.py
+      - name: Run paired wire conformance
+        id: conformance
+        shell: bash
+        run: |
+          mode=()
+          if jq -e '.integrated == false' tool/titect_fixture/pin.json >/dev/null; then
+            mode+=(--preliminary)
+          fi
+          build/pytitect-reference/.venv/bin/python tool/run_titect_conformance.py \
+            --python-root build/pytitect-reference --output build/titect-evidence "${mode[@]}"
+
+      - name: Run persistent paired recovery
+        if: success() || failure()
+        shell: bash
+        run: |
+          mode=()
+          if jq -e '.integrated == false' tool/titect_fixture/pin.json >/dev/null; then
+            mode+=(--preliminary)
+          fi
+          build/pytitect-reference/.venv/bin/python tool/run_titect_recovery.py \
+            --python-root build/pytitect-reference \
+            --actor build/titect-native/bundle/bin/native_actor \
+            --django-python "$GITHUB_WORKSPACE/build/pytitect-reference/examples/django_reference/.venv/bin/python" \
+            --output build/titect-evidence "${mode[@]}"
+
+      - name: Require complete final evidence
+        if: success() || failure()
+        run: dart run tool/check_titect_evidence.dart build/titect-evidence
+      - name: Retain paired evidence and diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: titect-evidence
+          path: build/titect-evidence
+          if-no-files-found: error
+          retention-days: 90
+      - name: Confirm tracked files are unchanged
+        if: always()
+        run: git diff --exit-code -- .
+
   required:
     name: CI / Required
     if: always()
@@ -687,6 +776,7 @@ jobs:
       - macos
       - android-emulator
       - drift-web
+      - titect-paired
       - clean-clone
       - git-consumption
       - osv
@@ -724,6 +814,13 @@ jobs:
           merge-multiple: true
       - name: Validate the exact current-run native matrix
         run: dart run tool/check_native_evidence.dart
+      - name: Download current-run paired evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: titect-evidence
+          path: build/titect-evidence
+      - name: Validate current-run paired evidence
+        run: dart run tool/check_titect_evidence.dart build/titect-evidence
       - name: Create the main-only readiness manifest
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:

@@ -42,6 +42,8 @@ new immutable Release records publication of all 25 packages.
 
 - Wire consumer-owned providers with [Adapters](guides/adapters.md).
 - Coordinate server feedback with [HTTP retry budgets](guides/http-retry-feedback.md).
+- Review optional wire contracts and paired recovery in
+  [Titect integration](guides/titect-integration.md).
 - Choose storage and synchronization boundaries in the
   [ecosystem selection matrix](guides/ecosystem-selection.md) and
   [implementation recipes](guides/implementation-recipes.md).

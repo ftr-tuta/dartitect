@@ -6,7 +6,7 @@ Derivable workspace tag:: +v1.2.0+
 Workspace tag materialized:: +false+
 Stable distribution:: +v1.1.0+
 Package count:: 25
-Public entrypoint count:: 35
+Public entrypoint count:: 36
 
 == Dependency order
 

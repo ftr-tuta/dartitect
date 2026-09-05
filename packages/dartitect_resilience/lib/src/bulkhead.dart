@@ -31,6 +31,22 @@ final class Bulkhead implements AsyncDisposable {
       <_BulkheadEntry<Object?>>{};
   var _disposed = false;
   Future<void>? _disposal;
+  var _peakRunning = 0;
+  var _peakQueued = 0;
+  var _admitted = 0;
+  var _rejected = 0;
+
+  /// Maximum running count observed at activation in this bulkhead's lifetime.
+  int get peakRunningCount => _peakRunning;
+
+  /// Maximum queue count observed at admission in this bulkhead's lifetime.
+  int get peakQueuedCount => _peakQueued;
+
+  /// Operations admitted immediately or queued, including later cancellations.
+  int get admittedCount => _admitted;
+
+  /// Operations refused because both bounded capacities were full.
+  int get rejectedCount => _rejected;
 
   /// Number of operations currently running.
   int get runningCount => _running.length;
@@ -45,20 +61,25 @@ final class Bulkhead implements AsyncDisposable {
   }) {
     if (_disposed) throw StateError('Bulkhead is disposed.');
     cancellation?.throwIfCancelled();
+    if (_running.length >= maxConcurrent && _queue.length >= maxQueue) {
+      _rejected++;
+      throw const BulkheadRejectedException();
+    }
     final entry = _BulkheadEntry<T>(operation, cancellation);
     if (_running.length < maxConcurrent) {
+      _admitted++;
       _start(entry as _BulkheadEntry<Object?>);
     } else {
-      if (_queue.length >= maxQueue) {
-        throw const BulkheadRejectedException();
-      }
       entry.registration = cancellation?.register((reason) {
         if (_queue.remove(entry) && !entry.completer.isCompleted) {
           entry.completer.completeError(CancellationException(reason));
         }
         entry.disposeRegistration();
+        entry.source.dispose();
       });
       _queue.add(entry as _BulkheadEntry<Object?>);
+      _admitted++;
+      if (_queue.length > _peakQueued) _peakQueued = _queue.length;
     }
     return entry.completer.future;
   }
@@ -67,13 +88,17 @@ final class Bulkhead implements AsyncDisposable {
     entry.disposeRegistration();
     entry.registration = entry.cancellation?.register(entry.source.cancel);
     _activeEntries.add(entry);
-    final work = _run(entry);
+    // Reserve capacity before invoking consumer code, which may re-enter run.
+    final completion = Completer<void>();
+    final work = completion.future;
     _running.add(work);
+    if (_running.length > _peakRunning) _peakRunning = _running.length;
     unawaited(
-      work.whenComplete(() {
+      _run(entry).whenComplete(() {
         _running.remove(work);
         _activeEntries.remove(entry);
         _startNext();
+        completion.complete();
       }),
     );
   }

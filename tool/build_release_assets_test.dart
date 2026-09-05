@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:test/test.dart';
 
+import 'fixtures/titect_evidence_fixture.dart';
+
 const _sha = '1111111111111111111111111111111111111111';
 const _tree = '2222222222222222222222222222222222222222';
 
@@ -77,6 +79,12 @@ void main() {
       'dependency-snippets.zip',
       'release-provenance.json',
       'sbom.spdx.json',
+      'titect-chrome.json',
+      'titect-conformance.json',
+      'titect-python.json',
+      'titect-recovery.json',
+      'titect-vm.json',
+      'titect-web.json',
     ]);
     for (final name in names) {
       expect(
@@ -86,7 +94,7 @@ void main() {
       );
     }
     final sums = await File('${first.path}/SHA256SUMS').readAsLines();
-    expect(sums, hasLength(6));
+    expect(sums, hasLength(12));
     for (final line in sums) {
       final match = RegExp(r'^([0-9a-f]{64})  ([^/]+)$').firstMatch(line);
       expect(match, isNotNull, reason: line);
@@ -164,6 +172,13 @@ final class _Fixture {
       await target.parent.create(recursive: true);
       await File('${Directory.current.path}/$path').copy(target.path);
     }
+    final digests = await createTitectEvidenceFixture(
+      root: root,
+      artifactRoot: root,
+      sha: sourceSha,
+      tree: _tree,
+      runAttempt: 2,
+    );
     final readiness = File('${root.path}/actions-readiness-v1.json');
     await readiness.writeAsString(
       jsonEncode(<String, Object?>{
@@ -171,6 +186,7 @@ final class _Fixture {
         'sourceTree': _tree,
         'runId': 123,
         'runAttempt': 2,
+        'artifactDigests': digests,
       }),
     );
     return _Fixture(root, readiness);

@@ -14,7 +14,7 @@
     "available": true
   },
   "packageCount": 25,
-  "publicEntrypointCount": 35,
+  "publicEntrypointCount": 36,
   "distribution": {
     "kind": "github-release",
     "repository": "https://github.com/ftr-tuta/dartitect.git",

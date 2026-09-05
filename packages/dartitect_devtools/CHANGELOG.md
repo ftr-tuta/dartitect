@@ -4,6 +4,7 @@
 
 - Prepare the `1.2.0` GitHub-only lockstep cohort while preserving the recorded `v1.1.0` distribution.
 - Add optional bounded HTTP retry feedback, shared admission budgets, and durable outbox deferral.
+- Add an optional bounded Titect wire binding and paired conformance/recovery gates; final interoperability requires the integrated Python reference and resolved protocol contracts.
 
 ## 1.1.0 - 2026-09-03
 

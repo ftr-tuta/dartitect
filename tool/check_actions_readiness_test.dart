@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:test/test.dart';
 
+import 'fixtures/titect_evidence_fixture.dart';
+
 void main() {
   test('structural mode cannot declare readiness', () async {
     final fixture = await _Fixture.create();
@@ -143,6 +145,14 @@ final class _Fixture {
       await file.writeAsString('$path\n');
       digests.add(_digestEntry(file, artifactRoot, 'repository-artifact'));
     }
+    digests.addAll(
+      await createTitectEvidenceFixture(
+        root: root,
+        artifactRoot: artifactRoot,
+        sha: sha,
+        tree: tree,
+      ),
+    );
     digests.sort(
       (left, right) =>
           (left['path']! as String).compareTo(right['path']! as String),

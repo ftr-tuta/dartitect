@@ -96893,10 +96893,58 @@
               "type": "int"
             },
             {
+              "name": "admittedCount",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "int get admittedCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "peakQueuedCount",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "int get peakQueuedCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "peakRunningCount",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "int get peakRunningCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
               "name": "queuedCount",
               "kind": "getter",
               "audience": "application-facing",
               "declaration": "int get queuedCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "rejectedCount",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "int get rejectedCount",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -108461,6 +108509,2323 @@
             }
           ],
           "aliasedType": "Future<SyncTriggerRunDisposition> Function(SyncTriggerBatch<K>, CancellationSignal)"
+        }
+      ]
+    },
+    "packages/dartitect_sync/lib/dartitect_sync_titect.dart": {
+      "defaultAudience": "application-facing",
+      "symbols": [
+        {
+          "name": "TitectBootstrapRequest",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectBootstrapRequest extends TitectSyncDocument",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "TitectSyncDocument",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "capabilities",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "List<String> get capabilities",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "List<String>",
+              "parameters": []
+            },
+            {
+              "name": "clientId",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get clientId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "datasetIds",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "List<String> get datasetIds",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "List<String>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectBootstrapResponse",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectBootstrapResponse extends TitectSyncDocument",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "TitectSyncDocument",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "datasets",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "List<TitectDatasetDescriptor> get datasets",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "List<TitectDatasetDescriptor>",
+              "parameters": []
+            },
+            {
+              "name": "limits",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "TitectSyncLimits get limits",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "TitectSyncLimits",
+              "parameters": []
+            },
+            {
+              "name": "session",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "TitectSession get session",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "TitectSession",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectDatasetDescriptor",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectDatasetDescriptor extends TitectSyncDocument",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "TitectSyncDocument",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "datasetId",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get datasetId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "generation",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get generation",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "modes",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "List<String> get modes",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "List<String>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectDeltaPage",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectDeltaPage extends TitectPage",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "TitectPage",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "datasetId",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get datasetId",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "generation",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get generation",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "integrity",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "TitectIntegrity get integrity",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "TitectIntegrity",
+              "parameters": []
+            },
+            {
+              "name": "nextCursor",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String? get nextCursor",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String?",
+              "parameters": []
+            },
+            {
+              "name": "tombstones",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "List<TitectTombstone> get tombstones",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "List<TitectTombstone>",
+              "parameters": []
+            },
+            {
+              "name": "upserts",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "List<TitectUpsert> get upserts",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "List<TitectUpsert>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectGenerationMismatch",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectGenerationMismatch extends TitectSyncDocument",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "TitectSyncDocument",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "actual",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get actual",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "datasetId",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get datasetId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "expected",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get expected",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectIntegrity",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectIntegrity",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "algorithm",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get algorithm",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "digest",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get digest",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "itemCount",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get itemCount",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectJsonCodec",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectJsonCodec",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "TitectJsonCodec({TitectJsonLimits? limits})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "TitectJsonCodec",
+              "parameters": [
+                {
+                  "name": "limits",
+                  "declaration": "{TitectJsonLimits? limits}",
+                  "type": "TitectJsonLimits?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "limits",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectJsonLimits limits",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "TitectJsonLimits"
+            },
+            {
+              "name": "decode",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Object? decode(List<int> bytes)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Object?",
+              "parameters": [
+                {
+                  "name": "bytes",
+                  "declaration": "List<int> bytes",
+                  "type": "List<int>",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "encode",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "List<int> encode(Object? value, {bool sortKeys = false})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "List<int>",
+              "parameters": [
+                {
+                  "name": "value",
+                  "declaration": "Object? value",
+                  "type": "Object?",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "sortKeys",
+                  "declaration": "{bool sortKeys = false}",
+                  "type": "bool",
+                  "kind": "optionalNamed",
+                  "default": "false",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "read",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Future<Object?> read(Stream<List<int>> chunks)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<Object?>",
+              "parameters": [
+                {
+                  "name": "chunks",
+                  "declaration": "Stream<List<int>> chunks",
+                  "type": "Stream<List<int>>",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TitectJsonLimits",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectJsonLimits",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "TitectJsonLimits({int maxBytes = 1048576, int maxDepth = 32, int maxItems = 10000, int maxStringScalars = 1048576})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "TitectJsonLimits",
+              "parameters": [
+                {
+                  "name": "maxBytes",
+                  "declaration": "{int maxBytes = 1048576}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "1048576",
+                  "annotations": []
+                },
+                {
+                  "name": "maxDepth",
+                  "declaration": "{int maxDepth = 32}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "32",
+                  "annotations": []
+                },
+                {
+                  "name": "maxItems",
+                  "declaration": "{int maxItems = 10000}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "10000",
+                  "annotations": []
+                },
+                {
+                  "name": "maxStringScalars",
+                  "declaration": "{int maxStringScalars = 1048576}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "1048576",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "maxBytes",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maxBytes",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "maxDepth",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maxDepth",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "maxItems",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maxItems",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "maxStringScalars",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maxStringScalars",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            }
+          ]
+        },
+        {
+          "name": "TitectMutationOutcome",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectMutationOutcome extends TitectSyncDocument",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "TitectSyncDocument",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "mutationId",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get mutationId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "reason",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String? get reason",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String?",
+              "parameters": []
+            },
+            {
+              "name": "receiptId",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String? get receiptId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String?",
+              "parameters": []
+            },
+            {
+              "name": "revision",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt? get revision",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt?",
+              "parameters": []
+            },
+            {
+              "name": "state",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get state",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectMutationOutcomes",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectMutationOutcomes extends TitectSyncDocument",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "TitectSyncDocument",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "datasetId",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get datasetId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "generation",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get generation",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "outcomes",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "List<TitectMutationOutcome> get outcomes",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "List<TitectMutationOutcome>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectNumber",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectNumber",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "parse",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "TitectNumber.parse(String value, {int maxCharacters = 1048576})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "factory"
+              ],
+              "typeParameters": [],
+              "returnType": "TitectNumber",
+              "parameters": [
+                {
+                  "name": "value",
+                  "declaration": "String value",
+                  "type": "String",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "maxCharacters",
+                  "declaration": "{int maxCharacters = 1048576}",
+                  "type": "int",
+                  "kind": "optionalNamed",
+                  "default": "1048576",
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "lexeme",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "String lexeme",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "isInteger",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get isInteger",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "toBigIntExact",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "BigInt toBigIntExact()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "toDoubleExact",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "double toDoubleExact()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "double",
+              "parameters": []
+            },
+            {
+              "name": "toIntExact",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "int toIntExact()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "toString",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "String toString()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectPage",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "sealed class TitectPage extends TitectSyncDocument",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "sealed"
+          ],
+          "typeParameters": [],
+          "supertype": "TitectSyncDocument",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "datasetId",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get datasetId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "generation",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get generation",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "integrity",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "TitectIntegrity get integrity",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "TitectIntegrity",
+              "parameters": []
+            },
+            {
+              "name": "nextCursor",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String? get nextCursor",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "String?",
+              "parameters": []
+            },
+            {
+              "name": "upserts",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "List<TitectUpsert> get upserts",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "List<TitectUpsert>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectReadBudget",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectReadBudget",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "TitectReadBudget(int maximumBytes)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "TitectReadBudget",
+              "parameters": [
+                {
+                  "name": "maximumBytes",
+                  "declaration": "int maximumBytes",
+                  "type": "int",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "maximumBytes",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int maximumBytes",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "admittedBytes",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "int get admittedBytes",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "remainingBytes",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "int get remainingBytes",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "int",
+              "parameters": []
+            },
+            {
+              "name": "admit",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void admit(int bytes)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "bytes",
+                  "declaration": "int bytes",
+                  "type": "int",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TitectReadiness",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectReadiness extends TitectSyncDocument",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "TitectSyncDocument",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "checkedAt",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "DateTime get checkedAt",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DateTime",
+              "parameters": []
+            },
+            {
+              "name": "ready",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "bool get ready",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "bool",
+              "parameters": []
+            },
+            {
+              "name": "reason",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String? get reason",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String?",
+              "parameters": []
+            },
+            {
+              "name": "retryAfterMs",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt? get retryAfterMs",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt?",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectResetRequired",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectResetRequired extends TitectSyncDocument",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "TitectSyncDocument",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "datasetId",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get datasetId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "generation",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get generation",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "reason",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get reason",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectSession",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectSession extends TitectSyncDocument",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "TitectSyncDocument",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "createdAt",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "DateTime get createdAt",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DateTime",
+              "parameters": []
+            },
+            {
+              "name": "expiresAt",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "DateTime get expiresAt",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DateTime",
+              "parameters": []
+            },
+            {
+              "name": "sessionId",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get sessionId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectSnapshotPage",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectSnapshotPage extends TitectPage",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "TitectPage",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "datasetId",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get datasetId",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "generation",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get generation",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "integrity",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "TitectIntegrity get integrity",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "TitectIntegrity",
+              "parameters": []
+            },
+            {
+              "name": "nextCursor",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String? get nextCursor",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String?",
+              "parameters": []
+            },
+            {
+              "name": "upserts",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "List<TitectUpsert> get upserts",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "List<TitectUpsert>",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectSyncCodec",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectSyncCodec",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "TitectSyncCodec({TitectJsonLimits? jsonLimits})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "TitectSyncCodec",
+              "parameters": [
+                {
+                  "name": "jsonLimits",
+                  "declaration": "{TitectJsonLimits? jsonLimits}",
+                  "type": "TitectJsonLimits?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "capabilities",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "Set<String> capabilities",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "Set<String>"
+            },
+            {
+              "name": "json",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectJsonCodec json",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "TitectJsonCodec"
+            },
+            {
+              "name": "protocol",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "String protocol",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "decode",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "TitectSyncDocument decode(List<int> bytes)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "TitectSyncDocument",
+              "parameters": [
+                {
+                  "name": "bytes",
+                  "declaration": "List<int> bytes",
+                  "type": "List<int>",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "encode",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "List<int> encode(TitectSyncDocument document)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "List<int>",
+              "parameters": [
+                {
+                  "name": "document",
+                  "declaration": "TitectSyncDocument document",
+                  "type": "TitectSyncDocument",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "fromPayload",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "TitectSyncDocument fromPayload(String kind, Map<String, Object?> payload)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "TitectSyncDocument",
+              "parameters": [
+                {
+                  "name": "kind",
+                  "declaration": "String kind",
+                  "type": "String",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "payload",
+                  "declaration": "Map<String, Object?> payload",
+                  "type": "Map<String, Object?>",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "read",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Future<TitectSyncDocument> read(Stream<List<int>> chunks)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Future<TitectSyncDocument>",
+              "parameters": [
+                {
+                  "name": "chunks",
+                  "declaration": "Stream<List<int>> chunks",
+                  "type": "Stream<List<int>>",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "requireCapabilities",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void requireCapabilities(Iterable<String> requested, {required Set<String> supported})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "requested",
+                  "declaration": "Iterable<String> requested",
+                  "type": "Iterable<String>",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "supported",
+                  "declaration": "{required Set<String> supported}",
+                  "type": "Set<String>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TitectSyncDocument",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "sealed class TitectSyncDocument",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "sealed"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "kind",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "String kind",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String"
+            }
+          ]
+        },
+        {
+          "name": "TitectSyncFailure",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectSyncFailure<F extends Object>",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "document",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectSyncDocument? document",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "TitectSyncDocument?"
+            },
+            {
+              "name": "failure",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "F? failure",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "F?"
+            },
+            {
+              "name": "reason",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectSyncStop reason",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "TitectSyncStop"
+            },
+            {
+              "name": "wire",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectWireException? wire",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "TitectWireException?"
+            }
+          ]
+        },
+        {
+          "name": "TitectSyncLimits",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectSyncLimits",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "maxCapabilities",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get maxCapabilities",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "maxDatasets",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get maxDatasets",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "maxDocumentBytes",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get maxDocumentBytes",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "maxItemsPerPage",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get maxItemsPerPage",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "maxMutations",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get maxMutations",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "maxOpaqueIdBytes",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get maxOpaqueIdBytes",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectSyncResponse",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectSyncResponse",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "document",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectSyncDocument document",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "TitectSyncDocument"
+            },
+            {
+              "name": "receivedBytes",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "int receivedBytes",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "int"
+            },
+            {
+              "name": "read",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "Future<TitectSyncResponse> read(Stream<List<int>> body, {required TitectSyncCodec codec, TitectReadBudget? budget})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "static"
+              ],
+              "typeParameters": [],
+              "returnType": "Future<TitectSyncResponse>",
+              "parameters": [
+                {
+                  "name": "body",
+                  "declaration": "Stream<List<int>> body",
+                  "type": "Stream<List<int>>",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "codec",
+                  "declaration": "{required TitectSyncCodec codec}",
+                  "type": "TitectSyncCodec",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "budget",
+                  "declaration": "{TitectReadBudget? budget}",
+                  "type": "TitectReadBudget?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TitectTombstone",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectTombstone",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "deletedAt",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "DateTime get deletedAt",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "DateTime",
+              "parameters": []
+            },
+            {
+              "name": "itemId",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get itemId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "revision",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get revision",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectUpsert",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectUpsert",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "itemId",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get itemId",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "revision",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "BigInt get revision",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "BigInt",
+              "parameters": []
+            },
+            {
+              "name": "value",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "Object? get value",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "Object?",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectWireException",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectWireException implements Exception",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "Exception"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "TitectWireException(TitectWireProblem problem)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "TitectWireException",
+              "parameters": [
+                {
+                  "name": "problem",
+                  "declaration": "TitectWireProblem problem",
+                  "type": "TitectWireProblem",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "problem",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectWireProblem problem",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "TitectWireProblem"
+            },
+            {
+              "name": "toString",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "String toString()",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            }
+          ]
+        },
+        {
+          "name": "TitectSyncStop",
+          "kind": "enum",
+          "audience": "application-facing",
+          "declaration": "enum TitectSyncStop",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "TitectSyncStop()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "TitectSyncStop",
+              "parameters": []
+            },
+            {
+              "name": "authority",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectSyncStop authority",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "TitectSyncStop"
+            },
+            {
+              "name": "consumer",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectSyncStop consumer",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "TitectSyncStop"
+            },
+            {
+              "name": "limit",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectSyncStop limit",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "TitectSyncStop"
+            },
+            {
+              "name": "reset",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectSyncStop reset",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "TitectSyncStop"
+            },
+            {
+              "name": "selection",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectSyncStop selection",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "TitectSyncStop"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "List<TitectSyncStop> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<TitectSyncStop>"
+            },
+            {
+              "name": "wire",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectSyncStop wire",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "TitectSyncStop"
+            }
+          ]
+        },
+        {
+          "name": "TitectWireProblem",
+          "kind": "enum",
+          "audience": "application-facing",
+          "declaration": "enum TitectWireProblem",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [],
+          "typeParameters": [],
+          "supertype": "Enum",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "TitectWireProblem()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "TitectWireProblem",
+              "parameters": []
+            },
+            {
+              "name": "integrity",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectWireProblem integrity",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "TitectWireProblem"
+            },
+            {
+              "name": "limit",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectWireProblem limit",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "TitectWireProblem"
+            },
+            {
+              "name": "precision",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectWireProblem precision",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "TitectWireProblem"
+            },
+            {
+              "name": "shape",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectWireProblem shape",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "TitectWireProblem"
+            },
+            {
+              "name": "syntax",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectWireProblem syntax",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "TitectWireProblem"
+            },
+            {
+              "name": "unsupported",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectWireProblem unsupported",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "enumConstant",
+                "static"
+              ],
+              "type": "TitectWireProblem"
+            },
+            {
+              "name": "values",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "List<TitectWireProblem> values",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "List<TitectWireProblem>"
+            }
+          ]
+        },
+        {
+          "name": "titectSyncDataset",
+          "kind": "function",
+          "audience": "application-facing",
+          "declaration": "SyncDataset<K, C, TitectSyncFailure<F>> titectSyncDataset<K, C, F extends Object>({required K key, required String datasetId, required BigInt generation, required String? Function(C?) cursorOf, required Future<Result<TitectSyncResponse, F>> Function(SyncDatasetContext<K, C>, String?, int, CancellationSignal, TitectReadBudget) fetch, required Future<Result<C, F>> Function(SyncDatasetContext<K, C>, TitectPage) apply, required RetryExecutor retryExecutor, required RetryPolicy<F> retryPolicy, required RetryBudget retryBudget, required int maxPages, required int maxReceivedBytes, SyncClock clock = const SystemSyncClock()})",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "static"
+          ],
+          "typeParameters": [
+            {
+              "name": "K",
+              "declaration": "K",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "C",
+              "declaration": "C",
+              "bound": null,
+              "annotations": []
+            },
+            {
+              "name": "F",
+              "declaration": "F extends Object",
+              "bound": "Object",
+              "annotations": []
+            }
+          ],
+          "returnType": "SyncDataset<K, C, TitectSyncFailure<F>>",
+          "parameters": [
+            {
+              "name": "key",
+              "declaration": "{required K key}",
+              "type": "K",
+              "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "datasetId",
+              "declaration": "{required String datasetId}",
+              "type": "String",
+              "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "generation",
+              "declaration": "{required BigInt generation}",
+              "type": "BigInt",
+              "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "cursorOf",
+              "declaration": "{required String? Function(C?) cursorOf}",
+              "type": "String? Function(C?)",
+              "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "fetch",
+              "declaration": "{required Future<Result<TitectSyncResponse, F>> Function(SyncDatasetContext<K, C>, String?, int, CancellationSignal, TitectReadBudget) fetch}",
+              "type": "Future<Result<TitectSyncResponse, F>> Function(SyncDatasetContext<K, C>, String?, int, CancellationSignal, TitectReadBudget)",
+              "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "apply",
+              "declaration": "{required Future<Result<C, F>> Function(SyncDatasetContext<K, C>, TitectPage) apply}",
+              "type": "Future<Result<C, F>> Function(SyncDatasetContext<K, C>, TitectPage)",
+              "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "retryExecutor",
+              "declaration": "{required RetryExecutor retryExecutor}",
+              "type": "RetryExecutor",
+              "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "retryPolicy",
+              "declaration": "{required RetryPolicy<F> retryPolicy}",
+              "type": "RetryPolicy<F>",
+              "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "retryBudget",
+              "declaration": "{required RetryBudget retryBudget}",
+              "type": "RetryBudget",
+              "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "maxPages",
+              "declaration": "{required int maxPages}",
+              "type": "int",
+              "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "maxReceivedBytes",
+              "declaration": "{required int maxReceivedBytes}",
+              "type": "int",
+              "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "clock",
+              "declaration": "{SyncClock clock = const SystemSyncClock()}",
+              "type": "SyncClock",
+              "kind": "optionalNamed",
+              "default": "const SystemSyncClock()",
+              "annotations": []
+            }
+          ]
         }
       ]
     },

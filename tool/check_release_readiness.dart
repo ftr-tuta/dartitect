@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 
+import 'titect_evidence.dart';
+
 final _gitSha = RegExp(r'^[0-9a-f]{40}$');
 final _sha256 = RegExp(r'^[0-9a-f]{64}$');
 
@@ -92,6 +94,7 @@ Future<void> main(List<String> arguments) async {
     }
     final digests = _objects(manifest['artifactDigests']);
     final expectedPaths = <String>{
+      for (final name in titectEvidenceFiles) 'titect/$name',
       for (final cell in _strings(policy['nativeCells'])) 'native/$cell.json',
       for (final path in _strings(policy['repositoryArtifacts']))
         'repository/$path',
@@ -117,6 +120,14 @@ Future<void> main(List<String> arguments) async {
         throw StateError('Readiness artifact is expired, missing, or altered.');
       }
     }
+    validateTitectEvidence(
+      root: root,
+      evidence: Directory('${options.manifest.parent.path}/titect'),
+      sourceSha: options.sourceSha,
+      sourceTree: tree,
+      runId: options.ciRunId,
+      runAttempt: ciRunAttempt,
+    );
     stdout.writeln(
       'Release source ${options.sourceSha} is authorized by CI run '
       '${options.ciRunId}; actor ${environment['GITHUB_ACTOR']}.',

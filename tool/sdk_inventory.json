@@ -301,9 +301,10 @@
         "dartitect_resilience"
       ],
       "entrypoints": [
-        "dartitect_sync.dart"
+        "dartitect_sync.dart",
+        "dartitect_sync_titect.dart"
       ],
-      "publicSymbolCount": 73
+      "publicSymbolCount": 101
     },
     {
       "name": "dartitect_testing",

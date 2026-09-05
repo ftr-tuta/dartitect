@@ -5,6 +5,21 @@ import 'package:dartitect_resilience/dartitect_resilience.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('bulkhead reserves capacity before consumer reentry', () async {
+    final bulkhead = Bulkhead(maxConcurrent: 1, maxQueue: 0);
+    await bulkhead.run((_) async {
+      expect(
+        () => bulkhead.run((_) async => 42),
+        throwsA(isA<BulkheadRejectedException>()),
+      );
+    });
+    await bulkhead.disposeAsync();
+    expect(bulkhead.peakRunningCount, 1);
+    expect(bulkhead.admittedCount, 1);
+    expect(bulkhead.rejectedCount, 1);
+    expect(bulkhead.runningCount, 0);
+  });
+
   final receipt = DateTime.utc(1994, 11, 6, 8, 49, 30);
   final parser = RetryAfterParser(maximumDelay: const Duration(days: 1));
 
@@ -312,6 +327,12 @@ void main() {
       await Future.wait(futures);
       await bulkhead.disposeAsync();
       source.dispose();
+      expect(bulkhead.peakRunningCount, peakActive);
+      expect(bulkhead.peakQueuedCount, peakQueue);
+      expect(
+        bulkhead.admittedCount + bulkhead.rejectedCount,
+        greaterThanOrEqualTo(30),
+      );
       expect(peakActive, 2);
       expect(peakQueue, 4);
       expect(attempts, 5);
