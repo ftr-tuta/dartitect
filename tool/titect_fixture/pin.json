@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "https://github.com/ftr-tuta/pytitect",
-  "pythonSha": "d3f3dae4554e6abb8724cc00a23831c70f2451b8",
+  "pythonSha": "262fed4294e68399a9111ccba18974b3dd9dd9ac",
   "integrated": false,
   "bundles": {
     "titect-sync/1": {
@@ -19,7 +19,7 @@
   },
   "sourceVersions": {
     "dartitect": "1.2.0",
-    "pytitect": "1.6.0rc1"
+    "pytitect": "1.6.0"
   },
   "corpus": {
     "vectors.json": "a16d96374b7d93d98b6a720db32b76ab9b6a260af2057ce1ec2a80fbed9f2424",
