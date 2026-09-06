@@ -8,6 +8,8 @@ truth for cross-package changes and migration guidance.
 
 ## Unreleased
 
+- Add exact Titect JSON, explicit negotiated page integrity, and paired 232-case conformance, 24-scenario recovery and real Dart/PostgreSQL/JetStream capacity gates; release acceptance requires the integrated Python reference.
+
 - Prepare the `1.2.0` GitHub-only lockstep cohort while retaining the recorded `v1.1.0` distribution.
 - Add bounded Retry-After parsing and opt-in Dio metadata, shared retry admission, and outbox deferral that preserves durable identity.
 - Derive CLI generation, skills, upgrade targets, and Release snippets from the prepared cohort. Publication remains a separate immutable GitHub transaction.

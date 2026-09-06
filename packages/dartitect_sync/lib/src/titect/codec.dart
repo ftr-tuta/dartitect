@@ -1,18 +1,20 @@
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
+
 import 'json.dart';
 
 part 'documents.dart';
+part 'integrity.dart';
 
 /// Explicit reader/writer for the closed `titect-sync/1` bundle.
 ///
 /// Bounds default to the pinned Python profile. Transport bytes are bounded
-/// before decoding. Payload schemas and cryptographic page verification remain
-/// consumer-owned: the pinned bundle defines digest shape and item count, but
-/// does not define bytes to hash. Capability negotiation is explicit.
+/// before decoding. Consumers select and persist integrity policy explicitly;
+/// selected pages are verified before returning them to application code.
 final class TitectSyncCodec {
   /// Creates the profile codec with optional stricter transport/parser bounds.
-  TitectSyncCodec({TitectJsonLimits? jsonLimits})
+  TitectSyncCodec({TitectJsonLimits? jsonLimits, this.integrity})
     : json = TitectJsonCodec(limits: jsonLimits) {
     final bounds = json.limits;
     final profile = TitectJsonLimits();
@@ -31,6 +33,7 @@ final class TitectSyncCodec {
   static const capabilities = <String>{
     'delta',
     'integrity-sha-256',
+    'integrity-sha-256-exact-json-v1',
     'mutations',
     'receipts',
     'snapshot',
@@ -39,6 +42,9 @@ final class TitectSyncCodec {
 
   /// Bounded numeric-preserving JSON boundary.
   final TitectJsonCodec json;
+
+  /// Consumer-owned negotiated selection, restored with the session context.
+  final TitectSyncIntegritySelection? integrity;
 
   /// Rejects requested capabilities outside the explicitly supported subset.
   void requireCapabilities(
@@ -59,19 +65,44 @@ final class TitectSyncCodec {
   }
 
   /// Reads a finite transport body and validates its closed document.
-  Future<TitectSyncDocument> read(Stream<List<int>> chunks) async =>
-      _document(await json.read(chunks));
+  Future<TitectSyncDocument> read(
+    Stream<List<int>> chunks, {
+    String? acknowledgement,
+  }) async {
+    _acknowledge(acknowledgement);
+    final value = await json.read(chunks);
+    _acknowledge(acknowledgement);
+    return _verified(value);
+  }
 
   /// Decodes a finite byte sequence into one of eleven document types.
-  TitectSyncDocument decode(List<int> bytes) => _document(json.decode(bytes));
+  TitectSyncDocument decode(List<int> bytes, {String? acknowledgement}) {
+    _acknowledge(acknowledgement);
+    return _verified(json.decode(bytes));
+  }
+
+  void _acknowledge(String? acknowledgement) =>
+      (integrity ?? const TitectSyncIntegritySelection.none()).acknowledge(
+        acknowledgement,
+      );
+
+  TitectSyncDocument _verified(Object? value) {
+    final envelope = _object(value);
+    if (envelope['kind'] == 'snapshot' || envelope['kind'] == 'delta') {
+      integrity?._policy?.verify(envelope, json);
+    }
+    return _document(envelope);
+  }
 
   /// Constructs a document from consumer JSON, validating before publication.
   ///
   /// Use [TitectNumber] or [BigInt] for numbers outside the portable exact int
   /// range. Payloads are deeply copied into immutable bounded containers.
   TitectSyncDocument fromPayload(String kind, Map<String, Object?> payload) =>
-      decode(
-        json.encode({'protocol': protocol, 'kind': kind, 'payload': payload}),
+      _document(
+        json.decode(
+          json.encode({'protocol': protocol, 'kind': kind, 'payload': payload}),
+        ),
       );
 
   /// Encodes a validated document without narrowing numbers or inspecting cursors.
@@ -79,10 +110,11 @@ final class TitectSyncCodec {
     'protocol': protocol,
     'kind': document.kind,
     'payload': document._payload,
-  });
+  }, sortKeys: true);
 
   TitectSyncDocument _document(Object? value) {
     final envelope = _fields(value, {'protocol', 'kind', 'payload'});
+    if (envelope['protocol'] is! String) _fail(TitectWireProblem.shape);
     if (envelope['protocol'] != protocol) _fail(TitectWireProblem.unsupported);
     final kind = envelope['kind'];
     final payload = _object(envelope['payload']);
@@ -172,7 +204,7 @@ final class TitectSyncCodec {
                 .hasMatch(integrity['digest']! as String) ||
             _integer(integrity['item_count']) !=
                 BigInt.from(upserts.length + tombstones.length)) {
-          _fail(TitectWireProblem.integrity);
+          _fail(TitectWireProblem.shape);
         }
         return kind == 'snapshot'
             ? TitectSnapshotPage._(payload)
@@ -195,7 +227,7 @@ final class TitectSyncCodec {
         if (payload['ready'] is! bool) _fail(TitectWireProblem.shape);
         if (payload['ready'] == true) {
           if (payload['reason'] != null || payload['retry_after_ms'] != null)
-            _fail(TitectWireProblem.integrity);
+            _fail(TitectWireProblem.shape);
         } else {
           _reason(payload['reason']);
           if (payload['retry_after_ms'] != null)
@@ -218,7 +250,7 @@ final class TitectSyncCodec {
         _unique(ids);
         return TitectMutationOutcomes._(payload);
       default:
-        _fail(TitectWireProblem.unsupported);
+        _fail(TitectWireProblem.shape);
     }
   }
 }
@@ -237,7 +269,7 @@ Map<String, Object?> _fields(Object? value, Set<String> expected) {
 List<Object?> _array(Object? value, int maximum, {bool nonempty = false}) {
   if (value is! List<Object?>) _fail(TitectWireProblem.shape);
   if (value.length > maximum || nonempty && value.isEmpty)
-    _fail(TitectWireProblem.limit);
+    _fail(TitectWireProblem.shape);
   return value;
 }
 
@@ -279,7 +311,7 @@ void _id(Object? value, [int maximum = 255]) {
       !_trimmed(value) ||
       value.runes.any((scalar) => scalar < 32))
     _fail(TitectWireProblem.shape);
-  if (utf8.encode(value).length > maximum) _fail(TitectWireProblem.limit);
+  if (utf8.encode(value).length > maximum) _fail(TitectWireProblem.shape);
 }
 
 void _optionalId(Object? value) {
@@ -288,7 +320,7 @@ void _optionalId(Object? value) {
 
 void _reason(Object? value) {
   if (value is! String || !_trimmed(value)) _fail(TitectWireProblem.shape);
-  if (utf8.encode(value).length > 1024) _fail(TitectWireProblem.limit);
+  if (utf8.encode(value).length > 1024) _fail(TitectWireProblem.shape);
 }
 
 DateTime _timestamp(Object? value) {
@@ -299,7 +331,7 @@ DateTime _timestamp(Object? value) {
     _fail(TitectWireProblem.shape);
   final result = DateTime.tryParse(value);
   if (result == null || result.year == 0 || result.toIso8601String() != value)
-    _fail(TitectWireProblem.integrity);
+    _fail(TitectWireProblem.shape);
   return result;
 }
 
@@ -308,7 +340,7 @@ void _session(Object? value) {
   _id(session['session_id']);
   if (!_timestamp(session['expires_at'])
       .isAfter(_timestamp(session['created_at'])))
-    _fail(TitectWireProblem.integrity);
+    _fail(TitectWireProblem.shape);
 }
 
 void _dataset(Object? value) {
@@ -318,7 +350,7 @@ void _dataset(Object? value) {
   final modes = _array(dataset['modes'], 2, nonempty: true);
   _unique(modes);
   if (modes.any((mode) => mode != 'snapshot' && mode != 'delta'))
-    _fail(TitectWireProblem.unsupported);
+    _fail(TitectWireProblem.shape);
 }
 
 void _outcome(Object? value) {
@@ -333,11 +365,11 @@ void _outcome(Object? value) {
   _optionalId(outcome['receipt_id']);
   if (outcome['state'] == 'applied') {
     _integer(outcome['revision']);
-    if (outcome['reason'] != null) _fail(TitectWireProblem.integrity);
+    if (outcome['reason'] != null) _fail(TitectWireProblem.shape);
   } else {
     if (!const {'rejected', 'conflict', 'uncertain'}.contains(outcome['state']))
-      _fail(TitectWireProblem.unsupported);
-    if (outcome['revision'] != null) _fail(TitectWireProblem.integrity);
+      _fail(TitectWireProblem.shape);
+    if (outcome['revision'] != null) _fail(TitectWireProblem.shape);
     _reason(outcome['reason']);
   }
 }

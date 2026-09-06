@@ -3,12 +3,15 @@
 import argparse
 import ast
 import hashlib
+import importlib.util
 import json
 import os
 import platform
+import secrets
+import signal
 import subprocess
 import sys
-from decimal import Decimal
+from contextlib import suppress
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -49,14 +52,18 @@ def verify_bundle(root, expected):
         raise ValueError("bundle digest mismatch")
     actual = {
         str(path.relative_to(root))
-        for path in root.rglob("*.json")
-        if path.name != "manifest.json"
+        for path in root.rglob("*")
+        if path.is_file() and path != root / "manifest.json"
     }
     if actual != set(names):
         raise ValueError("bundle inventory mismatch")
 
 
 def verify_reference(reference, pin, preliminary):
+    if len(pin["pythonSha"]) != 40 or any(
+        c not in "0123456789abcdef" for c in pin["pythonSha"]
+    ):
+        raise ValueError("Python pin must be a full committed SHA")
     if git(reference, "rev-parse", "HEAD") != pin["pythonSha"]:
         raise ValueError("Python reference SHA does not match the pin")
     if git(reference, "status", "--porcelain"):
@@ -81,8 +88,21 @@ def verify_reference(reference, pin, preliminary):
             raise ValueError(
                 "preliminary Python pin cannot establish release acceptance"
             )
-        # CI must fetch main from the upstream repository, not manufacture this
-        # ref from a topic branch. Record the fetched main SHA in the report.
+        # Fetch the actual trusted upstream, never trust a manufactured local ref.
+        if pin["repository"] != "https://github.com/ftr-tuta/pytitect":
+            raise ValueError("unexpected Python upstream")
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                str(reference),
+                "fetch",
+                pin["repository"],
+                "refs/heads/main:refs/remotes/origin/main",
+            ],
+            check=True,
+            timeout=60,
+        )
         subprocess.run(
             [
                 "git",
@@ -115,44 +135,26 @@ def evidence_identity(pin):
     }
 
 
-def python_outcomes(reference, vectors):
+def official_corpus(reference):
     sys.path.insert(0, str(reference / "src"))
     import pytitect
-    from pytitect.messaging import JsonMessageCodec
-    from pytitect.sync import decode_sync_document, encode_sync_document
 
     if not Path(pytitect.__file__).resolve().is_relative_to(reference):
         raise ValueError("Python imported an ambient installation")
-    outcomes = []
-    for vector in vectors:
-        try:
-            wire = (vector["wire"] + " " * vector.get("appendSpaces", 0)).encode()
-            if vector["profile"] == "titect-sync/1":
-                decoded = decode_sync_document(json.loads(wire))
-                encoded = json.dumps(
-                    encode_sync_document(decoded),
-                    ensure_ascii=False,
-                    separators=(",", ":"),
-                ).encode()
-            else:
-                codec = JsonMessageCodec()
-                encoded = codec.encode(codec.decode(wire))
-            outcomes.append(
-                {
-                    "name": vector["name"],
-                    "accepted": True,
-                    "roundTrip": encoded.decode(),
-                }
-            )
-        except (ValueError, TypeError, UnicodeError, OverflowError) as error:
-            outcomes.append(
-                {
-                    "name": vector["name"],
-                    "accepted": False,
-                    "problem": type(error).__name__,
-                }
-            )
-    return outcomes
+    spec = importlib.util.spec_from_file_location(
+        "titect_official_corpus", reference / "tool/wire_conformance.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def python_outcomes(reference, vectors):
+    module = official_corpus(reference)
+    authoritative, _ = module.load_corpus()
+    if vectors != authoritative:
+        raise ValueError("Dart vectors differ from the authoritative corpus")
+    return [module.execute(vector) for vector in vectors]
 
 
 def dart_outcomes(dart, target, output):
@@ -165,11 +167,9 @@ def dart_outcomes(dart, target, output):
         target,
         "test/titect_conformance_test.dart",
     ]
-    run = subprocess.run(
+    run = run_captured(
         command,
         cwd=ROOT / "packages/dartitect_sync",
-        capture_output=True,
-        text=True,
         timeout=180,
     )
     (output / f"{target}.jsonl").write_text(run.stdout)
@@ -190,40 +190,158 @@ def dart_outcomes(dart, target, output):
     return events[0]
 
 
+def cancel_on_termination():
+    def cancel(_signal, _frame):
+        raise KeyboardInterrupt("paired runner cancelled")
+
+    signal.signal(signal.SIGTERM, cancel)
+
+
+def run_captured(command, *, cwd, timeout, env=None):
+    process = subprocess.Popen(
+        command,
+        cwd=cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        start_new_session=True,
+    )
+    try:
+        stdout, stderr = process.communicate(timeout=timeout)
+        return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+    finally:
+        with suppress(ProcessLookupError):
+            os.killpg(process.pid, signal.SIGTERM)
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            os.killpg(process.pid, signal.SIGKILL)
+            process.wait(timeout=5)
+        with suppress(ProcessLookupError):
+            os.killpg(process.pid, signal.SIGKILL)
+
+
 def compare(vectors, expected, actual):
-    if [row["name"] for row in actual] != [row["name"] for row in expected]:
+    if len(vectors) != len(expected) or [row["name"] for row in actual] != [
+        row["name"] for row in expected
+    ]:
         raise ValueError("missing, reordered, or substituted vectors")
-    divergences = []
-    for vector, left, right in zip(vectors, expected, actual, strict=True):
-        if left["accepted"] != right["accepted"]:
-            divergences.append({"name": left["name"], "reason": "acceptance"})
-        elif left["accepted"]:
-            if vector["profile"] == "titect-message/1":
-                agrees = left["roundTrip"].encode() == right["roundTrip"].encode()
-            else:
-                agrees = json.loads(
-                    left["roundTrip"], parse_float=Decimal
-                ) == json.loads(right["roundTrip"], parse_float=Decimal)
-            if not agrees:
-                divergences.append(
-                    {
-                        "name": left["name"],
-                        "reason": "canonical-bytes"
-                        if vector["profile"] == "titect-message/1"
-                        else "round-trip",
-                    }
-                )
-    return divergences
+    return [
+        {
+            "name": left["name"],
+            "reason": "canonical-bytes"
+            if left.get("accepted") and right.get("accepted")
+            else "exact-outcome",
+        }
+        for left, right in zip(expected, actual, strict=True)
+        if left != right
+    ]
+
+
+def fresh_output(path):
+    path.mkdir(parents=True, exist_ok=True)
+    if any(path.iterdir()):
+        raise ValueError(
+            "evidence output must be new or empty; previous evidence is retained"
+        )
+
+
+def write_report(output, name, report):
+    data = (json.dumps(report, indent=2, sort_keys=True) + "\n").encode()
+    (output / f"{name}.json").write_bytes(data)
+    (output / f"{name}.sha256").write_text(f"{digest(data)}  {name}.json\n")
+
+
+def execution_reference(reference, pin, preliminary, manifest=None):
+    supplied = json.loads(manifest.read_text()) if manifest else None
+    effective = dict(pin)
+    if supplied:
+        if (
+            supplied.get("schemaVersion") != 1
+            or supplied.get("mode") not in ("candidate", "integrated")
+            or supplied.get("releaseEligible") is not False
+            or not isinstance(supplied.get("executionId"), str)
+            or len(supplied["executionId"]) != 32
+            or any(c not in "0123456789abcdef" for c in supplied["executionId"])
+        ):
+            raise ValueError("invalid candidate reference identity")
+        preliminary = supplied["mode"] == "candidate"
+        if preliminary:
+            # Python may commit the new Dart pin without rewriting this pin.
+            effective["pythonSha"] = supplied["pythonSha"]
+    verify_reference(reference, effective, preliminary)
+    if git(ROOT, "status", "--porcelain"):
+        raise ValueError("Dart reference has modified or untracked sources")
+    for name in (
+        "vectors.json",
+        "expectations.json",
+        "legacy-vectors.json",
+        "manifest.json",
+    ):
+        local_name = "corpus-manifest.json" if name == "manifest.json" else name
+        data = (reference / "interop/conformance" / name).read_bytes()
+        if (
+            data != (FIXTURE / local_name).read_bytes()
+            or digest(data) != pin["corpus"][name]
+        ):
+            raise ValueError(
+                "authoritative corpus bytes or expectations differ from pin"
+            )
+    module = official_corpus(reference)
+    vectors, _ = module.load_corpus()
+    soak = pin["soakEvidence"]
+    historical = (reference / soak["path"]).read_bytes()
+    if (
+        digest(historical) != soak["sha256"]
+        or historical != (FIXTURE / "python-soak.json").read_bytes()
+        or json.loads(historical)["commit"] != soak["pythonSha"]
+    ):
+        raise ValueError("historical Python soak was altered or relabelled")
+    if len(vectors) != 232:
+        raise ValueError("official corpus must contain 232 cases")
+    expected = {
+        "schemaVersion": 1,
+        "executionId": supplied["executionId"] if supplied else secrets.token_hex(16),
+        "mode": "candidate" if preliminary else "integrated",
+        "releaseEligible": False,
+        "pythonSha": effective["pythonSha"],
+        "pythonTree": git(reference, "rev-parse", "HEAD^{tree}"),
+        "dartSha": git(ROOT, "rev-parse", "HEAD"),
+        "dartTree": git(ROOT, "rev-parse", "HEAD^{tree}"),
+        "sourceVersions": {
+            "pytitect": pin["sourceVersions"]["pytitect"],
+            "dartitect": json.loads(
+                (ROOT / "tool/package_release_contract.json").read_text()
+            )["workspaceCohort"]["version"],
+        },
+        "bundles": pin["bundles"],
+        "corpusSha256": pin["corpus"]["vectors.json"],
+        "expectationsSha256": pin["corpus"]["expectations.json"],
+        "corpusManifestSha256": pin["corpus"]["manifest.json"],
+        "executionModes": ["python", "vm", "chrome"],
+    }
+    if (
+        expected["sourceVersions"] != pin["sourceVersions"]
+        or supplied is not None
+        and supplied != expected
+    ):
+        raise ValueError(
+            "reference SHA, tree, version, corpus, bundles or execution substituted"
+        )
+    return expected
 
 
 def main():
+    cancel_on_termination()
     parser = argparse.ArgumentParser()
     parser.add_argument("--python-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--dart", default="dart")
     parser.add_argument("--preliminary", action="store_true")
+    parser.add_argument("--reference-manifest", type=Path)
     args = parser.parse_args()
-    args.output.mkdir(parents=True, exist_ok=True)
+    fresh_output(args.output)
     pin = json.loads((FIXTURE / "pin.json").read_text())
     report = {
         "schemaVersion": 1,
@@ -242,7 +360,19 @@ def main():
         "residualResources": None,
     }
     try:
-        verify_reference(args.python_root.resolve(strict=True), pin, args.preliminary)
+        report["reference"] = execution_reference(
+            args.python_root.resolve(strict=True),
+            pin,
+            args.preliminary,
+            args.reference_manifest,
+        )
+        report["preliminary"] = report["reference"]["mode"] == "candidate"
+        report["releaseEligible"] = not report["preliminary"]
+        report["pythonSha"] = report["reference"]["pythonSha"]
+        write_report(args.output, "reference", report["reference"])
+        report["referenceSha256"] = digest(
+            (args.output / "reference.json").read_bytes()
+        )
         report["pythonMainSha"] = git(
             args.python_root, "rev-parse", "refs/remotes/origin/main"
         )
@@ -253,6 +383,9 @@ def main():
         vectors = json.loads((FIXTURE / "vectors.json").read_text())
         report["vectorCount"] = len(vectors)
         reference = python_outcomes(args.python_root.resolve(), vectors)
+        expected = json.loads((FIXTURE / "expectations.json").read_text())
+        if compare(vectors, expected, reference):
+            raise ValueError("Python disagrees with authoritative expectations")
         (args.output / "python.json").write_text(json.dumps(reference, indent=2) + "\n")
         report["pythonOutcomesSha256"] = digest(
             (args.output / "python.json").read_bytes()
@@ -277,22 +410,22 @@ def main():
                 "rejected": sum(not row["accepted"] for row in actual),
                 "outcomesSha256": digest((args.output / f"{target}.json").read_bytes()),
             }
-        # /1 currently declares shape/count only, so successful wire decoding
-        # cannot certify cryptographic page integrity required by this release.
+        execution_reference(
+            args.python_root.resolve(),
+            pin,
+            report["preliminary"],
+            args.output / "reference.json",
+        )
         report["residualResources"] = {"runnerSubprocesses": 0}
-        report["unresolvedContracts"] = ["sync-page-integrity-bytes-undefined"]
+        report["unresolvedContracts"] = []
         report["status"] = (
             "divergent"
             if any(value["divergences"] for value in report["targets"].values())
-            else "incomplete"
+            else "passed"
         )
-    except Exception as error:
+    except (Exception, KeyboardInterrupt) as error:
         report["error"] = str(error)
-    data = json.dumps(report, indent=2, sort_keys=True).encode() + b"\n"
-    (args.output / "conformance.json").write_bytes(data)
-    (args.output / "conformance.sha256").write_text(
-        digest(data) + "  conformance.json\n"
-    )
+    write_report(args.output, "conformance", report)
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0 if report["status"] == "passed" else 1
 

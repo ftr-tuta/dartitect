@@ -8,15 +8,22 @@ import 'json.dart';
 
 /// A validated HTTP document and its observed byte count, without headers.
 final class TitectSyncResponse {
-  TitectSyncResponse._(this.document, this.receivedBytes, this._budget);
+  TitectSyncResponse._(
+    this.document,
+    this.receivedBytes,
+    this._budget,
+    this._integrity,
+  );
 
   final TitectReadBudget? _budget;
+  final TitectSyncIntegritySelection? _integrity;
 
   /// Counts bytes while the bounded codec reads the consumer-owned body.
   static Future<TitectSyncResponse> read(
     Stream<List<int>> body, {
     required TitectSyncCodec codec,
     TitectReadBudget? budget,
+    String? acknowledgement,
   }) async {
     var count = 0;
     final document = await codec.read(
@@ -25,8 +32,9 @@ final class TitectSyncResponse {
         count += chunk.length;
         return chunk;
       }),
+      acknowledgement: acknowledgement,
     );
-    return TitectSyncResponse._(document, count, budget);
+    return TitectSyncResponse._(document, count, budget, codec.integrity);
   }
 
   /// One of the eleven validated document kinds.
@@ -118,8 +126,9 @@ final class TitectSyncFailure<F extends Object> {
 /// validate persistent session/fencing authority, apply data and an application
 /// receipt, then return a consumer checkpoint. The engine confirms that
 /// checkpoint before pulling another page. A local authority check alone does
-/// not fence a database writer. Cryptographic verification, authorization,
-/// mutation reconciliation, schemas and conflicts remain consumer policy.
+/// not fence a database writer. Supply the same negotiated [integrity]
+/// selection to the response codec; another selection is rejected before apply.
+/// Authorization, reconciliation, schemas and conflicts remain consumer policy.
 SyncDataset<K, C, TitectSyncFailure<F>>
 titectSyncDataset<K, C, F extends Object>({
   required K key,
@@ -144,6 +153,7 @@ titectSyncDataset<K, C, F extends Object>({
   required RetryBudget retryBudget,
   required int maxPages,
   required int maxReceivedBytes,
+  TitectSyncIntegritySelection? integrity,
   SyncClock clock = const SystemSyncClock(),
 }) {
   if (maxPages <= 0 ||
@@ -210,6 +220,17 @@ titectSyncDataset<K, C, F extends Object>({
             );
           }
           final document = response.document;
+          if (integrity?.capability != null &&
+              !identical(response._integrity, integrity)) {
+            yield Err(
+              TitectSyncFailure<F>._(
+                TitectSyncStop.wire,
+                wire: const TitectWireException(TitectWireProblem.integrity),
+              ),
+              StackTrace.current,
+            );
+            return;
+          }
           if (document is TitectResetRequired ||
               document is TitectGenerationMismatch) {
             yield Err(

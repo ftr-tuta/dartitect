@@ -296,6 +296,7 @@
       "version": "1.2.0",
       "decision": "keep-offline-and-sync-owner",
       "runtimeDependencies": [
+        "crypto",
         "dartitect",
         "dartitect_jobs",
         "dartitect_resilience"
@@ -304,7 +305,7 @@
         "dartitect_sync.dart",
         "dartitect_sync_titect.dart"
       ],
-      "publicSymbolCount": 101
+      "publicSymbolCount": 104
     },
     {
       "name": "dartitect_testing",

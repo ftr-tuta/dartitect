@@ -11,8 +11,14 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 
 import '../../drift_fixture/infrastructure/fixture_database.dart';
+import 'capacity_actor.dart';
+import 'exact_message.dart';
 
 Future<void> main(List<String> args) async {
+  if (args.firstOrNull == 'capacity') {
+    await runCapacity(args.sublist(1));
+    return;
+  }
   final [mode, path, endpoint, owner, tokenText, point, identity, ...rest] =
       args;
   final token = int.parse(tokenText);
@@ -30,7 +36,7 @@ Future<void> main(List<String> args) async {
     ),
   );
   final executor = RetryExecutor();
-  final codec = TitectSyncCodec();
+  var codec = TitectSyncCodec();
   final received = TitectReadBudget(1048576);
   final elapsed = Stopwatch()..start();
   var appliedPages = 0;
@@ -67,8 +73,26 @@ Future<void> main(List<String> args) async {
       'CREATE TABLE IF NOT EXISTS titect_shadow (id TEXT PRIMARY KEY, value TEXT NOT NULL)',
     );
     await database.customStatement(
-      'CREATE TABLE IF NOT EXISTS titect_bootstrap (id INTEGER PRIMARY KEY, session_id TEXT NOT NULL, document TEXT NOT NULL)',
+      'CREATE TABLE IF NOT EXISTS titect_bootstrap (id INTEGER PRIMARY KEY, session_id TEXT NOT NULL, document TEXT NOT NULL, integrity TEXT)',
     );
+    await database.customStatement(
+      'CREATE TABLE IF NOT EXISTS titect_exact (id TEXT PRIMARY KEY, wire BLOB NOT NULL, response BLOB)',
+    );
+    final selectionRows = await database
+        .customSelect('SELECT integrity FROM titect_bootstrap WHERE id=1')
+        .get();
+    final capability = selectionRows.isEmpty
+        ? null
+        : selectionRows.single.readNullable<String>('integrity');
+    if (capability != null) {
+      codec = TitectSyncCodec(
+        integrity: TitectSyncIntegritySelection.select(
+          requested: [capability],
+          acknowledgement: capability,
+          policies: const [TitectExactJsonSha256Integrity()],
+        ),
+      );
+    }
     if (mode == 'recover' || mode == 'reconcile') {
       await database.transaction(() async {
         await fence();
@@ -117,6 +141,7 @@ Future<void> main(List<String> args) async {
         key: 'items',
         datasetId: 'items',
         generation: BigInt.one,
+        integrity: codec.integrity,
         cursorOf: (checkpoint) => rest.isNotEmpty
             ? rest.first
             : checkpoint == null
@@ -124,16 +149,31 @@ Future<void> main(List<String> args) async {
             : (jsonDecode(checkpoint) as Map<String, Object?>)['cursor']
                   as String?,
         fetch: (context, cursor, attempt, signal, readBudget) async {
-          final uri = Uri.parse('$endpoint/pages')
-              .replace(queryParameters: {if (cursor != null) 'cursor': cursor});
+          final uri = Uri.parse('$endpoint/pages').replace(
+            queryParameters: {
+              if (cursor != null) 'cursor': cursor,
+              if (point.startsWith('integrity_'))
+                'fault': point.substring('integrity_'.length),
+            },
+          );
           final request = await client.getUrl(uri);
+          if (codec.integrity?.capability case final String capability) {
+            request.headers.set(
+              TitectSyncIntegritySelection.header,
+              capability,
+            );
+          }
           final registration = signal.register((_) => request.abort());
           try {
+            final response = await request.close();
             return Ok(
               await TitectSyncResponse.read(
-                charge(await request.close()),
+                charge(response),
                 codec: codec,
                 budget: readBudget,
+                acknowledgement: response.headers.value(
+                  TitectSyncIntegritySelection.header,
+                ),
               ),
             );
           } finally {
@@ -194,7 +234,7 @@ Future<void> main(List<String> args) async {
         final report = await engine.start().done;
         if (!report.succeeded)
           throw StateError(
-            'Sync stopped: ${report.datasets.first.failure?.reason.name}',
+            'Sync stopped: ${report.datasets.first.failure?.reason.name}/${report.datasets.first.failure?.wire?.problem.code}',
           );
       } finally {
         await engine.disposeAsync();
@@ -222,7 +262,7 @@ Future<void> main(List<String> args) async {
           await database.customStatement(
             'UPDATE titect_authority SET expires_ms=0',
           );
-        case 'bootstrap':
+        case 'bootstrap' || 'bootstrap-integrity':
           final existing = await database
               .customSelect('SELECT document FROM titect_bootstrap WHERE id=1')
               .get();
@@ -232,17 +272,51 @@ Future<void> main(List<String> args) async {
               final response = await executor
                   .execute<TitectSyncResponse, String>(
                     operation: (_, signal) async {
-                      final request = await client.getUrl(
+                      final selected = mode == 'bootstrap-integrity';
+                      final request = await client.openUrl(
+                        selected ? 'POST' : 'GET',
                         Uri.parse('$endpoint/bootstrap'),
                       );
+                      if (selected) {
+                        request.headers.contentType = ContentType.json;
+                        request.add(
+                          codec.encode(
+                            codec.fromPayload('bootstrap_request', {
+                              'client_id': owner,
+                              'dataset_ids': ['items'],
+                              'capabilities': [
+                                TitectExactJsonSha256Integrity.capabilityName,
+                              ],
+                            }),
+                          ),
+                        );
+                      }
                       final registration = signal.register(
                         (_) => request.abort(),
                       );
                       try {
+                        final response = await request.close();
+                        final acknowledgement = response.headers.value(
+                          TitectSyncIntegritySelection.header,
+                        );
+                        if (selected) {
+                          codec = TitectSyncCodec(
+                            integrity: TitectSyncIntegritySelection.select(
+                              requested: [
+                                TitectExactJsonSha256Integrity.capabilityName,
+                              ],
+                              acknowledgement: acknowledgement,
+                              policies: const [
+                                TitectExactJsonSha256Integrity(),
+                              ],
+                            ),
+                          );
+                        }
                         return Ok(
                           await TitectSyncResponse.read(
-                            charge(await request.close()),
+                            charge(response),
                             codec: codec,
+                            acknowledgement: acknowledgement,
                           ),
                         );
                       } finally {
@@ -264,10 +338,11 @@ Future<void> main(List<String> args) async {
               await database.transaction(() async {
                 await fence();
                 await database.customStatement(
-                  'INSERT INTO titect_bootstrap VALUES (1,?,?)',
+                  'INSERT INTO titect_bootstrap VALUES (1,?,?,?)',
                   [
                     document.session.sessionId,
                     utf8.decode(codec.encode(document)),
+                    codec.integrity?.capability,
                   ],
                 );
                 await barrier('bootstrap_before_commit');
@@ -279,9 +354,61 @@ Future<void> main(List<String> args) async {
           } else {
             final document = codec.decode(
               utf8.encode(existing.single.read<String>('document')),
+              acknowledgement: codec.integrity?.capability,
             );
             if (document is! TitectBootstrapResponse)
               throw StateError('Stored bootstrap differs.');
+          }
+        case 'exact-mutate':
+          final wire = exactMessage(identity, large: true);
+          await database.transaction(() async {
+            await fence();
+            await database.customStatement(
+              'INSERT INTO titect_exact (id,wire) VALUES (?,?)',
+              [identity, wire],
+            );
+          });
+          final source = CancellationSource();
+          try {
+            await executor.execute<void, String>(
+              operation: (_, signal) async {
+                final request = await client.postUrl(
+                  Uri.parse('$endpoint/exact-operations'),
+                );
+                request.headers.contentType = ContentType.json;
+                request.headers.set('Idempotency-Key', identity);
+                request.add(wire);
+                final response = await request.close();
+                final bytes = <int>[];
+                await for (final chunk in charge(response)) {
+                  if (bytes.length + chunk.length > 8192)
+                    throw StateError('Exact response bound exceeded.');
+                  bytes.addAll(chunk);
+                }
+                if (response.statusCode != 201 ||
+                    base64Encode(bytes) != base64Encode(wire)) {
+                  throw StateError(
+                    'Exact response differs from persisted Dart bytes.',
+                  );
+                }
+                await database.customStatement(
+                  'UPDATE titect_exact SET response=? WHERE id=?',
+                  [Uint8List.fromList(bytes), identity],
+                );
+                stdout.writeln(
+                  'EXACT:${jsonEncode({'identity': identity, 'wireSha256': sha256.convert(wire).toString(), 'bytes': wire.length})}',
+                );
+                return const Ok(null);
+              },
+              policy: RetryPolicy(
+                classify: (_) => const RetryDecision.stop(),
+                maxAttempts: 1,
+              ),
+              cancellation: source.signal,
+              budget: budget,
+            );
+          } finally {
+            source.dispose();
           }
         case 'mutate':
           await mutation.execute(
@@ -438,6 +565,7 @@ Future<void> main(List<String> args) async {
             '(SELECT count(*) FROM titect_pages) + '
             '(SELECT count(*) FROM titect_authority) + '
             '(SELECT count(*) FROM titect_bootstrap) + '
+            '(SELECT count(*) FROM titect_exact) + '
             '(SELECT count(*) FROM fixture_checkpoints) + '
             '(SELECT count(*) FROM fixture_receipts) + '
             '(SELECT count(*) FROM fixture_journal) + '

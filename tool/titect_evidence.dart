@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 
+import 'titect_capacity_evidence.dart';
+
 /// Exact paired artifact inventory, retained by readiness and Release.
 const titectEvidenceFiles = <String>[
   'conformance.json',
@@ -12,6 +14,36 @@ const titectEvidenceFiles = <String>[
   'python.json',
   'vm.json',
   'chrome.json',
+  'capacity.json',
+  'reference.json',
+  'python-soak.json',
+  'offered.offers.json',
+  'offered.native.json',
+  'offered.samples.json',
+  'saturation.offers.json',
+  'saturation.native.json',
+  'saturation.samples.json',
+  'recovery.offers.json',
+  'recovery.native.json',
+  'recovery.samples.json',
+  'conformance.sha256',
+  'recovery.sha256',
+  'capacity.sha256',
+  'reference.sha256',
+  'web.sha256',
+  'python.sha256',
+  'vm.sha256',
+  'chrome.sha256',
+  'python-soak.sha256',
+  'offered.offers.sha256',
+  'offered.native.sha256',
+  'offered.samples.sha256',
+  'saturation.offers.sha256',
+  'saturation.native.sha256',
+  'saturation.samples.sha256',
+  'recovery.offers.sha256',
+  'recovery.native.sha256',
+  'recovery.samples.sha256',
 ];
 
 const titectRecoveryScenarios = <String>{
@@ -35,6 +67,10 @@ const titectRecoveryScenarios = <String>{
   'persistent-chrome-recovery',
   'pending-shadow-retention-and-expired-cursor',
   'django-persistent-mutations',
+  'corrupted-page-rejection',
+  'negotiated-policy-mismatch',
+  'exact-number-persistence',
+  'integrity-failure-state-and-checkpoint-unchanged',
 };
 
 /// Fails closed before readiness creation, validation and asset build.
@@ -56,11 +92,57 @@ void validateTitectEvidence({
   }
   final conformance = _read(File('${evidence.path}/conformance.json'));
   final recovery = _read(File('${evidence.path}/recovery.json'));
-  for (final report in [conformance, recovery]) {
+  final capacity = _read(File('${evidence.path}/capacity.json'));
+  final referenceFile = File('${evidence.path}/reference.json');
+  final reference = _read(referenceFile);
+  _require(
+    reference['schemaVersion'] == 1 &&
+        reference['mode'] == 'integrated' &&
+        reference['releaseEligible'] == false &&
+        reference['dartSha'] == sourceSha &&
+        reference['dartTree'] == sourceTree &&
+        reference['pythonSha'] == pin['pythonSha'] &&
+        RegExp(r'^[0-9a-f]{40}$')
+            .hasMatch(reference['pythonTree'] as String? ?? '') &&
+        RegExp(r'^[0-9a-f]{32}$')
+            .hasMatch(reference['executionId'] as String? ?? '') &&
+        const DeepCollectionEquality().equals(
+          reference['sourceVersions'],
+          pin['sourceVersions'],
+        ) &&
+        const DeepCollectionEquality().equals(
+          reference['bundles'],
+          pin['bundles'],
+        ) &&
+        const DeepCollectionEquality().equals(reference['executionModes'], [
+          'python',
+          'vm',
+          'chrome',
+        ]),
+    'reference is candidate, substituted or incomplete',
+  );
+  for (final name in titectEvidenceFiles.where(
+    (name) => name.endsWith('.json'),
+  )) {
+    final file = File('${evidence.path}/$name');
+    _require(
+      File('${evidence.path}/${name.replaceFirst(RegExp(r'\.json$'), '.sha256')}')
+              .readAsStringSync() ==
+          '${_digest(file)}  $name\n',
+      'evidence checksum differs for $name',
+    );
+  }
+  for (final report in [conformance, recovery, capacity]) {
     _require(
       report['schemaVersion'] == 1 &&
           report['status'] == 'passed' &&
           report['preliminary'] == false &&
+          report['releaseEligible'] == true &&
+          report['referenceSha256'] == _digest(referenceFile) &&
+          const DeepCollectionEquality().equals(
+            report['reference'],
+            reference,
+          ) &&
           report['trackedTreeDirty'] == false &&
           report['dartitectSha'] == sourceSha &&
           report['sourceTree'] == sourceTree &&
@@ -84,8 +166,8 @@ void validateTitectEvidence({
     );
     for (final key in [
       'pythonVersion',
-      'dartVersion',
-      'chromeVersion',
+      if (!identical(report, capacity)) 'dartVersion',
+      if (!identical(report, capacity)) 'chromeVersion',
       'platform',
     ]) {
       _require(
@@ -96,6 +178,35 @@ void validateTitectEvidence({
   }
   final vectorsFile = File('${root.path}/tool/titect_fixture/vectors.json');
   final vectors = jsonDecode(vectorsFile.readAsStringSync()) as List<Object?>;
+  final expectationsFile = File(
+    '${root.path}/tool/titect_fixture/expectations.json',
+  );
+  final expectations =
+      jsonDecode(expectationsFile.readAsStringSync()) as List<Object?>;
+  final corpus = _object(pin['corpus']);
+  _require(
+    vectors.length == 232 &&
+        expectations.length == 232 &&
+        _digest(vectorsFile) == corpus['vectors.json'] &&
+        _digest(expectationsFile) == corpus['expectations.json'] &&
+        _digest(
+              File('${root.path}/tool/titect_fixture/corpus-manifest.json'),
+            ) ==
+            corpus['manifest.json'] &&
+        reference['corpusSha256'] == corpus['vectors.json'] &&
+        reference['expectationsSha256'] == corpus['expectations.json'] &&
+        reference['corpusManifestSha256'] == corpus['manifest.json'],
+    'official corpus or expectation identity differs',
+  );
+  for (final target in ['python', 'vm', 'chrome']) {
+    _require(
+      const DeepCollectionEquality().equals(
+        jsonDecode(File('${evidence.path}/$target.json').readAsStringSync()),
+        expectations,
+      ),
+      '$target differs from exact official bytes or errors',
+    );
+  }
   _require(
     conformance['vectorsSha256'] == _digest(vectorsFile) &&
         conformance['vectorCount'] == vectors.length &&
@@ -145,6 +256,23 @@ void validateTitectEvidence({
   _require(
     const DeepCollectionEquality().equals(recovery['unverified'], []),
     'recovery contains unverified requirements',
+  );
+  _require(
+    RegExp(r'^[0-9a-f]{64}$')
+            .hasMatch(recovery['nativeActorSha256'] as String? ?? '') &&
+        recovery['nativeActorSha256'] == capacity['nativeActorSha256'],
+    'native actor identity differs',
+  );
+  validateTitectCapacity(capacity, evidence);
+  final soakFile = File('${evidence.path}/python-soak.json');
+  final soak = _read(soakFile);
+  final soakPin = _object(pin['soakEvidence']);
+  _require(
+    _digest(soakFile) == soakPin['sha256'] &&
+        soak['commit'] == soakPin['pythonSha'] &&
+        _object(soak['parameters'])['duration'] == 1800 &&
+        _objects(soak['results']).single['passed'] == true,
+    'separate historical Python soak is missing, altered or relabelled',
   );
   _zero(recovery['residualResources'], {
     'childProcesses',

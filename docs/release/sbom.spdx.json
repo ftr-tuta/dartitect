@@ -2811,6 +2811,11 @@
     {
       "spdxElementId": "SPDXRef-Package-dartitect-sync",
       "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-crypto"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-dartitect-sync",
+      "relationshipType": "DEPENDS_ON",
       "relatedSpdxElement": "SPDXRef-Package-dartitect"
     },
     {

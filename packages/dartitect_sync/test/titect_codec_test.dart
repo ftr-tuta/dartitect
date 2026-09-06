@@ -66,7 +66,10 @@ void main() {
       );
       final document = codec.decode(wire) as TitectDatasetDescriptor;
       expect(document.generation.toString(), text);
-      expect(codec.encode(document), wire);
+      expect(
+        codec.encode(document),
+        json.encode(json.decode(wire), sortKeys: true),
+      );
       expect(() => TitectNumber.parse(text).toIntExact(), throwsA(wireError));
     }
   });
@@ -81,6 +84,8 @@ void main() {
         '0.1',
         '9007199254740993',
         '1e-9999',
+        '1e9999',
+        '1e99999999999999999999999999999',
         '1.00000000000000001',
       ]) {
         expect(
@@ -92,20 +97,19 @@ void main() {
         TitectNumber.parse('9007199254740991').toIntExact(),
         9007199254740991,
       );
-      for (final text in [
-        'NaN',
-        'Infinity',
-        '1e9999',
-        '+1',
-        '01',
-        '1.',
-        '1\n',
-      ]) {
+      for (final text in ['NaN', 'Infinity', '+1', '01', '1.', '1\n']) {
         expect(() => TitectNumber.parse(text), throwsA(wireError));
       }
       final decoded = json.decode(utf8.encode('[0.1,1e-9999,-0.0]'));
       expect(utf8.decode(json.encode(decoded)), '[0.1,1e-9999,-0.0]');
       expect(() => json.encode(0.1), throwsA(wireError));
+      for (final text in [
+        '1e9999',
+        '1e99999999999999999999999999999',
+        '-0E+000',
+      ]) {
+        expect(utf8.decode(json.encode(TitectNumber.parse(text))), text);
+      }
     },
   );
 

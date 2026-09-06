@@ -5,6 +5,7 @@ import 'package:crypto/crypto.dart';
 import 'package:test/test.dart';
 
 import 'fixtures/titect_evidence_fixture.dart';
+import 'titect_evidence.dart';
 
 const _sha = '1111111111111111111111111111111111111111';
 const _tree = '2222222222222222222222222222222222222222';
@@ -71,21 +72,19 @@ void main() {
             .map((file) => _basename(file.path))
             .toList()
           ..sort();
-    expect(names, <String>[
-      'SHA256SUMS',
-      'actions-readiness-v1.json',
-      'dartitect-git-manifest.json',
-      'dependency-licenses.json',
-      'dependency-snippets.zip',
-      'release-provenance.json',
-      'sbom.spdx.json',
-      'titect-chrome.json',
-      'titect-conformance.json',
-      'titect-python.json',
-      'titect-recovery.json',
-      'titect-vm.json',
-      'titect-web.json',
-    ]);
+    expect(
+      names,
+      <String>[
+        'SHA256SUMS',
+        'actions-readiness-v1.json',
+        'dartitect-git-manifest.json',
+        'dependency-licenses.json',
+        'dependency-snippets.zip',
+        'release-provenance.json',
+        'sbom.spdx.json',
+        for (final name in titectEvidenceFiles) 'titect-$name',
+      ]..sort(),
+    );
     for (final name in names) {
       expect(
         await File('${first.path}/$name').readAsBytes(),
@@ -94,7 +93,7 @@ void main() {
       );
     }
     final sums = await File('${first.path}/SHA256SUMS').readAsLines();
-    expect(sums, hasLength(12));
+    expect(sums, hasLength(6 + titectEvidenceFiles.length));
     for (final line in sums) {
       final match = RegExp(r'^([0-9a-f]{64})  ([^/]+)$').firstMatch(line);
       expect(match, isNotNull, reason: line);

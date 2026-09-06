@@ -13,19 +13,30 @@ import threading
 import time
 import uuid
 from pathlib import Path
+from urllib.error import URLError
+from urllib.request import urlopen
 
 from run_titect_conformance import (
     FIXTURE,
     ROOT,
+    cancel_on_termination,
     digest,
     evidence_identity,
+    execution_reference,
+    fresh_output,
     git,
-    verify_reference,
+    run_captured,
+    write_report,
 )
 
 
 class Child:
-    def __init__(self, args, log, env=None):
+    def __init__(self, args, log, env=None, executable_sha256=None):
+        if (
+            executable_sha256
+            and digest(Path(args[0]).read_bytes()) != executable_sha256
+        ):
+            raise ValueError("native actor changed before execution")
         self.process = subprocess.Popen(
             args,
             cwd=ROOT,
@@ -35,7 +46,19 @@ class Child:
             stderr=subprocess.STDOUT,
             text=True,
             bufsize=1,
+            start_new_session=True,
         )
+        if executable_sha256 and sys.platform == "linux":
+            try:
+                if (
+                    digest(Path(f"/proc/{self.process.pid}/exe").read_bytes())
+                    != executable_sha256
+                ):
+                    raise ValueError("executed native actor differs from recorded hash")
+            except BaseException:
+                self.process.kill()
+                self.process.wait(timeout=10)
+                raise
         self.events = queue.Queue()
         self.lines = []
         self.log = log
@@ -67,13 +90,13 @@ class Child:
 
     def finish(self, *, kill=False, terminate=False, success=True):
         if kill and self.process.poll() is None:
-            self.process.kill()
+            os.killpg(self.process.pid, signal.SIGKILL)
         elif terminate and self.process.poll() is None:
-            self.process.terminate()
+            os.killpg(self.process.pid, signal.SIGTERM)
         try:
             code = self.process.wait(timeout=30)
         except subprocess.TimeoutExpired:
-            self.process.kill()
+            os.killpg(self.process.pid, signal.SIGKILL)
             self.process.wait(timeout=10)
             raise
         finally:
@@ -106,6 +129,7 @@ def local(path, sql, parameters=()):
 
 
 def main():
+    cancel_on_termination()
     import psycopg
     from psycopg import sql
 
@@ -115,12 +139,13 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--port", type=int, default=55439)
     parser.add_argument("--preliminary", action="store_true")
+    parser.add_argument("--reference-manifest", type=Path)
     parser.add_argument("--django-python", default=sys.executable)
     args = parser.parse_args()
     args.python_root = args.python_root.resolve()
     args.actor = args.actor.resolve()
-    args.output.mkdir(parents=True, exist_ok=True)
-    dsn = os.environ["TITECT_POSTGRES_DSN"]
+    fresh_output(args.output)
+    dsn = os.environ.get("TITECT_POSTGRES_DSN")
     pin = json.loads((FIXTURE / "pin.json").read_text())
     report = {
         "schemaVersion": 1,
@@ -140,9 +165,10 @@ def main():
         },
     }
     children, schemas = [], []
+    streams = []
     serial = 0
 
-    def start_server(schema, point=""):
+    def start_server(schema, point="", *, exact=False):
         nonlocal serial
         serial += 1
         child = Child(
@@ -157,11 +183,25 @@ def main():
                 str(args.port),
                 "--barrier",
                 point,
+                *(["--exact"] if exact else []),
             ],
             args.output / f"server-{serial}.log",
         )
         children.append(child)
         child.wait_for("READY")
+        deadline = time.monotonic() + 10
+        while True:
+            try:
+                with urlopen(
+                    f"http://127.0.0.1:{args.port}/metrics", timeout=0.5
+                ) as response:
+                    if response.status == 200:
+                        break
+            except (URLError, TimeoutError, ConnectionError):
+                pass
+            if time.monotonic() >= deadline:
+                raise TimeoutError("recovery HTTP readiness deadline exceeded")
+            time.sleep(0.02)
         return child
 
     def actor(
@@ -191,6 +231,7 @@ def main():
                 *extra,
             ],
             args.output / f"actor-{serial}.log",
+            executable_sha256=report["nativeActorSha256"],
         )
         children.append(child)
         if wait:
@@ -220,9 +261,23 @@ def main():
             ).fetchone()[0]
 
     try:
+        if not dsn or not os.environ.get("TITECT_NATS_URL"):
+            raise ValueError("real PostgreSQL and JetStream settings are required")
         if sys.flags.optimize:
             raise ValueError("recovery assertions require Python optimization disabled")
-        verify_reference(args.python_root.resolve(strict=True), pin, args.preliminary)
+        report["reference"] = execution_reference(
+            args.python_root.resolve(strict=True),
+            pin,
+            args.preliminary,
+            args.reference_manifest,
+        )
+        report["preliminary"] = report["reference"]["mode"] == "candidate"
+        report["releaseEligible"] = not report["preliminary"]
+        report["pythonSha"] = report["reference"]["pythonSha"]
+        write_report(args.output, "reference", report["reference"])
+        report["referenceSha256"] = digest(
+            (args.output / "reference.json").read_bytes()
+        )
         report["pythonMainSha"] = git(
             args.python_root, "rev-parse", "refs/remotes/origin/main"
         )
@@ -451,7 +506,7 @@ def main():
         report["scenarios"].append({"name": "paired-storm", "passed": True})
 
         web_evidence = args.output / "web.json"
-        web_run = subprocess.run(
+        web_run = run_captured(
             ["dart", "run", "tool/run_drift_web_fixture.dart", "--titect-recovery"],
             cwd=ROOT,
             env=dict(
@@ -459,12 +514,9 @@ def main():
                 TITECT_HTTP_ENDPOINT=f"http://127.0.0.1:{args.port}",
                 TITECT_WEB_EVIDENCE=str(web_evidence.resolve()),
             ),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
             timeout=240,
         )
-        (args.output / "web.log").write_text(web_run.stdout)
+        (args.output / "web.log").write_text(web_run.stdout + web_run.stderr)
         if web_run.returncode:
             raise ValueError("persistent Chrome recovery failed; see web.log")
         web_report = json.loads(web_evidence.read_text())
@@ -486,7 +538,101 @@ def main():
         report["scenarios"].append(
             {"name": "pending-shadow-retention-and-expired-cursor", "passed": True}
         )
-        django = subprocess.run(
+        schema = "titect_" + uuid.uuid4().hex
+        schemas.append(schema)
+        streams.append(schema)
+        server = start_server(schema, exact=True)
+        path = args.output / "exact.sqlite"
+        actor("acquire", path)
+        actor("bootstrap-integrity", path)
+        assert (
+            local(path, "SELECT integrity FROM titect_bootstrap")[0][0]
+            == "integrity-sha-256-exact-json-v1"
+        )
+        actor("exact-mutate", path, identity="exact-item")
+        actor("sync", path)
+        wire, response = local(path, "SELECT wire,response FROM titect_exact")[0]
+        assert bytes(wire) == bytes(response)
+        deadline = time.monotonic() + 20
+        while True:
+            with psycopg.connect(dsn) as connection:
+                row = connection.execute(
+                    sql.SQL("SELECT sent,received FROM {}.exact_bytes").format(
+                        sql.Identifier(schema)
+                    )
+                ).fetchone()
+                outbox = connection.execute(
+                    sql.SQL("SELECT payload,delivered_at FROM {}.exact_outbox").format(
+                        sql.Identifier(schema)
+                    )
+                ).fetchone()
+                completed = connection.execute(
+                    sql.SQL(
+                        "SELECT count(*) FROM {}.exact_inbox WHERE completed_at IS NOT NULL"
+                    ).format(sql.Identifier(schema))
+                ).fetchone()[0]
+            if row[1] is not None and outbox[1] is not None and completed == 1:
+                break
+            if time.monotonic() >= deadline:
+                raise ValueError("exact PostgreSQL/JetStream drain did not complete")
+            time.sleep(0.05)
+        assert bytes(row[0]) == bytes(row[1]) == bytes(outbox[0]) == bytes(wire)
+        assert (
+            local(path, "SELECT title FROM fixture_tasks")[0][0]
+            == "1.00000000000000001"
+        )
+        report["scenarios"].append(
+            {
+                "name": "exact-number-persistence",
+                "passed": True,
+                "wireSha256": digest(bytes(wire)),
+                "wireBytes": len(wire),
+                "postgresOutboxInboxReconciled": True,
+            }
+        )
+
+        def persistent_state():
+            return {
+                table: local(path, f"SELECT * FROM {table} ORDER BY 1")
+                for table in (
+                    "fixture_tasks",
+                    "fixture_checkpoints",
+                    "titect_pages",
+                    "titect_shadow",
+                    "titect_bootstrap",
+                    "titect_exact",
+                )
+            }
+
+        before = persistent_state()
+        for fault, name in [
+            ("corrupt", "corrupted-page-rejection"),
+            ("mismatch", "negotiated-policy-mismatch"),
+            ("missing", "integrity-failure-state-and-checkpoint-unchanged"),
+        ]:
+            for _ in range(2):
+                failed = actor("sync", path, point="integrity_" + fault, success=False)
+                assert failed.process.returncode != 0
+                assert any("wire/integrity" in line for line in failed.lines)
+                assert persistent_state() == before
+            report["scenarios"].append(
+                {
+                    "name": name,
+                    "passed": True,
+                    "reopened": True,
+                    "stateAndCheckpointUnchanged": True,
+                }
+            )
+        actor("expire", path)
+        server.finish(terminate=True)
+        exact_cleanup = [
+            json.loads(line.removeprefix("EXACT_RESIDUAL:"))
+            for line in server.lines
+            if line.startswith("EXACT_RESIDUAL:")
+        ]
+        assert exact_cleanup == [{"tasks": 0, "natsConnections": 0}]
+        report["exactTransportCleanup"] = exact_cleanup[0]
+        django = run_captured(
             [args.django_python, "-m", "pytest", "-q"],
             cwd=args.python_root / "examples/django_reference",
             env=dict(
@@ -494,50 +640,86 @@ def main():
                 REFERENCE_POSTGRES_DSN=dsn,
                 PYTHONPATH=str(args.python_root / "src"),
             ),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
             timeout=120,
         )
-        (args.output / "django.log").write_text(django.stdout)
+        (args.output / "django.log").write_text(django.stdout + django.stderr)
         if django.returncode:
             raise ValueError("persistent Django compatibility failed; see django.log")
         report["scenarios"].append(
             {"name": "django-persistent-mutations", "passed": True}
         )
         report["durationSeconds"] = time.monotonic() - started
+        execution_reference(
+            args.python_root, pin, report["preliminary"], args.output / "reference.json"
+        )
+        if digest(args.actor.read_bytes()) != report["nativeActorSha256"]:
+            raise ValueError("native actor changed during execution")
         report["status"] = "passed"
-    except Exception as error:
+    except (Exception, KeyboardInterrupt) as error:
         report["error"] = f"{type(error).__name__}: {error}"
     finally:
+        cleanup_errors = []
         for child in children:
             if child.process.poll() is None:
-                child.finish(kill=True, success=False)
-        remaining = 0
-        with psycopg.connect(dsn, autocommit=True) as connection:
-            for schema in schemas:
-                remaining += connection.execute(
-                    "SELECT count(*) FROM pg_stat_activity WHERE application_name=%s",
-                    (schema,),
-                ).fetchone()[0]
-                connection.execute(
-                    sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(
-                        sql.Identifier(schema)
-                    )
+                try:
+                    child.finish(kill=True, success=False)
+                except Exception as error:
+                    cleanup_errors.append(f"child cleanup: {type(error).__name__}")
+        if streams:
+            import asyncio
+
+            import nats
+
+            async def cleanup_streams():
+                client = await nats.connect(
+                    os.environ["TITECT_NATS_URL"],
+                    connect_timeout=3,
+                    allow_reconnect=False,
                 )
+                try:
+                    for name in streams:
+                        await client.jetstream().delete_stream(name)
+                finally:
+                    await client.close()
+
+            try:
+                asyncio.run(cleanup_streams())
+            except Exception as error:
+                cleanup_errors.append(f"broker cleanup: {type(error).__name__}")
+        remaining = 0
+        if schemas:
+            try:
+                with psycopg.connect(dsn, autocommit=True) as connection:
+                    for schema in schemas:
+                        remaining += connection.execute(
+                            "SELECT count(*) FROM pg_stat_activity WHERE application_name=%s",
+                            (schema,),
+                        ).fetchone()[0]
+                        connection.execute(
+                            sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(
+                                sql.Identifier(schema)
+                            )
+                        )
+            except Exception as error:
+                cleanup_errors.append(f"database cleanup: {type(error).__name__}")
         actor_residuals = [
             json.loads(line.removeprefix("RESIDUAL:"))
             for child in children
             for line in child.lines
             if line.startswith("RESIDUAL:") and '"running"' in line
         ]
-        leases = sum(
-            local(
-                path,
-                "SELECT count(*) FROM titect_authority WHERE expires_ms > CAST(unixepoch('subsec')*1000 AS INTEGER)",
-            )[0][0]
-            for path in args.output.glob("*.sqlite")
-        )
+        leases = 0
+        for path in args.output.glob("*.sqlite"):
+            try:
+                leases += local(
+                    path,
+                    "SELECT count(*) FROM titect_authority WHERE expires_ms > CAST(unixepoch('subsec')*1000 AS INTEGER)",
+                )[0][0]
+            except Exception as error:
+                cleanup_errors.append(f"authority inspection: {type(error).__name__}")
+        if cleanup_errors:
+            report["cleanupErrors"] = cleanup_errors
+            report["status"] = "failed"
         report["maxima"] = {
             "running": max((row["peakRunning"] for row in actor_residuals), default=0),
             "queued": max((row["peakQueued"] for row in actor_residuals), default=0),

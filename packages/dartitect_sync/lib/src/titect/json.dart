@@ -19,7 +19,14 @@ enum TitectWireProblem {
   integrity,
 
   /// A requested numeric conversion would lose precision.
-  precision,
+  precision;
+
+  /// Normative payload-free code shared by Python, Dart VM and browsers.
+  String get code => switch (this) {
+    limit => 'limits',
+    unsupported => 'unsupported_profile',
+    _ => name,
+  };
 }
 
 /// Expected wire failure containing no document values or opaque identifiers.
@@ -31,21 +38,20 @@ final class TitectWireException implements Exception {
   final TitectWireProblem problem;
 
   @override
-  String toString() => 'TitectWireException(${problem.name})';
+  String toString() => 'TitectWireException(${problem.code})';
 }
 
 /// JSON number retained as decimal text, without a VM or browser `num` cast.
 final class TitectNumber {
   TitectNumber._(this.lexeme);
 
-  /// Validates one finite JSON number within an explicit character bound.
+  /// Validates one JSON token without interpreting or expanding its exponent.
   factory TitectNumber.parse(String value, {int maxCharacters = 1048576}) {
     if (maxCharacters <= 0) throw ArgumentError.value(maxCharacters);
     if (value.length > maxCharacters) {
       throw const TitectWireException(TitectWireProblem.limit);
     }
-    if (_number.firstMatch(value)?.end != value.length ||
-        (value.contains(RegExp('[.eE]')) && !double.parse(value).isFinite)) {
+    if (value.isEmpty || _number.firstMatch(value)?.end != value.length) {
       throw const TitectWireException(TitectWireProblem.syntax);
     }
     return TitectNumber._(value);
@@ -184,6 +190,13 @@ final class TitectJsonCodec {
     if (bytes.length > limits.maxBytes) {
       throw const TitectWireException(TitectWireProblem.limit);
     }
+    // Dart's UTF-8 decoder strips a leading BOM; the wire grammar forbids it.
+    if (bytes.length >= 3 &&
+        bytes[0] == 0xef &&
+        bytes[1] == 0xbb &&
+        bytes[2] == 0xbf) {
+      throw const TitectWireException(TitectWireProblem.syntax);
+    }
     try {
       return _Parser(utf8.decode(bytes), limits).parse();
     } on FormatException {
@@ -193,8 +206,8 @@ final class TitectJsonCodec {
 
   /// Encodes bounded JSON with exact numeric tokens and optional key sorting.
   ///
-  /// Sorting uses Unicode scalar order. This is not a claim of compatibility
-  /// with a canonical numeric or integrity profile.
+  /// Sorting uses Unicode scalar order and the exact JSON profile's escapes.
+  /// Numbers keep their original tokens, including signed zero and exponents.
   List<int> encode(Object? value, {bool sortKeys = false}) {
     final output = BytesBuilder(copy: false);
     var count = 0;
@@ -232,7 +245,7 @@ final class TitectJsonCodec {
           if (item.length > limits.maxBytes - output.length) {
             throw const TitectWireException(TitectWireProblem.limit);
           }
-          emit(jsonEncode(item));
+          _quote(item, emit);
         case List<Object?>():
           emit('[');
           for (var i = 0; i < item.length; i++) {
@@ -250,7 +263,7 @@ final class TitectJsonCodec {
           for (var i = 0; i < keys.length; i++) {
             if (i != 0) emit(',');
             _validateString(keys[i], limits.maxStringScalars);
-            emit(jsonEncode(keys[i]));
+            _quote(keys[i], emit);
             emit(':');
             write(item[keys[i]], depth + 1);
           }
@@ -262,6 +275,32 @@ final class TitectJsonCodec {
 
     write(value, 0);
     return output.takeBytes();
+  }
+
+  // Stream escaping into byte admission; never allocate an expanded string.
+  static void _quote(String value, void Function(String) emit) {
+    emit('"');
+    var start = 0;
+    for (var i = 0; i < value.length; i++) {
+      final unit = value.codeUnitAt(i);
+      final escape = switch (unit) {
+        34 => r'\"',
+        92 => r'\\',
+        8 => r'\b',
+        12 => r'\f',
+        10 => r'\n',
+        13 => r'\r',
+        9 => r'\t',
+        < 32 => '\\u${unit.toRadixString(16).padLeft(4, '0')}',
+        _ => null,
+      };
+      if (escape == null) continue;
+      if (start < i) emit(value.substring(start, i));
+      emit(escape);
+      start = i + 1;
+    }
+    if (start < value.length) emit(value.substring(start));
+    emit('"');
   }
 }
 

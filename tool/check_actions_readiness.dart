@@ -114,6 +114,12 @@ void _validatePolicy(
     'tool/check_titect_evidence.dart',
     'tool/run_titect_conformance.py',
     'tool/run_titect_recovery.py',
+    'tool/run_titect_capacity.py',
+    'tool/collect_titect_evidence.py',
+    'tool/titect_capacity_evidence.dart',
+    'tool/titect_fixture/corpus-manifest.json',
+    'tool/titect_fixture/expectations.json',
+    'tool/titect_fixture/python-soak.json',
   ])) {
     errors.add('The readiness repository artifact set is not exact.');
   }

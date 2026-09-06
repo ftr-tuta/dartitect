@@ -66,7 +66,47 @@ void main() {
     expect(harness.events, ['fetch:null']);
     expect(harness.store.value, isNull);
   });
+  test(
+    'a fetch without the required verifier cannot apply or checkpoint',
+    () async {
+      harness.requiredIntegrity = _selection();
+      final report = await harness.start();
+      expect(
+        report.datasets.single.failure?.wire?.problem,
+        TitectWireProblem.integrity,
+      );
+      expect(harness.events, ['fetch:null']);
+      expect(harness.store.value, isNull);
+    },
+  );
+  test('matching capability with a different selection cannot replace session policy', () async {
+    harness.requiredIntegrity = _selection();
+    harness.codec = TitectSyncCodec(integrity: _selection());
+    final report = await harness.start();
+    expect(
+      report.datasets.single.failure?.wire?.problem,
+      TitectWireProblem.integrity,
+    );
+    expect(harness.events, ['fetch:null']);
+    expect(harness.store.value, isNull);
+  });
+  test(
+    'verified pages under the session selection advance checkpoints',
+    () async {
+      harness.requiredIntegrity = _selection();
+      harness.codec = TitectSyncCodec(integrity: harness.requiredIntegrity);
+      expect((await harness.start()).succeeded, isTrue);
+      expect(harness.store.value, 'done');
+    },
+  );
 }
+
+TitectSyncIntegritySelection _selection() =>
+    TitectSyncIntegritySelection.select(
+      requested: [TitectExactJsonSha256Integrity.capabilityName],
+      acknowledgement: TitectExactJsonSha256Integrity.capabilityName,
+      policies: const [TitectExactJsonSha256Integrity()],
+    );
 
 final class _Harness {
   _Harness() {
@@ -81,7 +121,8 @@ final class _Harness {
       ),
     );
   }
-  final codec = TitectSyncCodec();
+  var codec = TitectSyncCodec();
+  TitectSyncIntegritySelection? requiredIntegrity;
   final bulkhead = Bulkhead(maxConcurrent: 1, maxQueue: 1);
   late final RetryBudget budget;
   final store = _Store();
@@ -90,8 +131,8 @@ final class _Harness {
   var generation = 1;
   SyncEngine<String, String, TitectSyncFailure<String>>? engine;
 
-  List<int> page(String? next) => codec.encode(
-    codec.fromPayload('snapshot', {
+  List<int> page(String? next) {
+    var page = codec.fromPayload('snapshot', {
       'dataset_id': 'd',
       'generation': generation,
       'upserts': <Object?>[],
@@ -101,8 +142,13 @@ final class _Harness {
         'digest': 'a' * 64,
         'item_count': 0,
       },
-    }),
-  );
+    }) as TitectPage;
+    if (codec.integrity != null) {
+      page = const TitectExactJsonSha256Integrity().seal(page, codec: codec);
+    }
+    return codec.encode(page);
+  }
+
   Future<SyncReport<String, String, TitectSyncFailure<String>>> start({
     int maxPages = 2,
     int maxBytes = 4096,
@@ -111,6 +157,7 @@ final class _Harness {
       key: 'd',
       datasetId: 'd',
       generation: BigInt.one,
+      integrity: requiredIntegrity,
       cursorOf: (checkpoint) => checkpoint,
       fetch: (_, cursor, attempt, signal, readBudget) async {
         events.add('fetch:$cursor');
@@ -119,6 +166,7 @@ final class _Harness {
             Stream.value(page(cursor == null ? 'opaque/+=' : null)),
             codec: codec,
             budget: readBudget,
+            acknowledgement: codec.integrity?.capability,
           ),
         );
       },

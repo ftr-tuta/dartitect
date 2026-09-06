@@ -29,7 +29,7 @@ sealed class TitectPage extends TitectSyncDocument {
   /// Opaque continuation, or null at the end of this traversal.
   String? get nextCursor;
 
-  /// Declared integrity metadata; the pinned profile validates shape/count only.
+  /// Declared metadata, verified when the reader has an integrity selection.
   TitectIntegrity get integrity;
 }
 

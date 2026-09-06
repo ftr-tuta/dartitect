@@ -55,6 +55,8 @@ void main() {
     'dartitect_jobs': <String>{'dartitect'},
     'dartitect_resilience': <String>{'dartitect'},
     'dartitect_sync': <String>{
+      // Pure Dart SHA-256 for the negotiated exact JSON integrity policy.
+      'crypto',
       'dartitect',
       'dartitect_jobs',
       'dartitect_resilience',

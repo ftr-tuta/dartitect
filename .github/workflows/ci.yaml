@@ -679,7 +679,7 @@ jobs:
             ./
 
   titect-paired:
-    name: Titect / Paired conformance and recovery
+    name: Titect / Paired conformance, recovery and capacity
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     services:
@@ -697,6 +697,7 @@ jobs:
     env:
       CHROME_EXECUTABLE: /usr/bin/google-chrome
       TITECT_POSTGRES_DSN: postgresql://titect:titect-fixture-only@127.0.0.1:55438/titect
+      TITECT_NATS_URL: nats://127.0.0.1:55440
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -721,10 +722,14 @@ jobs:
         run: |
           flutter pub get
           python3 tool/prepare_titect_reference.py build/pytitect-reference
-          uv sync --project build/pytitect-reference --frozen --extra fastapi --extra sqlalchemy
+          uv sync --project build/pytitect-reference --frozen --extra fastapi --extra sqlalchemy --extra nats
           uv sync --project build/pytitect-reference/examples/django_reference --frozen
           google-chrome --version
           dart build cli --root-package dartitect_drift -t tool/titect_fixture/composition/native_actor.dart -o build/titect-native
+      - name: Start owned JetStream fixture
+        run: >-
+          docker run --detach --name "titect-nats-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          --publish 127.0.0.1:55440:4222 nats:2.14.5 --jetstream
       - name: Reject deliberate wire and evidence drift
         run: python3 tool/titect_fixture_tools_test.py
       - name: Run paired wire conformance
@@ -736,21 +741,34 @@ jobs:
             mode+=(--preliminary)
           fi
           build/pytitect-reference/.venv/bin/python tool/run_titect_conformance.py \
-            --python-root build/pytitect-reference --output build/titect-evidence "${mode[@]}"
+            --python-root build/pytitect-reference --output build/titect-conformance "${mode[@]}"
 
       - name: Run persistent paired recovery
         if: success() || failure()
         shell: bash
         run: |
-          mode=()
-          if jq -e '.integrated == false' tool/titect_fixture/pin.json >/dev/null; then
-            mode+=(--preliminary)
-          fi
           build/pytitect-reference/.venv/bin/python tool/run_titect_recovery.py \
             --python-root build/pytitect-reference \
             --actor build/titect-native/bundle/bin/native_actor \
             --django-python "$GITHUB_WORKSPACE/build/pytitect-reference/examples/django_reference/.venv/bin/python" \
-            --output build/titect-evidence "${mode[@]}"
+            --reference-manifest build/titect-conformance/reference.json \
+            --output build/titect-recovery
+
+      - name: Run real Dart capacity and reconnect
+        if: success() || failure()
+        run: |
+          build/pytitect-reference/.venv/bin/python tool/run_titect_capacity.py \
+            --python-root build/pytitect-reference \
+            --actor build/titect-native/bundle/bin/native_actor \
+            --reference-manifest build/titect-conformance/reference.json \
+            --output build/titect-capacity
+
+      - name: Collect the exact paired execution
+        if: success() || failure()
+        run: |
+          python3 tool/collect_titect_evidence.py \
+            --conformance build/titect-conformance --recovery build/titect-recovery \
+            --capacity build/titect-capacity --output build/titect-evidence
 
       - name: Require complete final evidence
         if: success() || failure()
@@ -763,6 +781,20 @@ jobs:
           path: build/titect-evidence
           if-no-files-found: error
           retention-days: 90
+      - name: Retain failed and raw paired stage evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: titect-stage-evidence
+          path: |
+            build/titect-conformance
+            build/titect-recovery
+            build/titect-capacity
+          if-no-files-found: error
+          retention-days: 90
+      - name: Remove owned JetStream fixture
+        if: always()
+        run: docker rm --force "titect-nats-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
       - name: Confirm tracked files are unchanged
         if: always()
         run: git diff --exit-code -- .

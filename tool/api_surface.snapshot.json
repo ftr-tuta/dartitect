@@ -108774,6 +108774,126 @@
           ]
         },
         {
+          "name": "TitectExactJsonSha256Integrity",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectExactJsonSha256Integrity implements TitectSyncIntegrityPolicy",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [
+            "TitectSyncIntegrityPolicy"
+          ],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "TitectExactJsonSha256Integrity()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "TitectExactJsonSha256Integrity",
+              "parameters": []
+            },
+            {
+              "name": "capabilityName",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "String capabilityName",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "capability",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get capability",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "seal",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "TitectPage seal(TitectPage page, {required TitectSyncCodec codec})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "TitectPage",
+              "parameters": [
+                {
+                  "name": "page",
+                  "declaration": "TitectPage page",
+                  "type": "TitectPage",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "codec",
+                  "declaration": "{required TitectSyncCodec codec}",
+                  "type": "TitectSyncCodec",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "verify",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void verify(Map<String, Object?> envelope, TitectJsonCodec json)",
+              "deprecated": false,
+              "annotations": [
+                "@override"
+              ],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "envelope",
+                  "declaration": "Map<String, Object?> envelope",
+                  "type": "Map<String, Object?>",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "json",
+                  "declaration": "TitectJsonCodec json",
+                  "type": "TitectJsonCodec",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "TitectGenerationMismatch",
           "kind": "class",
           "audience": "application-facing",
@@ -109822,7 +109942,7 @@
               "name": "new",
               "kind": "constructor",
               "audience": "application-facing",
-              "declaration": "TitectSyncCodec({TitectJsonLimits? jsonLimits})",
+              "declaration": "TitectSyncCodec({TitectJsonLimits? jsonLimits, TitectSyncIntegritySelection? integrity})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -109833,6 +109953,14 @@
                   "name": "jsonLimits",
                   "declaration": "{TitectJsonLimits? jsonLimits}",
                   "type": "TitectJsonLimits?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "integrity",
+                  "declaration": "{TitectSyncIntegritySelection? integrity}",
+                  "type": "TitectSyncIntegritySelection?",
                   "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
@@ -109851,6 +109979,18 @@
                 "static"
               ],
               "type": "Set<String>"
+            },
+            {
+              "name": "integrity",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "TitectSyncIntegritySelection? integrity",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "TitectSyncIntegritySelection?"
             },
             {
               "name": "json",
@@ -109881,7 +110021,7 @@
               "name": "decode",
               "kind": "method",
               "audience": "application-facing",
-              "declaration": "TitectSyncDocument decode(List<int> bytes)",
+              "declaration": "TitectSyncDocument decode(List<int> bytes, {String? acknowledgement})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -109893,6 +110033,14 @@
                   "declaration": "List<int> bytes",
                   "type": "List<int>",
                   "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "acknowledgement",
+                  "declaration": "{String? acknowledgement}",
+                  "type": "String?",
+                  "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
                 }
@@ -109952,7 +110100,7 @@
               "name": "read",
               "kind": "method",
               "audience": "application-facing",
-              "declaration": "Future<TitectSyncDocument> read(Stream<List<int>> chunks)",
+              "declaration": "Future<TitectSyncDocument> read(Stream<List<int>> chunks, {String? acknowledgement})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [],
@@ -109964,6 +110112,14 @@
                   "declaration": "Stream<List<int>> chunks",
                   "type": "Stream<List<int>>",
                   "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "acknowledgement",
+                  "declaration": "{String? acknowledgement}",
+                  "type": "String?",
+                  "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
                 }
@@ -110103,6 +110259,197 @@
           ]
         },
         {
+          "name": "TitectSyncIntegrityPolicy",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "abstract interface class TitectSyncIntegrityPolicy",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "abstract",
+            "interface"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "new",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "TitectSyncIntegrityPolicy()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "TitectSyncIntegrityPolicy",
+              "parameters": []
+            },
+            {
+              "name": "capability",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get capability",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
+            },
+            {
+              "name": "verify",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void verify(Map<String, Object?> envelope, TitectJsonCodec json)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "abstract"
+              ],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "envelope",
+                  "declaration": "Map<String, Object?> envelope",
+                  "type": "Map<String, Object?>",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "json",
+                  "declaration": "TitectJsonCodec json",
+                  "type": "TitectJsonCodec",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TitectSyncIntegritySelection",
+          "kind": "class",
+          "audience": "application-facing",
+          "declaration": "final class TitectSyncIntegritySelection",
+          "deprecated": false,
+          "annotations": [],
+          "modifiers": [
+            "final"
+          ],
+          "typeParameters": [],
+          "supertype": "Object",
+          "mixins": [],
+          "interfaces": [],
+          "members": [
+            {
+              "name": "none",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "TitectSyncIntegritySelection.none()",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const"
+              ],
+              "typeParameters": [],
+              "returnType": "TitectSyncIntegritySelection",
+              "parameters": []
+            },
+            {
+              "name": "select",
+              "kind": "constructor",
+              "audience": "application-facing",
+              "declaration": "TitectSyncIntegritySelection.select({required Iterable<String> requested, required String? acknowledgement, required Iterable<TitectSyncIntegrityPolicy> policies})",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "factory"
+              ],
+              "typeParameters": [],
+              "returnType": "TitectSyncIntegritySelection",
+              "parameters": [
+                {
+                  "name": "requested",
+                  "declaration": "{required Iterable<String> requested}",
+                  "type": "Iterable<String>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "acknowledgement",
+                  "declaration": "{required String? acknowledgement}",
+                  "type": "String?",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "policies",
+                  "declaration": "{required Iterable<TitectSyncIntegrityPolicy> policies}",
+                  "type": "Iterable<TitectSyncIntegrityPolicy>",
+                  "kind": "requiredNamed",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            },
+            {
+              "name": "capability",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "String? capability",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "final"
+              ],
+              "type": "String?"
+            },
+            {
+              "name": "header",
+              "kind": "field",
+              "audience": "application-facing",
+              "declaration": "String header",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [
+                "const",
+                "static"
+              ],
+              "type": "String"
+            },
+            {
+              "name": "acknowledge",
+              "kind": "method",
+              "audience": "application-facing",
+              "declaration": "void acknowledge(String? responseHeader)",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "void",
+              "parameters": [
+                {
+                  "name": "responseHeader",
+                  "declaration": "String? responseHeader",
+                  "type": "String?",
+                  "kind": "requiredPositional",
+                  "default": null,
+                  "annotations": []
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "TitectSyncLimits",
           "kind": "class",
           "audience": "application-facing",
@@ -110234,7 +110581,7 @@
               "name": "read",
               "kind": "method",
               "audience": "application-facing",
-              "declaration": "Future<TitectSyncResponse> read(Stream<List<int>> body, {required TitectSyncCodec codec, TitectReadBudget? budget})",
+              "declaration": "Future<TitectSyncResponse> read(Stream<List<int>> body, {required TitectSyncCodec codec, TitectReadBudget? budget, String? acknowledgement})",
               "deprecated": false,
               "annotations": [],
               "modifiers": [
@@ -110263,6 +110610,14 @@
                   "name": "budget",
                   "declaration": "{TitectReadBudget? budget}",
                   "type": "TitectReadBudget?",
+                  "kind": "optionalNamed",
+                  "default": null,
+                  "annotations": []
+                },
+                {
+                  "name": "acknowledgement",
+                  "declaration": "{String? acknowledgement}",
+                  "type": "String?",
                   "kind": "optionalNamed",
                   "default": null,
                   "annotations": []
@@ -110694,6 +111049,18 @@
                 "static"
               ],
               "type": "List<TitectWireProblem>"
+            },
+            {
+              "name": "code",
+              "kind": "getter",
+              "audience": "application-facing",
+              "declaration": "String get code",
+              "deprecated": false,
+              "annotations": [],
+              "modifiers": [],
+              "typeParameters": [],
+              "returnType": "String",
+              "parameters": []
             }
           ]
         },
@@ -110701,7 +111068,7 @@
           "name": "titectSyncDataset",
           "kind": "function",
           "audience": "application-facing",
-          "declaration": "SyncDataset<K, C, TitectSyncFailure<F>> titectSyncDataset<K, C, F extends Object>({required K key, required String datasetId, required BigInt generation, required String? Function(C?) cursorOf, required Future<Result<TitectSyncResponse, F>> Function(SyncDatasetContext<K, C>, String?, int, CancellationSignal, TitectReadBudget) fetch, required Future<Result<C, F>> Function(SyncDatasetContext<K, C>, TitectPage) apply, required RetryExecutor retryExecutor, required RetryPolicy<F> retryPolicy, required RetryBudget retryBudget, required int maxPages, required int maxReceivedBytes, SyncClock clock = const SystemSyncClock()})",
+          "declaration": "SyncDataset<K, C, TitectSyncFailure<F>> titectSyncDataset<K, C, F extends Object>({required K key, required String datasetId, required BigInt generation, required String? Function(C?) cursorOf, required Future<Result<TitectSyncResponse, F>> Function(SyncDatasetContext<K, C>, String?, int, CancellationSignal, TitectReadBudget) fetch, required Future<Result<C, F>> Function(SyncDatasetContext<K, C>, TitectPage) apply, required RetryExecutor retryExecutor, required RetryPolicy<F> retryPolicy, required RetryBudget retryBudget, required int maxPages, required int maxReceivedBytes, TitectSyncIntegritySelection? integrity, SyncClock clock = const SystemSyncClock()})",
           "deprecated": false,
           "annotations": [],
           "modifiers": [
@@ -110814,6 +111181,14 @@
               "declaration": "{required int maxReceivedBytes}",
               "type": "int",
               "kind": "requiredNamed",
+              "default": null,
+              "annotations": []
+            },
+            {
+              "name": "integrity",
+              "declaration": "{TitectSyncIntegritySelection? integrity}",
+              "type": "TitectSyncIntegritySelection?",
+              "kind": "optionalNamed",
               "default": null,
               "annotations": []
             },

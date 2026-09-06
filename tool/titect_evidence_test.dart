@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:test/test.dart';
 
 import 'fixtures/titect_evidence_fixture.dart';
@@ -33,6 +34,13 @@ void main() {
     final data = jsonDecode(file.readAsStringSync()) as Map<String, Object?>;
     mutate(data);
     file.writeAsStringSync(jsonEncode(data));
+    if (path.startsWith('titect/')) {
+      File(
+        file.path.replaceFirst(RegExp(r'\.json$'), '.sha256'),
+      ).writeAsStringSync(
+        '${sha256.convert(file.readAsBytesSync())}  ${path.split('/').last}\n',
+      );
+    }
   }
 
   test(
@@ -97,6 +105,55 @@ void main() {
           (value['residualResources']!
                   as Map<String, Object?>)['activeAuthorities'] =
               1,
+    );
+    expect(validate, throwsStateError);
+  });
+  test('rejects an executed native actor different from recovery', () {
+    change(
+      'titect/capacity.json',
+      (value) => value['nativeActorSha256'] = 'e' * 64,
+    );
+    expect(validate, throwsStateError);
+  });
+  for (final field in ['mode', 'executionId', 'pythonTree']) {
+    test('rejects reference $field substitution', () {
+      change(
+        'titect/reference.json',
+        (value) => value[field] = field == 'mode' ? 'candidate' : '0' * 32,
+      );
+      expect(validate, throwsStateError);
+    });
+  }
+  for (final field in [
+    'offered',
+    'statuses',
+    'durable',
+    'residualResources',
+    'latency_seconds',
+  ]) {
+    test('rejects capacity $field drift with a refreshed report checksum', () {
+      change('titect/capacity.json', (value) {
+        final first =
+            (value['results']! as List<Object?>).first! as Map<String, Object?>;
+        first[field] = field == 'offered' ? 99 : <String, Object?>{};
+      });
+      expect(validate, throwsA(anything));
+    });
+  }
+  test('rejects wrong normative errors despite consistent runtime hashes', () {
+    final file = File('${root.path}/titect/python.json');
+    final values = jsonDecode(file.readAsStringSync()) as List<Object?>;
+    final rejected = values.cast<Map<String, Object?>>().firstWhere(
+      (row) => row['accepted'] == false,
+    );
+    rejected['problem'] = 'invented';
+    file.writeAsStringSync(jsonEncode(values));
+    final digest = sha256.convert(file.readAsBytesSync()).toString();
+    File('${root.path}/titect/python.sha256')
+        .writeAsStringSync('$digest  python.json\n');
+    change(
+      'titect/conformance.json',
+      (value) => value['pythonOutcomesSha256'] = digest,
     );
     expect(validate, throwsStateError);
   });

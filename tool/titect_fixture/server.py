@@ -5,23 +5,29 @@ import asyncio
 import json
 import os
 import sys
-from contextlib import asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 
-def build(reference, schema, barrier_point):
+def build(reference, schema, barrier_point, *, exact=False, delay=0):
     sys.path[:0] = [str(reference), str(reference / "src")]
     from examples.fastapi_event_platform.composition import build_app
     from fastapi import Request
-    from fastapi.responses import JSONResponse
+    from fastapi.responses import JSONResponse, Response
     from pytitect.core import OpaqueId
     from pytitect.idempotency import IdempotencyPolicy, IdempotencyScope
     from pytitect.operations import ReadinessPolicy, RuntimeRole
     from pytitect.sqlalchemy import SQLAlchemyIdempotentRequest
     from pytitect.sqlalchemy.models import IdempotencyModelMixin, ReceiptModelMixin
-    from pytitect.sync import decode_sync_document, encode_sync_document
+    from pytitect.sync import (
+        EXACT_JSON_INTEGRITY,
+        ExactJsonSha256Integrity,
+        decode_sync_document,
+        encode_sync_document,
+    )
+    from pytitect.wire import WireDocument
     from sqlalchemy import JSON, Integer, String, UniqueConstraint, event, select
     from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
     from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -126,15 +132,25 @@ def build(reference, schema, barrier_point):
         receipt_identity=lambda _, key: OpaqueId("receipt:" + key),
         readiness_policy=ReadinessPolicy(RuntimeRole.API, ()),
     )
+    exact_lifespan = ExactBytes = exact_codec = None
+    if exact:
+        from exact_transport import install
+
+        exact_lifespan, ExactBytes, exact_codec = install(
+            app, Base, sessions, engine, Idempotency, Receipt, schema, delay
+        )
 
     @asynccontextmanager
     async def lifespan(_):
         async with engine.begin() as connection:
             await connection.execute(CreateSchema(schema, if_not_exists=True))
             await connection.run_sync(Base.metadata.create_all)
-        print("READY", flush=True)
         try:
-            yield
+            async with AsyncExitStack() as stack:
+                if exact_lifespan:
+                    await stack.enter_async_context(exact_lifespan())
+                print("READY", flush=True)
+                yield
         finally:
             await engine.dispose()
             print("RESIDUAL:" + json.dumps(counters, sort_keys=True), flush=True)
@@ -143,6 +159,8 @@ def build(reference, schema, barrier_point):
 
     @app.middleware("http")
     async def admission(request: Request, call_next):
+        if request.url.path in ("/metrics", "/exact-metrics"):
+            return await call_next(request)
         if counters["active"] >= 2:
             counters["refused"] += 1
             return JSONResponse(
@@ -167,8 +185,20 @@ def build(reference, schema, barrier_point):
         )
 
     @app.get("/bootstrap")
-    async def bootstrap():
+    @app.post("/bootstrap")
+    async def bootstrap(request: Request):
         now = datetime.now(UTC)
+        selected = False
+        if request.method == "POST":
+            raw = bytearray()
+            async for chunk in request.stream():
+                if len(raw) + len(chunk) > 8192:
+                    raise ValueError("bootstrap byte bound exceeded")
+                raw.extend(chunk)
+            from pytitect.sync import decode_sync_raw
+
+            document = decode_sync_raw(bytes(raw)).document.value
+            selected = EXACT_JSON_INTEGRITY in document["payload"]["capabilities"]
 
         def stamp(value):
             return value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
@@ -198,11 +228,12 @@ def build(reference, schema, barrier_point):
                         "max_capabilities": 32,
                     },
                 },
-            )
+            ),
+            headers={"Titect-Sync-Integrity": EXACT_JSON_INTEGRITY} if selected else {},
         )
 
     @app.get("/pages")
-    async def pages(cursor: str | None = None):
+    async def pages(request: Request, cursor: str | None = None, fault: str = ""):
         # These cursor semantics are fixture-owned and never interpreted by Dart.
         if cursor == "expired":
             return JSONResponse(
@@ -222,24 +253,80 @@ def build(reference, schema, barrier_point):
             {"item_id": row.identity, "revision": 1, "value": {"value": row.value}}
             for row in rows[:2]
         ]
-        return JSONResponse(
-            wire(
-                "snapshot",
-                {
-                    "dataset_id": "items",
-                    "generation": 1,
-                    "upserts": items,
-                    "next_cursor": "opaque/+=" + str(offset + 2)
-                    if len(rows) > 2
-                    else None,
-                    "integrity": {
-                        "algorithm": "sha-256",
-                        "digest": "a" * 64,
-                        "item_count": len(items),
-                    },
-                },
+        payload = {
+            "dataset_id": "items",
+            "generation": 1,
+            "upserts": items,
+            "next_cursor": "opaque/+=" + str(offset + 2) if len(rows) > 2 else None,
+            "integrity": {
+                "algorithm": "sha-256",
+                "digest": "a" * 64,
+                "item_count": len(items),
+            },
+        }
+        if ExactBytes is not None:
+            async with sessions() as session:
+                exact_rows = (
+                    await session.scalars(
+                        select(ExactBytes).order_by(ExactBytes.identity).limit(3)
+                    )
+                ).all()
+            if exact_rows:
+                payload["upserts"] = [
+                    {
+                        "item_id": row.identity,
+                        "revision": 1,
+                        "value": exact_codec.decode(bytes(row.sent)).data.value,
+                    }
+                    for row in exact_rows[:2]
+                ]
+                payload["next_cursor"] = None
+                payload["integrity"]["item_count"] = len(payload["upserts"])
+        selected = request.headers.get("Titect-Sync-Integrity") == EXACT_JSON_INTEGRITY
+        if not selected:
+            return JSONResponse(wire("snapshot", payload))
+        # Lift consumer integer metadata explicitly; arbitrary exact data is
+        # already a WireDocument from the selected /2 decoder.
+        from collections.abc import Mapping
+
+        from pytitect.wire import ExactNumber
+
+        def exact_value(value):
+            if type(value) is int:
+                return ExactNumber(str(value))
+            if isinstance(value, (list, tuple)):
+                return tuple(exact_value(item) for item in value)
+            if isinstance(value, Mapping):
+                return {key: exact_value(item) for key, item in value.items()}
+            return value
+
+        page = (
+            ExactJsonSha256Integrity()
+            .seal(
+                WireDocument(
+                    exact_value(
+                        {
+                            "protocol": "titect-sync/1",
+                            "kind": "snapshot",
+                            "payload": payload,
+                        }
+                    )
+                )
             )
+            .encode()
         )
+        if fault == "corrupt":
+            page = page.replace(b'"generation":1', b'"generation":2')
+        header = (
+            {}
+            if fault == "missing"
+            else {
+                "Titect-Sync-Integrity": "changed"
+                if fault == "mismatch"
+                else EXACT_JSON_INTEGRITY
+            }
+        )
+        return Response(page, media_type="application/json", headers=header)
 
     @app.get("/metrics")
     async def metrics():
@@ -256,6 +343,8 @@ if __name__ == "__main__":
     parser.add_argument("--schema", required=True)
     parser.add_argument("--port", type=int, required=True)
     parser.add_argument("--barrier", default="")
+    parser.add_argument("--exact", action="store_true")
+    parser.add_argument("--delay", type=float, default=0)
     args = parser.parse_args()
     if (
         not args.schema.startswith("titect_")
@@ -263,7 +352,13 @@ if __name__ == "__main__":
     ):
         raise SystemExit("invalid isolated fixture schema")
     uvicorn.run(
-        build(args.python_root.resolve(strict=True), args.schema, args.barrier),
+        build(
+            args.python_root.resolve(strict=True),
+            args.schema,
+            args.barrier,
+            exact=args.exact,
+            delay=args.delay,
+        ),
         host="127.0.0.1",
         port=args.port,
         log_level="warning",
