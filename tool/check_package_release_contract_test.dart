@@ -38,8 +38,8 @@ void main() {
     );
     await pubspec.writeAsString(
       (await pubspec.readAsString()).replaceFirst(
-        'version: 1.1.0',
-        'version: 1.1.1',
+        RegExp(r'^version: .+$', multiLine: true),
+        'version: 1.0.1',
       ),
     );
 
@@ -114,11 +114,14 @@ void main() {
   });
 
   test(
-    'rejects a stable workspace split from the distributed cohort',
+    'rejects a materialized workspace split from the distributed cohort',
     () async {
       final fixture = await _Fixture.create();
       addTearDown(fixture.dispose);
       await fixture.updateContract((contract) {
+        (contract['workspaceCohort']!
+                as Map<String, Object?>)['tagMaterialized'] =
+            true;
         final distributed =
             contract['distributedCohort']! as Map<String, Object?>;
         distributed
@@ -129,7 +132,10 @@ void main() {
       final result = await fixture.check();
 
       expect(result.exitCode, 1);
-      expect(result.stderr, contains('stable workspace must exactly match'));
+      expect(
+        result.stderr,
+        contains('materialized workspace must exactly match'),
+      );
     },
   );
 

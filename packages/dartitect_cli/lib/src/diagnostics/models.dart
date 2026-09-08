@@ -1,3 +1,5 @@
+import '../release/generated_release_manifest.dart';
+
 /// Stable finding severity used in human and JSON output.
 enum FindingSeverity {
   /// Context that does not affect exit status.
@@ -82,7 +84,7 @@ final class CommandEnvelope {
   static const int schemaVersion = 1;
 
   /// SDK/tool version.
-  static const String sdkVersion = '1.1.0';
+  static const String sdkVersion = DartitectReleaseManifest.workspaceVersion;
 
   /// Command that produced the envelope.
   final String command;

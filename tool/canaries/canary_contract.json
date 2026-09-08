@@ -1,9 +1,9 @@
 {
   "schemaVersion": 4,
-  "workspaceVersion": "1.1.0",
+  "workspaceVersion": "1.2.0",
   "gitInstallation": {
     "repository": "https://github.com/ftr-tuta/dartitect.git",
-    "ref": "v1.1.0",
+    "ref": "v1.2.0",
     "tagPattern": "v{{version}}",
     "annotatedTagRequired": true,
     "localDisposableTag": true,
@@ -123,7 +123,7 @@
         "flutter build web --release",
         "flutter build web --release",
         "flutter build linux --release",
-        "dart run dartitect_cli:dartitect fleet upgrade . --to=1.1.0 --apply --json"
+        "dart run dartitect_cli:dartitect fleet upgrade . --to=1.2.0 --apply --json"
       ],
       "coverage": [
         "large_30_feature_matrix",
@@ -378,6 +378,7 @@
       "package:dartitect_resilience/dartitect_resilience.dart": ["thin_consumer"],
       "package:dartitect_sentry/dartitect_sentry.dart": ["adapters"],
       "package:dartitect_sync/dartitect_sync.dart": ["thin_consumer"],
+      "package:dartitect_sync/dartitect_sync_titect.dart": ["thin_consumer"],
       "package:dartitect_testing/dartitect_testing.dart": ["tooling"],
       "package:dartitect_transfer/dartitect_attachments.dart": ["thin_consumer"],
       "package:dartitect_transfer/dartitect_transfer.dart": ["thin_consumer"],

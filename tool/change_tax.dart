@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:dartitect_cli/dartitect_cli.dart';
 
+import 'flutter_build_retry.dart';
+
 Future<void> main(List<String> arguments) async {
   final workspace = File.fromUri(Platform.script).parent.parent.absolute;
   final validateOnly = arguments.contains('--validate-only');
@@ -489,11 +491,20 @@ Future<_CommandReceipt> _timedRun(
   List<String> arguments,
 ) async {
   final timer = Stopwatch()..start();
-  final result = await Process.run(
+  Future<ProcessResult> run() => Process.run(
     executable,
     arguments,
     workingDirectory: workingDirectory.path,
-  ).timeout(const Duration(minutes: 12));
+  );
+  final build = executable == 'flutter' && arguments.firstOrNull == 'build';
+  final execution = build
+      ? retryFlutterBuildDownload(
+          run,
+          report: stderr.writeln,
+          timeout: const Duration(minutes: 12),
+        )
+      : run();
+  final result = await execution.timeout(const Duration(minutes: 12));
   timer.stop();
   if (result.exitCode != 0) {
     throw StateError(

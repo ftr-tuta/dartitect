@@ -1,10 +1,114 @@
 import 'dart:async';
 
 import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_resilience/dartitect_resilience.dart';
 import 'package:dartitect_sync/dartitect_sync.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test(
+    'shared budget defers durable outbox without changing identity',
+    () async {
+      final store = _FakeStore();
+      final bulkhead = Bulkhead(maxConcurrent: 1, maxQueue: 1);
+      final budget = RetryBudget(
+        maxAttempts: 1,
+        maxElapsed: const Duration(minutes: 1),
+        bulkhead: bulkhead,
+        rateLimiter: RateLimiter(
+          capacity: 1,
+          refillTokens: 1,
+          refillPeriod: const Duration(days: 1),
+        ),
+      );
+      var deliveries = 0;
+      final command = MutationCommand<String, int, String, _Failure>(
+        store: store,
+        retryBudget: budget,
+        createIdempotencyKey: (key, _) => 'durable-$key',
+        classifyFailure: (_) => MutationFailurePolicy.queued(
+          retry: RetryClassification.transient(),
+        ),
+        synchronize: (_, _) async {
+          deliveries++;
+          return const Err(_Failure('offline'), StackTrace.empty);
+        },
+      );
+      for (final key in [1, 2]) {
+        final result = await command.execute(key, 'local');
+        final value =
+            (result
+                    as CommandSucceeded<
+                      MutationExecution<String, int, String, _Failure>,
+                      _Failure
+                    >)
+                .value;
+        expect(value.disposition, CommitDisposition.queued);
+        expect(value.operation.idempotencyKey, 'durable-$key');
+        expect(value.operation.attempt, key == 1 ? 1 : 0);
+        expect(
+          store.operations['durable-$key']!.syncState,
+          EntitySyncState.pending,
+        );
+      }
+      expect(deliveries, 1);
+      expect(store.local, {1: 'local', 2: 'local'});
+      expect(store.compensationCalls, 0);
+      await command.dispose();
+      await bulkhead.disposeAsync();
+      expect([bulkhead.runningCount, bulkhead.queuedCount], [0, 0]);
+    },
+  );
+
+  test(
+    'outbox server minimum and invalid feedback preserve durable policy',
+    () async {
+      for (final hint in [
+        RetryAfterHint.valid(const Duration(seconds: 7)),
+        const RetryAfterHint.invalid(),
+        const RetryAfterHint.excessive(),
+      ]) {
+        final store = _FakeStore();
+        final delays = <Duration>[];
+        final ids = <String>[];
+        final command = MutationCommand<String, int, String, _Failure>(
+          store: store,
+          createIdempotencyKey: (_, _) => 'same-identity',
+          classifyFailure: (_) => MutationFailurePolicy.queued(
+            retry: RetryClassification.transient(maxAttempts: 2),
+            retryAfter: hint,
+          ),
+          waitBeforeRetry: (delay, _) async {
+            delays.add(delay);
+          },
+          synchronize: (operation, _) async {
+            ids.add(operation.idempotencyKey);
+            return const Err(_Failure('offline'), StackTrace.empty);
+          },
+        );
+        await command.execute(1, 'local');
+        expect(
+          ids,
+          List.filled(
+            hint.kind == RetryAfterKind.valid ? 2 : 1,
+            'same-identity',
+          ),
+        );
+        expect(
+          delays,
+          hint.kind == RetryAfterKind.valid
+              ? [const Duration(seconds: 7)]
+              : isEmpty,
+        );
+        expect(
+          store.operations['same-identity']!.syncState,
+          EntitySyncState.pending,
+        );
+        await command.dispose();
+      }
+    },
+  );
+
   test(
     'atomic local enqueue precedes committed at-least-once delivery',
     () async {

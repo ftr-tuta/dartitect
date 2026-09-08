@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'release_contract.dart';
+
 const _entrypoints = <String>[
   'package:dartitect_flutter/dartitect_flutter_ui.dart',
   'package:dartitect_flutter_testing/dartitect_flutter_testing.dart',
@@ -46,6 +48,7 @@ const _coordinatedJobs = <String>[
   'macos',
   'android-emulator',
   'drift-web',
+  'titect-paired',
   'clean-clone',
   'git-consumption',
   'osv',
@@ -102,16 +105,20 @@ Future<void> main(List<String> arguments) async {
     require(contract['schemaVersion'] == 2, 'Unsupported contract schema.');
     require(contract['artifact'] == 'ui-quality-v2', 'Wrong artifact name.');
     require(contract['goal'] == 'V1.1-FLUTTER-QUALITY', 'Wrong quality goal.');
-    require(contract['releaseVersion'] == '1.1.0', 'Wrong cohort version.');
+    final cohorts = ReleaseCohortContract.read(root);
     require(
-      contract['stableVersion'] == '1.1.0',
-      'The distributed stable version is not 1.1.0.',
+      contract['releaseVersion'] == cohorts.workspace.version,
+      'Wrong cohort version.',
+    );
+    require(
+      contract['stableVersion'] == cohorts.distributed.version,
+      'The recorded distributed stable version differs.',
     );
     require(contract['mode'] == 'native-strict', 'Native Strict is required.');
 
     final topology = _map(contract['topology']);
     require(topology['packages'] == 25, 'Expected 25 packages.');
-    require(topology['publicEntrypoints'] == 35, 'Expected 35 entrypoints.');
+    require(topology['publicEntrypoints'] == 36, 'Expected 36 entrypoints.');
     require(
       _same(_strings(contract['entrypoints']), _entrypoints),
       'UI entrypoint evidence is incomplete.',
@@ -239,7 +246,7 @@ Future<void> main(List<String> arguments) async {
           actions['readinessArtifact'] == 'actions-readiness-v1' &&
           _same(_strings(actions['coordinatedJobs']), _coordinatedJobs) &&
           _same(_strings(actions['linuxMatrixCells']), _linuxMatrixCells) &&
-          actions['coordinatedExecutions'] == 9 &&
+          actions['coordinatedExecutions'] == 10 &&
           actions['hostedRunnersOnly'] == true,
       'Deterministic GitHub Actions evidence is incomplete.',
     );
@@ -344,8 +351,8 @@ Future<void> main(List<String> arguments) async {
     if (failures.isNotEmpty) throw StateError(failures.join('\n'));
     stdout.writeln(
       'ui-quality-v2 passed: seven executable techniques, 25 packages, '
-      '35 entrypoints, six platforms, official Flutter tooling, and '
-      'nine deterministic GitHub Actions executions.',
+      '36 entrypoints, six platforms, official Flutter tooling, and '
+      'ten deterministic GitHub Actions executions.',
     );
   } on Object catch (error) {
     stderr.writeln('UI quality validation failed: $error');

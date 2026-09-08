@@ -1,0 +1,29 @@
+{
+  "protocol": "titect-sync/1",
+  "headers": {
+    "sync_protocol": {
+      "wire_name": "Titect-Sync-Protocol",
+      "required": true,
+      "value": "titect-sync/1"
+    },
+    "traceparent": {
+      "wire_name": "traceparent",
+      "required": false,
+      "maximum_characters": 1024,
+      "standard": "W3C Trace Context Level 2"
+    },
+    "tracestate": {
+      "wire_name": "tracestate",
+      "required": false,
+      "maximum_characters": 512,
+      "maximum_members": 32,
+      "requires": "traceparent"
+    },
+    "sync_integrity": {
+      "wire_name": "Titect-Sync-Integrity",
+      "required": false,
+      "value": "integrity-sha-256-exact-json-v1",
+      "when_requested": "required unchanged on bootstrap and subsequent responses; no downgrade"
+    }
+  }
+}

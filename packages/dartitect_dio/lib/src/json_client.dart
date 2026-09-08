@@ -10,6 +10,7 @@ import 'cancellation_binding.dart';
 import 'credentials_interceptor.dart';
 import 'instrumentation.dart';
 import 'result_mapping.dart';
+import 'retry_after.dart';
 import 'route_template.dart';
 
 /// Cancellation contract accepted by typed JSON execution.
@@ -141,10 +142,13 @@ abstract interface class DioJsonClient {
 /// The caller owns and closes [dio] after all requests and instrumentation.
 final class DefaultDioJsonClient implements DioJsonClient {
   /// Creates a typed executor over a borrowed [dio].
-  const DefaultDioJsonClient(this.dio);
+  const DefaultDioJsonClient(this.dio, {this.retryAfter});
 
   /// Borrowed provider client.
   final Dio dio;
+
+  /// Optional metadata extraction; transport execution never retries itself.
+  final DioRetryAfterPolicy? retryAfter;
 
   @override
   Future<Result<DioResponse<T>, DioFailure>> execute<T>(
@@ -198,6 +202,7 @@ final class DefaultDioJsonClient implements DioJsonClient {
             },
           ),
         ),
+        retryAfter: retryAfter,
       );
       switch (captured) {
         case Err<Object>(:final failure, :final stackTrace):
@@ -214,7 +219,10 @@ final class DefaultDioJsonClient implements DioJsonClient {
           if (status == null ||
               !endpoint.acceptedStatusCodes.contains(status)) {
             return Err<DioFailure>(
-              DioHttpFailure(statusCode: status),
+              DioHttpFailure(
+                statusCode: status,
+                retryAfter: retryAfter?.extract(response.headers),
+              ),
               StackTrace.current,
             );
           }

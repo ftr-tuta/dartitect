@@ -21,6 +21,7 @@ import '../inspect/flutter_quality.dart';
 import '../model/model_generator.dart';
 import '../policy/ecosystem_policy.dart';
 import '../project/dartitect_project_service.dart';
+import '../release/generated_release_manifest.dart';
 import '../scan/project_scanner.dart';
 import '../ui/ui_auditor.dart';
 import '../verification/verification_service.dart';
@@ -1462,7 +1463,9 @@ final class _AppStringsDelegate extends LocalizationsDelegate<_AppStrings> {
           );
         }
         if (arguments.options['to'] == null) {
-          throw const _UsageException('fleet upgrade requires --to=1.1.0.');
+          throw const _UsageException(
+            'fleet upgrade requires --to=${DartitectReleaseManifest.consumptionVersion}.',
+          );
         }
         report = arguments.flags.contains('apply')
             ? await service.applyUpgrade(
@@ -1652,7 +1655,7 @@ final class _AppStringsDelegate extends LocalizationsDelegate<_AppStrings> {
       '      url: https://github.com/ftr-tuta/dartitect.git\n'
       '      path: packages/$package\n'
       "      tag_pattern: 'v{{version}}'\n"
-      '    version: 1.1.0\n';
+      '    version: ${DartitectReleaseManifest.consumptionVersion}\n';
 
   static String _firstLine(String output) {
     final sanitized = output.trim().split(RegExp(r'\r?\n')).firstOrNull ?? '';
@@ -1689,7 +1692,8 @@ final class _ExampleTasksRepository implements TasksRepository {
   static String _join(String left, String right) =>
       '$left${Platform.pathSeparator}${right.replaceAll('/', Platform.pathSeparator)}';
 
-  static const _help = '''Dartitect ${CommandEnvelope.sdkVersion}
+  static const _help =
+      '''Dartitect ${CommandEnvelope.sdkVersion}
 
 Usage: dartitect <command> [arguments]
 
@@ -1719,8 +1723,8 @@ Read-only commands:
   fleet check <root...>            Scan explicit fleet roots without writes.
   fleet policy <root...> --bundle=PATH --sha256=DIGEST
                                     Audit with a pinned local policy bundle.
-  fleet upgrade <root...> --to=1.1.0 --apply [--json]
-                                    Migrate a supported cohort to stable 1.1.0.
+  fleet upgrade <root...> --to=${DartitectReleaseManifest.consumptionVersion} --apply [--json]
+                                    Migrate a supported cohort to stable ${DartitectReleaseManifest.consumptionVersion}.
 
 Convergent synchronizers (preview by default):
   model sync [--dry-run|--apply] [--json]

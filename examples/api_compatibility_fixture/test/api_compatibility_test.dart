@@ -20,6 +20,7 @@ void main() {
 
     expect(generatedBinding().isOwned, isTrue);
     expect(adapterRoute().value, '/tasks/{id}');
+    expect(adapterTitectCodec().json.limits.maxBytes, 1048576);
     expect(contractTool(Directory.current), isNotNull);
 
     final observability = observabilityRuntimeFromOneDotZero();

@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-- No changes have been accepted after the stable 1.1.0 release.
+- Prepare the `1.2.0` GitHub-only lockstep cohort while preserving the recorded `v1.1.0` distribution.
+- Add optional bounded HTTP retry feedback, shared admission budgets, and durable outbox deferral.
+- Add exact Titect JSON, explicit negotiated page integrity, and paired 232-case conformance, 24-scenario recovery and real Dart/PostgreSQL/JetStream capacity gates; release acceptance requires the integrated Python reference.
 
 ## 1.1.0 - 2026-09-03
 

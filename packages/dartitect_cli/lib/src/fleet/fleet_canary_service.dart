@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 
+import '../release/generated_release_manifest.dart';
+
 /// Closed command allowlist accepted by [DartitectFleetCanaryService].
 enum DartitectFleetCanaryCommand {
   /// Resolves a Dart project inside the temporary copy.
@@ -224,14 +226,14 @@ final class DartitectFleetCanaryService {
         'tag',
         '--annotate',
         '--force',
-        'v1.1.0',
+        DartitectReleaseManifest.consumptionTag,
         candidateCommit,
         '--message=Dartitect fleet Git canary',
       ], temporary.path);
       final taggedCommit = await _runRequired('git', <String>[
         '--git-dir=${remote.path}',
         'rev-parse',
-        'refs/tags/v1.1.0^{}',
+        'refs/tags/${DartitectReleaseManifest.consumptionTag}^{}',
       ], temporary.path);
       if ('${taggedCommit.stdout}'.trim() != candidateCommit) {
         throw StateError('Fleet canary tag did not peel to the candidate.');
@@ -350,7 +352,7 @@ final class DartitectFleetCanaryService {
         '      url: $_repository',
         '      path: packages/$package',
         "      tag_pattern: 'v{{version}}'",
-        '    version: 1.1.0',
+        '    version: ${DartitectReleaseManifest.consumptionVersion}',
       ]);
     }
     await pubspecFile.writeAsString(rendered.join(lineEnding), flush: true);

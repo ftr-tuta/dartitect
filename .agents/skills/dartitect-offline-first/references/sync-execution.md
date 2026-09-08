@@ -7,6 +7,23 @@ sync definition adapted through `dartitect_jobs`, bounded duplicate retention,
 separate acceptance and terminal acknowledgements, and a fresh graph per
 admitted request.
 
+Opt into `package:dartitect_sync/dartitect_sync_titect.dart` only for explicitly
+selected Titect wire contracts. Keep opaque cursors and exact numeric tokens;
+require checked narrowing, bounded reads and parser allocation, explicit
+capabilities, and the same retry/read budgets at leaf attempts. The consumer
+owns transport, authentication, schemas, integrity policy, durable application
+proof and atomic authority checks. Confirm the checkpoint before the next page.
+Persist the explicit `TitectSyncIntegritySelection` capability with the consumer
+session, restore its policy, and supply the same selection to the codec and
+binding. Pass the actual `Titect-Sync-Integrity` acknowledgement on every read;
+verify the complete exact envelope minus only `payload.integrity` before apply.
+Run the authoritative 232-case Python/Dart VM/Chrome corpus, all 24 persistent
+recovery scenarios and real Dart/PostgreSQL/JetStream capacity. Keep `/1` binary64
+compatibility separate from exact tokens and `/2`, without automatic fallback.
+Candidate manifests verify actual clean sources without circular pin updates;
+only integrated Python main plus exact-SHA CI evidence can establish release
+compatibility. Preserve the historical Python soak's original SHA.
+
 For a dataset run, the repository operation commits remote results into the authoritative local
 transaction before returning a confirmed checkpoint. A failed dependency blocks
 only downstream datasets; independent branches continue.
@@ -28,7 +45,11 @@ retried automatically.
 
 Use `RetryExecutor` only with explicit expected-failure classification, budget,
 deadline, and injected timing/randomness in tests. An uncertain result always
-stops retry. Use `JobDispatcher` for generic bounded headless definitions and
+stops retry. Share one `RetryBudget` across the leaf operations used by refresh,
+reconnect, outbox, and headless sync in the same isolate. Queue and retry waits
+consume the scope window. Keep retries at one layer and pass the same budget
+to participating executors; no cross-isolate authority is inferred.
+Use `JobDispatcher` for generic bounded headless definitions and
 one graph per job; scheduling, recurrence, credentials, schemas, and durable
 cross-process policy remain outside the SDK. Use `TransferEngine` for chunks,
 pause/resume/cancel, checksums, and post-commit checkpoints; remote protocol,

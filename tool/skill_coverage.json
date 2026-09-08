@@ -32,6 +32,7 @@
       "packages/dartitect/lib/dartitect.dart",
       "packages/dartitect/lib/dartitect_credentials.dart",
       "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_sync/lib/dartitect_sync_titect.dart",
       "packages/dartitect_resilience/lib/dartitect_resilience.dart",
       "packages/dartitect_jobs/lib/dartitect_jobs.dart",
       "packages/dartitect_transfer/lib/dartitect_transfer.dart",
@@ -64,6 +65,7 @@
     "dartitect-audit": [
       "packages/dartitect/lib/dartitect.dart",
       "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_sync/lib/dartitect_sync_titect.dart",
       "packages/dartitect_resilience/lib/dartitect_resilience.dart",
       "packages/dartitect_jobs/lib/dartitect_jobs.dart",
       "packages/dartitect_transfer/lib/dartitect_transfer.dart",
@@ -97,6 +99,7 @@
       "packages/dartitect/lib/dartitect.dart",
       "packages/dartitect/lib/dartitect_credentials.dart",
       "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_sync/lib/dartitect_sync_titect.dart",
       "packages/dartitect_resilience/lib/dartitect_resilience.dart",
       "packages/dartitect_jobs/lib/dartitect_jobs.dart",
       "packages/dartitect_transfer/lib/dartitect_transfer.dart",
@@ -136,6 +139,7 @@
       "packages/dartitect_testing/lib/dartitect_testing.dart",
       "packages/dartitect_isolates/lib/dartitect_isolates.dart",
       "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_sync/lib/dartitect_sync_titect.dart",
       "packages/dartitect_resilience/lib/dartitect_resilience.dart",
       "packages/dartitect_jobs/lib/dartitect_jobs.dart",
       "packages/dartitect_transfer/lib/dartitect_transfer.dart",
@@ -171,6 +175,7 @@
       "packages/dartitect/lib/dartitect_incremental.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter_incremental.dart",
       "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_sync/lib/dartitect_sync_titect.dart",
       "packages/dartitect_isolates/lib/dartitect_isolates.dart"
     ],
     "dartitect-performance": [
@@ -178,6 +183,7 @@
       "packages/dartitect/lib/dartitect_incremental.dart",
       "packages/dartitect_flutter/lib/dartitect_flutter_incremental.dart",
       "packages/dartitect_sync/lib/dartitect_sync.dart",
+      "packages/dartitect_sync/lib/dartitect_sync_titect.dart",
       "packages/dartitect_isolates/lib/dartitect_isolates.dart",
       "packages/dartitect_observability/lib/dartitect_observability.dart",
       "packages/dartitect_cli/lib/dartitect_cli.dart"

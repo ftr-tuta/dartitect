@@ -28,6 +28,8 @@ void main() {
     final file = File('${root.path}/tool/ui_quality_contract.json');
     await file.parent.create(recursive: true);
     await file.writeAsString(jsonEncode(contract));
+    await File('${sourceRoot.path}/tool/package_release_contract.json')
+        .copy('${root.path}/tool/package_release_contract.json');
 
     final result = await Process.run(Platform.resolvedExecutable, <String>[
       '${sourceRoot.path}/tool/check_ui_quality.dart',
@@ -52,6 +54,8 @@ void main() {
     final file = File('${root.path}/tool/ui_quality_contract.json');
     await file.parent.create(recursive: true);
     await file.writeAsString(jsonEncode(contract));
+    await File('${sourceRoot.path}/tool/package_release_contract.json')
+        .copy('${root.path}/tool/package_release_contract.json');
 
     final result = await Process.run(Platform.resolvedExecutable, <String>[
       '${sourceRoot.path}/tool/check_ui_quality.dart',

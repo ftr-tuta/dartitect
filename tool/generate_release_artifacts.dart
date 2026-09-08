@@ -100,7 +100,7 @@ String _versioning(
 
 All ${contract['packageCount']} packages in the development workspace share +${cohorts.workspace.version}+. Its channel is +${cohorts.workspace.channel}+ and its derivable tag is +${cohorts.workspace.tag}+; that tag is ${cohorts.workspace.tagMaterialized ? 'materialized' : 'not materialized'}.
 
-The latest stable distribution available to consumers is +${cohorts.distributed.version}+ at the immutable +${cohorts.distributed.tag}+ tag. ${cohorts.workspace.isPrerelease ? 'A workspace candidate does not change the recommended public dependency until a separately authorized stable release is materialized.' : 'The stable workspace and distributed cohorts are identical and use the same materialized tag.'}
+The latest stable distribution recorded in this source is +${cohorts.distributed.version}+ at the immutable +${cohorts.distributed.tag}+ tag. ${cohorts.workspace.tagMaterialized ? 'The stable workspace and recorded distribution use the same materialized tag.' : 'The prepared workspace does not change this publication record. Its eventual publication and exact source are recorded by the immutable GitHub Release, checksummed assets, and attestation.'}
 
 Independent package patch ranges and registry publication are not supported. Internal Dartitect dependencies use the canonical Git descriptor with +tag_pattern: 'v{{version}}'+ and the same exact version as the release tag.
 
@@ -186,6 +186,12 @@ String _dartManifest(
     )
     ..writeln(
       "  static const String distributedTag = '${cohorts.distributed.tag}';",
+    )
+    ..writeln(
+      "  static const String consumptionVersion = '${cohorts.workspace.isPrerelease ? cohorts.distributed.version : cohorts.workspace.version}';",
+    )
+    ..writeln(
+      "  static const String consumptionTag = 'v${cohorts.workspace.isPrerelease ? cohorts.distributed.version : cohorts.workspace.version}';",
     )
     ..writeln("  static const String repository = '${dependency['url']}';")
     ..writeln(

@@ -4,10 +4,58 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:test/test.dart';
 
+import 'fixtures/titect_evidence_fixture.dart';
+import 'titect_evidence.dart';
+
 const _sha = '1111111111111111111111111111111111111111';
 const _tree = '2222222222222222222222222222222222222222';
 
 void main() {
+  test('prepared release snippets use its tag while provenance preserves prior distribution', () async {
+    final fixture = await _Fixture.create();
+    addTearDown(fixture.dispose);
+    final contractFile = File(
+      '${fixture.root.path}/tool/package_release_contract.json',
+    );
+    final source =
+        jsonDecode(await contractFile.readAsString()) as Map<String, Object?>;
+    final prior = source['distributedCohort'];
+    (source['workspaceCohort']! as Map<String, Object?>).addAll({
+      'version': '1.2.0',
+      'channel': 'stable',
+      'derivedTag': 'v1.2.0',
+      'tagMaterialized': false,
+    });
+    (source['workspaceInternalDependency']!
+            as Map<String, Object?>)['version'] =
+        '1.2.0';
+    await contractFile.writeAsString(jsonEncode(source));
+    final before = await contractFile.readAsBytes();
+    final output = Directory('${fixture.root.path}/prepared');
+    final result = await fixture.build(output);
+    expect(result.exitCode, 0, reason: '${result.stdout}\n${result.stderr}');
+    final zip = utf8.decode(
+      await File('${output.path}/dependency-snippets.zip').readAsBytes(),
+      allowMalformed: true,
+    );
+    expect(zip, contains('version: 1.2.0'));
+    expect(zip, isNot(contains('version: 1.1.0')));
+    final provenance = jsonDecode(
+      await File('${output.path}/release-provenance.json').readAsString(),
+    ) as Map<String, Object?>;
+    expect(provenance['previousDistribution'], prior);
+    expect(provenance['sourceTagMaterialized'], false);
+    final manifest = jsonDecode(
+      await File('${output.path}/dartitect-git-manifest.json').readAsString(),
+    ) as Map<String, Object?>;
+    expect(manifest['releaseTag'], 'v1.2.0');
+    final packages = (manifest['packages']! as List<Object?>)
+        .cast<Map<String, Object?>>();
+    expect(packages, hasLength(25));
+    expect(packages.every((p) => p['version'] == '1.2.0'), isTrue);
+    expect(await contractFile.readAsBytes(), before);
+  });
+
   test('builds the exact deterministic immutable Release asset set', () async {
     final fixture = await _Fixture.create();
     addTearDown(fixture.dispose);
@@ -24,15 +72,19 @@ void main() {
             .map((file) => _basename(file.path))
             .toList()
           ..sort();
-    expect(names, <String>[
-      'SHA256SUMS',
-      'actions-readiness-v1.json',
-      'dartitect-git-manifest.json',
-      'dependency-licenses.json',
-      'dependency-snippets.zip',
-      'release-provenance.json',
-      'sbom.spdx.json',
-    ]);
+    expect(
+      names,
+      <String>[
+        'SHA256SUMS',
+        'actions-readiness-v1.json',
+        'dartitect-git-manifest.json',
+        'dependency-licenses.json',
+        'dependency-snippets.zip',
+        'release-provenance.json',
+        'sbom.spdx.json',
+        for (final name in titectEvidenceFiles) 'titect-$name',
+      ]..sort(),
+    );
     for (final name in names) {
       expect(
         await File('${first.path}/$name').readAsBytes(),
@@ -41,7 +93,7 @@ void main() {
       );
     }
     final sums = await File('${first.path}/SHA256SUMS').readAsLines();
-    expect(sums, hasLength(6));
+    expect(sums, hasLength(6 + titectEvidenceFiles.length));
     for (final line in sums) {
       final match = RegExp(r'^([0-9a-f]{64})  ([^/]+)$').firstMatch(line);
       expect(match, isNotNull, reason: line);
@@ -98,7 +150,7 @@ void main() {
     final result = await fixture.build(Directory('${fixture.root.path}/out'));
 
     expect(result.exitCode, 1);
-    expect(result.stderr, contains('prerelease or split stable cohort'));
+    expect(result.stderr, contains('prerelease or inconsistent stable cohort'));
   });
 }
 
@@ -119,6 +171,13 @@ final class _Fixture {
       await target.parent.create(recursive: true);
       await File('${Directory.current.path}/$path').copy(target.path);
     }
+    final digests = await createTitectEvidenceFixture(
+      root: root,
+      artifactRoot: root,
+      sha: sourceSha,
+      tree: _tree,
+      runAttempt: 2,
+    );
     final readiness = File('${root.path}/actions-readiness-v1.json');
     await readiness.writeAsString(
       jsonEncode(<String, Object?>{
@@ -126,6 +185,7 @@ final class _Fixture {
         'sourceTree': _tree,
         'runId': 123,
         'runAttempt': 2,
+        'artifactDigests': digests,
       }),
     );
     return _Fixture(root, readiness);

@@ -69,7 +69,7 @@ void main(List<String> arguments) {
       );
     }
     _checkRootMetadata(root, cohorts.workspace.version, errors);
-    _checkWorkflows(root, release['workflow']! as String, errors);
+    _checkWorkflows(root, release['workflow']! as String, errors, cohorts);
     _checkForbiddenMechanisms(root, errors);
     _checkGeneratedConsumer(root, cohorts, errors);
     _checkActiveDocuments(root, policy, errors);
@@ -180,6 +180,7 @@ void _checkWorkflows(
   Directory root,
   String releaseWorkflow,
   List<String> errors,
+  ReleaseCohortContract cohorts,
 ) {
   final workflows = Directory('${root.path}/.github/workflows')
       .listSync(followLinks: false)
@@ -217,13 +218,15 @@ void _checkWorkflows(
           toolchainInstall < 0 ||
           contractGate > toolchainInstall ||
           !source.contains('Release refuses workspace cohort') ||
-          !source.contains('EXPECTED_RELEASE_VERSION: "1.1.0"') ||
           !source.contains(
-            'Release contract is not the exact self-consistent stable 1.1.0 cohort.',
+            'EXPECTED_RELEASE_VERSION: "${cohorts.workspace.version}"',
+          ) ||
+          !source.contains(
+            'Release contract is not a consistent prepared stable cohort.',
           ) ||
           source.contains('RELEASE_TAG: v1.0.0')) {
         errors.add(
-          'Release must pin 1.1.0, prove contract consistency, derive its tag, '
+          'Release must pin the workspace version, prove contract consistency, derive its tag, '
           'and reject prereleases before release preparation.',
         );
       }

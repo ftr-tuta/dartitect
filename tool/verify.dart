@@ -166,6 +166,7 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>[
       'test',
       'tool/setup_objectbox_vm_test.dart',
+      'tool/flutter_build_retry_test.dart',
     ]),
     const _Command('dart', <String>[
       'test',
@@ -210,6 +211,7 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>[
       'test',
       'tool/check_actions_readiness_test.dart',
+      'tool/titect_evidence_test.dart',
       'tool/check_release_readiness_test.dart',
     ]),
     const _Command('dart', <String>[
@@ -256,7 +258,13 @@ Future<void> main(List<String> arguments) async {
       'dartitect_mcp',
       'dartitect_transfer',
     ])
-      _Command('dart', <String>['test', 'packages/$package']),
+      _Command('dart', <String>[
+        'test',
+        // CLI suites launch analyzers and subprocesses; bound suite admission
+        // so host contention does not consume individual test deadlines.
+        if (package == 'dartitect_cli') '--concurrency=1',
+        'packages/$package',
+      ]),
     for (final package in <String>[
       'dartitect_flutter',
       'dartitect_flutter_testing',

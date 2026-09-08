@@ -1,22 +1,37 @@
 = Dartitect implementation and release status
 :toc:
 
-Snapshot:: 2026-09-03
+Snapshot:: 2026-09-05
 Release status:: *STABLE 1.1.0 PUBLISHED*
 Release tag:: `v1.1.0` (annotated, stable, latest, and immutable)
 Release source:: `ccabd79a8f88ec7e0ae60a2b75903e75c36942ff`
 Release workflow:: `33796547228`, attempt 1
 GitHub Release:: `382279133`; https://github.com/ftr-tuta/dartitect/releases/tag/v1.1.0[Dartitect 1.1.0]
 Distribution:: Immutable GitHub Release; Git dependencies only
-Workspace cohort:: `1.1.0` / *STABLE*
+Workspace cohort:: `1.2.0` / *PREPARED STABLE, UNRELEASED*
 Feature policy:: *STABLE 1.1 QUALITY GATE*
 Toolchain floor:: Dart 3.13 / Flutter 3.47.1 stable
-Stable topology:: 25 packages / 35 public entrypoints
+Distributed topology:: 25 packages / 35 public entrypoints
+Workspace topology:: 25 packages / 36 public entrypoints
 
 `tool/goal_gates.json` preserves the implementation roadmap state recorded
 before publication; its `IN_PROGRESS` fields are historical and are not the
 current release status. GitHub Actions supplied the formal technical evidence.
 Local commands remain development feedback and do not authorize a release.
+
+== Prepared 1.2.0 integration
+
+PR #29 prepares the optional Titect wire binding, shared retry admission and
+persistent paired recovery. The distribution remains `v1.1.0`. The preliminary
+Python pin is `0537fde22b0ae881c21359c004ffabe7425a085c`; timestamp, numeric and raw-wire
+bound differences and undefined page-integrity bytes block final
+paired conformance. No local report establishes release readiness.
+
+The prepared CI aggregate requires nine jobs across ten executions, including
+paired Python/Dart VM/Chrome conformance and persistent recovery. Its readiness
+and Release validators reject preliminary, altered, missing or mismatched
+evidence. See link:guides/titect-integration.md[Titect integration] for adoption
+and the executable acceptance boundary.
 
 == 1.1.0 stable release cohort
 
@@ -28,7 +43,8 @@ canary journeys, structural performance evidence, and deterministic hosted
 GitHub Actions jobs.
 
 `CI / Required` remains the only protected aggregate status. It fails closed
-unless all eight coordinated jobs succeed across nine executions, including
+unless its coordinated jobs succeed. For the published 1.1.0 cohort, eight
+jobs succeeded across nine executions, including
 both Linux matrix cells. The GitHub-only distribution is `1.1.0` / `v1.1.0`;
 the manual Release workflow bound its immutable publication to the exact successful
 `main` run `33792060525` and created no registry publication.

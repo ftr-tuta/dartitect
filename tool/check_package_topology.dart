@@ -55,6 +55,8 @@ void main() {
     'dartitect_jobs': <String>{'dartitect'},
     'dartitect_resilience': <String>{'dartitect'},
     'dartitect_sync': <String>{
+      // Pure Dart SHA-256 for the negotiated exact JSON integrity policy.
+      'crypto',
       'dartitect',
       'dartitect_jobs',
       'dartitect_resilience',
@@ -113,6 +115,7 @@ const Map<String, Set<String>> _allowed = <String, Set<String>>{
   'dartitect_dio': <String>{
     'dartitect',
     'dartitect_observability',
+    'dartitect_resilience',
     'dartitect_transfer',
   },
   'dartitect_drift': <String>{

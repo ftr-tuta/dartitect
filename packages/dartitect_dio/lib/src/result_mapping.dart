@@ -1,5 +1,8 @@
 import 'package:dartitect/dartitect.dart';
+import 'package:dartitect_resilience/dartitect_resilience.dart';
 import 'package:dio/dio.dart';
+
+import 'retry_after.dart';
 
 /// Expected, payload-free Dio failure.
 sealed class DioFailure implements Exception {
@@ -40,12 +43,15 @@ final class DioTransportFailure extends DioFailure {
 
 /// HTTP response outside the accepted status policy.
 final class DioHttpFailure extends DioFailure {
-  /// Creates a response failure containing only its [statusCode].
-  const DioHttpFailure({required this.statusCode})
+  /// Creates a response failure with status and optional typed retry feedback.
+  const DioHttpFailure({required this.statusCode, this.retryAfter})
     : super('HTTP request failed.', DioExceptionType.badResponse);
 
   /// Response status; response headers and body are intentionally omitted.
   final int? statusCode;
+
+  /// Opt-in bounded retry metadata, without the original response headers.
+  final RetryAfterHint? retryAfter;
 }
 
 /// Invalid client/interceptor/request configuration.
@@ -79,8 +85,9 @@ final class DioRouteFailure extends DioFailure {
 ///
 /// Programming errors and other exceptions continue to throw.
 Future<Result<T, DioFailure>> captureDioException<T>(
-  Future<T> Function() request,
-) async {
+  Future<T> Function() request, {
+  DioRetryAfterPolicy? retryAfter,
+}) async {
   try {
     return Ok<T>(await request());
   } on DioException catch (error, stackTrace) {
@@ -88,6 +95,9 @@ Future<Result<T, DioFailure>> captureDioException<T>(
       DioExceptionType.cancel => const DioCancelledFailure(),
       DioExceptionType.badResponse => DioHttpFailure(
         statusCode: error.response?.statusCode,
+        retryAfter: error.response == null
+            ? null
+            : retryAfter?.extract(error.response!.headers),
       ),
       DioExceptionType.connectionTimeout ||
       DioExceptionType.sendTimeout ||

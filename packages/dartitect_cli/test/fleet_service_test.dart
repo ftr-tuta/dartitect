@@ -247,7 +247,7 @@ Result<int, StateError> load() => const Ok<int>(1);
           'upgrade',
           'app',
           '--dry-run',
-          '--to=1.1.0',
+          '--to=1.2.0',
           '--json',
         ]),
         0,
@@ -263,7 +263,7 @@ Result<int, StateError> load() => const Ok<int>(1);
 
       output.clear();
       expect(
-        await runner.run(<String>['fleet', 'upgrade', 'app', '--to=1.1.0']),
+        await runner.run(<String>['fleet', 'upgrade', 'app', '--to=1.2.0']),
         0,
       );
       expect(await File('${app.path}/pubspec.yaml').readAsString(), before);
@@ -289,7 +289,7 @@ dependency_overrides:
 ''');
 
       final report = await DartitectFleetService(fleet)
-          .previewUpgrade(<String>['app'], targetCohort: '1.1.0');
+          .previewUpgrade(<String>['app'], targetCohort: '1.2.0');
       final plan = report.projects.single['plan']! as Map<String, Object?>;
 
       expect(plan['operations'], contains('UPDATE pubspec.yaml'));
@@ -299,7 +299,7 @@ dependency_overrides:
       );
       final rendered = DartitectProjectService.renderDependencyUpgradeSource(
         await pubspec.readAsString(),
-        '1.1.0',
+        '1.2.0',
       );
       expect(rendered, isNot(contains('/tmp/dartitect-candidate')));
       expect(rendered, contains('  meta: ^1.0.0'));
@@ -332,7 +332,7 @@ dependency_overrides:
       );
 
       final report = await DartitectFleetService(fleet)
-          .previewUpgrade(<String>['app'], targetCohort: '1.1.0');
+          .previewUpgrade(<String>['app'], targetCohort: '1.2.0');
       final plan = report.projects.single['plan']! as Map<String, Object?>;
 
       expect(plan['migrations'], <Object?>[
@@ -357,7 +357,7 @@ dependency_overrides:
 
     final report = await service.applyUpgrade(<String>[
       'app',
-    ], targetCohort: '1.1.0');
+    ], targetCohort: '1.2.0');
 
     expect(report.exitCode, 0);
     expect(
@@ -388,7 +388,7 @@ dependency_overrides:
     );
 
     await expectLater(
-      service.applyUpgrade(<String>['beta', 'alpha'], targetCohort: '1.1.0'),
+      service.applyUpgrade(<String>['beta', 'alpha'], targetCohort: '1.2.0'),
       throwsFormatException,
     );
     expect(await File('${alpha.path}/pubspec.yaml').readAsBytes(), beforeAlpha);

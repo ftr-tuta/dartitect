@@ -79,10 +79,11 @@ paired scenario harness without entering application runtime dependencies.
 | Consumer can configure `flutter_test` directly.
 
 | dartitect_sync
-| dartitect, dartitect_jobs, dartitect_resilience
+| dartitect, dartitect_jobs, dartitect_resilience, crypto 3.0.7
 | SDK
 | Reuses pure-Dart lifecycle, cancellation, typed-result, bounded retry, and
 job contracts for a provider-neutral DAG engine and headless protocol.
+`crypto` supplies the reviewed SHA-256 primitive for explicit exact-JSON page integrity.
 | Consumer can implement the small ports around its own orchestration.
 
 | dartitect_testing
@@ -118,10 +119,12 @@ official test pins.
 | Critical rules remain available in `dartitect scan`.
 
 | dartitect_dio
-| dio 5.11.0, dartitect, dartitect_observability, dartitect_transfer
+| dio 5.11.0, dartitect, dartitect_observability, dartitect_transfer,
+dartitect_resilience
 | APPROVED EXCEPTION
 | An adapter must expose the actual client types and lifecycle while mapping
-provider-neutral transfer requests without owning remote protocol policy.
+provider-neutral transfer requests and bounded HTTP retry metadata without
+owning remote protocol or retry policy.
 | Compose `Dio` directly at the application root.
 
 | dartitect_objectbox

@@ -56,7 +56,13 @@ final class RateLimiter {
     if (elapsed <= Duration.zero) return;
     final periods = elapsed.inMicroseconds ~/ refillPeriod.inMicroseconds;
     if (periods <= 0) return;
-    _tokens = (_tokens + periods * refillTokens).clamp(0, capacity.toDouble());
-    _lastRefill = _lastRefill.add(refillPeriod * periods);
+    _tokens = periods >= (capacity - _tokens) / refillTokens
+        ? capacity.toDouble()
+        : _tokens + periods.toDouble() * refillTokens;
+    _lastRefill = now.subtract(
+      Duration(
+        microseconds: elapsed.inMicroseconds % refillPeriod.inMicroseconds,
+      ),
+    );
   }
 }

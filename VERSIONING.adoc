@@ -3,9 +3,9 @@
 
 == Permanent lockstep
 
-All 25 packages in the development workspace share +1.1.0+. Its channel is +stable+ and its derivable tag is +v1.1.0+; that tag is materialized.
+All 25 packages in the development workspace share +1.2.0+. Its channel is +stable+ and its derivable tag is +v1.2.0+; that tag is not materialized.
 
-The latest stable distribution available to consumers is +1.1.0+ at the immutable +v1.1.0+ tag. The stable workspace and distributed cohorts are identical and use the same materialized tag.
+The latest stable distribution recorded in this source is +1.1.0+ at the immutable +v1.1.0+ tag. The prepared workspace does not change this publication record. Its eventual publication and exact source are recorded by the immutable GitHub Release, checksummed assets, and attestation.
 
 Independent package patch ranges and registry publication are not supported. Internal Dartitect dependencies use the canonical Git descriptor with +tag_pattern: 'v{{version}}'+ and the same exact version as the release tag.
 

@@ -1,6 +1,7 @@
 # Getting started
 
-The source workspace and public distribution are the stable `1.1.0` cohort.
+The source workspace prepares `1.2.0`; the recorded public distribution is
+the stable `1.1.0` cohort.
 Consume every direct Dartitect package from the annotated `v1.1.0` tag and its
 immutable GitHub Release.
 

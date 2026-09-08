@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 
+import 'titect_evidence.dart';
+
 Future<void> main(List<String> arguments) async {
   try {
     if (arguments.isNotEmpty) {
@@ -47,10 +49,29 @@ Future<void> main(List<String> arguments) async {
       jobs.add(<String, Object?>{'id': id, 'conclusion': 'success'});
     }
 
+    final paired = Directory('${root.path}/build/titect-evidence');
+    validateTitectEvidence(
+      root: root,
+      evidence: paired,
+      sourceSha: sourceSha,
+      sourceTree: sourceTree,
+      runId: int.parse(_required(environment, 'GITHUB_RUN_ID')),
+      runAttempt: int.parse(_required(environment, 'GITHUB_RUN_ATTEMPT')),
+    );
     final output = Directory('${root.path}/build/actions-readiness-v1');
     if (output.existsSync()) await output.delete(recursive: true);
     await output.create(recursive: true);
     final digests = <Map<String, Object?>>[];
+    for (final name in titectEvidenceFiles) {
+      final destination = File('${output.path}/titect/$name');
+      await destination.parent.create(recursive: true);
+      await File('${paired.path}/$name').copy(destination.path);
+      digests.add({
+        'path': 'titect/$name',
+        'kind': 'paired-evidence',
+        'sha256': await _digest(destination),
+      });
+    }
     final nativeDirectory = Directory('${root.path}/build/native-evidence');
     for (final cell in _strings(policy['nativeCells'])) {
       final matches = nativeDirectory.existsSync()

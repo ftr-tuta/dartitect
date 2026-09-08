@@ -53,13 +53,12 @@ void main(List<String> arguments) {
         (cohorts.workspace.isPrerelease && cohorts.workspace.tagMaterialized)) {
       errors.add('Workspace channel or tag materialization is invalid.');
     }
-    if (!cohorts.workspace.isPrerelease &&
-        (!cohorts.workspace.tagMaterialized ||
-            version != distributedVersion ||
-            tag != distributedTag)) {
+    if (cohorts.workspace.tagMaterialized &&
+            (version != distributedVersion || tag != distributedTag) ||
+        version == distributedVersion && !cohorts.workspace.tagMaterialized) {
       errors.add(
-        'A stable workspace must exactly match the materialized distributed '
-        'cohort.',
+        'A materialized workspace must exactly match the distributed cohort; '
+        'a newer prepared stable workspace must remain unmaterialized.',
       );
     }
     if (cohorts.distributed.semanticVersion.major != 1 ||
@@ -191,10 +190,10 @@ void main(List<String> arguments) {
         }
       }
       final firstRelease = headings.where(_isNumberedVersion).firstOrNull;
-      if (firstRelease != distributedVersion) {
+      if (firstRelease != '1.1.0') {
         errors.add(
           '$name changelog first numbered version must be '
-          '$distributedVersion.',
+          '1.1.0.',
         );
       }
     }

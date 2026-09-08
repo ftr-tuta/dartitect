@@ -39,6 +39,7 @@
     "packages/dartitect_resilience/lib/dartitect_resilience.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_sentry/lib/dartitect_sentry.dart": {"defaultAudience": "adapter-author"},
     "packages/dartitect_sync/lib/dartitect_sync.dart": {"defaultAudience": "application-facing"},
+    "packages/dartitect_sync/lib/dartitect_sync_titect.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_testing/lib/dartitect_testing.dart": {"defaultAudience": "tooling-test"},
     "packages/dartitect_transfer/lib/dartitect_attachments.dart": {"defaultAudience": "application-facing"},
     "packages/dartitect_transfer/lib/dartitect_transfer.dart": {"defaultAudience": "application-facing"},

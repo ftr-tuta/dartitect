@@ -20,4 +20,7 @@ For documentation and skill changes, require the documentation classification,
 link/include, changelog-cohort, skill-reference, managed snapshot/hash, and MCP
 catalog gates. Normal config accepts v3 only; v1/v2 are transactional fleet
 migration inputs. `sdkVersion` follows the workspace cohort; public consumption
-continues to use the latest materialized distributed stable cohort.
+continues to use the recorded materialized distributed stable cohort. A newer
+prepared stable cohort keeps `tagMaterialized` false. Release assets use the
+prepared workspace version and record the prior distribution; the immutable
+GitHub Release and attestation establish actual publication.

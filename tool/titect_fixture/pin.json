@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "repository": "https://github.com/ftr-tuta/pytitect",
+  "pythonSha": "58b8d5072898aa63a6263b2b23c98059aab5a2f2",
+  "integrated": true,
+  "bundles": {
+    "titect-sync/1": {
+      "manifestSha256": "a03966a688a0c2721baabfb91a58e1c92a57e45a84d047ba71a1932c751e51f4",
+      "bundleDigest": "70e72df17bc762b6466c878402bc9311a38c1524d7d73eaa49951299e95b1254"
+    },
+    "titect-message/1": {
+      "manifestSha256": "cea64ed78f34c1369a9193d96adfbb095f9ec9bc77919b4bec25a991011b280e",
+      "bundleDigest": "f1b9ef9f3d6677cc70ba589c3e086d75f6b5bb1250ac805aa193aafcc4326ef0"
+    },
+    "titect-message/2": {
+      "manifestSha256": "935e3649fb652fb2f7de5bd3e9cc0bfdd5df79b19eec2211492cabbd0eeb0929",
+      "bundleDigest": "ba0dcee2d7c0e124973cf620e8c15b6f00ce96218fed7d85cc9e9ea1b4ff3694"
+    }
+  },
+  "sourceVersions": {
+    "dartitect": "1.2.0",
+    "pytitect": "1.6.0"
+  },
+  "corpus": {
+    "vectors.json": "a16d96374b7d93d98b6a720db32b76ab9b6a260af2057ce1ec2a80fbed9f2424",
+    "expectations.json": "0b38bf83b11e0cbf3b4938fb8299d3421a052ab84b2d1e2f5fac019c94aa6b74",
+    "legacy-vectors.json": "4b8e07fd58687ef10b56bd34da890442aa925c67d142382f8c48feac04ba37dd",
+    "manifest.json": "83a313d12b1f3cac8443abe0889c2c7e40f734f9dee15e595906c9e861756682"
+  },
+  "soakEvidence": {
+    "path": "docs/evidence/2026-09-05-exact/soak.json",
+    "pythonSha": "8828767ed3f42cef674b9b096058cb969c9f233f",
+    "sha256": "c6e4b96d1b19035df689580291c0a3529a5e5e480c208adfdfd939bb09093931"
+  }
+}

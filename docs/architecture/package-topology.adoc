@@ -1,4 +1,4 @@
-= 1.1 candidate package topology
+= Prepared 1.2 package topology
 
 [source,text]
 ----
@@ -8,11 +8,11 @@ dartitect
 ├── dartitect_jobs
 │   └── dartitect_workmanager (+ Flutter, workmanager)
 ├── dartitect_transfer
-├── dartitect_sync
+├── dartitect_sync (+ resilience)
 ├── dartitect_isolates
 ├── dartitect_flutter
 ├── dartitect_observability (+ sync)
-│   ├── dartitect_dio (+ transfer)
+│   ├── dartitect_dio (+ transfer, resilience)
 │   ├── dartitect_sentry
 │   └── dartitect_devtools
 ├── dartitect_drift (+ observability, sync)
@@ -37,10 +37,10 @@ dartitect_cli
 The arrows represent internal runtime dependencies from the child to the
 ancestor/additions. +tool/check_package_topology.dart+ checks the exact
 allowlist, rejects cycles, and proves that core has no package imports while
-sync and modeling import only core. Analyzer, formatting, CLI, and generation
+modeling imports only core and sync composes core with resilience. Analyzer, formatting, CLI, and generation
 remain host tooling and never enter an application runtime graph.
 
-The candidate has exactly 35 public entrypoints:
+The prepared workspace has exactly 36 public entrypoints:
 
 * core: +package:dartitect/dartitect.dart+,
   +package:dartitect/dartitect_credentials.dart+, and the opt-in
@@ -56,7 +56,8 @@ The candidate has exactly 35 public entrypoints:
 * runtime packages: +package:dartitect_resilience/dartitect_resilience.dart+,
   +package:dartitect_jobs/dartitect_jobs.dart+,
   +package:dartitect_workmanager/dartitect_workmanager.dart+,
-  +package:dartitect_sync/dartitect_sync.dart+, and
+  +package:dartitect_sync/dartitect_sync.dart+, the optional
+  +package:dartitect_sync/dartitect_sync_titect.dart+, and
   +package:dartitect_isolates/dartitect_isolates.dart+;
 * provider and platform leaves: +package:dartitect_dio/dartitect_dio.dart+,
   +package:dartitect_drift/dartitect_drift.dart+,

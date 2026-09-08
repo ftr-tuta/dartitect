@@ -277,7 +277,8 @@ READMEs. Drift accepts consumer-owned native and web executors. ObjectBox has no
 web support. The CLI, modeling analyzer, and MCP server run on the Dart VM.
 
 All 25 packages permanently share one lockstep workspace version. The stable
-workspace and distributed cohorts are `1.1.0`; consumers use the annotated
+workspace prepares `1.2.0` and the recorded distribution remains `1.1.0`;
+consumers can use the annotated
 `v1.1.0` tag and its immutable, latest GitHub Release. Transitive Dartitect
 packages resolve from the same stable tag without overrides:
 

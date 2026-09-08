@@ -2,7 +2,7 @@
   "schemaVersion": 4,
   "goal": "V1.1-18",
   "authority": "github-actions",
-  "stableVersion": "1.1.0",
+  "stableVersion": "1.2.0",
   "requiresExactMainSha": true,
   "requiresReadinessArtifact": "actions-readiness-v1",
   "requiresUiQualityEvidence": "ui-quality-v2",

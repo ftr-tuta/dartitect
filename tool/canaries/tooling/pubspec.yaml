@@ -7,14 +7,14 @@ environment:
   sdk: ^3.13.0
 
 dependencies:
-  dartitect: 1.1.0
-  dartitect_cli: 1.1.0
-  dartitect_devtools: 1.1.0
-  dartitect_dio: 1.1.0
-  dartitect_lints: 1.1.0
-  dartitect_mcp: 1.1.0
-  dartitect_modeling_analyzer: 1.1.0
-  dartitect_testing: 1.1.0
+  dartitect: 1.2.0
+  dartitect_cli: 1.2.0
+  dartitect_devtools: 1.2.0
+  dartitect_dio: 1.2.0
+  dartitect_lints: 1.2.0
+  dartitect_mcp: 1.2.0
+  dartitect_modeling_analyzer: 1.2.0
+  dartitect_testing: 1.2.0
 
 dev_dependencies:
   crypto: ^3.0.7

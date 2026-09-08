@@ -8,19 +8,19 @@ environment:
   flutter: '>=3.47.1'
 
 dependencies:
-  dartitect: 1.1.0
-  dartitect_dio: 1.1.0
-  dartitect_drift: 1.1.0
-  dartitect_flutter: 1.1.0
-  dartitect_observability: 1.1.0
-  dartitect_sync: 1.1.0
-  dartitect_workmanager: 1.1.0
+  dartitect: 1.2.0
+  dartitect_dio: 1.2.0
+  dartitect_drift: 1.2.0
+  dartitect_flutter: 1.2.0
+  dartitect_observability: 1.2.0
+  dartitect_sync: 1.2.0
+  dartitect_workmanager: 1.2.0
   flutter:
     sdk: flutter
 
 dev_dependencies:
-  dartitect_cli: 1.1.0
-  dartitect_testing: 1.1.0
+  dartitect_cli: 1.2.0
+  dartitect_testing: 1.2.0
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter

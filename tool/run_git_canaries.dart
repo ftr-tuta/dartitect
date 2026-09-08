@@ -231,13 +231,13 @@ Future<Map<String, Object?>> _runCanary({
       await run('flutter', const <String>['build', 'web', '--release']);
       await run('flutter', const <String>['build', 'linux', '--release']);
       if (gitCanaryRunsStableUpgrade(releaseVersion)) {
-        await run('dart', const <String>[
+        await run('dart', <String>[
           'run',
           'dartitect_cli:dartitect',
           'fleet',
           'upgrade',
           '.',
-          '--to=1.1.0',
+          '--to=$releaseVersion',
           '--apply',
           '--json',
         ]);
@@ -358,7 +358,7 @@ Future<Map<String, Object?>> _runCanary({
 /// Candidate cohorts validate consumption from their disposable tag, while the
 /// stable cohort also proves the idempotent upgrade path.
 bool gitCanaryRunsStableUpgrade(String workspaceVersion) =>
-    workspaceVersion == '1.1.0';
+    RegExp(r'^1\.[1-9][0-9]*\.[0-9]+$').hasMatch(workspaceVersion);
 
 /// Redirects canonical internal Git dependencies to a disposable candidate
 /// repository without changing the dependency descriptors recorded in source.

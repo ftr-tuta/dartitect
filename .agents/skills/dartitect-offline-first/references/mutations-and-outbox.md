@@ -13,3 +13,10 @@ once and rethrown; if delivery may have committed, persist uncertainty and stop
 only that key lane until repository audit, a deliberate pending decision, and
 `resume(key)`. On a new session, `recoverPending()` deduplicates idempotency keys
 and drains pending records only; uncertain records require human/domain policy.
+
+Borrow a consumer-owned `RetryBudget` through `MutationCommand.retryBudget`
+when delivery shares a bootstrap/reconnect admission window. Budget rejection
+preserves pending data and identity. Pass typed HTTP feedback through
+`MutationFailurePolicy.queued(retryAfter: ...)`; invalid/excessive feedback
+defers delivery, and valid server minimums survive jitter. Dispose borrowers
+before the budget's borrowed `Bulkhead`; budgets do not own providers.

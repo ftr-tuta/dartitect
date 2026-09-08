@@ -1,0 +1,81 @@
+{
+  "algorithm": "sha256",
+  "digest": "70e72df17bc762b6466c878402bc9311a38c1524d7d73eaa49951299e95b1254",
+  "files": [
+    {
+      "path": "capabilities.json",
+      "sha256": "7d7f9159ca6f3607e4dc19cf6995a27c43d08f3c68298e1cdded2e9ad36ab0e5",
+      "size": 304
+    },
+    {
+      "path": "fixtures/negative/documents.json",
+      "sha256": "be2f00dc77f16b5e7b8d1e1737491070437bcd0c428db60d48759231716a6577",
+      "size": 1340
+    },
+    {
+      "path": "fixtures/negative/trace.json",
+      "sha256": "41a6b7638d027dce40402ebfa59ecd74fcd20551fbeb21fbbcc6915ea62710e7",
+      "size": 466
+    },
+    {
+      "path": "fixtures/positive/bootstrap.json",
+      "sha256": "54c57d9226c7550f368c0ba2554295da9438569f5fe3a182fb3351553cd2e00a",
+      "size": 219
+    },
+    {
+      "path": "fixtures/positive/delta.json",
+      "sha256": "4bff3bcfc9263001a3b6357ab9888c702574d48dae1f458b29a54e8dc25e31a4",
+      "size": 614
+    },
+    {
+      "path": "fixtures/positive/mutation-outcomes.json",
+      "sha256": "822ac6141f40725d414ffc0bd7e2ea43a8b997c43471142f89039ef341fbb512",
+      "size": 560
+    },
+    {
+      "path": "fixtures/positive/pseudonym.json",
+      "sha256": "722a972524a4a3645c23e8f40dcdbc6968b1b2b89d929bb381cbc11bee7106c2",
+      "size": 169
+    },
+    {
+      "path": "fixtures/positive/trace.json",
+      "sha256": "8b8b019bb7996f9460335d5d3bb7733a542f0beeed4365d168dd72a9fadde91a",
+      "size": 184
+    },
+    {
+      "path": "fixtures/positive/verified-delta.json",
+      "sha256": "ded68dc514194637f3a9310055954178336654691e552f31b0b35196548e5fd4",
+      "size": 311
+    },
+    {
+      "path": "fixtures/positive/verified-snapshot.json",
+      "sha256": "df08292dfd5d135d07bbfd6dbf95094e448d1d96c206f10297dc0b2466f6dbdb",
+      "size": 298
+    },
+    {
+      "path": "headers.json",
+      "sha256": "21449bbf75b421aa362174e45723d8f1181ad0f33d23d76de7ac6419613f5b3a",
+      "size": 774
+    },
+    {
+      "path": "integrity.json",
+      "sha256": "0da0c869d2ab23a03a02d3c2126a072b3dcce947091d4cab752f62afcf2d90ca",
+      "size": 542
+    },
+    {
+      "path": "limits.json",
+      "sha256": "701ca3e78e86f824135bd8d5736a2df5116cc6d659bc98cd559d3cdf2030f16c",
+      "size": 421
+    },
+    {
+      "path": "openapi-components.json",
+      "sha256": "316524ccb23d8faae7fec013c228bec08f19cc13cc94543e7ba731adf40ac284",
+      "size": 1750
+    },
+    {
+      "path": "schema.json",
+      "sha256": "2700600c371553bf49769e5141cb0b482bd6b71a712bb5691187b08a1851fe42",
+      "size": 13324
+    }
+  ]
+}
