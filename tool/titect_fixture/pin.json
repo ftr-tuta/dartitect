@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "repository": "https://github.com/ftr-tuta/pytitect",
-  "pythonSha": "262fed4294e68399a9111ccba18974b3dd9dd9ac",
-  "integrated": false,
+  "pythonSha": "58b8d5072898aa63a6263b2b23c98059aab5a2f2",
+  "integrated": true,
   "bundles": {
     "titect-sync/1": {
       "manifestSha256": "a03966a688a0c2721baabfb91a58e1c92a57e45a84d047ba71a1932c751e51f4",
