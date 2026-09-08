@@ -257,7 +257,13 @@ Future<void> main(List<String> arguments) async {
       'dartitect_mcp',
       'dartitect_transfer',
     ])
-      _Command('dart', <String>['test', 'packages/$package']),
+      _Command('dart', <String>[
+        'test',
+        // CLI suites launch analyzers and subprocesses; bound suite admission
+        // so host contention does not consume individual test deadlines.
+        if (package == 'dartitect_cli') '--concurrency=1',
+        'packages/$package',
+      ]),
     for (final package in <String>[
       'dartitect_flutter',
       'dartitect_flutter_testing',
