@@ -166,6 +166,7 @@ Future<void> main(List<String> arguments) async {
     const _Command('dart', <String>[
       'test',
       'tool/setup_objectbox_vm_test.dart',
+      'tool/flutter_build_retry_test.dart',
     ]),
     const _Command('dart', <String>[
       'test',
