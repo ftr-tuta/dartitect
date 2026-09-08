@@ -139,31 +139,31 @@ jobs:
         run: xvfb-run --auto-servernum flutter test -d linux integration_test/flutter_quality_journey_test.dart
         working-directory: examples/reference_app
       - name: Build reference app for Web
-        run: dart run ../../tool/flutter_build_retry.dart web
+        run: dart run ../../tool/flutter_build_retry.dart flutter build web
         working-directory: examples/reference_app
       - name: Build reference app for Linux
-        run: dart run ../../tool/flutter_build_retry.dart linux
+        run: dart run ../../tool/flutter_build_retry.dart flutter build linux
         working-directory: examples/reference_app
       - name: Build reference app APK
-        run: dart run ../../tool/flutter_build_retry.dart apk --debug
+        run: dart run ../../tool/flutter_build_retry.dart flutter build apk --debug
         working-directory: examples/reference_app
       - name: Build adapters app for Web
-        run: dart run ../../tool/flutter_build_retry.dart web
+        run: dart run ../../tool/flutter_build_retry.dart flutter build web
         working-directory: examples/adapters_app
       - name: Build adapters app for Linux
-        run: dart run ../../tool/flutter_build_retry.dart linux
+        run: dart run ../../tool/flutter_build_retry.dart flutter build linux
         working-directory: examples/adapters_app
       - name: Build adapters app APK
-        run: dart run ../../tool/flutter_build_retry.dart apk --debug
+        run: dart run ../../tool/flutter_build_retry.dart flutter build apk --debug
         working-directory: examples/adapters_app
       - name: Build UI canary for Web
-        run: dart run ../../tool/flutter_build_retry.dart web --release
+        run: dart run ../../tool/flutter_build_retry.dart flutter build web --release
         working-directory: examples/paved_road_canary
       - name: Build UI canary for Linux
-        run: dart run ../../tool/flutter_build_retry.dart linux --release
+        run: dart run ../../tool/flutter_build_retry.dart flutter build linux --release
         working-directory: examples/paved_road_canary
       - name: Build UI canary APK
-        run: dart run ../../tool/flutter_build_retry.dart apk --debug
+        run: dart run ../../tool/flutter_build_retry.dart flutter build apk --debug
         working-directory: examples/paved_road_canary
       - name: Produce Android API 24 build evidence without an emulator
         if: matrix.flutter == '3.47.1'
@@ -216,13 +216,13 @@ jobs:
       - name: Verify workspace with native ObjectBox
         run: dart run tool/verify.dart --skip-get --native-objectbox
       - name: Build reference app for Windows
-        run: dart run ../../tool/flutter_build_retry.dart windows
+        run: dart run ../../tool/flutter_build_retry.dart flutter build windows
         working-directory: examples/reference_app
       - name: Build adapters app for Windows
-        run: dart run ../../tool/flutter_build_retry.dart windows
+        run: dart run ../../tool/flutter_build_retry.dart flutter build windows
         working-directory: examples/adapters_app
       - name: Build UI canary for Windows
-        run: dart run ../../tool/flutter_build_retry.dart windows --release
+        run: dart run ../../tool/flutter_build_retry.dart flutter build windows --release
         working-directory: examples/paved_road_canary
       - name: Confirm tracked files are unchanged
         if: always()
@@ -491,22 +491,22 @@ jobs:
       - name: Verify workspace with native ObjectBox
         run: dart run tool/verify.dart --skip-get --native-objectbox
       - name: Build reference app for macOS
-        run: dart run ../../tool/flutter_build_retry.dart macos
+        run: dart run ../../tool/flutter_build_retry.dart flutter build macos
         working-directory: examples/reference_app
       - name: Compile and link reference app for iOS without signing
-        run: dart run ../../tool/flutter_build_retry.dart ios --no-codesign
+        run: dart run ../../tool/flutter_build_retry.dart flutter build ios --no-codesign
         working-directory: examples/reference_app
       - name: Build adapters app for macOS
-        run: dart run ../../tool/flutter_build_retry.dart macos
+        run: dart run ../../tool/flutter_build_retry.dart flutter build macos
         working-directory: examples/adapters_app
       - name: Compile and link adapters app for iOS without signing
-        run: dart run ../../tool/flutter_build_retry.dart ios --no-codesign
+        run: dart run ../../tool/flutter_build_retry.dart flutter build ios --no-codesign
         working-directory: examples/adapters_app
       - name: Build UI canary for macOS
-        run: dart run ../../tool/flutter_build_retry.dart macos --release
+        run: dart run ../../tool/flutter_build_retry.dart flutter build macos --release
         working-directory: examples/paved_road_canary
       - name: Compile and link UI canary for iOS without signing
-        run: dart run ../../tool/flutter_build_retry.dart ios --release --no-codesign
+        run: dart run ../../tool/flutter_build_retry.dart flutter build ios --release --no-codesign
         working-directory: examples/paved_road_canary
       - name: Confirm tracked files are unchanged
         if: always()

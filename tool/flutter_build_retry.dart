@@ -69,18 +69,21 @@ bool _transientDownload(String output) {
 }
 
 Future<void> main(List<String> arguments) async {
-  if (arguments.isEmpty) {
+  if (arguments.length < 3 ||
+      arguments[0] != 'flutter' ||
+      arguments[1] != 'build') {
     stderr.writeln(
-      'Usage: dart run tool/flutter_build_retry.dart <build args>',
+      'Usage: dart run tool/flutter_build_retry.dart flutter build <build args>',
     );
     exitCode = 64;
     return;
   }
   final result = await retryFlutterBuildDownload(
-    () => Process.run('flutter', <String>[
-      'build',
-      ...arguments,
-    ], runInShell: Platform.isWindows),
+    () => Process.run(
+      'flutter',
+      arguments.sublist(1),
+      runInShell: Platform.isWindows,
+    ),
     report: stderr.writeln,
   );
   stdout.write(result.stdout);
